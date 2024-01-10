@@ -14,6 +14,8 @@ scanning data.
 You can install the development version of HSItools like so:
 
 ``` r
+# install.packages("pak")
+
 # pak::pak("mzarowka/HSItools)
 ```
 
@@ -23,8 +25,9 @@ This is a basic example which shows you how to solve a common problem:
 
 ``` r
 library(HSItools)
-## basic example code
+
+## Run shiny app and store results for processing
+core <- run_core()
 ```
 
-In that case, don’t forget to commit and push the resulting figure
-files, so they display on GitHub and CRAN.
+Package based on <https://github.com/nickmckay/specimR>
