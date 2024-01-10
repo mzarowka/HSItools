@@ -50,28 +50,28 @@ prepare_core <- function(core, .normalize = TRUE) {
       purrr::map(\(x) terra::rast(x))
 
     # Get band positions - the same for all three SpatRasters
-    band_position <- specimR::spectra_position(rasters[[1]], core$layers)
+    band_position <- HSItools::spectra_position(rasters[[1]], core$layers)
 
     cli::cli_alert_info("{format(Sys.time())}: subsetting layers.")
 
     # Subset bands in the SpatRasters
     rasters_subset <- rasters |>
-      purrr::map(\(x) specimR::spectra_sub(raster = x, spectra_tbl = band_position))
+      purrr::map(\(x) HSItools::spectra_sub(raster = x, spectra_tbl = band_position))
 
     cli::cli_alert_info("{format(Sys.time())}: cropping rasters.")
 
     # Crop
-    rasters_cropped <- purrr::map2(rasters_subset, types, \(x, y) specimR::raster_crop(x, y, big_roi, path = path))
+    rasters_cropped <- purrr::map2(rasters_subset, types, \(x, y) HSItools::raster_crop(x, y, big_roi, path = path))
 
     cli::cli_alert_info("{format(Sys.time())}: calculating reference rasters.")
 
     # Prepare reference SpatRasters
-    rasters_references <- purrr::map2(rasters_cropped[c(1, 3)], types[c(1, 3)], \(x, y) specimR::create_reference_raster(raster = x, ref_type = y, roi = big_roi, path = path))
+    rasters_references <- purrr::map2(rasters_cropped[c(1, 3)], types[c(1, 3)], \(x, y) HSItools::create_reference_raster(raster = x, ref_type = y, roi = big_roi, path = path))
 
     cli::cli_alert_info("{format(Sys.time())}: calculating reflectance raster.")
 
     # Normalize data
-    reflectance <- specimR::create_normalized_raster(capture = rasters_cropped[[2]],
+    reflectance <- HSItools::create_normalized_raster(capture = rasters_cropped[[2]],
                                                      whiteref = rasters_references[[2]],
                                                      darkref = rasters_references[[1]],
                                                      fun = normalization,

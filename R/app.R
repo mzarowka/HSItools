@@ -68,7 +68,7 @@ run_core <- function(){
             $(supElement).find('span.irs-max, span.irs-min, span.irs-single, span.irs-from, span.irs-to').remove();
           }, 50);})
         ")),
-    titlePanel("specimR", windowTitle = "specimR"),
+    titlePanel("HSItools", windowTitle = "HSItools"),
         # Output: Tabset w/ plot, summary, and table ----
         tabsetPanel(type = "tabs",
                     id = "tabset1",
