@@ -72,39 +72,33 @@ run_core <- function(){
         # Output: Tabset w/ plot, summary, and table ----
         tabsetPanel(type = "tabs",
                     id = "tabset1",
+                    tabPanel("Analysis",
+                             shiny::fluidRow(
+                               shiny::column(
+                                 4,
+                                 shiny::radioButtons("choice_normalize", "Do you need to normalize the data?", choices = list(Yes = "TRUE", No = "FALSE"))
+                               ),
+                               shiny::column(
+                                 4,
+                                 shiny::radioButtons("choice_integration", "Is your white reference scanned with different settings than core?", choices = list(Yes = "TRUE", No = "FALSE"), selected = "FALSE")
+                               ),
+                               shiny::column(
+                                 4,
+                                 shiny::selectInput("choice_proxies", "Choose proxies to calculate", choices = list(Rmean = "Rmean", RABD615 = "RABD615", RABD660670 = "RABD660-670", RABD845 = "RABD845", RABD710730 = "RABD710-730", R570R630 = "R570R630", R590R690 = "R590R690"), multiple = TRUE)
+                               )
+                             ),
+                             shiny::fluidRow(
+                               style = "text-align:center; font-weight:100;",
+                               actionButton('begin','Save Selections and Proceed')
+                             )
+                    ),
                     tabPanel("Select Data",
                              shiny::br(),
                              shiny::br(),
-                             shiny::fluidRow(
-                               align="center",
-                               shinyFiles::shinyDirButton("file_dir", "Select directory with captured data", title = "Select directory"),
-                               shiny::actionButton("file_dir_example", "Use example data"),
-                               shiny::br(),
-                               shiny::br(),
-                             ),
-                             shiny::fluidRow(
-
-                               shiny::column(
-                                 12,
-                                 "Selected core directory",
-                                 shiny::br(),
-                                 shiny::verbatimTextOutput("core_dir_show"),
-                                 shiny::br(),
-                                 "Raster files in the directory",
-                                 shiny::br(),
-                                 shiny::verbatimTextOutput("core_dir"),
-                                 shiny::br(),
-                                 "Raster details",
-                                 shiny::br(),
-                                 shiny::verbatimTextOutput("core_info"),
-                               ),
-                             ),
+                             uiOutput("file_select"),
+                             uiOutput("file_show"),
                              shiny::br(),
-                             "Choose layers to subset raster",
-                             wellPanel(
-                             checkboxInput("dt_sel", "select/deselect all", value = FALSE),
-                             DTOutput("layerTable1"),
-                             ),
+                             uiOutput("table1"),
                              shiny::br(),
                              shiny::actionButton("proceed_with_data", "Proceed with selected data")
 
@@ -364,33 +358,15 @@ run_core <- function(){
                                shiny::verbatimTextOutput("pixelRatio")
                              ),
                              ),
+                             shiny::br(),
                              shiny::fluidRow(
                                align="center",
-                               actionButton("acceptCalibration", "Accept distance calibration", style = "margin-right: 10px; margin-top:10px;"),
+                               actionButton("done", "Accept distance calibration and Exit", style = "margin-right: 10px; margin-top:10px;"),
                              ),
                              shiny::br(),
-                             shiny::plotOutput(outputId = "core_plot2",width = "100%", click="plot_click")
-                    ),
-                    tabPanel("Analysis",
-                             shiny::fluidRow(
-                               shiny::column(
-                                 4,
-                                 shiny::radioButtons("choice_normalize", "Do you need to normalize the data?", choices = list(Yes = "TRUE", No = "FALSE"))
-                               ),
-                               shiny::column(
-                                 4,
-                                 shiny::radioButtons("choice_integration", "Is your white reference scanned with different settings than core?", choices = list(Yes = "TRUE", No = "FALSE"), selected = "FALSE")
-                               ),
-                               shiny::column(
-                                 4,
-                                 shiny::selectInput("choice_proxies", "Choose proxies to calculate", choices = list(Rmean = "Rmean", RABD615 = "RABD615", RABD660670 = "RABD660-670", RABD845 = "RABD845", RABD710730 = "RABD710-730", R570R630 = "R570R630", R590R690 = "R590R690"), multiple = TRUE)
-                               )
-                             ),
-                             shiny::fluidRow(
-                             style = "text-align:center; font-weight:100;",
-                             actionButton('ok','Save and Exit')
-                             )
-                             )
+                             shiny::plotOutput(outputId = "core_plot2",width = "100%", click="plot_click"),
+                             shiny::br(),
+                    )
                     )
   ),
 
@@ -399,6 +375,9 @@ run_core <- function(){
     clickCounter <- reactiveValues(count=1)
     volumes <- c(shinyFiles::getVolumes()())
     shinyFiles::shinyDirChoose(input, "file_dir", roots = volumes)
+    shinyFiles::shinyFileChoose(input, "ref_file", roots = volumes)
+
+    useExample <- reactiveVal(FALSE)
 
 
     #checkbox to select all layers
@@ -410,20 +389,70 @@ run_core <- function(){
         DT::selectRows(dt_proxy, NULL)
       }
     })
+    #checkbox to select every other row
+    observeEvent(input$halfRows, {
+      if (isTRUE(input$halfRows)) {
+        DT::selectRows(dt_proxy, seq(min(input$layerTable1_rows_all),max(input$layerTable1_rows_all),2))
+      } else {
+        DT::selectRows(dt_proxy, NULL)
+      }
+    })
     output$selected_rows <- renderPrint(print(input$dt_rows_selected))
 
-    #capture user directory
-    user_dir <- reactive({
-      shinyFiles::parseDirPath(volumes, selection = input$file_dir)
+    user_file <- eventReactive(input$ref_file, {
+      shinyFiles::parseFilePaths(volumes, selection = input$ref_file)
       #"C:/Users/dce25/Downloads/STL14_1A_28C_top_2022-11-11_16-30-51"
+    })
+    #capture user directory
+    # user_dir <- eventReactive(input$file_dir, {
+    #   shinyFiles::parseDirPath(volumes, selection = input$file_dir)
+    #   #"C:/Users/dce25/Downloads/STL14_1A_28C_top_2022-11-11_16-30-51"
+    # })
+    user_dir <- reactiveVal()
+
+    observeEvent(input$file_dir, {
+      useExample(FALSE)
+      user_dir(shinyFiles::parseDirPath(volumes, selection = input$file_dir))
+    })
+    #   dir1 <- shinyFiles::parseDirPath(volumes, selection = input$file_dir)
+    #   print(dir1)
+    #   user_dir(dir1)
+    #   print(user_dir(dir1))
+    #   files1 <- user_dir() |>
+    #     fs::dir_ls(type = "file", regexp = ".raw", recurse = TRUE)
+    #   print(files1)
+    #   rasters(files1)
+    #   print(rasters(files1))
+    #   coreImage(terra::rast(rasters(files1)))
+    #   # coreInfo(c(paste0("width: ", ncol(coreImage()), " pixels"), paste0("height: ", nrow(coreImage()), " pixels"), paste0("layers: ", length(names(coreImage())))))
+    # })
+
+
+
+    observeEvent(input$file_dir_example, {
+      useExample(TRUE)
+      user_dir(paste0(getwd(),"/data"))
+      # rasters(user_dir() |>
+      #           fs::dir_ls(type = "file", regexp = ".tif", recurse = TRUE))
+      # coreImage(terra::rast(user_file()$datapath))
+      # coreInfo(NULL)
     })
 
-    user_dir2 <- eventReactive(input$file_dir_example, {
-      #"C:/Users/dce25/Downloads/STL14_1A_28C_top_2022-11-11_16-30-51"
-      "data"
-    })
+    # user_dir <- eventReactive({input$file_dir
+    #   input$file_dir_example
+    #   }, {
+    #   print(paste0("selected: ", input$file_dir))
+    #   print(paste0("example: ", input$file_dir_example))
+    #   if (!is.null(input$file_dir)){
+    #     return(shinyFiles::parseDirPath(volumes, selection = input$file_dir))
+    #   } else{
+    #     return(paste0(getwd(),"/data"))
+    #   }
+    #   #"C:/Users/dce25/Downloads/STL14_1A_28C_top_2022-11-11_16-30-51"
+    # })
 
     observeEvent(input$proceed_with_data, {
+      #print(input$layerTable1_rows_all)
 
       allParams$layers <<- as.numeric(names(coreImage())[input$layerTable1_rows_selected])
 
@@ -432,41 +461,67 @@ run_core <- function(){
                         selected = "Crop Image")
     })
 
+    #print file path
+    output$core_file_show <- renderTable({
+      #if (length(user_file()) != 0){
+        user_file()
+      #}
+    })
+
     #print directory
     output$core_dir_show <- renderPrint({
-      if (length(user_dir()) != 0){
+      #print(paste0("user_dir(): ", user_dir()))
+      #if (length(user_dir()) != 0){
         user_dir()
-      }
+      #}
     })
 
     # List raster files in the selected directory
+    #rasters <- reactiveVal()
     rasters <- reactive({
-      if (length(user_dir()) != 0){
+      if (length(user_dir()) != 0 & !useExample()){
         user_dir() |>
           fs::dir_ls(type = "file", regexp = ".raw", recurse = TRUE)
-      }
-      else if (length(user_dir2()) != 0){
-        user_dir2() |>
+      } else if (length(user_dir()) != 0 & useExample()) {
+        user_dir() |>
           fs::dir_ls(type = "file", regexp = ".tif", recurse = TRUE)
+      } else {
+        NULL
       }
+      # else if (length(user_dir2()) != 0){
+      #   user_dir() |>
+      #     fs::dir_ls(type = "file", regexp = ".tif", recurse = TRUE)
+      # }
       })
 
 
+    #coreImage <- reactiveVal()
+
     coreImage <- reactive({
       #print(input$layerTable1_rows_selected)
-      if (length(user_dir()) != 0){
-        img1 <- terra::rast(rasters()[2])
-        }
-      else if (length(user_dir2()) != 0){
-        img1 <- terra::rast(rasters()[1])
-      } else {
-        img1 <- NULL
+      if (length(rasters()) == 0 & length(user_file()$datapath) == 0){
+        print("rasters = 0")
+        NULL
+      } else if (length(user_dir()) != 0){
+        print("found user dir")
+        return(terra::rast(rasters()[2]))
+        } else if (length(user_file()$datapath) != 0) {
+          print(user_file()$datapath)
+      # else if (length(user_dir2()) != 0){
+      #   img1 <- terra::rast(rasters()[1])
+      #}
+          return(terra::rast(user_file()$datapath))
+        } else {
+          print("weird")
+          return(NULL)
       }
       # if (!is.null(input$layerTable1_rows_selected)){
       #   img1 <- img1[input$layerTable1_rows_selected]
       # }
-      img1
+      #print(img1)
     })
+
+    #coreInfo <- reactiveVal()
 
 
     coreInfo <- reactive({
@@ -478,7 +533,12 @@ run_core <- function(){
     })
 
     layersTable <- reactive({
-      data.table::data.table(index=1:length(names(coreImage())), wavelength=as.numeric(names(coreImage())))
+      if (!is.null(coreImage())){
+        data.table::data.table(index=1:length(names(coreImage())), wavelength=as.numeric(names(coreImage())))
+      } else {
+        data.table::data.table()
+      }
+
     })
 
     output$layerTable1 <- renderDT(layersTable(), height = 100)
@@ -751,13 +811,150 @@ run_core <- function(){
 
     })
 
-    observeEvent(input$acceptCalibration, {
-      updateTabsetPanel(session=session,
-                        "tabset1",
-                        selected = "Analysis")
+    # observeEvent(input$acceptCalibration, {
+    #   updateTabsetPanel(session=session,
+    #                     "tabset1",
+    #                     selected = "Analysis")
+    # })
+
+    observeEvent(input$file_dir, {
+      output$file_show <- renderUI({
+        shiny::fluidRow(
+        shiny::column(
+          12,
+          "Selected core directory",
+          shiny::br(),
+          shiny::verbatimTextOutput("core_dir_show"),
+          shiny::br(),
+          "Raster files in the directory",
+          shiny::br(),
+          shiny::verbatimTextOutput("core_dir"),
+          shiny::br(),
+          "Raster details",
+          shiny::br(),
+          shiny::verbatimTextOutput("core_info"),
+        ),
+        "Choose layers to subset raster",
+        wellPanel(
+          checkboxInput("dt_sel", "select/deselect all", value = FALSE),
+          DTOutput("layerTable1"),
+        )
+        )
+      })
+    })
+    observeEvent(input$file_dir_example, {
+      output$file_show <- renderUI({
+        shiny::fluidRow(
+          shiny::column(
+            12,
+            "Selected core directory",
+            shiny::br(),
+            shiny::verbatimTextOutput("core_dir_show"),
+            shiny::br(),
+            "Raster files in the directory",
+            shiny::br(),
+            shiny::verbatimTextOutput("core_dir"),
+            shiny::br(),
+            "Raster details",
+            shiny::br(),
+            shiny::verbatimTextOutput("core_info"),
+          ),
+          "Choose layers to subset raster",
+          wellPanel(
+            checkboxInput("dt_sel", "select/deselect all", value = FALSE),
+            DTOutput("layerTable1"),
+          )
+        )
+      })
+    })
+    observeEvent(input$ref_file, {
+      output$file_show <- renderUI({
+        shiny::fluidRow(
+          shiny::column(
+            12,
+            "Selected reflectance file",
+            shiny::br(),
+            shiny::tableOutput("core_file_show"),
+            shiny::br(),
+            "Raster details",
+            shiny::br(),
+            shiny::verbatimTextOutput("core_info"),
+          ),
+          "Choose layers to subset raster",
+          wellPanel(
+            checkboxInput("dt_sel", "select/deselect all", value = FALSE),
+            checkboxInput("halfRows", "select every other row", value = FALSE),
+            DTOutput("layerTable1"),
+          )
+        )
+      })
     })
 
-    observeEvent(input$ok, {
+    observeEvent(input$begin, {
+      #print("1 executing ok")
+      #distances <- list()
+      #distances$pointA <- round(unlist(source_coords$xy[pointA(),]))
+      #distances$pointB <- round(unlist(source_coords$xy[pointB(),]))
+      #distances$coreDist <- distY()
+      #distances$scaleDist <- distTot()
+      #distances$scaleDistmm <- input$scaleLength
+      #distances$pixelRatio <- input$scaleLength/distTot()
+      #print("2 executing ok")
+      analysisOptions <- list()
+      #print("3 executing ok")
+      analysisOptions$normalize <- as.logical(input$choice_normalize)
+      #print("4 executing ok")
+      analysisOptions$integration <- as.logical(input$choice_integration)
+      #print("5 executing ok")
+      analysisOptions$proxies <- input$choice_proxies
+      #print("6 executing ok")
+      allParams$analysisOptions <<- analysisOptions
+      #print("7 executing ok")
+      if (analysisOptions$normalize){
+        output$file_select <- renderUI({
+          # shiny::fluidRow(
+          #   align="center",
+          #   shinyFiles::shinyDirButton("file_dir", "Select directory with captured data", title = "Select directory"),
+          #   shiny::actionButton("file_dir_example", "Use example data"),
+          #   shiny::br(),
+          #   shiny::br(),
+          # ),
+          shiny::fluidRow(
+            align="center",
+            shinyFiles::shinyDirButton("file_dir", "Select directory with captured data", title = "Select directory"),
+            shiny::actionButton("file_dir_example", "Use example data"),
+            shiny::br(),
+            shiny::br(),
+          )
+        })
+      } else {
+        output$file_select <- renderUI({
+          # shiny::fluidRow(
+          #   align="center",
+          #   #shinyFiles::shinyDirButton("file_dir", "Select directory with captured data", title = "Select directory"),
+          #   shinyFiles::shinyFilesButton("ref_file", "Select reflectance file", title = "Select file",multiple = FALSE),
+          #   shiny::br(),
+          #   shiny::br(),
+          # ),
+          shiny::fluidRow(
+            align="center",
+            shinyFiles::shinyFilesButton("ref_file", "Select reflectance file", title = "Select file",multiple = FALSE),
+            shiny::br(),
+            shiny::br(),
+          )
+        })
+      }
+
+
+
+      updateTabsetPanel(session=session,
+                        "tabset1",
+                        selected = "Select Data")
+      #print("8 executing ok")
+    })
+
+    observeEvent(input$done, {
+      print("1 executing ok")
       distances <- list()
       distances$pointA <- round(unlist(source_coords$xy[pointA(),]))
       distances$pointB <- round(unlist(source_coords$xy[pointB(),]))
@@ -765,23 +962,32 @@ run_core <- function(){
       distances$scaleDist <- distTot()
       distances$scaleDistmm <- input$scaleLength
       distances$pixelRatio <- input$scaleLength/distTot()
-
+      print("2 executing ok")
       analysisOptions <- list()
+      print("3 executing ok")
       analysisOptions$normalize <- as.logical(input$choice_normalize)
+      print("4 executing ok")
       analysisOptions$integration <- as.logical(input$choice_integration)
+      print("5 executing ok")
       analysisOptions$proxies <- input$choice_proxies
-
+      print("6 executing ok")
 
       if (length(user_dir()) != 0){
         allParams$directory <<- user_dir()
-      }else{
-        allParams$directory <<- user_dir2()
+      }
+      # else if (length(user_dir2()) != 0){
+      #   allParams$directory <<- user_dir2()
+      # }
+      else {
+        allParams$directory <<- user_file()$datapath
+        #shinyalert::shinyalert(title = "No Data", text = "Please return to the 'Select Data' tab and choose data to analyze.")
       }
 
+      print("7 executing ok")
       allParams$analysisRegions <<- analysisRegions$DT
       allParams$distances <<- distances
       allParams$analysisOptions <<- analysisOptions
-
+      print("8 executing ok")
       stopApp(allParams)
     })
 
