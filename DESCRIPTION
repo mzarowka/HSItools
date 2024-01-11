@@ -1,5 +1,5 @@
 Package: HSItools
-Title: What the Package Does (One Line, Title Case)
+Title: Process, Analyze and Visualize Hyperspectral Core Scanning Data
 Version: 0.0.0.9000
 Authors@R: c(
     person("Maurycy", "Żarczyński", , "maurycy.zarczynski@ug.edu.pl", role = c("aut", "cre"),
@@ -7,7 +7,7 @@ Authors@R: c(
     person("Nicholas", "McKay", , "nicholas.mckay@nau.edu", role = "aut"),
     person("David", "Edge", , "david.edge@nau.edu", role = "aut")
   )
-Description: What the package does (one paragraph).
+Description: A toolbox to process raw hyperspectral core scanning imaging (HSI) data. Allows normalization, filtering and visualization.
 License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
     license
 Encoding: UTF-8

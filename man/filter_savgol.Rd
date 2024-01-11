@@ -4,7 +4,7 @@
 \alias{filter_savgol}
 \title{Apply a Savitzky-Golay smoothing filter}
 \usage{
-filter_savgol(raster, p = 3, n = p + 3 - p\%\%2, m = 0, ts = 1)
+filter_savgol(raster, p = 3, n = p + 3 - p\%\%2, m = 0, ts = 1, ...)
 }
 \arguments{
 \item{raster}{a terra SpatRaster of normalized data}

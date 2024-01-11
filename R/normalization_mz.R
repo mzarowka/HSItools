@@ -221,7 +221,7 @@ create_normalized_raster <- function(capture = capture, whiteref = whiteref, dar
 #' @return smoothed SpatRaster
 #' @export
 #'
-median_filtering <- function(raster = raster, window = 3, ...){
+filter_median <- function(raster = raster, window = 3, ...){
   # Store additional parameters
   params <- list(...)
 
@@ -252,7 +252,7 @@ median_filtering <- function(raster = raster, window = 3, ...){
 #' @return A filtered terra SpatRaster.
 #' @export
 #'
-filter_savgol <- function(raster, p = 3, n = p + 3 - p%%2, m = 0, ts = 1){
+filter_savgol <- function(raster, p = 3, n = p + 3 - p%%2, m = 0, ts = 1, ...){
   # Store additional parameters
   params <- list(...)
 
