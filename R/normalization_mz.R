@@ -76,7 +76,7 @@ raster_crop <- function(raster, type, roi, ...) {
                           roi,
                           filename = paste0(params$path, "/products/", basename(params$path), "_cropped.tif"),
                           overwrite = TRUE,
-                          steps = terra::nrow(raster) * terra::nlyr(raster))
+                          steps = terra::ncell(raster) * terra::nlyr(raster))
 
     # If cropping reference SpatRaster use only xmin and xmax from large ROI
     # White reference SpatRaster
@@ -88,7 +88,7 @@ raster_crop <- function(raster, type, roi, ...) {
                             terra::ymax(raster)),
                           filename = paste0(params$path, "/products/WHITEREF_", basename(params$path), "_cropped.tif"),
                           overwrite = TRUE,
-                          steps = terra::nrow(raster) * terra::nlyr(raster))
+                          steps = terra::ncell(raster) * terra::nlyr(raster))
 
     # Dark reference SpatRaster
   } else if (type == "darkref") {
@@ -99,7 +99,7 @@ raster_crop <- function(raster, type, roi, ...) {
                             terra::ymax(raster)),
                           filename = paste0(params$path, "/products/DARKREF_", basename(params$path), "_cropped.tif"),
                           overwrite = TRUE,
-                          steps = terra::nrow(raster) * terra::nlyr(raster))
+                          steps = terra::ncell(raster) * terra::nlyr(raster))
   }
 
   # Return raster
@@ -133,7 +133,7 @@ create_reference_raster <- function(raster, roi, ref_type, ...) {
                              fact = c(terra::nrow(raster), 1),
                              fun = "mean",
                              overwrite = TRUE,
-                             steps = terra::nrow(raster) * terra::nlyr(raster))
+                             steps = terra::ncell(raster) * terra::nlyr(raster))
 
   # Set new extent to match extent of capture SpatRaster
   terra::ext(raster) <- roi
@@ -143,7 +143,7 @@ create_reference_raster <- function(raster, roi, ref_type, ...) {
                           fact = c(terra::ymax(raster), 1),
                           filename = paste0(params$path, "/products/", name, "_", basename(params$path), "_disaggregated.tif"),
                           overwrite = TRUE,
-                          steps = terra::nrow(raster) * terra::nlyr(raster))
+                          steps = terra::ncell(raster) * terra::nlyr(raster))
 
   # Return raster
   return(raster)
@@ -197,7 +197,7 @@ create_normalized_raster <- function(capture = capture, whiteref = whiteref, dar
   params <- list(...)
 
   # Named list with write options
-  wopts <- list(steps = terra::nrow(capture) * 10)
+  wopts <- list(steps = terra::ncell(capture) * terra::nlyr(capture))
 
   # Create terra spatial dataset combining SpatRasters
   # Create list
@@ -226,7 +226,7 @@ filter_median <- function(raster = raster, window = 3, ...){
   params <- list(...)
 
   # Named list with write options
-  wopts <- list(steps = terra::nrow(raster) * terra::nlyr(raster))
+  wopts <- list(steps = terra::ncell(raster) * terra::nlyr(raster))
 
   # Apply terra focal statistic with 3 x 3 window
   reflectance <- terra::focal(raster,
@@ -257,7 +257,7 @@ filter_savgol <- function(raster, p = 3, n = p + 3 - p%%2, m = 0, ts = 1, ...){
   params <- list(...)
 
   # Named list with write options
-  wopts <- list(steps = terra::nrow(raster) * terra::nlyr(raster))
+  wopts <- list(steps = terra::ncell(raster) * terra::nlyr(raster))
 
   # Extract names
   band_names <- names(raster)
