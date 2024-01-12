@@ -379,10 +379,17 @@ run_core <- function(){
 
     useExample <- reactiveVal(FALSE)
 
+    observeEvent(input$layerTable1_rows_selected,ignoreNULL = FALSE, {
+      wavesA <- paste0(names(coreImage())[input$layerTable1_rows_selected],collapse = ", ")
+      textA <- paste0("Wavelengths selected: ", wavesA)
+      output$currentSelection <- renderText(textA)
+    })
+
 
     #checkbox to select all layers
     dt_proxy <- DT::dataTableProxy("layerTable1")
     observeEvent(input$dt_sel, {
+      custTableIndex(NULL)
       if (isTRUE(input$dt_sel) & isTRUE(input$halfRows)) {
         DT::selectRows(dt_proxy, seq(min(input$layerTable1_rows_all),max(input$layerTable1_rows_all),2))
       } else if (isTRUE(input$dt_sel) & isFALSE(input$halfRows)) {
@@ -395,6 +402,7 @@ run_core <- function(){
     })
     #checkbox to select every other row
     observeEvent(input$halfRows, {
+      custTableIndex(NULL)
       if (isTRUE(input$dt_sel) & isTRUE(input$halfRows)) {
         DT::selectRows(dt_proxy, seq(min(input$layerTable1_rows_all),max(input$layerTable1_rows_all),2))
       } else if (isTRUE(input$dt_sel) & isFALSE(input$halfRows)) {
@@ -405,7 +413,6 @@ run_core <- function(){
         DT::selectRows(dt_proxy, NULL)
       }
     })
-    output$selected_rows <- renderPrint(print(input$dt_rows_selected))
 
     user_file <- eventReactive(input$ref_file, {
       shinyFiles::parseFilePaths(volumes, selection = input$ref_file)
@@ -700,8 +707,15 @@ run_core <- function(){
     })
 
     observeEvent(input$selectPlotRegion, {
-      allParams$cropImage <<- c(x_range(input$plotBrush)[1], x_range(input$plotBrush)[2],
-                               y_range(input$plotBrush)[1], y_range(input$plotBrush)[2])
+      if (is.null(brush)){
+        allParams$cropImage <<- c(1,ncol(coreImage()),1,nrow(coreImage()))
+      } else {
+        allParams$cropImage <<- c(x_range(input$plotBrush)[1], x_range(input$plotBrush)[2],
+                                  y_range(input$plotBrush)[1], y_range(input$plotBrush)[2])
+      }
+
+      print(allParams$cropImage)
+
 
     zoomedPlot <- reactive({
       if (!is.null(brush)){
@@ -709,7 +723,7 @@ run_core <- function(){
                        ext=terra::ext(x_range(input$plotBrush)[1], x_range(input$plotBrush)[2], y_range(input$plotBrush)[1], y_range(input$plotBrush)[2])
         )
       } else {
-        plotsmall <- "No Selection"
+        plotsmall <- terra::plotRGB(x = coreImage(), r = RGBlayers()[1], g = RGBlayers()[2], b = RGBlayers()[3], stretch = "hist")
       }
       plotsmall
     })
@@ -833,9 +847,26 @@ run_core <- function(){
         ),
         "Choose layers to subset raster",
         wellPanel(
-          checkboxInput("dt_sel", "select/deselect all", value = FALSE),
-          checkboxInput("halfRows", "select every other row", value = FALSE),
+          shiny::fluidRow(column(6,
+          checkboxInput("dt_sel", "select/deselect all", value = FALSE)),
+          column(6,
+          checkboxInput("halfRows", "select every other row", value = FALSE))),
+          "Choose Custom Wavelengths (comma separated)",
+          shiny::fluidRow(column(8,
+                                 textInput(label = NULL,"findWavelength", placeholder = "450,550,650",width = "100%")),
+                          column(4,actionButton("custom_wavelengths", "Select",width = "100%"))
+          ),
+          "Choose Wavelength Range (min/max)",
+          shiny::fluidRow(column(4,
+                                 numericInput(label = NULL,"minWave", value = 550, width = "100%")),
+                          column(4,
+                                 numericInput(label = NULL,"maxWave", value = 650, width = "100%")),
+                          column(4,actionButton("range_waves", "Select",width = "100%"))
+          ),
           DTOutput("layerTable1"),
+        ),
+        wellPanel(
+          textOutput("currentSelection"),
         )
         )
       })
@@ -859,9 +890,26 @@ run_core <- function(){
           ),
           "Choose layers to subset raster",
           wellPanel(
-            checkboxInput("dt_sel", "select/deselect all", value = FALSE),
-            checkboxInput("halfRows", "select every other row", value = FALSE),
+            shiny::fluidRow(column(6,
+            checkboxInput("dt_sel", "select/deselect all", value = FALSE)),
+            column(6,
+            checkboxInput("halfRows", "select every other row", value = FALSE))),
+            "Choose Custom Wavelengths (comma separated)",
+            shiny::fluidRow(column(8,
+            textInput(label = NULL,"findWavelength", placeholder = "450,550,650",width = "100%")),
+            column(4,actionButton("custom_wavelengths", "Select",width = "100%"))
+            ),
+            "Choose Wavelength Range (min/max)",
+            shiny::fluidRow(column(4,
+                                   numericInput(label = NULL,"minWave", value = 550, width = "100%")),
+                            column(4,
+                                   numericInput(label = NULL,"maxWave", value = 650, width = "100%")),
+                            column(4,actionButton("range_waves", "Select",width = "100%"))
+            ),
             DTOutput("layerTable1"),
+            wellPanel(
+              textOutput("currentSelection"),
+            )
           )
         )
       })
@@ -881,9 +929,26 @@ run_core <- function(){
           ),
           "Choose layers to subset raster",
           wellPanel(
-            checkboxInput("dt_sel", "select/deselect all", value = FALSE),
-            checkboxInput("halfRows", "select every other row", value = FALSE),
+            shiny::fluidRow(column(6,
+            checkboxInput("dt_sel", "select/deselect all", value = FALSE)),
+            column(6,
+            checkboxInput("halfRows", "select every other row", value = FALSE))),
+            "Choose Custom Wavelengths (comma separated)",
+            shiny::fluidRow(column(8,
+                                   textInput(label = NULL,"findWavelength", placeholder = "450,550,650",width = "100%")),
+                            column(4,actionButton("custom_wavelengths", "Select",width = "100%"))
+            ),
+            "Choose Wavelength Range (min/max)",
+            shiny::fluidRow(column(4,
+                                   numericInput(label = NULL,"minWave", value = 550, width = "100%")),
+                            column(4,
+                                   numericInput(label = NULL,"maxWave", value = 650, width = "100%")),
+                            column(4,actionButton("range_waves", "Select",width = "100%"))
+            ),
             DTOutput("layerTable1"),
+            wellPanel(
+              textOutput("currentSelection"),
+            )
           )
         )
       })
@@ -950,6 +1015,63 @@ run_core <- function(){
                         "tabset1",
                         selected = "Select Data")
       #print("8 executing ok")
+    })
+
+    custTableIndex <- reactiveVal()
+
+    observeEvent(input$custom_wavelengths, {
+
+      rows <- c(unlist(lapply(strsplit(input$findWavelength, ","), function(x) as.numeric(x))))
+
+      runIt <- FALSE
+
+      if (length(rows)==1){
+        if (is.na(rows)){
+          shinyalert::shinyalert(title = "Invalid Input", text = "Check the format of your entry")
+        } else {
+          runIt <- TRUE
+        }
+      } else {
+        runIt <- TRUE
+      }
+      if (runIt) {
+        spectraIndex <- purrr::map(rows, \(x) which.min(abs(x - as.numeric(names(coreImage()))))) |>
+          purrr::as_vector()
+
+        # warn1 <- paste0("Requested ", length(rows), " unique layers, but only found ", length(unique(spectraIndex)))
+        #
+        # if (length(rows) > length(unique(spectraIndex))) {
+        #   shinyalert::shinyalert(warn1)
+        # }
+
+        spectraIndex <- c(custTableIndex(),spectraIndex)
+
+        custTableIndex(spectraIndex)
+
+        DT::selectRows(dt_proxy, input$layerTable1_rows_all[spectraIndex])
+      }
+    })
+
+    observeEvent(input$range_waves, {
+
+      if (input$minWave > input$maxWave){
+        shinyalert::shinyalert(title = "Min/Max Error",text = "Max value must be greater than Min")
+      } else {
+        waves <- as.numeric(names(coreImage()))
+        waves <- waves + runif(length(waves),min = 0,max = .001)
+
+        minDiffs <- unlist(lapply(c(waves - input$minWave), function(x) if(x<0){x*-1 + 500}else{x}))
+        maxDiffs <- unlist(lapply(c(input$maxWave - waves), function(x) if(x<0){x*-1 + 500}else{x}))
+
+        spectraIndex1 <- which.min(minDiffs)
+        spectraIndex2 <- which.min(maxDiffs)
+
+        spectraIndex3 <- c(custTableIndex(),spectraIndex1:spectraIndex2)
+
+        custTableIndex(spectraIndex3)
+
+        DT::selectRows(dt_proxy, input$layerTable1_rows_all[spectraIndex3])
+      }
     })
 
     observeEvent(input$done, {
