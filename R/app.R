@@ -383,15 +383,23 @@ run_core <- function(){
     #checkbox to select all layers
     dt_proxy <- DT::dataTableProxy("layerTable1")
     observeEvent(input$dt_sel, {
-      if (isTRUE(input$dt_sel)) {
+      if (isTRUE(input$dt_sel) & isTRUE(input$halfRows)) {
+        DT::selectRows(dt_proxy, seq(min(input$layerTable1_rows_all),max(input$layerTable1_rows_all),2))
+      } else if (isTRUE(input$dt_sel) & isFALSE(input$halfRows)) {
         DT::selectRows(dt_proxy, input$layerTable1_rows_all)
+      } else if (isFALSE(input$dt_sel) & isTRUE(input$halfRows)){
+        DT::selectRows(dt_proxy, seq(min(input$layerTable1_rows_all),max(input$layerTable1_rows_all),2))
       } else {
         DT::selectRows(dt_proxy, NULL)
       }
     })
     #checkbox to select every other row
     observeEvent(input$halfRows, {
-      if (isTRUE(input$halfRows)) {
+      if (isTRUE(input$dt_sel) & isTRUE(input$halfRows)) {
+        DT::selectRows(dt_proxy, seq(min(input$layerTable1_rows_all),max(input$layerTable1_rows_all),2))
+      } else if (isTRUE(input$dt_sel) & isFALSE(input$halfRows)) {
+        DT::selectRows(dt_proxy, input$layerTable1_rows_all)
+      } else if (isFALSE(input$dt_sel) & isTRUE(input$halfRows)){
         DT::selectRows(dt_proxy, seq(min(input$layerTable1_rows_all),max(input$layerTable1_rows_all),2))
       } else {
         DT::selectRows(dt_proxy, NULL)
@@ -498,27 +506,16 @@ run_core <- function(){
     #coreImage <- reactiveVal()
 
     coreImage <- reactive({
-      #print(input$layerTable1_rows_selected)
-      if (length(rasters()) == 0 & length(user_file()$datapath) == 0){
-        print("rasters = 0")
+      if (length(rasters()) == 0 & !exists("user_file()")){
         NULL
       } else if (length(user_dir()) != 0){
-        print("found user dir")
         return(terra::rast(rasters()[2]))
-        } else if (length(user_file()$datapath) != 0) {
-          print(user_file()$datapath)
-      # else if (length(user_dir2()) != 0){
-      #   img1 <- terra::rast(rasters()[1])
-      #}
+        } else if (exists("user_file()")) {
+
           return(terra::rast(user_file()$datapath))
         } else {
-          print("weird")
           return(NULL)
       }
-      # if (!is.null(input$layerTable1_rows_selected)){
-      #   img1 <- img1[input$layerTable1_rows_selected]
-      # }
-      #print(img1)
     })
 
     #coreInfo <- reactiveVal()
@@ -837,6 +834,7 @@ run_core <- function(){
         "Choose layers to subset raster",
         wellPanel(
           checkboxInput("dt_sel", "select/deselect all", value = FALSE),
+          checkboxInput("halfRows", "select every other row", value = FALSE),
           DTOutput("layerTable1"),
         )
         )
@@ -862,6 +860,7 @@ run_core <- function(){
           "Choose layers to subset raster",
           wellPanel(
             checkboxInput("dt_sel", "select/deselect all", value = FALSE),
+            checkboxInput("halfRows", "select every other row", value = FALSE),
             DTOutput("layerTable1"),
           )
         )
