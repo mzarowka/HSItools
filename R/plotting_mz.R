@@ -15,14 +15,14 @@
 plot_raster_proxy <- function(raster, hsi_index, .palette) {
   # Choose palette
   proxy_palette <- list(
-    red = c(low = "#AF3029", high = "#FFFCF0"),
-    orange = c(low = "#BC5215", high = "#FFFCF0"),
-    yellow = c(low = "#AD8301", high = "#FFFCF0"),
-    green = c(low = "#66800B", high = "#FFFCF0"),
-    cyan = c(low = "#24837B", high = "#FFFCF0"),
-    blue = c(low = "#205EA6", high = "#FFFCF0"),
-    purple = c(low = "#5E409D", high = "#FFFCF0"),
-    magenta = c(low = "#A02F6F", high = "#FFFCF0"))
+    red = c(high = "#AF3029", low = "#FFFCF0"),
+    orange = c(high = "#BC5215", low = "#FFFCF0"),
+    yellow = c(high = "#AD8301", low = "#FFFCF0"),
+    green = c(high = "#66800B", low = "#FFFCF0"),
+    cyan = c(high = "#24837B", low = "#FFFCF0"),
+    blue = c(high = "#205EA6", low = "#FFFCF0"),
+    purple = c(high = "#5E409D", low = "#FFFCF0"),
+    magenta = c(high = "#A02F6F", low = "#FFFCF0"))
 
   # Subset SpatRaster
   hsi_layer <- raster |>
@@ -33,29 +33,63 @@ plot_raster_proxy <- function(raster, hsi_index, .palette) {
     # Add raster layer
     tidyterra::geom_spatraster(data = hsi_layer) +
     # Define fill colors
-    scale_fill_gradient(
-      low = proxy_palette[[.palette]][1],
-      high = proxy_palette[[.palette]][2],
+    ggplot2::scale_fill_gradient(
+      high = proxy_palette[[.palette]][1],
+      low = proxy_palette[[.palette]][2],
       guide = guide_colorbar(
         title = hsi_index,
         title.position = "bottom",
-        ticks = FALSE)
-    ) +
+        ticks = FALSE)) +
+    # Fix the coordinates
+    ggplot2::coord_fixed() +
     # Modify theme
-    theme(
+    ggplot2::theme(
       panel.background = element_blank(),
       axis.line.y.left = element_line(color = "black"),
       axis.text.x = element_blank(),
       axis.ticks.x = element_blank(),
-      legend.position = "bottom")
+      legend.position = "bottom") +
+    ggplot2::labs(x = hsi_index,
+                  y = "Depth")
 
   # Return plot as an object
   return(plot)
 }
 
-# RGB plot of the object
-plot_raster_rgb <- function(data){
+#' Spatial map plots of RGB image
+#'
+#' @param raster a SpatRaster with calculated hyperspectral indices and RGB layers or just RGB layers.
+#'
+#' @return a plot with color map of selected hyperspectral index.
+#' @export
+plot_raster_rgb <- function(raster){
+  raster <- HSItools::spectra_position(raster, spectra = c(450, 550, 650)) |>
+    HSItools::spectra_sub(raster = raster, spectra_tbl = _)
 
+  raster <- terra::stretch(raster)
+
+  # Plot SpatRaster
+  plot <- ggplot2::ggplot() +
+    # Add RGB raster layer
+    tidyterra::geom_spatraster_rgb(data = raster,
+                                   r = 3,
+                                   g = 2,
+                                   b = 1,
+                                   interpolate = TRUE) +
+    # Fix the coordinates
+    ggplot2::coord_fixed() +
+    # Modify theme
+    ggplot2::theme(
+      panel.background = element_blank(),
+      axis.line.y.left = element_line(color = "black"),
+      axis.text.x = element_blank(),
+      axis.ticks.x = element_blank(),
+      legend.position = "bottom") +
+    ggplot2::labs(x = "RGB",
+                  y = "Depth")
+
+  # Return plot as an object
+  return(plot)
 }
 
 # Overlay color plot of proxy on RGB
@@ -70,8 +104,8 @@ plot_raster_overlay <- function(data, hsi_index){
 #'
 #' @return a plot.
 #' @export
-plot_raster_composite <- function(plots) {
-  # Create a plot composited from a list of plots
+plot_composite <- function(plots) {
+  # Create a plot composed from a list of plots
   plot <- plots |>
     # Wrap list into patchwork
     patchwork::wrap_plots() +
@@ -93,14 +127,45 @@ plot_raster_composite <- function(plots) {
 #' @return a plot with color map of selected hyperspectral index.
 #' @export
 plot_profile_proxy <- function(data, hsi_index, .palette){
+  # Clean data
+  data <- data |>
+    dplyr::mutate(y = y,
+                  proxy = {{ hsi_index }},
+                  .keep = "none")
+
+  # Proxy name
+  proxy_name <- rlang::as_label(rlang::enquo(hsi_index))
+
   # Choose palette
   proxy_palette <- list(
-    red = c(low = "#AF3029", high = "#FFFCF0"),
-    orange = c(low = "#BC5215", high = "#FFFCF0"),
-    yellow = c(low = "#AD8301", high = "#FFFCF0"),
-    green = c(low = "#66800B", high = "#FFFCF0"),
-    cyan = c(low = "#24837B", high = "#FFFCF0"),
-    blue = c(low = "#205EA6", high = "#FFFCF0"),
-    purple = c(low = "#5E409D", high = "#FFFCF0"),
-    magenta = c(low = "#A02F6F", high = "#FFFCF0"))
+    red = "#AF3029",
+    orange = "#BC5215",
+    yellow = "#AD8301",
+    green = "#66800B",
+    cyan = "#24837B",
+    blue = "#205EA6",
+    purple = "#5E409D",
+    magenta = "#A02F6F")
+
+  # Create a plot
+  plot <- data |>
+    # Pass to plot
+    ggplot2::ggplot() +
+    # Add aes
+    ggplot2::aes(x = proxy, y = y) +
+    # Add geom
+    ggplot2::geom_path(color = proxy_palette[[.palette]]) +
+    # Modify theme
+    ggplot2::theme(
+      panel.background = element_blank(),
+      axis.line.y.left = element_line(color = "black"),
+      axis.text.x = element_blank(),
+      axis.ticks.x = element_blank(),
+      legend.position = "bottom") +
+    # Add labels
+    ggplot2::labs(x = proxy_name,
+                  y = "Depth")
+
+  # Return plot as an object
+  return(plot)
 }

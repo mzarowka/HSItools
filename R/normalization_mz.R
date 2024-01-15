@@ -225,8 +225,12 @@ filter_median <- function(raster = raster, window = 3, ...){
   # Store additional parameters
   params <- list(...)
 
+  cli::cli_h1("{basename(params$path)}")
+
   # Named list with write options
   wopts <- list(steps = terra::ncell(raster) * terra::nlyr(raster))
+
+  cli::cli_alert_info("{format(Sys.time())}: calculating median filtered raster.")
 
   # Apply terra focal statistic with 3 x 3 window
   reflectance <- terra::focal(raster,
@@ -235,6 +239,11 @@ filter_median <- function(raster = raster, window = 3, ...){
                               filename = paste0(params$path, "/products/REFLECTANCE_", basename(params$path), "_MEDIAN.tif"),
                               overwrite = TRUE,
                               wopt = wopts)
+
+  # Return
+  return(reflectance)
+
+  cli::cli_alert_success("{format(Sys.time())}: finished.")
 
 }
 
@@ -256,11 +265,15 @@ filter_savgol <- function(raster, p = 3, n = p + 3 - p%%2, m = 0, ts = 1, ...){
   # Store additional parameters
   params <- list(...)
 
+  cli::cli_h1("{basename(params$path)}")
+
   # Named list with write options
   wopts <- list(steps = terra::ncell(raster) * terra::nlyr(raster))
 
   # Extract names
   band_names <- names(raster)
+
+  cli::cli_alert_info("{format(Sys.time())}: calculating Savitzky-Golay filtered raster.")
 
   # Apply Savitzky-Golay filter
   raster <- terra::app(raster,
