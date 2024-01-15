@@ -27,6 +27,7 @@ Imports:
     shiny,
     shinycssloaders,
     shinyFiles,
+    signal,
     smoother,
     terra,
     tidyr,
