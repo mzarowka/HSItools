@@ -4,6 +4,34 @@
 # Plotting profile
 # Put core and profile/map pairs along - let user choose
 
+#' Save full SpatRaster of RGB preview
+#'
+#' @param raster a SpatRaster.
+#' @param .ext character, a graphic format extension, one of "jpg", "png", "tif".
+#' @param ... extra parameters, such as path.
+#'
+#' @export
+plot_raster_full <- function(raster, ext, product = TRUE, ...) {
+  # Store additional parameters
+  params <- list(...)
+
+  # Choose write mode
+  if (product == TRUE) {
+    filename <- paste0(params$path, "/products/RGB_", basename(params$path), ".", ext)
+  } else {
+    filename <- paste0(basename(params$path), ".", ext)
+  }
+
+  # Subset and write to RGB
+  raster <- HSItools::spectra_position(raster, spectra = c(650, 550, 450)) |>
+    HSItools::spectra_sub(raster = raster, spectra_tbl = _) |>
+    terra::stretch(filename = filename,
+                   overwrite = TRUE)
+
+  # Return plot
+  return(raster)
+}
+
 #' Spatial map plots of calculated proxies
 #'
 #' @param raster a SpatRaster with calculated hyperspectral indices and RGB layers.
@@ -63,7 +91,7 @@ plot_raster_proxy <- function(raster, hsi_index, .palette) {
 #' @return a plot with color map of selected hyperspectral index.
 #' @export
 plot_raster_rgb <- function(raster){
-  raster <- HSItools::spectra_position(raster, spectra = c(450, 550, 650)) |>
+  raster <- HSItools::spectra_position(raster, spectra = c(650, 550, 450)) |>
     HSItools::spectra_sub(raster = raster, spectra_tbl = _)
 
   raster <- terra::stretch(raster)
@@ -72,9 +100,9 @@ plot_raster_rgb <- function(raster){
   plot <- ggplot2::ggplot() +
     # Add RGB raster layer
     tidyterra::geom_spatraster_rgb(data = raster,
-                                   r = 3,
+                                   r = 1,
                                    g = 2,
-                                   b = 1,
+                                   b = 3,
                                    interpolate = TRUE) +
     # Fix the coordinates
     ggplot2::coord_fixed() +

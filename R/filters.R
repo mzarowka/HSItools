@@ -2,13 +2,21 @@
 #'
 #' @param capture a terra SpatRaster of captured data.
 #' @param window focal window size, default is 3.
+#' @param product logical, whether in the shiny pipeline, what type of filename should be used.
 #'
 #' @return smoothed SpatRaster
 #' @export
 #'
-filter_median <- function(raster = raster, window = 3, ...){
+filter_median <- function(raster = raster, window = 3, product = TRUE, ...){
   # Store additional parameters
   params <- list(...)
+
+  # Choose write mode
+  if (product == TRUE) {
+    filename <- paste0(params$path, "/products/REFLECTANCE_", basename(params$path), "_MEDIAN.tif")
+  } else {
+    filename <- paste0(basename(params$path), ".tif")
+  }
 
   cli::cli_h1("{basename(params$path)}")
 
@@ -21,7 +29,7 @@ filter_median <- function(raster = raster, window = 3, ...){
   reflectance <- terra::focal(raster,
                               w = window,
                               fun = \(x) median(x),
-                              filename = paste0(params$path, "/products/REFLECTANCE_", basename(params$path), "_MEDIAN.tif"),
+                              filename = filename,
                               overwrite = TRUE,
                               wopt = wopts)
 
