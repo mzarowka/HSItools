@@ -1,221 +1,91 @@
+# General workflow
+# Get capture raster from shiny output
+# Get white reference raster from shiny output
+# Get dark reference raster from shiny output
+# Set workflow mode 1: normalize or not
+# Set workflow mode 2: normalize full or cropped
+# Set workflow mode 3: normalize rois only?
+# Set workflow mode 4: normalize subset of layers
+# Set workflow mode 5: different white reference capture time
+#
 
-#' Wrapper function that goes through standardization, index calculation and visualization
+# Get raster files into the environment - make it so shiny output is always called choices?
+#' Prepare core based on shiny output
 #'
-#' @param indices
-#' @param overall.width
-#' @param individual.width
-#' @param width.mult
-#' @inheritDotParams normalize
+#' @param path
+#' @param .normalize
 #'
 #' @return
 #' @export
 #'
-#' @examples
-spectralWorkflow <- function(directory = NA,
-                             indices = c("RABD615","RABD660670","RABD845","R570R630","R590R690"),
-                             overall.page.width = 30,
-                             individual.page.width = 10,
-                             page.width.multiplier = 1.5,
-                             page.length.multiplier = 3,
-                             plot.width = 8,
-                             core.width = 4,
-                             image.wavelengths = c(630,532,465),
-                             predict.image.roi = FALSE,
-                             imageRoi = NA,
-                             output.dir = NA,
-                             clickDepths = NA,
-                             output.dpi = 600,
-                             overall.width = NA,#deprecated, kept for old scripts
-                             individual.width = NA,#deprecated, kept for old scripts
-                             width.mult = NA,#deprecated, kept for old scripts
-                             ...){
+prepare_core <- function(core, .normalize = TRUE) {
 
-  #Set options
-  options(ragg.max_dim = 999999)
+  # Get path
+  path <- core$directory
 
-  indicesString <- paste0("indices = c(",paste(paste0('"',indices,'"'),collapse = ','),")")
-  owString <- glue::glue("overall.page.width = {overall.page.width}")
-  iwString <- glue::glue("individual.page.width = {individual.page.width}")
-  wmString <- glue::glue("core.width = {core.width}")
-  pwString <- glue::glue("plot.width = {plot.width}")
-  pwmString <- glue::glue("page.width.multiplier = {page.width.multiplier}")
-  plmString <- glue::glue("page.length.multiplier = {page.length.multiplier}")
+  cli::cli_h1("{basename(path)}")
 
+  # Create products directory and store path
+  products <- fs::dir_create(paste0(path, "/products"))
 
+  # List data files in the directory
+  files <- fs::dir_ls(paste0(path, "/capture"))
 
-  if(all(is.na(clickDepths))){
-    assign("clickDepths",NULL,envir = .GlobalEnv)
-  }else{
-    assign("clickDepths",clickDepths,envir = .GlobalEnv)
+  # Check if file needs to be normalized from .raw
+  if (.normalize == TRUE) {
+    # List files: CAPTURE, DARKREF and WHITEREF
+    files <- fs::path_filter(files, regexp = ".raw")
+
+    # SpatRaster types
+    types <- list("darkref", "capture", "whiteref")
+
+    # Extent
+    big_roi <- terra::ext(core$cropImage)
+
+    cli::cli_alert_info("{format(Sys.time())}: reading rasters.")
+
+    # Read SpatRasters
+    rasters <- files |>
+      # Load SpatRasters
+      purrr::map(\(x) terra::rast(x))
+
+    # Get band positions - the same for all three SpatRasters
+    band_position <- HSItools::spectra_position(rasters[[1]], core$layers)
+
+    cli::cli_alert_info("{format(Sys.time())}: subsetting layers.")
+
+    # Subset bands in the SpatRasters
+    rasters_subset <- rasters |>
+      purrr::map(\(x) HSItools::spectra_sub(raster = x, spectra_tbl = band_position))
+
+    cli::cli_alert_info("{format(Sys.time())}: cropping rasters.")
+
+    # Crop
+    rasters_cropped <- purrr::map2(rasters_subset, types, \(x, y) HSItools::raster_crop(x, y, big_roi, path = path))
+
+    cli::cli_alert_info("{format(Sys.time())}: calculating reference rasters.")
+
+    # Prepare reference SpatRasters
+    rasters_references <- purrr::map2(rasters_cropped[c(1, 3)], types[c(1, 3)], \(x, y) HSItools::create_reference_raster(raster = x, ref_type = y, roi = big_roi, path = path))
+
+    cli::cli_alert_info("{format(Sys.time())}: calculating reflectance raster.")
+
+    # Normalize data
+    reflectance <- HSItools::create_normalized_raster(capture = rasters_cropped[[2]],
+                                                     whiteref = rasters_references[[2]],
+                                                     darkref = rasters_references[[1]],
+                                                     fun = normalization,
+                                                     path = path)
+
+    cli::cli_alert_info("{format(Sys.time())}: cleaning up.")
+
+    # Remove temporary disaggregated files
+    fs::dir_ls(products, regexp = "disaggregated") |>
+      fs::file_delete()
+
+    cli::cli_alert_success("{format(Sys.time())}: finished.")
+
+  } else {
+    reflectance <- fs::path_filter(files, regexp = "REFLECTANCE")
   }
-  # #print that you need to pick it.
-  # if(is.na(directory)){
-  #   cat(crayon::bold("Choose a file within the Specim core directory\n\n"))
-  #   Sys.sleep(1)
-  # }
-
-  #get the appropriate paths
-  paths <- getPaths(dirPath = directory)
-  directory <- dirname(paths$overview)
-
-
-  #output directory handling
-  if(is.na(output.dir)){
-    output.dir <- file.path(dirname(paths$overview),"products")
-  }
-
-
-  if(is.na(imageRoi)){
-    overview <- raster::brick(paths$overview)
-
-    if(predict.image.roi){
-    overviewPng <- imager::load.image(paths$overview)
-
-    gs <- imager::grayscale(overviewPng) %>% as.matrix()
-
-    across <- apply(gs,1,mean)
-    down <- apply(gs,2,mean)
-
-    cropVert <- findCropEdges(rev(down))
-    cropHor <- findCropEdges(across)
-
-    bigRoiTry <- raster::extent(cropHor[1],cropHor[2],cropVert[1],cropVert[2])
-    }else{
-      bigRoiTry <- raster::extent(overview)
-    }
-    imageRoi <- pick_big_roi_shiny(overview,bigRoiTry, zh = nrow(overview)/5)
-
-    imageRoi@xmin <- ceiling(imageRoi@xmin)
-    imageRoi@ymin <- ceiling(imageRoi@ymin)
-    imageRoi@xmax <- floor(imageRoi@xmax)
-    imageRoi@ymax <- floor(imageRoi@ymax)
-  }
-
-  irs <- glue::glue("imageRoi = raster::extent(matrix(c({imageRoi@xmin},{imageRoi@xmax},{imageRoi@ymin},{imageRoi@ymax}),nrow = 2,byrow = T))")
-
-  normList <- normalize(directory = directory,output.dir = output.dir,...)
-
-  #create images
-  cat(crayon::bold(glue::glue("Loading data to creating images...\n\n")))
-
-  image.dir <- file.path(output.dir,"photos")
-
-  createImages(directory = directory,
-               wavelengths = image.wavelengths,
-               image.output.dir = image.dir,
-               bigRoi = imageRoi)
-
-  cat(crayon::bold(glue::glue("Creating figures...\n\n")))
-
-  #loop through ROIs
-  for(n in 1:length(normList)){
-  normalized <- normList[[n]]
-  #calculate indices
-  indexTable <- calculateIndices(normalized,indices = indices)
-
-  #write indices to a csv file
-  readr::write_csv(indexTable,file.path(normalized$outputDir,"spectralIndices.csv"))
-
-
-  #plot dashboards
-  overall <- suppressMessages(plotSpectralDashboard(normalized,
-                                   indexTable,
-                                   processed.image.dir = image.dir,
-                                   index.name = indices,
-                                   core.width = core.width,
-                                   page.width = overall.page.width,
-                                   page.width.multiplier = page.width.multiplier,
-                                   page.length.multiplier = page.length.multiplier,
-                                   plot.width = plot.width,
-                                   output.file.path = file.path(normalized$outputDir,"allIndices.png"),
-                                   output.dpi = output.dpi))
-
-  #individual indices
-  for(i in indices){
-    #plot dashboards
-    this <- suppressMessages(plotSpectralDashboard(normalized,
-                                  indexTable,
-                                  index.name = i,
-                                  core.width = core.width,
-                                  processed.image.dir = image.dir,
-                                  page.width = individual.page.width,
-                                  page.width.multiplier = page.width.multiplier,
-                                  page.length.multiplier = page.length.multiplier,
-                                  plot.width = plot.width,
-                                  output.file.path = file.path(normalized$outputDir,paste0(i,".png")),
-                                  output.dpi = output.dpi))
-  }
-
-  #write command to reproduce this
-  rep.command <- glue::glue("specimR::spectralWorkflow({indicesString},
-                          {normParams},
-                            {irs},
-                          {owString},
-                          {iwString},
-                            {pwString},
-                            {pwmString},
-                            {plmString},
-                          {wmString})")
-
-  readr::write_file(rep.command,file.path(output.dir,"reprocess.R"))
-  }
-  rm("clickDepths",envir = .GlobalEnv)
-
-}
-
-
-#' Plot spectral output
-#'
-#' @param normalized The output of normalize()
-#' @param indices Which indices to plot? see ?calculateIndices for options
-#' @param file.type Export file type (default = "png")
-#' @param fig.width Width of the overview plot in fig.units (individual plots will be half as wide) (default = 20)
-#' @param fig.length Length of the overview plot in the fig.units, if NA, will use core length (default = NA)
-#' @param fig.units Units for fig dimensions (default = "in"s)
-#' @inheritDotParams plotSpectralDashboard
-#' @export
-plotSpectralOutput <- function(normalized,
-                               indices = c("RABD615","RABD660670","RABD845","R570R630","R590R690"),
-                               file.type = "png",
-                               fig.width = 20,
-                               fig.length = NA,
-                               fig.units = "in",
-                               ...){
-
-
-  #calculate indices
-  indexTable <- calculateIndices(normalized,indices = indices)
-
-
-  #plot dashboards
-  overall <- plotSpectralDashboard(normalized,indexTable,index.name = indices,...)
-
-  if(is.na(fig.length)){#use the depth
-    totalDepth <- max(normalized$scaleY)
-  }else{
-    totalDepth <- fig.length
-  }
-
-  #create file
-  ggsave(plot = overall,
-         filename = file.path(normalized$outputDir,paste0("allIndices.",file.type)),
-         width = fig.width,
-         height = totalDepth,
-         units = fig.units,
-         limitsize = FALSE)
-
-  #individual indices
-  for(i in indices){
-    #plot dashboards
-    this <- plotSpectralDashboard(normalized,indexTable,index.name = i,...)
-
-    #png
-    ggsave(plot = this,
-           filename = file.path(normalized$outputDir,paste0(i,".",file.type)),
-           width = fig.width/2,
-           height = totalDepth,
-           units = fig.units,
-           limitsize = FALSE)
-  }
-
 }

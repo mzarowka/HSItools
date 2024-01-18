@@ -72,6 +72,8 @@ raster_crop <- function(raster, type, roi, ...) {
 
   # If cropping entire capture SpatRaster use entire large ROI
   if (type == "capture") {
+    cli::cli_alert("Captured data")
+
     raster <- terra::crop(raster,
                           roi,
                           filename = paste0(params$path, "/products/", basename(params$path), "_cropped.tif"),
@@ -81,6 +83,8 @@ raster_crop <- function(raster, type, roi, ...) {
     # If cropping reference SpatRaster use only xmin and xmax from large ROI
     # White reference SpatRaster
   } else if (type == "whiteref") {
+    cli::cli_alert("White reference")
+
     raster <- terra::crop(raster,
                           c(terra::xmin(roi),
                             terra::xmax(roi),
@@ -92,6 +96,8 @@ raster_crop <- function(raster, type, roi, ...) {
 
     # Dark reference SpatRaster
   } else if (type == "darkref") {
+    cli::cli_alert("Dark reference")
+
     raster <- terra::crop(raster,
                           c(terra::xmin(roi),
                             terra::xmax(roi),
@@ -128,6 +134,7 @@ create_reference_raster <- function(raster, roi, ref_type, ...) {
     name <- "DARKREF"
   }
   # Aggregate data into one row SpatRaster, divide by number of rows
+  cli::cli_alert("Aggregate { name }")
 
   raster <- terra::aggregate(raster,
                              fact = c(terra::nrow(raster), 1),
@@ -139,6 +146,8 @@ create_reference_raster <- function(raster, roi, ref_type, ...) {
   terra::ext(raster) <- roi
 
   # Disaggregate data over entire extent to match capture SpatRaster extent, multiply by ymax
+  cli::cli_alert("Disaggregate { name }")
+
   raster <- terra::disagg(raster,
                           fact = c(terra::ymax(raster), 1),
                           filename = paste0(params$path, "/products/", name, "_", basename(params$path), "_disaggregated.tif"),
