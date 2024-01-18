@@ -43,14 +43,14 @@ plot_raster_full <- function(raster, ext, product = TRUE, ...) {
 plot_raster_proxy <- function(raster, hsi_index, .palette) {
   # Choose palette
   proxy_palette <- list(
-    red = c(high = "#AF3029", low = "#FFFCF0"),
-    orange = c(high = "#BC5215", low = "#FFFCF0"),
-    yellow = c(high = "#AD8301", low = "#FFFCF0"),
-    green = c(high = "#66800B", low = "#FFFCF0"),
-    cyan = c(high = "#24837B", low = "#FFFCF0"),
-    blue = c(high = "#205EA6", low = "#FFFCF0"),
-    purple = c(high = "#5E409D", low = "#FFFCF0"),
-    magenta = c(high = "#A02F6F", low = "#FFFCF0"))
+    red = c(high = "#AF3029", mid = "#D14D41", low = "#F2F0E5"),
+    orange = c(high = "#BC5215", mid = "#DA702C", low = "#F2F0E5"),
+    yellow = c(high = "#AD8301", mid = "#D0A215", low = "#F2F0E5"),
+    green = c(high = "#66800B", mid = "#879A39", low = "#F2F0E5"),
+    cyan = c(high = "#24837B", mid = "#3AA99F", low = "#F2F0E5"),
+    blue = c(high = "#205EA6", mid = "#4385BE", low = "#F2F0E5"),
+    purple = c(high = "#5E409D", mid = "#8B7EC8", low = "#F2F0E5"),
+    magenta = c(high = "#A02F6F", mid = "#CE5D97", low = "#F2F0E5"))
 
   # Subset SpatRaster
   hsi_layer <- raster |>
@@ -61,9 +61,8 @@ plot_raster_proxy <- function(raster, hsi_index, .palette) {
     # Add raster layer
     tidyterra::geom_spatraster(data = hsi_layer) +
     # Define fill colors
-    ggplot2::scale_fill_gradient(
-      high = proxy_palette[[.palette]][1],
-      low = proxy_palette[[.palette]][2],
+    ggplot2::scale_fill_gradientn(
+      colors = c(proxy_palette[[.palette]][3], mid = proxy_palette[[.palette]][2], proxy_palette[[.palette]][1]),
       guide = guide_colorbar(
         title = hsi_index,
         title.position = "bottom",

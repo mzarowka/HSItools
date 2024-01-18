@@ -9,7 +9,6 @@
 # Set workflow mode 5: different white reference capture time
 #
 
-# Get raster files into the environment - make it so shiny output is always called choices?
 #' Prepare core based on shiny output
 #'
 #' @param path
@@ -88,4 +87,7 @@ prepare_core <- function(core, .normalize = TRUE) {
   } else {
     reflectance <- fs::path_filter(files, regexp = "REFLECTANCE")
   }
+
+  # Return reflectance
+  return(reflectance)
 }

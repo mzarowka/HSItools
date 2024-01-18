@@ -33,11 +33,10 @@ filter_median <- function(raster = raster, window = 3, product = TRUE, ...){
                               overwrite = TRUE,
                               wopt = wopts)
 
-  # Return
-  return(reflectance)
-
   cli::cli_alert_success("{format(Sys.time())}: finished.")
 
+  # Return
+  return(reflectance)
 }
 
 #' Apply a Savitzky-Golay smoothing filter
@@ -80,6 +79,8 @@ filter_savgol <- function(raster, p = 3, n = p + 3 - p%%2, m = 0, ts = 1, ...){
 
   # Update names on disk
   update(raster, names = TRUE)
+
+  cli::cli_alert_success("{format(Sys.time())}: finished.")
 
   # Return raster to the environment
   return(raster)
