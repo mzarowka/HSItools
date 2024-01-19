@@ -33,7 +33,7 @@
 #' @return
 #' @export
 #'
-run_core <- function(){
+run_core <- function(autoSave=TRUE){
 
   library(shiny)
   library(DT)
@@ -714,7 +714,6 @@ run_core <- function(){
                                   y_range(input$plotBrush)[1], y_range(input$plotBrush)[2])
       }
 
-      print(allParams$cropImage)
 
 
     zoomedPlot <- reactive({
@@ -1075,7 +1074,6 @@ run_core <- function(){
     })
 
     observeEvent(input$done, {
-      print("1 executing ok")
       distances <- list()
       distances$pointA <- round(unlist(source_coords$xy[pointA(),]))
       distances$pointB <- round(unlist(source_coords$xy[pointB(),]))
@@ -1083,15 +1081,10 @@ run_core <- function(){
       distances$scaleDist <- distTot()
       distances$scaleDistmm <- input$scaleLength
       distances$pixelRatio <- input$scaleLength/distTot()
-      print("2 executing ok")
       analysisOptions <- list()
-      print("3 executing ok")
       analysisOptions$normalize <- as.logical(input$choice_normalize)
-      print("4 executing ok")
       analysisOptions$integration <- as.logical(input$choice_integration)
-      print("5 executing ok")
       analysisOptions$proxies <- input$choice_proxies
-      print("6 executing ok")
 
       if (length(user_dir()) != 0){
         allParams$directory <<- user_dir()
@@ -1104,12 +1097,14 @@ run_core <- function(){
         #shinyalert::shinyalert(title = "No Data", text = "Please return to the 'Select Data' tab and choose data to analyze.")
       }
 
-      print("7 executing ok")
       allParams$analysisRegions <<- analysisRegions$DT
       allParams$distances <<- distances
       allParams$analysisOptions <<- analysisOptions
-      print("8 executing ok")
-      stopApp(allParams)
+      if (autoSave==TRUE){
+        saveRDS(allParams, paste0(getwd(),"/HSItools_core.rds"))
+        print(paste0("Output saved: ", paste0(getwd(),"/HSItools_core.rds")))
+      }
+      stopApp(invisible(allParams))
     })
 
     observeEvent(input$acceptAnalysisRegions, {
