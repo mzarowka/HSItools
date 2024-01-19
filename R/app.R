@@ -1102,7 +1102,12 @@ run_core <- function(autoSave=TRUE){
       allParams$analysisOptions <<- analysisOptions
       if (autoSave==TRUE){
         saveRDS(allParams, paste0(getwd(),"/HSItools_core.rds"))
-        print(paste0("Output saved: ", paste0(getwd(),"/HSItools_core.rds")))
+        cat("\n")
+        cat(paste0("Output saved: ", paste0(getwd(),"/HSItools_core.rds")))
+        cat("\n")
+        cat("Load the rds to use new data (eg. core1A <- readRDS('C:/Users/dce25/Documents/R Projects/HSItools/HSItools_core.rds')")
+        cat("\n")
+        cat("\n")
       }
       stopApp(invisible(allParams))
     })
