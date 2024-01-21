@@ -4,7 +4,7 @@
 \alias{run_core}
 \title{run shiny app to set up core image analysis}
 \usage{
-run_core()
+run_core(autoSave = TRUE)
 }
 \description{
 run shiny app to set up core image analysis
