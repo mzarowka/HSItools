@@ -4,12 +4,10 @@
 \alias{plot_raster_full}
 \title{Save full SpatRaster of RGB preview}
 \usage{
-plot_raster_full(raster, ext, product = TRUE, ...)
+plot_raster_full(raster, .ext)
 }
 \arguments{
-\item{raster}{a SpatRaster.}
-
-\item{...}{extra parameters, such as path.}
+\item{raster}{a SpatRaster, preferably reflectance file.}
 
 \item{.ext}{character, a graphic format extension, one of "jpg", "png", "tif".}
 }

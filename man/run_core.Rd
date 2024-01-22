@@ -6,6 +6,9 @@
 \usage{
 run_core(autoSave = TRUE)
 }
+\value{
+an object with processing settings.
+}
 \description{
 run shiny app to set up core image analysis
 }

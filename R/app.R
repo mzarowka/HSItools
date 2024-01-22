@@ -30,7 +30,7 @@
 
 #' run shiny app to set up core image analysis
 #'
-#' @return
+#' @return an object with processing settings.
 #' @export
 #'
 run_core <- function(autoSave=TRUE){

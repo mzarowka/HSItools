@@ -6,27 +6,58 @@
 
 #' Save full SpatRaster of RGB preview
 #'
-#' @param raster a SpatRaster.
+#' @param raster a SpatRaster, preferably reflectance file.
 #' @param .ext character, a graphic format extension, one of "jpg", "png", "tif".
-#' @param ... extra parameters, such as path.
 #'
 #' @export
-plot_raster_full <- function(raster, ext, product = TRUE, ...) {
-  # Store additional parameters
-  params <- list(...)
+plot_raster_full <- function(raster, .ext) {
+  # Raster source directory
+  raster_src <- raster |>
+    terra::sources() |>
+    fs::path_dir()
 
-  # Choose write mode
-  if (product == TRUE) {
-    filename <- paste0(params$path, "/products/RGB_", basename(params$path), ".", ext)
-  } else {
-    filename <- paste0(basename(params$path), ".", ext)
-  }
+  # Raster source name
+  raster_name <- raster |>
+    terra::sources() |>
+    fs::path_file() |>
+    fs::path_ext_remove()
+
+  cli::cli_h1("{raster_name}")
+
+  filename <- paste0(raster_src, "/RGB_", raster_name, ".", .ext)
+
+  cli::cli_alert("Writing RGB to {filename}.")
 
   # Subset and write to RGB
   raster <- HSItools::spectra_position(raster, spectra = c(650, 550, 450)) |>
     HSItools::spectra_sub(raster = raster, spectra_tbl = _) |>
     terra::stretch(filename = filename,
                    overwrite = TRUE)
+
+  # # Shiny output unavailable
+  # if (is.null(.shiny) == TRUE) {
+  #   cli::cli_alert("No shiny output available.")
+  #   if (.product == TRUE) {
+  #     cli::cli_alert("Writting to the \"products\" directory.")
+  #     filename <- paste0(fs::path_dir(terra::sources(raster)), "/products/RGB_", fs::path_ext_remove(basename(terra::sources(raster))), ".", ext)
+  #   } else {
+  #     cli::cli_alert("Writting to the selected directory.")
+  #     filename <- paste0(basename(params$path), ".", ext)
+  #   }
+  # } #else
+
+  # # Choose write mode
+  # if (.product == TRUE) {
+  #   filename <- paste0(params$path, "/products/RGB_", basename(params$path), ".", ext)
+  # } else {
+  #   filename <- paste0(basename(params$path), ".", ext)
+  # }
+
+  # # Subset and write to RGB
+  # raster <- HSItools::spectra_position(raster, spectra = c(650, 550, 450)) |>
+  #   HSItools::spectra_sub(raster = raster, spectra_tbl = _) |>
+  #   terra::stretch(filename = filename,
+  #                  overwrite = TRUE)
 
   # Return plot
   return(raster)
@@ -36,21 +67,21 @@ plot_raster_full <- function(raster, ext, product = TRUE, ...) {
 #'
 #' @param raster a SpatRaster with calculated hyperspectral indices and RGB layers.
 #' @param hsi_index a character indicating hyperspectral index layer to plot.
-#' @param .palette a character indicating one of color palettes of choice. One of: "red", "orange", "yellow", "green", "cyan", "blue", "purple", "magenta".
+#' @param .palette a character indicating one of viridis palettes of choice: "viridis”, “magma”, “plasma”, “inferno”, “civids”, “mako”, “rocket” and “turbo”.
 #'
 #' @return a plot with color map of selected hyperspectral index.
 #' @export
 plot_raster_proxy <- function(raster, hsi_index, .palette) {
-  # Choose palette
-  proxy_palette <- list(
-    red = c(high = "#AF3029", mid = "#D14D41", low = "#F2F0E5"),
-    orange = c(high = "#BC5215", mid = "#DA702C", low = "#F2F0E5"),
-    yellow = c(high = "#AD8301", mid = "#D0A215", low = "#F2F0E5"),
-    green = c(high = "#66800B", mid = "#879A39", low = "#F2F0E5"),
-    cyan = c(high = "#24837B", mid = "#3AA99F", low = "#F2F0E5"),
-    blue = c(high = "#205EA6", mid = "#4385BE", low = "#F2F0E5"),
-    purple = c(high = "#5E409D", mid = "#8B7EC8", low = "#F2F0E5"),
-    magenta = c(high = "#A02F6F", mid = "#CE5D97", low = "#F2F0E5"))
+  # # Choose palette
+  # proxy_palette <- list(
+  #   red = c(high = "#AF3029", mid = "#D14D41", low = "#F2F0E5"),
+  #   orange = c(high = "#BC5215", mid = "#DA702C", low = "#F2F0E5"),
+  #   yellow = c(high = "#AD8301", mid = "#D0A215", low = "#F2F0E5"),
+  #   green = c(high = "#66800B", mid = "#879A39", low = "#F2F0E5"),
+  #   cyan = c(high = "#24837B", mid = "#3AA99F", low = "#F2F0E5"),
+  #   blue = c(high = "#205EA6", mid = "#4385BE", low = "#F2F0E5"),
+  #   purple = c(high = "#5E409D", mid = "#8B7EC8", low = "#F2F0E5"),
+  #   magenta = c(high = "#A02F6F", mid = "#CE5D97", low = "#F2F0E5"))
 
   # Subset SpatRaster
   hsi_layer <- raster |>
@@ -61,8 +92,7 @@ plot_raster_proxy <- function(raster, hsi_index, .palette) {
     # Add raster layer
     tidyterra::geom_spatraster(data = hsi_layer) +
     # Define fill colors
-    ggplot2::scale_fill_gradientn(
-      colors = c(proxy_palette[[.palette]][3], mid = proxy_palette[[.palette]][2], proxy_palette[[.palette]][1]),
+    ggplot2::scale_fill_viridis_c(option = .palette,
       guide = guide_colorbar(
         title = hsi_index,
         title.position = "bottom",
