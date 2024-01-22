@@ -30,10 +30,8 @@ library(HSItools)
 core <- run_core()
 ```
 
-Package based on <https://github.com/nickmckay/specimR>
-
 Maurycy Żarczyński is founded by the Polish National Agency for Academic
 Exchange (BPN/BEK/2021/1/00133/U/0001).
 
-[![National Agency for Academic
-Exchange](images/nawablack-01.png)](https://nawa.gov.pl)
+[![National Agency for Academic Exchange
+logo](images/logo-nawa-white.png)](https://nawa.gov.pl)
