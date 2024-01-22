@@ -11,12 +11,11 @@
 
 #' Prepare core based on shiny output
 #'
-#' @param path
-#' @param .normalize
+#' @param path path to the directory with capture data.
+#' @param .normalize logical, should data be normalized.
 #'
-#' @return
+#' @return reflectance SpatRaster.
 #' @export
-#'
 prepare_core <- function(core, .normalize = TRUE) {
 
   # Get path

@@ -11,7 +11,7 @@ plot_raster_proxy(raster, hsi_index, .palette)
 
 \item{hsi_index}{a character indicating hyperspectral index layer to plot.}
 
-\item{.palette}{a character indicating one of color palettes of choice. One of: "red", "orange", "yellow", "green", "cyan", "blue", "purple", "magenta".}
+\item{.palette}{a character indicating one of viridis palettes of choice: "viridis”, “magma”, “plasma”, “inferno”, “civids”, “mako”, “rocket” and “turbo”.}
 }
 \value{
 a plot with color map of selected hyperspectral index.

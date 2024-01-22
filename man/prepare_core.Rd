@@ -7,7 +7,12 @@
 prepare_core(core, .normalize = TRUE)
 }
 \arguments{
-\item{.normalize}{}
+\item{.normalize}{logical, should data be normalized.}
+
+\item{path}{path to the directory with capture data.}
+}
+\value{
+reflectance SpatRaster.
 }
 \description{
 Prepare core based on shiny output

@@ -72,6 +72,23 @@ remove_continuum <- function(raster, ...) {
 #' Find how many bands there are between trough minimum and 590
 #'
 calculate_rabd <- function(raster, edges, trough, rabd_name) {
+  # Raster source directory
+  raster_src <- raster |>
+    terra::sources() |>
+    fs::path_dir()
+
+  # Raster source name
+  raster_name <- raster |>
+    terra::sources() |>
+    fs::path_file() |>
+    fs::path_ext_remove()
+
+  cli::cli_h1("{raster_name}")
+
+  filename <- paste0(raster_src, "/", rabd_name, "_", raster_name, ".tif")
+
+  cli::cli_alert("Writing {rabd_name} to {filename}.")
+
   # Create empty SpatRaster template from original cropped raster
   template <- terra::rast(terra::ext(raster),
                           resolution = terra::res(raster))
@@ -128,9 +145,10 @@ calculate_rabd <- function(raster, edges, trough, rabd_name) {
   values(template) <- rabd
 
   # Write new raster to file based on paths stored in the environment
-  terra::writeRaster(template, filename = glue::glue(
-    {rabd_name}, ".tif"
-  ), overwrite = TRUE)
+  terra::writeRaster(template, filename = filename, overwrite = TRUE)
+
+  # Return raster
+  return(template)
 }
 
 #' Calculate band ratio
@@ -145,6 +163,23 @@ calculate_rabd <- function(raster, edges, trough, rabd_name) {
 #' @description calculate band ratio of selected wavelengths
 #'
 calculate_band_ratio <- function(raster, edges, ratio_name) {
+  # Raster source directory
+  raster_src <- raster |>
+    terra::sources() |>
+    fs::path_dir()
+
+  # Raster source name
+  raster_name <- raster |>
+    terra::sources() |>
+    fs::path_file() |>
+    fs::path_ext_remove()
+
+  cli::cli_h1("{raster_name}")
+
+  filename <- paste0(raster_src, "/", ratio_name, "_", raster_name, ".tif")
+
+  cli::cli_alert("Writing {ratio_name} to {filename}.")
+
   # Find edge positions
   edge_positions <- spectra_position(raster = raster, spectra = edges) |>
     # Pull vector with positions
@@ -155,9 +190,7 @@ calculate_band_ratio <- function(raster, edges, ratio_name) {
     terra::subset(raster, edge_positions[2])
 
   # Write new raster to file based on paths stored in the environment
-  terra::writeRaster(raster, filename = glue::glue(
-    {ratio_name}, ".tif"
-  ), overwrite = TRUE)
+  terra::writeRaster(raster, filename = filename, overwrite = TRUE)
 }
 
 #' calculate rMean
@@ -170,21 +203,41 @@ calculate_band_ratio <- function(raster, edges, ratio_name) {
 #' @description calculate mean reflectance from all layers for given pixel
 #'
 calculate_rmean <- function(raster) {
-  # Apply mean function over entire SpatRaster
+  # Raster source directory
+  raster_src <- raster |>
+    terra::sources() |>
+    fs::path_dir()
+
+  # Raster source name
+  raster_name <- raster |>
+    terra::sources() |>
+    fs::path_file() |>
+    fs::path_ext_remove()
+
+  cli::cli_h1("{raster_name}")
+
+  filename <- paste0(raster_src, "/", RMEAN, "_", raster_name, ".tif")
+
+  cli::cli_alert("Writing RMEAN to {filename}.")
+
+    # Apply mean function over entire SpatRaster
   raster <- terra::app(raster, fun = "mean")
 
   # Write new raster to file based on paths stored in the environment
-  terra::writeRaster(raster, filename = "rmean.tif", overwrite = TRUE)
+  terra::writeRaster(raster, filename = filename, overwrite = TRUE)
+
+  # Return
+  return(raster)
 }
 
 #' Calculate Relative Absorption Band Area (RABA)
 #'
-#' @param raster a terra SpatRaster of normalized capture data
+#' @param raster a terra SpatRaster of normalized capture data.
 #' @param edges a numeric vector of two for the wide calculation window
 #' @param trough a character vector of wavelenght to look for trough
 #' @param raba_name a character, name of calculated RABA
 #'
-#' @return a terra SpatRaster with one layer with calculated RABAvalues
+#' @return a terra SpatRaster with one layer with calculated RABA values.
 #' @export
 #'
 #' @description # RABD655−680max = ( X × R590 + Y × R730 X+Y ) /R655−680min
@@ -194,11 +247,34 @@ calculate_rmean <- function(raster) {
 #' Find how many bands there are between trough minimum and 590
 #'
 calculate_raba <- function(raster, edges, trough, raba_name) {
-  # Create empty SpatRaster template from original cropped raster
+  # Raster source directory
+  raster_src <- raster |>
+    terra::sources() |>
+    fs::path_dir()
+
+  # Raster source name
+  raster_name <- raster |>
+    terra::sources() |>
+    fs::path_file() |>
+    fs::path_ext_remove()
+
+  cli::cli_h1("{raster_name}")
+
+  filename <- paste0(raster_src, "/", raba_name, "_", raster_name, ".tif")
+
+  cli::cli_alert("Writing {raba_name} to {filename}.")
+
+    # Create empty SpatRaster template from original cropped raster
   template <- terra::rast(terra::ext(raster), resolution = terra::res(raster))
 
   # Set layer name based on the raba_name argument
   names(template) <- raba_name
+
+  # Write new raster to file based on paths stored in the environment
+  terra::writeRaster(template, filename = filename, overwrite = TRUE)
+
+  # Return raster
+  return(template)
 }
 
 #' Extract average proxy profile
@@ -218,6 +294,43 @@ extract_profile <- function(raster) {
 
   # Return object
   return(profile)
+}
+
+#' Calcualte λREMP
+#'
+#' @param raster a terra SpatRaster of normalized capture data.
+#'
+#' @return a terra SpatRaster with one layer with calculated λREMP values.
+#' @export
+calculate_lambdaremp <- function(raster) {
+  # Raster source directory
+  raster_src <- raster |>
+    terra::sources() |>
+    fs::path_dir()
+
+  # Raster source name
+  raster_name <- raster |>
+    terra::sources() |>
+    fs::path_file() |>
+    fs::path_ext_remove()
+
+  cli::cli_h1("{raster_name}")
+
+  filename <- paste0(raster_src, "/", REMP, "_", raster_name, ".tif")
+
+  cli::cli_alert("Writing λREMP to {filename}.")
+
+  # Create empty SpatRaster template from original cropped raster
+  template <- terra::rast(terra::ext(raster), resolution = terra::res(raster))
+
+  # Set layer name based on the raba_name argument
+  names(template) <- raba_name
+
+  # Write new raster to file based on paths stored in the environment
+  terra::writeRaster(template, filename = filename, overwrite = TRUE)
+
+  # Return raster
+  return(template)
 }
 
 # Create list of lists with proxies and their settings
