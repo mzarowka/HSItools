@@ -73,6 +73,13 @@ run_core <- function(autoSave=TRUE){
         tabsetPanel(type = "tabs",
                     id = "tabset1",
                     tabPanel("Analysis",
+                             align="center",
+                             br(),
+                             headerPanel("Select the analysis methods and settings"),
+                             br(),
+                             br(),
+                             br(),
+                             br(),
                              shiny::fluidRow(
                                shiny::column(
                                  4,
@@ -93,8 +100,13 @@ run_core <- function(autoSave=TRUE){
                              )
                     ),
                     tabPanel("Select Data",
+                             align="center",
                              shiny::br(),
-                             shiny::br(),
+                             headerPanel("Select the core files and layers to utilize"),
+                             br(),
+                             br(),
+                             br(),
+                             br(),
                              uiOutput("file_select"),
                              uiOutput("file_show"),
                              shiny::br(),
@@ -106,9 +118,11 @@ run_core <- function(autoSave=TRUE){
                     tabPanel("Crop Image",
                                align="center",
                                shiny::br(),
-                               headerPanel("crop viable region of image"),
-                               shiny::br(),
-                               shiny::br(),
+                               headerPanel("Crop viable region of image (or skip to use full image)"),
+                             br(),
+                             br(),
+                             br(),
+                             br(),
                                shiny::column(
                                  6,
                                  align="left",
@@ -155,14 +169,21 @@ run_core <- function(autoSave=TRUE){
                                                              ),
                              ),
                     tabPanel("Select Analysis Regions",
+                             align="center",
+                             br(),
+                             headerPanel("Select specific regions to analyze (or skip to use analyze all)"),
+                             br(),
+                             br(),
+                             br(),
+                             br(),
                              sidebarLayout(
                                fluid = FALSE,
                                sidebarPanel(
                                  style = "position:fixed; margin-top:150px;",
                                  width=2,
                              align="center",
-                             actionButton("skipSelectAnalysisRegion", "Analyze full image (skip region selection step)",
-                                          style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
+                             # actionButton("skipSelectAnalysisRegion", "Analyze full image (skip region selection step)",
+                             #              style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
                              shiny::br(),
                              shiny::br(),
                              actionButton("selectAnalysisRegion", "Add selected region"),
@@ -271,6 +292,11 @@ run_core <- function(autoSave=TRUE){
                     tabPanel("Distance Calibration",
                              align="center",
                              shiny::br(),
+                             headerPanel("Choose the start and end points of the scale and sample"),
+                             br(),
+                             br(),
+                             br(),
+                             br(),
                              shiny::fluidRow(
                                  align="center",
                                  style = "text-align:center; font-weight:100;",
@@ -278,7 +304,7 @@ run_core <- function(autoSave=TRUE){
                                    2,
                              sliderInput(
                                inputId="scalermarkerPointSize",
-                               label="Size of marker points",
+                               label="Size of markers",
                                min=1,
                                max=5,
                                value=3,
@@ -317,45 +343,72 @@ run_core <- function(autoSave=TRUE){
                                ),
                              ),
                              shiny::column(
-                               1,
-                               style = "margin-top: 10px;",
-                               "point A (x,y)",
-                               shiny::verbatimTextOutput("distCoordA")
+                               2,
+                               br(),
+                               radioButtons("sampleOrScale",label = "Marker Selection",choices = c("Scale","Sample"),selected = "Scale"),
                              ),
                              shiny::column(
                                1,
                                style = "margin-top: 10px;",
-                               "point B (x,y)",
+                               "start scale (x,y)",
+                               shiny::verbatimTextOutput("distCoordA"),
+                               "end scale (x,y)",
                                shiny::verbatimTextOutput("distCoordB")
                              ),
-                             shiny::column(
-                               1,
-                               style = "margin-top: 10px;",
-                               "distance along scale",
-                               shiny::verbatimTextOutput("scaleDist")
-                             ),
-                             shiny::column(
-                               1,
-                               style = "margin-top: 10px;",
-                               "distance along y axis",
-                               shiny::verbatimTextOutput("coreDist")
-                             ),
+                             # shiny::column(
+                             #   1,
+                             #   style = "margin-top: 10px;",
+                             #   "end scale (x,y)",
+                             #   shiny::verbatimTextOutput("distCoordB")
+                             # ),
+
+                             # shiny::column(
+                             #   1,
+                             #   style = "margin-top: 10px;",
+                             #   "end core (x,y)",
+                             #   shiny::verbatimTextOutput("distSamplePointB")
+                             # ),
                              shiny::column(
                                2,
                                style = "margin-top: 10px;",
-                               "distance along scale bar in mm",
+                               "distance along scale",
+                               shiny::verbatimTextOutput("scaleDist"),
+                               "distance along y axis",
+                               shiny::verbatimTextOutput("coreDist")
+                             ),
+                             # shiny::column(
+                             #   1,
+                             #   style = "margin-top: 10px;",
+                             #   "distance along y axis",
+                             #   shiny::verbatimTextOutput("coreDist")
+                             # ),
+                             shiny::column(
+                               2,
+                               style = "margin-top: 10px;",
+                               "scale bar (mm)",
                                numericInput(inputId = "scaleLength",
                                             step = 1,
                                             min = 1,
                                             label=NULL,
                                             max=10000,
-                                            value = 1500)
-                             ),
-                             shiny::column(
-                               2,
-                               style = "margin-top: 10px;",
+                                            value = 1500),
                                "mm / pixel",
                                shiny::verbatimTextOutput("pixelRatio")
+                             ),
+                             # shiny::column(
+                             #   1,
+                             #   style = "margin-top: 10px;",
+                             #   "mm / pixel",
+                             #   shiny::verbatimTextOutput("pixelRatio")
+                             # ),
+
+                             shiny::column(
+                               1,
+                               style = "margin-top: 10px;",
+                               "start sample (x,y)",
+                               shiny::verbatimTextOutput("distSamplePointA"),
+                               "end sample (x,y)",
+                               shiny::verbatimTextOutput("distSamplePointB")
                              ),
                              ),
                              shiny::br(),
@@ -608,13 +661,30 @@ run_core <- function(autoSave=TRUE){
 
       )
 
+    sample_coords <- reactiveValues(
+
+      #xy=data.frame(x=c(1,1),  y=c(nrow(terra::rast(rasters()[2])[[1]]),nrow(terra::rast(rasters()[2])[[1]])))
+
+      xy=data.frame(x=c(1,1),  y=c(1,1))
+
+    )
+
     observeEvent(input$plot_click, {
       clickCounter$count <- clickCounter$count + 1
-      if (ceiling(clickCounter$count/2) == clickCounter$count/2){
-        source_coords$xy[2,] <- c(round(input$plot_click$x), round(input$plot_click$y))
-      }else{
-        source_coords$xy[1,] <- c(round(input$plot_click$x), round(input$plot_click$y))
+      if (input$sampleOrScale == "Scale"){
+        if (ceiling(clickCounter$count/2) == clickCounter$count/2){
+          source_coords$xy[2,] <- c(round(input$plot_click$x), round(input$plot_click$y))
+        }else{
+          source_coords$xy[1,] <- c(round(input$plot_click$x), round(input$plot_click$y))
+        }
+      } else {
+        if (ceiling(clickCounter$count/2) == clickCounter$count/2){
+          sample_coords$xy[2,] <- c(round(input$plot_click$x), round(input$plot_click$y))
+        }else{
+          sample_coords$xy[1,] <- c(round(input$plot_click$x), round(input$plot_click$y))
+        }
       }
+
     })
 
     #measure scale bar
@@ -642,6 +712,19 @@ run_core <- function(autoSave=TRUE){
     output$scaleDist <- renderText(distTot())
 
     output$pixelRatio <- renderText(input$scaleLength/distTot())
+
+    #Sample coords
+    samplePointA <- reactive({
+      which(max(sample_coords$xy[,2]) == sample_coords$xy[,2])
+    })
+
+    samplePointB <- reactive({
+      which(min(sample_coords$xy[,2]) == sample_coords$xy[,2])
+    })
+
+    output$distSamplePointA <- renderText(paste0("(", round(unlist(sample_coords$xy[pointA(),])[1]), ", ", round(nrow(coreImage()[[1]]) - unlist(sample_coords$xy[pointA(),])[2]), ")"))
+    output$distSamplePointB <- renderText(paste0("(", round(unlist(sample_coords$xy[pointB(),])[1]), ", ", round(nrow(coreImage()[[1]]) - unlist(sample_coords$xy[pointB(),])[2]), ")"))
+
 
     #plot box selection
 
@@ -795,31 +878,35 @@ run_core <- function(autoSave=TRUE){
 
     })
 
-    observeEvent(input$skipSelectAnalysisRegion, {
-      countRegions$count <- 0
-      analysisRegions$DT <- data.frame("xmin"=NA,
-                                       "xmax"=NA,
-                                       "ymin"=NA,
-                                       "ymax"=NA)
-      session$resetBrush("plotBrush")
-      brush <<- NULL
-
-      output$core_plot2 <- renderPlot({
-        terra::plotRGB(x = coreImage(), r = RGBlayers()[1], g = RGBlayers()[2], b = RGBlayers()[3], stretch = "hist")
-        points(y=source_coords$xy[,2], x=source_coords$xy[,1], cex=input$scalermarkerPointSize, pch=19)
-        points(y=source_coords$xy[,2], x=source_coords$xy[,1], cex=input$scalermarkerPointSize/3, pch=19, col="white")
-        #points( source_coords$xy[1,1], source_coords$xy[1,2], cex=3, pch=intToUtf8(8962))
-        #text(source_coords$xy[2,1], source_coords$xy[2,2], paste0("Distance=", dist1), cex=3)
-      },
-      height = imgDistH,
-      width = imgDistW
-      )
-
-      updateTabsetPanel(session=session,
-                        "tabset1",
-                        selected = "Distance Calibration")
-
-    })
+    # observeEvent(input$skipSelectAnalysisRegion, {
+    #   countRegions$count <- 0
+    #   analysisRegions$DT <- data.frame("xmin"=NA,
+    #                                    "xmax"=NA,
+    #                                    "ymin"=NA,
+    #                                    "ymax"=NA)
+    #   session$resetBrush("plotBrush")
+    #   brush <<- NULL
+    #
+    #   output$core_plot2 <- renderPlot({
+    #     terra::plotRGB(x = coreImage(), r = RGBlayers()[1], g = RGBlayers()[2], b = RGBlayers()[3], stretch = "hist")
+    #     #add start/end scale points
+    #     points(y=source_coords$xy[,2], x=source_coords$xy[,1], cex=input$scalermarkerPointSize, pch=19)
+    #     points(y=source_coords$xy[,2], x=source_coords$xy[,1], cex=input$scalermarkerPointSize/3, pch=19, col="white")
+    #
+    #     points(y=sample_coords$xy[,2], x=sample_coords$xy[,1], cex=input$scalermarkerPointSize, pch=19, col="white")
+    #     points(y=sample_coords$xy[,2], x=sample_coords$xy[,1], cex=input$scalermarkerPointSize/3, pch=19)
+    #     #points( source_coords$xy[1,1], source_coords$xy[1,2], cex=3, pch=intToUtf8(8962))
+    #     #text(source_coords$xy[2,1], source_coords$xy[2,2], paste0("Distance=", dist1), cex=3)
+    #   },
+    #   height = imgDistH,
+    #   width = imgDistW
+    #   )
+    #
+    #   updateTabsetPanel(session=session,
+    #                     "tabset1",
+    #                     selected = "Distance Calibration")
+    #
+    # })
 
     # observeEvent(input$acceptCalibration, {
     #   updateTabsetPanel(session=session,
@@ -1075,8 +1162,10 @@ run_core <- function(autoSave=TRUE){
 
     observeEvent(input$done, {
       distances <- list()
-      distances$pointA <- round(unlist(source_coords$xy[pointA(),]))
-      distances$pointB <- round(unlist(source_coords$xy[pointB(),]))
+      distances$startCore <- round(unlist(sample_coords$xy[samplePointA(),]))
+      distances$endCore <- round(unlist(sample_coords$xy[samplePointB(),]))
+      distances$startScale <- round(unlist(source_coords$xy[pointA(),]))
+      distances$endScale <- round(unlist(source_coords$xy[pointB(),]))
       distances$coreDist <- distY()
       distances$scaleDist <- distTot()
       distances$scaleDistmm <- input$scaleLength
@@ -1085,6 +1174,8 @@ run_core <- function(autoSave=TRUE){
       analysisOptions$normalize <- as.logical(input$choice_normalize)
       analysisOptions$integration <- as.logical(input$choice_integration)
       analysisOptions$proxies <- input$choice_proxies
+
+      allParams$simpleRGB <<- plot1()
 
       if (length(user_dir()) != 0){
         allParams$directory <<- user_dir()
@@ -1101,11 +1192,12 @@ run_core <- function(autoSave=TRUE){
       allParams$distances <<- distances
       allParams$analysisOptions <<- analysisOptions
       if (autoSave==TRUE){
-        saveRDS(allParams, paste0(getwd(),"/HSItools_core.rds"))
+        saveLoc <- paste0(getwd(),"/HSItools_core.rds")
+        saveRDS(allParams, saveLoc)
         cat("\n")
-        cat(paste0("Output saved: ", paste0(getwd(),"/HSItools_core.rds")))
+        cat(paste0("Output saved: ", saveLoc))
         cat("\n")
-        cat("Load the rds to use new data (eg. core1A <- readRDS('C:/Users/dce25/Documents/R Projects/HSItools/HSItools_core.rds')")
+        cat(paste0("Load the rds to use new data (eg. core1A <- readRDS('", saveLoc, "'))"))
         cat("\n")
         cat("\n")
       }
@@ -1117,6 +1209,9 @@ run_core <- function(autoSave=TRUE){
         terra::plotRGB(x = coreImage(), r = RGBlayers()[1], g = RGBlayers()[2], b = RGBlayers()[3], stretch = "hist")
         points(y=source_coords$xy[,2], x=source_coords$xy[,1], cex=input$scalermarkerPointSize, pch=19)
         points(y=source_coords$xy[,2], x=source_coords$xy[,1], cex=input$scalermarkerPointSize/3, pch=19, col="white")
+
+        points(y=sample_coords$xy[,2], x=sample_coords$xy[,1], cex=input$scalermarkerPointSize, pch=19, col="white")
+        points(y=sample_coords$xy[,2], x=sample_coords$xy[,1], cex=input$scalermarkerPointSize/3, pch=19)
         #points( source_coords$xy[1,1], source_coords$xy[1,2], cex=3, pch=intToUtf8(8962))
         #text(source_coords$xy[2,1], source_coords$xy[2,2], paste0("Distance=", dist1), cex=3)
       },
