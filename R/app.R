@@ -91,7 +91,7 @@ run_core <- function(autoSave=TRUE){
                                ),
                                shiny::column(
                                  4,
-                                 shiny::selectInput("choice_proxies", "Choose proxies to calculate", choices = list(Rmean = "Rmean", RABD615 = "RABD615", RABD660670 = "RABD660-670", RABD845 = "RABD845", RABD710730 = "RABD710-730", R570R630 = "R570R630", R590R690 = "R590R690"), multiple = TRUE)
+                                 shiny::selectInput("choice_proxies", "Choose proxies to calculate", choices = names(proxies), multiple = TRUE)
                                )
                              ),
                              shiny::fluidRow(
@@ -467,8 +467,12 @@ run_core <- function(autoSave=TRUE){
       }
     })
 
+    user_datapath <- reactiveVal()
+
     user_file <- eventReactive(input$ref_file, {
-      shinyFiles::parseFilePaths(volumes, selection = input$ref_file)
+
+      user_datapath(shinyFiles::parseFilePaths(volumes, selection = input$ref_file)$datapath)
+      return(shinyFiles::parseFilePaths(volumes, selection = input$ref_file))
       #"C:/Users/dce25/Downloads/STL14_1A_28C_top_2022-11-11_16-30-51"
     })
     #capture user directory
@@ -566,11 +570,12 @@ run_core <- function(autoSave=TRUE){
     #coreImage <- reactiveVal()
 
     coreImage <- reactive({
-      if (length(rasters()) == 0 & !exists("user_file()")){
+
+      if (length(rasters()) == 0 & length(user_datapath()) == 0){
         NULL
       } else if (length(user_dir()) != 0){
         return(terra::rast(rasters()[2]))
-        } else if (exists("user_file()")) {
+        } else if (length(user_datapath()) != 0) {
 
           return(terra::rast(user_file()$datapath))
         } else {
@@ -790,8 +795,9 @@ run_core <- function(autoSave=TRUE){
     })
 
     observeEvent(input$selectPlotRegion, {
+      ext1 <- unname(as.vector(terra::ext(coreImage())))
       if (is.null(brush)){
-        allParams$cropImage <<- c(1,ncol(coreImage()),1,nrow(coreImage()))
+        allParams$cropImage <<- ext1
       } else {
         allParams$cropImage <<- c(x_range(input$plotBrush)[1], x_range(input$plotBrush)[2],
                                   y_range(input$plotBrush)[1], y_range(input$plotBrush)[2])
@@ -811,6 +817,7 @@ run_core <- function(autoSave=TRUE){
     })
 
     output$cropped_plot <- renderPlot({
+      #cat(allParams$cropImage)
       terra::plotRGB(x = coreImage(), r = RGBlayers()[1], g = RGBlayers()[2], b = RGBlayers()[3], stretch = "hist",
                      ext=terra::ext(allParams$cropImage)
                      )
