@@ -138,7 +138,7 @@ calculate_rabd <- function(raster, edges, trough, rabd_name) {
   # Calculate RABD
   rabd <- nominator / trough_reflectance
 
-  # If there are inifinites coerce to 0
+  # If there are infinities coerce to 0
   rabd[is.infinite(rabd)] <- 0
 
   # Set rabd values onto SpatRaster template
@@ -186,8 +186,7 @@ calculate_band_ratio <- function(raster, edges, ratio_name) {
     dplyr::pull(var = 2)
 
   # Divide
-  raster <- terra::subset(raster, edge_positions[1]) /
-    terra::subset(raster, edge_positions[2])
+  raster <- terra::subset(raster, edge_positions[1]) / terra::subset(raster, edge_positions[2])
 
   # Write new raster to file based on paths stored in the environment
   terra::writeRaster(raster, filename = filename, overwrite = TRUE)
@@ -195,12 +194,12 @@ calculate_band_ratio <- function(raster, edges, ratio_name) {
 
 #' calculate rMean
 #'
-#' @param raster a terra SpatRaster of normalized capture data
+#' @param raster a terra SpatRaster of normalized capture data.
 #'
-#' @return a terra SpatRaster with one layer with calculated rMean values
+#' @return a terra SpatRaster with one layer with calculated Rmean values.
 #' @export
 #'
-#' @description calculate mean reflectance from all layers for given pixel
+#' @description calculate mean reflectance from all layers for given pixel.
 #'
 calculate_rmean <- function(raster) {
   # Raster source directory
@@ -233,9 +232,9 @@ calculate_rmean <- function(raster) {
 #' Calculate Relative Absorption Band Area (RABA)
 #'
 #' @param raster a terra SpatRaster of normalized capture data.
-#' @param edges a numeric vector of two for the wide calculation window
-#' @param trough a character vector of wavelenght to look for trough
-#' @param raba_name a character, name of calculated RABA
+#' @param edges a numeric vector of two for the wide calculation window.
+#' @param trough a character vector of wavelenght to look for trough.
+#' @param raba_name a character, name of calculated RABA.
 #'
 #' @return a terra SpatRaster with one layer with calculated RABA values.
 #' @export
@@ -299,10 +298,11 @@ extract_profile <- function(raster) {
 #' Calcualte λREMP
 #'
 #' @param raster a terra SpatRaster of normalized capture data.
+#' @param edges a numeric vector of two for the derivative calculation window.
 #'
 #' @return a terra SpatRaster with one layer with calculated λREMP values.
 #' @export
-calculate_lambdaremp <- function(raster) {
+calculate_lambdaremp <- function(raster, edges) {
   # Raster source directory
   raster_src <- raster |>
     terra::sources() |>
@@ -316,7 +316,7 @@ calculate_lambdaremp <- function(raster) {
 
   cli::cli_h1("{raster_name}")
 
-  filename <- paste0(raster_src, "/", REMP, "_", raster_name, ".tif")
+  filename <- paste0(raster_src, "/", "lambdaREMP_", raster_name, ".tif")
 
   cli::cli_alert("Writing λREMP to {filename}.")
 
@@ -324,7 +324,7 @@ calculate_lambdaremp <- function(raster) {
   template <- terra::rast(terra::ext(raster), resolution = terra::res(raster))
 
   # Set layer name based on the raba_name argument
-  names(template) <- raba_name
+  names(template) <- "REMP"
 
   # Write new raster to file based on paths stored in the environment
   terra::writeRaster(template, filename = filename, overwrite = TRUE)
@@ -333,38 +333,7 @@ calculate_lambdaremp <- function(raster) {
   return(template)
 }
 
-# Create list of lists with proxies and their settings
-# This way user can easily expand it in session to add or edit settings
-# Use it later in the function, by extracting list elements in approriate places
-proxies_settings <- list(
-  "RABD655680" = list(
-    edges = c(590, 730),
-    trough = 655:680,
-    rabd_name = "RABD655680"
-  ),
-  "RABD845" = list(
-    edges = c(590, 730),
-    trough = 655:680,
-    rabd_name = "RABD845"
-  ),
-  "RABD615" = list(
-    edges = c(590, 730),
-    trough = 655:680,
-    rabd_name = "RABD615"
-  ),
-  "R570R630" = list(
-    edges = c(570, 630),
-    ratio_name = "R570R630"
-  ),
-  "R590R690" = list(
-    edges = c(590, 730),
-    ratio_name = "R590R690"
-  ),
-  "R950R970" = list(
-    edges = c(590, 730),
-    ratio_name = "R950R970"
-  )
-)
+
 
 # Function to stack all calculated rasters and RGB channels
 stack_raster <- function(data){}
