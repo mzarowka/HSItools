@@ -21,6 +21,12 @@
       <ul class="navbar-nav me-auto"><li class="active nav-item">
   <a class="nav-link" href="../reference/index.html">Reference</a>
 </li>
+<li class="nav-item dropdown">
+  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
+  <div class="dropdown-menu" aria-labelledby="dropdown-articles">
+    <a class="dropdown-item" href="../articles/shiny_gui.html">Graphical user interface with Shiny</a>
+  </div>
+</li>
 <li class="nav-item">
   <a class="nav-link" href="../news/index.html">Changelog</a>
 </li>
@@ -56,7 +62,11 @@
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
-    <dl><dt>window</dt>
+    <dl><dt>raster</dt>
+<dd><p>a terra SpatRaster to smooth.</p></dd>
+
+
+<dt>window</dt>
 <dd><p>focal window size, default is 3.</p></dd>
 
 
@@ -64,8 +74,8 @@
 <dd><p>logical, whether in the shiny pipeline, what type of filename should be used.</p></dd>
 
 
-<dt>capture</dt>
-<dd><p>a terra SpatRaster of captured data.</p></dd>
+<dt>...</dt>
+<dd><p>further parameters such as file path.</p></dd>
 
 </dl></div>
     <div class="section level2">
