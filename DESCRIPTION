@@ -1,6 +1,6 @@
 Package: HSItools
 Title: Process, Analyze and Visualize Hyperspectral Core Scanning Data
-Version: 0.0.0.9001
+Version: 0.0.0.9002
 Authors@R: c(
     person("Maurycy", "Żarczyński", , "maurycy.zarczynski@ug.edu.pl", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0003-2989-8152")),
@@ -8,13 +8,15 @@ Authors@R: c(
     person("David", "Edge", , "david.edge@nau.edu", role = "aut")
   )
 Description: A toolbox to process raw hyperspectral core scanning imaging (HSI) data. Allows normalization, filtering and visualization.
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.0
+RoxygenNote: 7.3.1
 Suggests: 
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    arrow,
+    geoarrow,
+    patchwork,
 Config/testthat/edition: 3
 URL: https://github.com/mzarowka/HSItools
 BugReports: https://github.com/mzarowka/HSItools/issues
@@ -22,16 +24,21 @@ Imports:
     dplyr,
     DT,
     ggplot2,
-    patchwork,
     prospectr,
     shiny,
     shinycssloaders,
     shinyFiles,
     signal,
-    smoother,
     terra,
     tidyr,
-    tidyterra
+    tidyterra,
+    purrr,
+    cli,
+    rlang,
+    data.table,
+    shinyalert,
+    stringr,
+    tibble
 Depends: 
-    R (>= 2.10)
+    R (>= 4.1.0)
 LazyData: true
