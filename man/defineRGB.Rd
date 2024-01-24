@@ -2,16 +2,16 @@
 % Please edit documentation in R/app_helpers.R
 \name{defineRGB}
 \alias{defineRGB}
-\title{choose the layers to use for plotting red, green, and blue}
+\title{Choose the layers to use for plotting red, green, and blue}
 \usage{
 defineRGB(wavelengths)
 }
 \arguments{
-\item{wavelengths}{}
+\item{wavelengths}{a vector of 3 wavelengths used for RGB.}
 }
 \value{
 best matched layers for the three colors
 }
 \description{
-choose the layers to use for plotting red, green, and blue
+Choose the layers to use for plotting red, green, and blue
 }

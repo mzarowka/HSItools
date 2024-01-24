@@ -4,10 +4,12 @@
 \alias{calculate_lambdaremp}
 \title{Calcualte λREMP}
 \usage{
-calculate_lambdaremp(raster)
+calculate_lambdaremp(raster, edges)
 }
 \arguments{
 \item{raster}{a terra SpatRaster of normalized capture data.}
+
+\item{edges}{a numeric vector of two for the derivative calculation window.}
 }
 \value{
 a terra SpatRaster with one layer with calculated λREMP values.

@@ -9,11 +9,11 @@ calculate_raba(raster, edges, trough, raba_name)
 \arguments{
 \item{raster}{a terra SpatRaster of normalized capture data.}
 
-\item{edges}{a numeric vector of two for the wide calculation window}
+\item{edges}{a numeric vector of two for the wide calculation window.}
 
-\item{trough}{a character vector of wavelenght to look for trough}
+\item{trough}{a character vector of wavelenght to look for trough.}
 
-\item{raba_name}{a character, name of calculated RABA}
+\item{raba_name}{a character, name of calculated RABA.}
 }
 \value{
 a terra SpatRaster with one layer with calculated RABA values.

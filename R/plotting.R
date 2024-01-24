@@ -93,7 +93,7 @@ plot_raster_proxy <- function(raster, hsi_index, .palette) {
     tidyterra::geom_spatraster(data = hsi_layer) +
     # Define fill colors
     ggplot2::scale_fill_viridis_c(option = .palette,
-      guide = guide_colorbar(
+      guide = ggplot2::guide_colorbar(
         title = hsi_index,
         title.position = "bottom",
         ticks = FALSE)) +
@@ -101,10 +101,10 @@ plot_raster_proxy <- function(raster, hsi_index, .palette) {
     ggplot2::coord_fixed() +
     # Modify theme
     ggplot2::theme(
-      panel.background = element_blank(),
-      axis.line.y.left = element_line(color = "black"),
-      axis.text.x = element_blank(),
-      axis.ticks.x = element_blank(),
+      panel.background = ggplot2::element_blank(),
+      axis.line.y.left = ggplot2::element_line(color = "black"),
+      axis.text.x = ggplot2::element_blank(),
+      axis.ticks.x = ggplot2::element_blank(),
       legend.position = "bottom") +
     ggplot2::labs(x = hsi_index,
                   y = "Depth")
@@ -137,10 +137,10 @@ plot_raster_rgb <- function(raster){
     ggplot2::coord_fixed() +
     # Modify theme
     ggplot2::theme(
-      panel.background = element_blank(),
-      axis.line.y.left = element_line(color = "black"),
-      axis.text.x = element_blank(),
-      axis.ticks.x = element_blank(),
+      panel.background = ggplot2::element_blank(),
+      axis.line.y.left = ggplot2::element_line(color = "black"),
+      axis.text.x = ggplot2::element_blank(),
+      axis.ticks.x = ggplot2::element_blank(),
       legend.position = "bottom") +
     ggplot2::labs(x = "RGB",
                   y = "Depth")
@@ -214,10 +214,10 @@ plot_profile_proxy <- function(data, hsi_index, .palette){
     ggplot2::geom_path(color = proxy_palette[[.palette]]) +
     # Modify theme
     ggplot2::theme(
-      panel.background = element_blank(),
-      axis.line.y.left = element_line(color = "black"),
-      axis.text.x = element_blank(),
-      axis.ticks.x = element_blank(),
+      panel.background = ggplot2::element_blank(),
+      axis.line.y.left = ggplot2::element_line(color = "black"),
+      axis.text.x = ggplot2::element_blank(),
+      axis.ticks.x = ggplot2::element_blank(),
       legend.position = "bottom") +
     # Add labels
     ggplot2::labs(x = proxy_name,

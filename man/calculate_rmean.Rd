@@ -7,11 +7,11 @@
 calculate_rmean(raster)
 }
 \arguments{
-\item{raster}{a terra SpatRaster of normalized capture data}
+\item{raster}{a terra SpatRaster of normalized capture data.}
 }
 \value{
-a terra SpatRaster with one layer with calculated rMean values
+a terra SpatRaster with one layer with calculated Rmean values.
 }
 \description{
-calculate mean reflectance from all layers for given pixel
+calculate mean reflectance from all layers for given pixel.
 }
