@@ -1,0 +1,25 @@
+---
+title: "Graphical user interface with Shiny"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Graphical user interface with Shiny}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(HSItools)
+```
+
+## Run graphical interface
+
+```{r eval=FALSE}
+settings <- run_core()
+```

@@ -1,8 +1,9 @@
 #' Smooth raster with focal median
 #'
-#' @param capture a terra SpatRaster of captured data.
+#' @param raster a terra SpatRaster to smooth.
 #' @param window focal window size, default is 3.
 #' @param product logical, whether in the shiny pipeline, what type of filename should be used.
+#' @param ... further parameters such as file path.
 #'
 #' @return smoothed SpatRaster
 #' @export
@@ -28,7 +29,7 @@ filter_median <- function(raster = raster, window = 3, product = TRUE, ...){
   # Apply terra focal statistic with 3 x 3 window
   reflectance <- terra::focal(raster,
                               w = window,
-                              fun = \(x) median(x),
+                              fun = \(x) stats::median(x),
                               filename = filename,
                               overwrite = TRUE,
                               wopt = wopts)
@@ -49,6 +50,7 @@ filter_median <- function(raster = raster, window = 3, product = TRUE, ...){
 #' @param n filter length (must be odd).
 #' @param m return the m-th derivative of the filter coefficients.
 #' @param ts time scaling factor.
+#' @param ... further parameters such as file path.
 #'
 #' @return A filtered terra SpatRaster.
 #' @export

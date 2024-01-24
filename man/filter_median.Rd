@@ -7,11 +7,13 @@
 filter_median(raster = raster, window = 3, product = TRUE, ...)
 }
 \arguments{
+\item{raster}{a terra SpatRaster to smooth.}
+
 \item{window}{focal window size, default is 3.}
 
 \item{product}{logical, whether in the shiny pipeline, what type of filename should be used.}
 
-\item{capture}{a terra SpatRaster of captured data.}
+\item{...}{further parameters such as file path.}
 }
 \value{
 smoothed SpatRaster

@@ -16,6 +16,8 @@ filter_savgol(raster, p = 3, n = p + 3 - p\%\%2, m = 0, ts = 1, ...)
 \item{m}{return the m-th derivative of the filter coefficients.}
 
 \item{ts}{time scaling factor.}
+
+\item{...}{further parameters such as file path.}
 }
 \value{
 A filtered terra SpatRaster.

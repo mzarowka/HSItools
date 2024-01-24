@@ -6,6 +6,7 @@
 <!-- badges: start -->
 
 [![R-CMD-check](https://github.com/mzarowka/HSItools/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/mzarowka/HSItools/actions/workflows/R-CMD-check.yaml)
+
 <!-- badges: end -->
 
 HSItools is an R package to process and visualize hyperspectral core
@@ -34,6 +35,3 @@ core <- run_core()
 
 Maurycy Żarczyński is founded by the Polish National Agency for Academic
 Exchange (BPN/BEK/2021/1/00133/U/0001).
-
-[![National Agency for Academic Exchange
-logo](images/logo-nawa-white.png)](https://nawa.gov.pl)

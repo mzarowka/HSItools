@@ -4,8 +4,10 @@ Version: 0.0.0.9002
 Authors@R: c(
     person("Maurycy", "Żarczyński", , "maurycy.zarczynski@ug.edu.pl", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0003-2989-8152")),
-    person("Nicholas", "McKay", , "nicholas.mckay@nau.edu", role = "aut"),
-    person("David", "Edge", , "david.edge@nau.edu", role = "aut")
+    person("Nicholas", "McKay", , "nicholas.mckay@nau.edu", role = "aut",
+           comment = c(ORCID = "0000-0003-3598-5113")),
+    person("David", "Edge", , "david.edge@nau.edu", role = "aut",
+           comment = c(ORCID = "0000-0001-6938-2850"))
   )
 Description: A toolbox to process raw hyperspectral core scanning imaging (HSI) data. Allows normalization, filtering and visualization.
 License: MIT + file LICENSE
@@ -16,7 +18,9 @@ Suggests:
     testthat (>= 3.0.0),
     arrow,
     patchwork,
-    sf
+    sf,
+    knitr,
+    rmarkdown
 Config/testthat/edition: 3
 URL: https://github.com/mzarowka/HSItools
 BugReports: https://github.com/mzarowka/HSItools/issues
@@ -42,3 +46,4 @@ Imports:
 Depends: 
     R (>= 4.1.0)
 LazyData: true
+VignetteBuilder: knitr
