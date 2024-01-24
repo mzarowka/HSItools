@@ -4,6 +4,8 @@
 # HSItools
 
 <!-- badges: start -->
+
+[![R-CMD-check](https://github.com/mzarowka/HSItools/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/mzarowka/HSItools/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 HSItools is an R package to process and visualize hyperspectral core
