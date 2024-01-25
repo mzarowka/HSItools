@@ -18,8 +18,34 @@ knitr::opts_chunk$set(
 library(HSItools)
 ```
 
+## Initial setup
+
+Hyperspectral data gets quite large. It is a good practice to process data stored on an SSD drive separate from the Operating System (OS). While data is stored on a separate drive, it is beneficial to instruct `terra` to store temporary data on a separate drive. Adjust this according to your OS. Here, we are using a non-system drive on Windows 11.
+
+```{r}
+# Set tempdir
+terra::terraOptions(tempdir = "D:/")
+
+# Check it
+terra::terraOptions()
+```
+
 ## Run graphical interface
 
+Due to the spatial nature of hyperspectral imaging, some choices, such as selecting the regions of interest (ROI), need to be made using the graphical user interface.
+
+Let's call the Shiny app and store the output as a `core` object in the environment.
+
 ```{r eval=FALSE}
-settings <- run_core()
+core <- run_core()
 ```
+
+### Normalize or use REFLECTANCE
+
+With Specim (Specim Spectral Imaging LTD.) and different generations of the available software, you can run the normalization procedure on your own or use the on-the-fly reflectance file produced by the newer software iterations. Shiny app provides this choice. The main difference is the first selection in the Shiny app.
+
+Remember that if your data comprises **dark** and **white** **references** and **captured** data, you can use this workflow for other data types.
+
+#### Normalization path
+
+#### REFLECTANCE path
