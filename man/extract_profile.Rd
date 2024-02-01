@@ -2,16 +2,16 @@
 % Please edit documentation in R/spectral_calculations.R
 \name{extract_profile}
 \alias{extract_profile}
-\title{Extract average proxy profile}
+\title{Extract spectral profile from the ROI}
 \usage{
 extract_profile(raster)
 }
 \arguments{
-\item{raster}{a terra SpatRaster with one layer with calculated values}
+\item{raster}{a terra SpatRaster of normalized capture data.}
 }
 \value{
-a data frame with XY coordinates and averaged proxy values
+a tibble with averaged spectral profile.
 }
 \description{
-Extract average proxy profile
+Extract spectral profile from the ROI
 }

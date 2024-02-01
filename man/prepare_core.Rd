@@ -5,7 +5,7 @@
 \title{Prepare core based on shiny output}
 \usage{
 prepare_core(
-  core,
+  core = NULL,
   .path = NULL,
   .layers = NULL,
   .extent = NULL,
@@ -19,7 +19,7 @@ prepare_core(
 
 \item{.layers}{numeric vector, selection of layers (wavelengths) to use. Defaults to NULL and shiny output.}
 
-\item{.extent}{extent of the captured data. Defaults to NULL and shiny output. If "capture" then uses entire extent od captured data.}
+\item{.extent}{extent of the captured data. Defaults to NULL and shiny output. If "capture" then uses entire extent of captured data.}
 
 \item{.normalize}{logical, should data be normalized.}
 }

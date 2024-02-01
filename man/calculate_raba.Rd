@@ -4,16 +4,16 @@
 \alias{calculate_raba}
 \title{Calculate Relative Absorption Band Area (RABA)}
 \usage{
-calculate_raba(raster, edges, trough, raba_name)
+calculate_raba(raster, .edges, .trough, .raba_name)
 }
 \arguments{
 \item{raster}{a terra SpatRaster of normalized capture data.}
 
-\item{edges}{a numeric vector of two for the wide calculation window.}
+\item{.edges}{a numeric vector of two for the wide calculation window.}
 
-\item{trough}{a character vector of wavelenght to look for trough.}
+\item{.trough}{a character vector of wavelength to look for trough.}
 
-\item{raba_name}{a character, name of calculated RABA.}
+\item{.raba_name}{a character, name of calculated RABA.}
 }
 \value{
 a terra SpatRaster with one layer with calculated RABA values.
@@ -21,10 +21,3 @@ a terra SpatRaster with one layer with calculated RABA values.
 \description{
 Calculate Relative Absorption Band Area (RABA)
 }
-\section{RABD655−680max = ( X × R590 + Y × R730 X+Y ) /R655−680min}{
-Denominator: Find the lowest reflectance between 655 and 680
-Numenator: find reflectance at 590, find reflectance at 730
-Find how many bands there are between trough minimum and 730
-Find how many bands there are between trough minimum and 590
-}
-

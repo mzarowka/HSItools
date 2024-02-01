@@ -7,7 +7,9 @@
 remove_continuum(raster, ...)
 }
 \arguments{
-\item{raster}{a terra SpatRaster of normalized capture data}
+\item{raster}{a terra SpatRaster of normalized capture data.}
+
+\item{...}{additional arguments.}
 }
 \value{
 a terra SpatRaster of normalized capture data with continuum removed

@@ -29,12 +29,13 @@ filter_median <- function(raster = raster, window = 3, product = TRUE, ...){
   cli::cli_alert_info("{format(Sys.time())}: calculating median filtered raster.")
 
   # Apply terra focal statistic with 3 x 3 window
-  reflectance <- terra::focal(raster,
-                              w = window,
-                              fun = \(x) stats::median(x),
-                              filename = filename,
-                              overwrite = TRUE,
-                              wopt = wopts)
+  reflectance <- terra::focal(
+    raster,
+    w = window,
+    fun = \(x) stats::median(x),
+    filename = filename,
+    overwrite = TRUE,
+    wopt = wopts)
 
   cli::cli_alert_success("{format(Sys.time())}: finished.")
 

@@ -4,18 +4,18 @@
 \alias{calculate_band_ratio}
 \title{Calculate band ratio}
 \usage{
-calculate_band_ratio(raster, edges, ratio_name)
+calculate_band_ratio(raster, .edges, .ratio_name)
 }
 \arguments{
 \item{raster}{a terra SpatRaster of normalized capture data}
 
-\item{edges}{a numeric vector of two for the (nominator and denominator)}
+\item{.edges}{a numeric vector of two for the (nominator and denominator)}
 
-\item{ratio_name}{a character, name of calculated ratio}
+\item{.ratio_name}{a character, name of calculated ratio}
 }
 \value{
 a terra SpatRaster with one layer with calculated ratio values
 }
 \description{
-calculate band ratio of selected wavelengths
+calculate band ratio of selected wavelengths.
 }

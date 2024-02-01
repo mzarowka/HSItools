@@ -1,10 +1,16 @@
 #' Remove continuum from spectrum
 #'
-#' @param raster a terra SpatRaster of normalized capture data
+#' @param raster a terra SpatRaster of normalized capture data.
+#' @param ... additional arguments.
 #'
 #' @return a terra SpatRaster of normalized capture data with continuum removed
 #' @export
 remove_continuum <- function(raster, ...) {
+  # Check if correct class is supplied.
+  if (class(raster) != "SpatRaster") {
+    rlang::abort(message = "Supplied data is not a terra SpatRaster.")
+  }
+
   # Store additional parameters
   params <- list(...)
 
@@ -58,20 +64,18 @@ remove_continuum <- function(raster, ...) {
 #' Calculate Relative Absorption Band Depth (RABD)
 #'
 #' @param raster a terra SpatRaster of normalized capture data
-#' @param edges a numeric vector of two for the wide calculation window
-#' @param trough a character vector of wavelenght to look for trough
-#' @param rabd_name a character, name of calculated RABD
+#' @param .edges a numeric vector of two for the wide calculation window
+#' @param .trough a character vector of wavelength to look for trough
+#' @param .rabd_name a character, name of calculated RABD
 #'
 #' @return a terra SpatRaster with one layer with calculated RABD values
 #' @export
-#'
-#' @description # RABD655−680max = ( X × R590 + Y × R730 X+Y ) /R655−680min
-#' Denominator: Find the lowest reflectance between 655 and 680
-#' Numenator: find reflectance at 590, find reflectance at 730
-#' Find how many bands there are between trough minimum and 730
-#' Find how many bands there are between trough minimum and 590
-#'
-calculate_rabd <- function(raster, edges, trough, rabd_name) {
+calculate_rabd <- function(raster, .edges, .trough, .rabd_name) {
+  # Check if correct class is supplied.
+  if (class(raster) != "SpatRaster") {
+    rlang::abort(message = "Supplied data is not a terra SpatRaster.")
+  }
+
   # Raster source directory
   raster_src <- raster |>
     terra::sources() |>
@@ -85,19 +89,20 @@ calculate_rabd <- function(raster, edges, trough, rabd_name) {
 
   cli::cli_h1("{raster_name}")
 
-  filename <- paste0(raster_src, "/", rabd_name, "_", raster_name, ".tif")
+  filename <- paste0(raster_src, "/", .rabd_name, "_", raster_name, ".tif")
 
-  cli::cli_alert("Writing {rabd_name} to {filename}.")
+  cli::cli_alert("Writing {(.rabd_name)} to {filename}.")
 
   # Create empty SpatRaster template from original cropped raster
-  template <- terra::rast(terra::ext(raster),
-                          resolution = terra::res(raster))
+  template <- terra::rast(
+    terra::ext(raster),
+    resolution = terra::res(raster))
 
   # Set layer name based on the rabd_name argument
-  names(template) <- rabd_name
+  names(template) <- .rabd_name
 
   # Find trough position
-  trough_position <- spectra_position(raster = raster, spectra = trough) |>
+  trough_position <- spectra_position(raster = raster, spectra = .trough) |>
     # Pull vector with positions
     dplyr::pull(var = 2) |>
     # Subset normalized raster to match trough
@@ -115,7 +120,7 @@ calculate_rabd <- function(raster, edges, trough, rabd_name) {
     as.numeric()
 
   # Find edge positions
-  edge_positions <- spectra_position(raster = raster, spectra = edges) |>
+  edge_positions <- spectra_position(raster = raster, spectra = .edges) |>
     # Pull vector with positions
     dplyr::pull(var = 2)
 
@@ -131,18 +136,18 @@ calculate_rabd <- function(raster, edges, trough, rabd_name) {
   # Find number of the bands between through minimum and right edge (higher wavelength, X)
   redge_width <- abs(trough_position - edge_positions[2])
 
-  # Calculate equation nominator
-  nominator <- (redge_width * ledge_reflectance + ledge_width * redge_reflectance) /
+  # Calculate equation numerator
+  numenator <- (redge_width * ledge_reflectance + ledge_width * redge_reflectance) /
     (redge_width + ledge_width)
 
   # Calculate RABD
-  rabd <- nominator / trough_reflectance
+  rabd <- numerator / trough_reflectance
 
   # If there are infinities coerce to 0
   rabd[is.infinite(rabd)] <- 0
 
-  # Set rabd values onto SpatRaster template
-  values(template) <- rabd
+  # Set RABD values onto SpatRaster template
+  terra::values(template) <- rabd
 
   # Write new raster to file based on paths stored in the environment
   terra::writeRaster(template, filename = filename, overwrite = TRUE)
@@ -154,15 +159,19 @@ calculate_rabd <- function(raster, edges, trough, rabd_name) {
 #' Calculate band ratio
 #'
 #' @param raster a terra SpatRaster of normalized capture data
-#' @param edges a numeric vector of two for the (nominator and denominator)
-#' @param ratio_name a character, name of calculated ratio
+#' @param .edges a numeric vector of two for the (nominator and denominator)
+#' @param .ratio_name a character, name of calculated ratio
 #'
 #' @return a terra SpatRaster with one layer with calculated ratio values
 #' @export
 #'
-#' @description calculate band ratio of selected wavelengths
-#'
-calculate_band_ratio <- function(raster, edges, ratio_name) {
+#' @description calculate band ratio of selected wavelengths.
+calculate_band_ratio <- function(raster, .edges, .ratio_name) {
+  # Check if correct class is supplied.
+  if (class(raster) != "SpatRaster") {
+    rlang::abort(message = "Supplied data is not a terra SpatRaster.")
+  }
+
   # Raster source directory
   raster_src <- raster |>
     terra::sources() |>
@@ -176,12 +185,12 @@ calculate_band_ratio <- function(raster, edges, ratio_name) {
 
   cli::cli_h1("{raster_name}")
 
-  filename <- paste0(raster_src, "/", ratio_name, "_", raster_name, ".tif")
+  filename <- paste0(raster_src, "/", .ratio_name, "_", raster_name, ".tif")
 
   cli::cli_alert("Writing {ratio_name} to {filename}.")
 
   # Find edge positions
-  edge_positions <- spectra_position(raster = raster, spectra = edges) |>
+  edge_positions <- spectra_position(raster = raster, spectra = .edges) |>
     # Pull vector with positions
     dplyr::pull(var = 2)
 
@@ -202,6 +211,11 @@ calculate_band_ratio <- function(raster, edges, ratio_name) {
 #' @description calculate mean reflectance from all layers for given pixel.
 #'
 calculate_rmean <- function(raster) {
+  # Check if correct class is supplied.
+  if (class(raster) != "SpatRaster") {
+    rlang::abort(message = "Supplied data is not a terra SpatRaster.")
+  }
+
   # Raster source directory
   raster_src <- raster |>
     terra::sources() |>
@@ -215,7 +229,7 @@ calculate_rmean <- function(raster) {
 
   cli::cli_h1("{raster_name}")
 
-  filename <- paste0(raster_src, "/", RMEAN, "_", raster_name, ".tif")
+  filename <- paste0(raster_src, "/RMEAN_", raster_name, ".tif")
 
   cli::cli_alert("Writing RMEAN to {filename}.")
 
@@ -232,20 +246,18 @@ calculate_rmean <- function(raster) {
 #' Calculate Relative Absorption Band Area (RABA)
 #'
 #' @param raster a terra SpatRaster of normalized capture data.
-#' @param edges a numeric vector of two for the wide calculation window.
-#' @param trough a character vector of wavelenght to look for trough.
-#' @param raba_name a character, name of calculated RABA.
+#' @param .edges a numeric vector of two for the wide calculation window.
+#' @param .trough a character vector of wavelength to look for trough.
+#' @param .raba_name a character, name of calculated RABA.
 #'
 #' @return a terra SpatRaster with one layer with calculated RABA values.
 #' @export
-#'
-#' @description # RABD655−680max = ( X × R590 + Y × R730 X+Y ) /R655−680min
-#' Denominator: Find the lowest reflectance between 655 and 680
-#' Numenator: find reflectance at 590, find reflectance at 730
-#' Find how many bands there are between trough minimum and 730
-#' Find how many bands there are between trough minimum and 590
-#'
-calculate_raba <- function(raster, edges, trough, raba_name) {
+calculate_raba <- function(raster, .edges, .trough, .raba_name) {
+  # Check if correct class is supplied.
+  if (class(raster) != "SpatRaster") {
+    rlang::abort(message = "Supplied data is not a terra SpatRaster.")
+  }
+
   # Raster source directory
   raster_src <- raster |>
     terra::sources() |>
@@ -259,15 +271,15 @@ calculate_raba <- function(raster, edges, trough, raba_name) {
 
   cli::cli_h1("{raster_name}")
 
-  filename <- paste0(raster_src, "/", raba_name, "_", raster_name, ".tif")
+  filename <- paste0(raster_src, "/", .raba_name, "_", raster_name, ".tif")
 
-  cli::cli_alert("Writing {raba_name} to {filename}.")
+  cli::cli_alert("Writing {(.raba_name)} to {filename}.")
 
-    # Create empty SpatRaster template from original cropped raster
+  # Create empty SpatRaster template from original cropped raster
   template <- terra::rast(terra::ext(raster), resolution = terra::res(raster))
 
   # Set layer name based on the raba_name argument
-  names(template) <- raba_name
+  names(template) <- .raba_name
 
   # Write new raster to file based on paths stored in the environment
   terra::writeRaster(template, filename = filename, overwrite = TRUE)
@@ -276,33 +288,73 @@ calculate_raba <- function(raster, edges, trough, raba_name) {
   return(template)
 }
 
-#' Extract average proxy profile
+#' Extract average proxy series from ROI
 #'
 #' @param raster a terra SpatRaster with one layer with calculated values
 #'
 #' @return a data frame with XY coordinates and averaged proxy values
 #' @export
-#'
-extract_profile <- function(raster) {
+extract_series <- function(raster) {
+  # Check if correct class is supplied.
+  if (class(raster) != "SpatRaster") {
+    rlang::abort(message = "Supplied data is not a terra SpatRaster.")
+  }
+
   # Aggregate SpatRaster into average rows
-  profile <- terra::aggregate(raster,
-                              fact = c(1, ncol(raster)),
-                              fun = "mean") |>
+  series <- terra::aggregate(
+    raster,
+    fact = c(1, ncol(raster)),
+    fun = "mean") |>
     # Coerce do data frame with coordinates
     terra::as.data.frame(xy = TRUE)
 
   # Return object
-  return(profile)
+  return(series)
+}
+
+#' Extract spectral profile from the ROI
+#'
+#' @param raster a terra SpatRaster of normalized capture data.
+#'
+#' @return a tibble with averaged spectral profile.
+#' @export
+extract_profile <- function(raster) {
+  # Check if correct class is supplied.
+  if (class(raster) != "SpatRaster") {
+    rlang::abort(message = "Supplied data is not a terra SpatRaster.")
+  }
+
+  # Aggregate SpatRaster into one data point
+  series <- terra::aggregate(
+    raster,
+    fact = c(nrow(raster), ncol(raster)),
+    fun = "mean") |>
+    # Coerce do data frame with coordinates
+    terra::as.data.frame(xy = TRUE)
+
+  # Return object
+  return(profiles)
+
 }
 
 #' Calcualte λREMP
 #'
 #' @param raster a terra SpatRaster of normalized capture data.
-#' @param edges a numeric vector of two for the derivative calculation window.
+#' @param .edges a numeric vector of two for the derivative calculation window.
+#' @param .ext character, a graphic format extension.
+#' @param .write logical, should resulting SpatRaster be written to file.
 #'
 #' @return a terra SpatRaster with one layer with calculated λREMP values.
+#'
+#' @encoding UTF-8
+#'
 #' @export
-calculate_lambdaremp <- function(raster, edges) {
+calculate_lambdaremp <- function(raster, .edges, .ext, .write) {
+  # Check if correct class is supplied.
+  if (class(raster) != "SpatRaster") {
+    rlang::abort(message = "Supplied data is not a terra SpatRaster.")
+  }
+
   # Raster source directory
   raster_src <- raster |>
     terra::sources() |>
@@ -323,8 +375,8 @@ calculate_lambdaremp <- function(raster, edges) {
   # Create empty SpatRaster template from original cropped raster
   template <- terra::rast(terra::ext(raster), resolution = terra::res(raster))
 
-  # Set layer name based on the raba_name argument
-  names(template) <- "REMP"
+  # Set layer name
+  names(template) <- "lambdaREMP"
 
   # Write new raster to file based on paths stored in the environment
   terra::writeRaster(template, filename = filename, overwrite = TRUE)

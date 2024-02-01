@@ -421,7 +421,7 @@ plot_profile_proxy <- function(raster, .hsi_index, .palette = c("red", "orange",
 
   # Clean data
   data <- raster |>
-    HSItools::extract_profile() |>
+    HSItools::extract_series() |>
     dplyr::select(y, {{ .hsi_index }}) |>
     dplyr::rename(y = y, proxy = {{ .hsi_index }})
 

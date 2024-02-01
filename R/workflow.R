@@ -14,7 +14,7 @@
 #' @param core shiny output.
 #' @param .path path to the directory with captured data. Defaults to NULL and shiny output.
 #' @param .layers numeric vector, selection of layers (wavelengths) to use. Defaults to NULL and shiny output.
-#' @param .extent extent of the captured data. Defaults to NULL and shiny output. If "capture" then uses entire extent od captured data.
+#' @param .extent extent of the captured data. Defaults to NULL and shiny output. If "capture" then uses entire extent of captured data.
 #' @param .normalize logical, should data be normalized.
 #'
 #' @return reflectance SpatRaster.
@@ -53,7 +53,7 @@ prepare_core <- function(core = NULL, .path = NULL, .layers = NULL, .extent = NU
     if (is.null(.extent) == TRUE) {
       # Get path
       extent <- core$cropImage
-    } else if (.extent == "core") {
+    } else if (.extent == "capture") {
       extent <- terra::rast(files[[2]]) |>
         terra::ext()
     }
