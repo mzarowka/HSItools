@@ -52,10 +52,13 @@
     <loc>/reference/defineRGB.html</loc>
   </url>
   <url>
-    <loc>/reference/extract_profile.html</loc>
+    <loc>/reference/extract_spectral_indices.html</loc>
   </url>
   <url>
-    <loc>/reference/extract_series.html</loc>
+    <loc>/reference/extract_spectral_profile.html</loc>
+  </url>
+  <url>
+    <loc>/reference/extract_spectral_series.html</loc>
   </url>
   <url>
     <loc>/reference/filter_median.html</loc>
@@ -73,7 +76,10 @@
     <loc>/reference/plot_composite.html</loc>
   </url>
   <url>
-    <loc>/reference/plot_profile_proxy.html</loc>
+    <loc>/reference/plot_profile_spectral_profile.html</loc>
+  </url>
+  <url>
+    <loc>/reference/plot_profile_spectral_series.html</loc>
   </url>
   <url>
     <loc>/reference/plot_raster_overlay.html</loc>
