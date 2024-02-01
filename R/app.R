@@ -28,12 +28,13 @@
 # ))
 
 
-#' run shiny app to set up core image analysis
+#' Run shiny app to set up core image analysis parameters
+#'
+#' @param autoSave save shiny app output to rds file. Defaults to true. Saves in current working directory.
 #'
 #' @return an object with processing settings.
 #' @export
-#'
-run_core <- function(autoSave=TRUE){
+run_core <- function(autoSave = TRUE){
 
   library(shiny)
   library(DT)

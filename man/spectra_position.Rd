@@ -7,9 +7,9 @@
 spectra_position(raster, spectra)
 }
 \arguments{
-\item{raster}{a terra SpatRaster}
+\item{raster}{a terra SpatRaster.}
 
-\item{spectra}{vector with choice of desired spectra}
+\item{spectra}{vector with choice of desired spectra.}
 }
 \value{
 positions (indices) of desired spectra in SpatRaster

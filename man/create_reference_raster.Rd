@@ -2,20 +2,24 @@
 % Please edit documentation in R/normalization.R
 \name{create_reference_raster}
 \alias{create_reference_raster}
-\title{Create reference raster}
+\title{Create reference SpatRaster}
 \usage{
 create_reference_raster(raster, roi, ref_type, ...)
 }
 \arguments{
-\item{raster}{a terra SpatRaster of the captured reference}
+\item{raster}{terra SpatRaster of the captured reference.}
 
-\item{roi}{Region Of Interest: extent to match data raster}
+\item{roi}{Region Of Interest: extent to match data raster.}
+
+\item{ref_type}{type of reference, one of "whiteref" or "darkref".}
+
+\item{...}{additional arguments.}
 }
 \value{
-a terra SpatRaster of reference matching the data raster extent
+a terra SpatRaster of reference matching the data raster extent.
 }
 \description{
 Creating reference SpatRaster covering core extent
 Create one mean reference row SpatRaster by averaging data every column by aggregation
-Create reference SpatRaster matching capture SpatRaster extent by disaggregation
+Create reference SpatRaster matching capture SpatRaster extent by disaggregation.
 }

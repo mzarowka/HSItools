@@ -2,18 +2,18 @@
 % Please edit documentation in R/normalization.R
 \name{spectra_sub}
 \alias{spectra_sub}
-\title{Subset by spectra}
+\title{Subset SpatRaster by spectra}
 \usage{
 spectra_sub(raster, spectra_tbl)
 }
 \arguments{
-\item{raster}{a terra SpatRaster to be subset}
+\item{raster}{a terra SpatRaster to be subset.}
 
-\item{spectra_tbl}{a tibble with spectra positions from spectra_position}
+\item{spectra_tbl}{a tibble with spectra positions from spectra_position.}
 }
 \value{
-SpatRaster subset to contain only required spectral bands
+SpatRaster subset to contain only required spectral bands.
 }
 \description{
-subset SpatRaster with spectra (bands) positions
+subset SpatRaster with spectra (bands) positions.
 }

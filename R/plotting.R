@@ -7,7 +7,7 @@
 #' @export
 stretch_raster_full <- function(raster, .ext = NULL, .write = TRUE) {
   # Check if correct class is supplied.
-  if (class(raster) != "SpatRaster") {
+  if (!inherits(raster, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
   }
 
@@ -78,11 +78,11 @@ stretch_raster_full <- function(raster, .ext = NULL, .write = TRUE) {
 #' @export
 plot_raster_proxy <- function(raster, .hsi_index, .palette = c("viridis”, “magma”, “plasma”, “inferno”, “civids”, “mako”, “rocket”, “turbo"), .ext = NULL, .write = FALSE) {
   # Check if correct class is supplied.
-  if (class(raster) != "SpatRaster") {
+  if (!inherits(raster, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
   }
 
-  if (class(.hsi.index) != "character") {
+  if (!inherits(.hsi_index, what = "character")) {
     rlang::abort(message = "Supplied index name is not a character.")
   }
 
@@ -157,7 +157,7 @@ plot_raster_proxy <- function(raster, .hsi_index, .palette = c("viridis”, “m
 #' @export
 plot_raster_rgb <- function(raster, .ext = NULL, .write = FALSE) {
   # Check if correct class is supplied.
-  if (class(raster) != "SpatRaster") {
+  if (!inherits(raster, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
   }
 
@@ -233,11 +233,11 @@ plot_raster_rgb <- function(raster, .ext = NULL, .write = FALSE) {
 #' @export
 plot_raster_overlay <- function(raster, .hsi_index, .palette = c("viridis”, “magma”, “plasma”, “inferno”, “civids”, “mako”, “rocket”, “turbo"), .alpha = 0.5, .ext = NULL, .write = FALSE) {
   # Check if correct class is supplied.
-  if (class(raster) != "SpatRaster") {
+  if (!inherits(raster, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
   }
 
-  if (class(.hsi_index) != "character") {
+  if (!inherits(.hsi_index, what = "character")) {
     rlang::abort(message = "Supplied index name is not a character.")
   }
 
@@ -332,12 +332,12 @@ plot_raster_overlay <- function(raster, .hsi_index, .palette = c("viridis”, �
 #' @export
 plot_composite <- function(raster, plots, .ext = NULL, .write = FALSE) {
   # Check if correct class is supplied.
-  if (class(raster) != "SpatRaster") {
+  if (!inherits(raster, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
   }
 
   # Check if correct class is supplied.
-  if (class(plots) != "list") {
+  if (!inherits(plots, what = "list")) {
     rlang::abort(message = "Supplied data is not a list.")
   }
 
@@ -380,23 +380,26 @@ plot_composite <- function(raster, plots, .ext = NULL, .write = FALSE) {
   return(plot)
 }
 
-#' Line plots of calculated proxies
+#' Line plots of calculated proxies series
 #'
 #' @param raster a SpatRaster with calculated hyperspectral indices and RGB layers.
 #' @param .hsi_index a character indicating hyperspectral index layer to plot.
+#' @param .extent an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
 #' @param .palette a character indicating one of color palettes of choice. One of: "red", "orange", "yellow", "green", "cyan", "blue", "purple", "magenta".
 #' @param .ext character, a graphic format extension.
 #' @param .write logical, should resulting SpatRaster be written to file.
 #'
-#' @return a plot with color map of selected hyperspectral index.
+#' @importFrom rlang .data
+#'
+#' @return line plot with of selected hyperspectral index.
 #' @export
-plot_profile_proxy <- function(raster, .hsi_index, .palette = c("red", "orange", "yellow", "green", "cyan", "blue", "purple", "magenta"), .ext = NULL, .write = FALSE) {
+plot_profile_spectral_series <- function(raster, .hsi_index, .extent = NULL, .palette = c("red", "orange", "yellow", "green", "cyan", "blue", "purple", "magenta"), .ext = NULL, .write = FALSE) {
   # Check if correct class is supplied.
-  if (class(raster) != "SpatRaster") {
+  if (!inherits(raster, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
   }
 
-  if (class(.hsi.index) != "character") {
+  if (!inherits(.hsi_index, what = "character")) {
     rlang::abort(message = "Supplied index name is not a character.")
   }
 
@@ -421,9 +424,9 @@ plot_profile_proxy <- function(raster, .hsi_index, .palette = c("red", "orange",
 
   # Clean data
   data <- raster |>
-    HSItools::extract_series() |>
-    dplyr::select(y, {{ .hsi_index }}) |>
-    dplyr::rename(y = y, proxy = {{ .hsi_index }})
+    HSItools::extract_spectral_series(.extent = .extent) |>
+    dplyr::select(.data$y, {{ .hsi_index }}) |>
+    dplyr::rename(y = .data$y, proxy = {{ .hsi_index }})
 
   # Proxy name
   proxy_name <- rlang::as_label(rlang::enquo(.hsi_index))
@@ -446,8 +449,8 @@ plot_profile_proxy <- function(raster, .hsi_index, .palette = c("red", "orange",
     ggplot2::ggplot() +
     # Add aes
     ggplot2::aes(
-      x = proxy,
-      y = y
+      x = .data$proxy,
+      y = .data$y
     ) +
     # Add geom
     ggplot2::geom_path(color = proxy_palette[[.palette]]) +
@@ -465,6 +468,85 @@ plot_profile_proxy <- function(raster, .hsi_index, .palette = c("red", "orange",
 
   if (.write == TRUE) {
     cli::cli_alert("Writing {(.hsi_index)} plot to {filename}")
+
+    ggplot2::ggsave(
+      plot = plot,
+      filename = filename,
+      device = .ext
+    )
+  }
+
+  # Return plot as an object
+  return(plot)
+}
+
+#' Line plot of spectral profile from the ROI
+#'
+#' @param raster Reflectance SpatRaster.
+#' @param .extent an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
+#' @param .ext character, a graphic format extension.
+#' @param .write logical, should resulting SpatRaster be written to file.
+#'
+#' @importFrom rlang .data
+#'
+#' @return line plot with of selected hyperspectral index.
+#' @export
+plot_profile_spectral_profile <- function(raster, .extent = NULL, .ext = NULL, .write = FALSE) {
+  # Check if correct class is supplied.
+  if (!inherits(raster, what = "SpatRaster")) {
+    rlang::abort(message = "Supplied data is not a terra SpatRaster.")
+  }
+
+  # Raster source directory
+  raster_src <- raster |>
+    terra::sources() |>
+    fs::path_dir()
+
+  # Raster source name
+  raster_name <- raster |>
+    terra::sources() |>
+    fs::path_file() |>
+    fs::path_ext_remove()
+
+  cli::cli_h1("{raster_name}")
+
+  filename <- paste0(raster_src, "/SPECTRAL_PROFILE_", raster_name, ".", .ext)
+
+  # Clean data
+  data <- raster |>
+    HSItools::extract_spectral_profile(.extent = .extent) |>
+    dplyr::select(-c(.data$x, .data$y)) |>
+    tidyr::pivot_longer(
+      dplyr::everything(),
+      names_to = "Wavelength.nm",
+      names_transform = as.numeric,
+      values_to = "Reflectance")
+
+  # Create a plot
+  plot <- data |>
+    # Pass to plot
+    ggplot2::ggplot() +
+    # Add aes
+    ggplot2::aes(
+      x = .data$Wavelength.nm,
+      y = .data$Reflectance
+    ) +
+    # Add geom
+    ggplot2::geom_line() +
+    # Modify theme
+    ggplot2::theme(
+      panel.background = ggplot2::element_blank(),
+      axis.line.y.left = ggplot2::element_line(color = "black"),
+      axis.line.x.bottom = ggplot2::element_line(color = "black")
+    ) +
+    # Add labels
+    ggplot2::labs(
+      x = "Wavelength (nm)",
+      y = "Reflectance"
+    )
+
+  if (.write == TRUE) {
+    cli::cli_alert("Writing spectral profile plot to {filename}")
 
     ggplot2::ggsave(
       plot = plot,

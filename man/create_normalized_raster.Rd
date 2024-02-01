@@ -13,17 +13,19 @@ create_normalized_raster(
 )
 }
 \arguments{
-\item{capture}{a terra SpatRaster of captured data}
+\item{capture}{terra SpatRaster of captured data.}
 
-\item{whiteref}{a terra SpatRaster of the white reference matching capture extent}
+\item{whiteref}{terra SpatRaster of the white reference matching capture extent.}
 
-\item{darkref}{a terra SpatRaster of the dark reference matching capture extent}
+\item{darkref}{terra SpatRaster of the dark reference matching capture extent.}
 
-\item{fun}{function to apply: normalization}
+\item{fun}{function to apply: normalization.}
+
+\item{...}{additional arguments.}
 }
 \value{
-a normalized terra SpatRaster of the capture
+normalized terra SpatRaster of the capture.
 }
 \description{
-apply normalization function over the combination of capture and reference SpatRasters using terra spatial dataset
+apply normalization function over the combination of capture and reference SpatRasters using terra spatial dataset.
 }

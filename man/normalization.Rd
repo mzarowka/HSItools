@@ -7,15 +7,15 @@
 normalization(capture = capture, whiteref = whiteref, darkref = darkref)
 }
 \arguments{
-\item{capture}{a terra SpatRaster of captured data}
+\item{capture}{a terra SpatRaster of captured data.}
 
-\item{whiteref}{a terra SpatRaster of the white reference matching capture extent}
+\item{whiteref}{a terra SpatRaster of the white reference matching capture extent.}
 
-\item{darkref}{a terra SpatRaster of the dark reference matching capture extent}
+\item{darkref}{a terra SpatRaster of the dark reference matching capture extent.}
 }
 \value{
-a normalized terra SpatRaster of the capture
+a normalized terra SpatRaster of the capture.
 }
 \description{
-normalize captured hyperspectral data with white and dark reference according to equation from Butz et al 2016
+normalize captured hyperspectral data with white and dark reference according to equation from Butz et al. 2016.
 }

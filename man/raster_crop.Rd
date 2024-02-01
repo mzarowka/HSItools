@@ -2,22 +2,24 @@
 % Please edit documentation in R/normalization.R
 \name{raster_crop}
 \alias{raster_crop}
-\title{Raster crop}
+\title{Crop SpatRaster}
 \usage{
 raster_crop(raster, type, roi, ...)
 }
 \arguments{
-\item{raster}{a terra SpatRaster to be cropped}
+\item{raster}{terra SpatRaster to be cropped.}
 
-\item{type}{either data raster or reference raster}
+\item{type}{either data raster or reference raster.}
 
-\item{roi}{Region Of Interest: cropping extent}
+\item{roi}{Region Of Interest: cropping extent.}
+
+\item{...}{additional arguments.}
 }
 \value{
-a terra SpatRaster cropped to ROI
+terra SpatRaster cropped to ROI.
 }
 \description{
 Crop SpatRaster to large ROI (entire core)
 For capture (core) SpatRaster use full extent
-For reference (white and dark) SpatRaster use only x-direction
+For reference (white and dark) SpatRaster use only x-direction.
 }

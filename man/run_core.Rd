@@ -2,13 +2,16 @@
 % Please edit documentation in R/app.R
 \name{run_core}
 \alias{run_core}
-\title{run shiny app to set up core image analysis}
+\title{Run shiny app to set up core image analysis parameters}
 \usage{
 run_core(autoSave = TRUE)
+}
+\arguments{
+\item{autoSave}{save shiny app output to rds file. Defaults to true. Saves in current working directory.}
 }
 \value{
 an object with processing settings.
 }
 \description{
-run shiny app to set up core image analysis
+Run shiny app to set up core image analysis parameters
 }

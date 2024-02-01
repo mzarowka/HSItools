@@ -83,7 +83,7 @@ filter_savgol <- function(raster, p = 3, n = p + 3 - p%%2, m = 0, ts = 1, ...){
   names(raster) <- as.character(band_names)
 
   # Update names on disk
-  update(raster, names = TRUE)
+  terra::update(raster, names = TRUE)
 
   cli::cli_alert_success("{format(Sys.time())}: finished.")
 

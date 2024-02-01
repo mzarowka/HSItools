@@ -7,13 +7,13 @@
 calculate_rabd(raster, .edges, .trough, .rabd_name)
 }
 \arguments{
-\item{raster}{a terra SpatRaster of normalized capture data}
+\item{raster}{terra SpatRaster of normalized capture data.}
 
-\item{.edges}{a numeric vector of two for the wide calculation window}
+\item{.edges}{numeric vector of two for the wide calculation window.}
 
-\item{.trough}{a character vector of wavelength to look for trough}
+\item{.trough}{character vector of wavelength to look for trough.}
 
-\item{.rabd_name}{a character, name of calculated RABD}
+\item{.rabd_name}{character, name of calculated RABD.}
 }
 \value{
 a terra SpatRaster with one layer with calculated RABD values
