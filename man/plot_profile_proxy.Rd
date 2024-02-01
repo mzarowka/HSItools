@@ -4,14 +4,24 @@
 \alias{plot_profile_proxy}
 \title{Line plots of calculated proxies}
 \usage{
-plot_profile_proxy(data, hsi_index, .palette)
+plot_profile_proxy(
+  raster,
+  .hsi_index,
+  .palette = c("red", "orange", "yellow", "green", "cyan", "blue", "purple", "magenta"),
+  .ext = NULL,
+  .write = FALSE
+)
 }
 \arguments{
-\item{hsi_index}{a character indicating hyperspectral index layer to plot.}
+\item{raster}{a SpatRaster with calculated hyperspectral indices and RGB layers.}
+
+\item{.hsi_index}{a character indicating hyperspectral index layer to plot.}
 
 \item{.palette}{a character indicating one of color palettes of choice. One of: "red", "orange", "yellow", "green", "cyan", "blue", "purple", "magenta".}
 
-\item{raster}{a SpatRaster with calculated hyperspectral indices and RGB layers.}
+\item{.ext}{character, a graphic format extension.}
+
+\item{.write}{logical, should resulting SpatRaster be written to file.}
 }
 \value{
 a plot with color map of selected hyperspectral index.

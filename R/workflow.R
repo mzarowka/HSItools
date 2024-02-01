@@ -11,15 +11,28 @@
 
 #' Prepare core based on shiny output
 #'
-#' @param path path to the directory with capture data.
+#' @param core shiny output.
+#' @param .path path to the directory with captured data. Defaults to NULL and shiny output.
+#' @param .layers numeric vector, selection of layers (wavelengths) to use. Defaults to NULL and shiny output.
+#' @param .extent extent of the captured data. Defaults to NULL and shiny output. If "capture" then uses entire extent od captured data.
 #' @param .normalize logical, should data be normalized.
 #'
 #' @return reflectance SpatRaster.
 #' @export
-prepare_core <- function(core, .normalize = TRUE) {
+prepare_core <- function(core = NULL, .path = NULL, .layers = NULL, .extent = NULL, .normalize = TRUE) {
+  if (is.null(.path) == TRUE) {
+    # Get path
+    path <- core$directory
+  } else {
+    path <- .path
+  }
 
-  # Get path
-  path <- core$directory
+  if (is.null(.layers) == TRUE) {
+    # Get path
+    layers <- core$layers
+  } else {
+    layers <- .layers
+  }
 
   cli::cli_h1("{basename(path)}")
 
@@ -37,8 +50,16 @@ prepare_core <- function(core, .normalize = TRUE) {
     # SpatRaster types
     types <- list("darkref", "capture", "whiteref")
 
+    if (is.null(.extent) == TRUE) {
+      # Get path
+      extent <- core$cropImage
+    } else if (.extent == "core") {
+      extent <- terra::rast(files[[2]]) |>
+        terra::ext()
+    }
+
     # Extent
-    big_roi <- terra::ext(core$cropImage)
+    big_roi <- terra::ext(extent)
 
     cli::cli_alert_info("{format(Sys.time())}: reading rasters.")
 
@@ -48,7 +69,7 @@ prepare_core <- function(core, .normalize = TRUE) {
       purrr::map(\(x) terra::rast(x))
 
     # Get band positions - the same for all three SpatRasters
-    band_position <- HSItools::spectra_position(rasters[[1]], core$layers)
+    band_position <- HSItools::spectra_position(rasters[[1]], layers)
 
     cli::cli_alert_info("{format(Sys.time())}: subsetting layers.")
 
@@ -69,11 +90,12 @@ prepare_core <- function(core, .normalize = TRUE) {
     cli::cli_alert_info("{format(Sys.time())}: calculating reflectance raster.")
 
     # Normalize data
-    reflectance <- HSItools::create_normalized_raster(capture = rasters_cropped[[2]],
-                                                     whiteref = rasters_references[[2]],
-                                                     darkref = rasters_references[[1]],
-                                                     fun = normalization,
-                                                     path = path)
+    reflectance <- HSItools::create_normalized_raster(
+      capture = rasters_cropped[[2]],
+      whiteref = rasters_references[[2]],
+      darkref = rasters_references[[1]],
+      fun = normalization,
+      path = path)
 
     cli::cli_alert_info("{format(Sys.time())}: cleaning up.")
 

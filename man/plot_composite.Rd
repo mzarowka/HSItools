@@ -5,10 +5,16 @@
 \title{Composite hyperspectral indices plots
 Can composite line profiles and SpatRasters}
 \usage{
-plot_composite(plots)
+plot_composite(raster, plots, .ext = NULL, .write = FALSE)
 }
 \arguments{
+\item{raster}{a SpatRaster with REFLECTANCE file. Used for correct placement.}
+
 \item{plots}{a list of plots.}
+
+\item{.ext}{character, a graphic format extension.}
+
+\item{.write}{logical, should resulting \pkg{ggplot2} object be written to file.}
 }
 \value{
 a plot.

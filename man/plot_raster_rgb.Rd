@@ -4,10 +4,14 @@
 \alias{plot_raster_rgb}
 \title{Spatial map plots of RGB image}
 \usage{
-plot_raster_rgb(raster)
+plot_raster_rgb(raster, .ext = NULL, .write = FALSE)
 }
 \arguments{
 \item{raster}{a SpatRaster with calculated hyperspectral indices and RGB layers or just RGB layers.}
+
+\item{.ext}{character, a graphic format extension.}
+
+\item{.write}{logical, should resulting SpatRaster be written to file.}
 }
 \value{
 a plot with color map of selected hyperspectral index.

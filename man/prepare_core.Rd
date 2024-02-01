@@ -4,12 +4,24 @@
 \alias{prepare_core}
 \title{Prepare core based on shiny output}
 \usage{
-prepare_core(core, .normalize = TRUE)
+prepare_core(
+  core,
+  .path = NULL,
+  .layers = NULL,
+  .extent = NULL,
+  .normalize = TRUE
+)
 }
 \arguments{
-\item{.normalize}{logical, should data be normalized.}
+\item{core}{shiny output.}
 
-\item{path}{path to the directory with capture data.}
+\item{.path}{path to the directory with captured data. Defaults to NULL and shiny output.}
+
+\item{.layers}{numeric vector, selection of layers (wavelengths) to use. Defaults to NULL and shiny output.}
+
+\item{.extent}{extent of the captured data. Defaults to NULL and shiny output. If "capture" then uses entire extent od captured data.}
+
+\item{.normalize}{logical, should data be normalized.}
 }
 \value{
 reflectance SpatRaster.

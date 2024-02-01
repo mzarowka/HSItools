@@ -5,6 +5,8 @@
 #' @param product logical, whether in the shiny pipeline, what type of filename should be used.
 #' @param ... further parameters such as file path.
 #'
+#' @importFrom stats median
+#'
 #' @return smoothed SpatRaster
 #' @export
 #'
