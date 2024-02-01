@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">HSItools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9002</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9003</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -57,7 +57,7 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">calculate_raba</span><span class="op">(</span><span class="va">raster</span>, <span class="va">edges</span>, <span class="va">trough</span>, <span class="va">raba_name</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">calculate_raba</span><span class="op">(</span><span class="va">raster</span>, <span class="va">.edges</span>, <span class="va">.trough</span>, <span class="va">.raba_name</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -66,15 +66,15 @@
 <dd><p>a terra SpatRaster of normalized capture data.</p></dd>
 
 
-<dt>edges</dt>
+<dt>.edges</dt>
 <dd><p>a numeric vector of two for the wide calculation window.</p></dd>
 
 
-<dt>trough</dt>
-<dd><p>a character vector of wavelenght to look for trough.</p></dd>
+<dt>.trough</dt>
+<dd><p>a character vector of wavelength to look for trough.</p></dd>
 
 
-<dt>raba_name</dt>
+<dt>.raba_name</dt>
 <dd><p>a character, name of calculated RABA.</p></dd>
 
 </dl></div>
@@ -83,13 +83,6 @@
     
 
 <p>a terra SpatRaster with one layer with calculated RABA values.</p>
-    </div>
-    <div class="section level2">
-    <h2 id="rabd-max-x-r-y-r-x-y-r-min">RABD655−680max = ( X × R590 + Y × R730 X+Y ) /R655−680min<a class="anchor" aria-label="anchor" href="#rabd-max-x-r-y-r-x-y-r-min"></a></h2>
-    <p>Denominator: Find the lowest reflectance between 655 and 680
-Numenator: find reflectance at 590, find reflectance at 730
-Find how many bands there are between trough minimum and 730
-Find how many bands there are between trough minimum and 590</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
