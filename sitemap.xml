@@ -25,7 +25,13 @@
     <loc>/news/index.html</loc>
   </url>
   <url>
+    <loc>/reference/calculate_band_difference.html</loc>
+  </url>
+  <url>
     <loc>/reference/calculate_band_ratio.html</loc>
+  </url>
+  <url>
+    <loc>/reference/calculate_derivative.html</loc>
   </url>
   <url>
     <loc>/reference/calculate_lambdaremp.html</loc>
