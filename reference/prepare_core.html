@@ -57,17 +57,35 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">prepare_core</span><span class="op">(</span><span class="va">core</span>, .normalize <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">prepare_core</span><span class="op">(</span></span>
+<span>  <span class="va">core</span>,</span>
+<span>  .path <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  .layers <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  .extent <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  .normalize <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
-    <dl><dt>.normalize</dt>
+    <dl><dt>core</dt>
+<dd><p>shiny output.</p></dd>
+
+
+<dt>.path</dt>
+<dd><p>path to the directory with captured data. Defaults to NULL and shiny output.</p></dd>
+
+
+<dt>.layers</dt>
+<dd><p>numeric vector, selection of layers (wavelengths) to use. Defaults to NULL and shiny output.</p></dd>
+
+
+<dt>.extent</dt>
+<dd><p>extent of the captured data. Defaults to NULL and shiny output. If "capture" then uses entire extent od captured data.</p></dd>
+
+
+<dt>.normalize</dt>
 <dd><p>logical, should data be normalized.</p></dd>
-
-
-<dt>path</dt>
-<dd><p>path to the directory with capture data.</p></dd>
 
 </dl></div>
     <div class="section level2">

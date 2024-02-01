@@ -73,7 +73,7 @@
     <loc>/reference/plot_profile_proxy.html</loc>
   </url>
   <url>
-    <loc>/reference/plot_raster_full.html</loc>
+    <loc>/reference/plot_raster_overlay.html</loc>
   </url>
   <url>
     <loc>/reference/plot_raster_proxy.html</loc>
@@ -104,5 +104,8 @@
   </url>
   <url>
     <loc>/reference/spectra_sub.html</loc>
+  </url>
+  <url>
+    <loc>/reference/stretch_raster_full.html</loc>
   </url>
 </urlset>
