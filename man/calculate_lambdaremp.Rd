@@ -16,8 +16,8 @@ calculate_lambdaremp(raster, .edges, .ext, .write)
 \item{.write}{logical, should resulting SpatRaster be written to file.}
 }
 \value{
-a terra SpatRaster with one layer with calculated lambdaREMP values.
+one layer terra SpatRaster with calculated lambdaREMP values.
 }
 \description{
-Based on the Ghanbari, H., Zilkey, D.R., Gregory-Eaves, I., Antoniades, D., 2023. A new index for the rapid generation of chlorophyll time series from hyperspectral imaging of sediment cores. Limnology and Oceanography: Methods 21, 703–717. https://doi.org/10.1002/lom3.10576
+Calcualte lambdaREMP after Ghanbari, H., Zilkey, D.R., Gregory-Eaves, I., Antoniades, D., 2023. A new index for the rapid generation of chlorophyll time series from hyperspectral imaging of sediment cores. Limnology and Oceanography: Methods 21, 703–717. https://doi.org/10.1002/lom3.10576
 }

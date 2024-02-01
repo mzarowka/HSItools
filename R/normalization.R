@@ -26,7 +26,7 @@ spectra_position <- function(raster, spectra) {
     position = spectraIndex) |>
     # Keep second observation if duplicates are present
     # From experience closer to desired product
-    dplyr::slice_tail(by = position)
+    dplyr::slice_tail(by = .data$position)
 
   # Return values
   return(spectraIndex)
@@ -198,11 +198,6 @@ create_reference_raster <- function(raster, roi, ref_type, ...) {
 #' @description normalize captured hyperspectral data with white and dark reference according to equation from Butz et al. 2016.
 #'
 normalization <- function(capture = capture, whiteref = whiteref, darkref = darkref) {
-  # Check if correct class is supplied.
-  if (any(!inherits(c(capture, whiteref, darkref), what = "SpatRaster"))) {
-    rlang::abort(message = "Supplied data is not a terra SpatRaster.")
-  }
-
   # Calculate numerator
   numerator <- capture - darkref
 
@@ -237,11 +232,6 @@ normalization <- function(capture = capture, whiteref = whiteref, darkref = dark
 create_normalized_raster <- function(capture = capture, whiteref = whiteref, darkref = darkref, fun = normalization, ...) {
   # Store additional parameters
   params <- rlang::list2(...)
-
-  # Check if correct class is supplied.
-  if (any(!inherits(c(capture, whiteref, darkref), what = "SpatRaster"))) {
-    rlang::abort(message = "Supplied data is not a terra SpatRaster.")
-  }
 
   # Named list with write options
   wopts <- list(steps = terra::ncell(capture) * terra::nlyr(capture))

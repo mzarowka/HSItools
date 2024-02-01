@@ -7,12 +7,12 @@
 remove_continuum(raster, ...)
 }
 \arguments{
-\item{raster}{a terra SpatRaster of normalized capture data.}
+\item{raster}{terra SpatRaster of normalized capture data.}
 
 \item{...}{additional arguments.}
 }
 \value{
-a terra SpatRaster of normalized capture data with continuum removed
+one layer terra SpatRaster with continuum removed.
 }
 \description{
 Remove continuum from spectrum

@@ -2,7 +2,7 @@
 % Please edit documentation in R/spectral_calculations.R
 \name{calculate_rmean}
 \alias{calculate_rmean}
-\title{calculate rMean}
+\title{Calculate Rmean}
 \usage{
 calculate_rmean(raster)
 }
@@ -10,7 +10,7 @@ calculate_rmean(raster)
 \item{raster}{a terra SpatRaster of normalized capture data.}
 }
 \value{
-a terra SpatRaster with one layer with calculated Rmean values.
+one layer terra SpatRaster with calculated Rmean values.
 }
 \description{
 calculate mean reflectance from all layers for given pixel.

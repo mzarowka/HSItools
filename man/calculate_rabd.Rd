@@ -13,10 +13,10 @@ calculate_rabd(raster, .edges, .trough, .rabd_name)
 
 \item{.trough}{character vector of wavelength to look for trough.}
 
-\item{.rabd_name}{character, name of calculated RABD.}
+\item{.rabd_name}{character, lower case name name of calculated RABD.}
 }
 \value{
-a terra SpatRaster with one layer with calculated RABD values
+one layer terra SpatRaster with calculated RABD values
 }
 \description{
 Calculate Relative Absorption Band Depth (RABD)
