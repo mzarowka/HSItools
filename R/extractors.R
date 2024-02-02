@@ -29,6 +29,9 @@ extract_spectral_series <- function(raster, .hsi_index = NULL, .extent = NULL) {
     # To tibble
     dplyr::tibble()
 
+  # Reset window
+  terra::window(raster) <- NULL
+
   # Return object
   return(spectral_series)
 }
@@ -63,6 +66,9 @@ extract_spectral_profile <- function(raster, .extent = NULL) {
     terra::as.data.frame(xy = TRUE) |>
     # To tibble
     dplyr::tibble()
+
+  # Reset window
+  terra::window(raster) <- NULL
 
   # Return object
   return(spectral_profile)
@@ -99,6 +105,9 @@ extract_spectral_indices <- function(raster, .hsi_index = NULL, .extent = NULL) 
     terra::as.data.frame(xy = TRUE) |>
     # To tibble
     dplyr::tibble()
+
+  # Reset window
+  terra::window(raster) <- NULL
 
   # Return object
   return(spectral_indices)
