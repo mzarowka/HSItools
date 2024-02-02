@@ -385,7 +385,6 @@ plot_composite <- function(raster, plots, .ext = NULL, .write = FALSE) {
 #' @param raster a SpatRaster with calculated hyperspectral indices and RGB layers.
 #' @param .hsi_index a character indicating hyperspectral index layer to plot.
 #' @param .extent an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
-#' @param .palette a character indicating one of color palettes of choice. One of: "red", "orange", "yellow", "green", "cyan", "blue", "purple", "magenta".
 #' @param .ext character, a graphic format extension.
 #' @param .write logical, should resulting SpatRaster be written to file.
 #'
@@ -393,7 +392,7 @@ plot_composite <- function(raster, plots, .ext = NULL, .write = FALSE) {
 #'
 #' @return line plot with of selected hyperspectral index.
 #' @export
-plot_profile_spectral_series <- function(raster, .hsi_index, .extent = NULL, .palette = c("red", "orange", "yellow", "green", "cyan", "blue", "purple", "magenta"), .ext = NULL, .write = FALSE) {
+plot_profile_spectral_series <- function(raster, .hsi_index, .extent = NULL, .ext = NULL, .write = FALSE) {
   # Check if correct class is supplied.
   if (!inherits(raster, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
@@ -431,18 +430,6 @@ plot_profile_spectral_series <- function(raster, .hsi_index, .extent = NULL, .pa
   # Proxy name
   proxy_name <- rlang::as_label(rlang::enquo(.hsi_index))
 
-  # Choose palette
-  proxy_palette <- list(
-    red = "#AF3029",
-    orange = "#BC5215",
-    yellow = "#AD8301",
-    green = "#66800B",
-    cyan = "#24837B",
-    blue = "#205EA6",
-    purple = "#5E409D",
-    magenta = "#A02F6F"
-  )
-
   # Create a plot
   plot <- data |>
     # Pass to plot
@@ -453,7 +440,7 @@ plot_profile_spectral_series <- function(raster, .hsi_index, .extent = NULL, .pa
       y = .data$y
     ) +
     # Add geom
-    ggplot2::geom_path(color = proxy_palette[[.palette]]) +
+    ggplot2::geom_path() +
     # Modify theme
     ggplot2::theme(
       panel.background = ggplot2::element_blank(),

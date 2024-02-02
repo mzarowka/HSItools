@@ -73,7 +73,7 @@ remove_continuum <- function(raster, ...) {
 #'
 #' @return one layer terra SpatRaster with calculated RABD values
 #' @export
-calculate_rabd <- function(raster, .edges, .trough, .rabd_name) {
+calculate_rabd <- function(raster, .edges, .trough, .rabd_name, .rabd_type = c("strict", "max", "median")) {
   # Check if correct class is supplied.
   if (!inherits(raster, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
@@ -104,6 +104,8 @@ calculate_rabd <- function(raster, .edges, .trough, .rabd_name) {
   # Set layer name based on the rabd_name argument
   names(template) <- .rabd_name
 
+  # If RABD is defined as range and "max" is selected flexibly find the position of the absolute minimum within the range.
+  if (.rabd_type == "max") {
   # Find trough position
   trough_position <- spectra_position(raster = raster, spectra = .trough) |>
     # Pull vector with positions
@@ -116,6 +118,38 @@ calculate_rabd <- function(raster, .edges, .trough, .rabd_name) {
     (\(x) terra::which.lyr(raster == x))() |>
     # Coerce to integer
     (\(x) as.integer(x[1]))()
+
+  # If RABD is defined as range and "median" is selected find the middle position.
+  } else if (.rabd_type == "median") {
+    .trough <- stats::median(.trough)
+
+    # Find trough position
+    trough_position <- spectra_position(raster = raster, spectra = .trough) |>
+      # Pull vector with positions
+      dplyr::pull(var = 2) |>
+      # Subset normalized raster to match trough
+      (\(x) terra::subset(raster, x))() |>
+      # Find trough position
+      (\(x) as.numeric(min(x)[1]))() |>
+      # Find trough position in the original raster
+      (\(x) terra::which.lyr(raster == x))() |>
+      # Coerce to integer
+      (\(x) as.integer(x[1]))()
+
+    } else if (.rabd_type == "strict") {
+    # Find trough position
+    trough_position <- spectra_position(raster = raster, spectra = .trough) |>
+      # Pull vector with positions
+      dplyr::pull(var = 2) |>
+      # Subset normalized raster to match trough
+      (\(x) terra::subset(raster, x))() |>
+      # Find trough position
+      (\(x) as.numeric(min(x)[1]))() |>
+      # Find trough position in the original raster
+      (\(x) terra::which.lyr(raster == x))() |>
+      # Coerce to integer
+      (\(x) as.integer(x[1]))()
+    }
 
   # Find minimum reflectance value in the trough (denominator)
   trough_reflectance <- raster[, , trough_position] |>
@@ -354,7 +388,7 @@ calculate_rmean <- function(raster) {
 #'
 #' @return one layer terra SpatRaster with calculated lambdaREMP values.
 #'
-#' @description Calcualte lambdaREMP after Ghanbari, H., Zilkey, D.R., Gregory-Eaves, I., Antoniades, D., 2023. A new index for the rapid generation of chlorophyll time series from hyperspectral imaging of sediment cores. Limnology and Oceanography: Methods 21, 703–717. https://doi.org/10.1002/lom3.10576
+#' @description Calculate lambdaREMP. A wavelength number between 660 and 680 nm, where first derivative equals zero. After Ghanbari, H., Zilkey, D.R., Gregory-Eaves, I., Antoniades, D., 2023. A new index for the rapid generation of chlorophyll time series from hyperspectral imaging of sediment cores. Limnology and Oceanography: Methods 21, 703–717. https://doi.org/10.1002/lom3.10576.
 #'
 #' @export
 calculate_lambdaremp <- function(raster, .trough = c(660, 680), .ext, .write) {
@@ -385,10 +419,8 @@ calculate_lambdaremp <- function(raster, .trough = c(660, 680), .ext, .write) {
     # Pull vector with positions
     dplyr::pull(var = 2) |>
     # Subset normalized raster to match trough
-    (\(x) terra::subset(raster, x))() |>
+    (\(x) terra::subset(raster, x))()
     # Calculate derivative
-    terra::app(fun = \(i) deriv(i)) |>
-    terra::app(fun = \(i) terra::which.lyr(i == 0))
 
   # Create empty SpatRaster template from original cropped raster
   template <- terra::rast(terra::ext(raster), resolution = terra::res(raster))

@@ -17,7 +17,7 @@ extract_spectral_series <- function(raster, .hsi_index = NULL, .extent = NULL) {
     terra::window(raster) <- terra::ext(raster)
   } else {
     # Set window of interest
-    terra::window(raster) <- .extent
+    terra::window(raster) <- terra::ext(.extent)
   }
 
   spectral_series <- raster |>
@@ -51,7 +51,7 @@ extract_spectral_profile <- function(raster, .extent = NULL) {
     terra::window(raster) <- terra::ext(raster)
   } else {
     # Set window of interest
-    terra::window(raster) <- .extent
+    terra::window(raster) <- terra::ext(.extent)
   }
 
   # Aggregate SpatRaster into one data point
@@ -87,7 +87,7 @@ extract_spectral_indices <- function(raster, .hsi_index = NULL, .extent = NULL) 
     terra::window(raster) <- terra::ext(raster)
   } else {
     # Set window of interest
-    terra::window(raster) <- .extent
+    terra::window(raster) <- terra::ext(.extent)
   }
 
   # Aggregate SpatRaster into one data point
