@@ -185,6 +185,20 @@ plot_raster_rgb <- function(raster, .extent = NULL, .ext = NULL, .write = FALSE)
     fs::path_file() |>
     fs::path_ext_remove()
 
+  cli::cli_h1("{raster_name}")
+
+  filename <- paste0(raster_src, "/RGB_GG_", raster_name, ".", .ext)
+
+  raster <- HSItools::spectra_position(
+    raster,
+    spectra = c(650, 550, 450)) |>
+    HSItools::spectra_sub(
+      raster = raster,
+      spectra_tbl = _)
+
+  # Stretch SpatRaster
+  raster <- terra::stretch(raster)
+
   if (is.null(.extent)) {
     # Set window of interest
     terra::window(raster) <- terra::ext(raster)
@@ -192,16 +206,6 @@ plot_raster_rgb <- function(raster, .extent = NULL, .ext = NULL, .write = FALSE)
     # Set window of interest
     terra::window(raster) <- terra::ext(.extent)
   }
-
-  cli::cli_h1("{raster_name}")
-
-  filename <- paste0(raster_src, "/RGB_GG_", raster_name, ".", .ext)
-
-  raster <- HSItools::spectra_position(raster, spectra = c(650, 550, 450)) |>
-    HSItools::spectra_sub(raster = raster, spectra_tbl = _)
-
-  # Stretch SpatRaster
-  raster <- terra::stretch(raster)
 
   # Plot SpatRaster
   plot <- ggplot2::ggplot() +
@@ -227,6 +231,9 @@ plot_raster_rgb <- function(raster, .extent = NULL, .ext = NULL, .write = FALSE)
       y = "Depth"
     )
 
+  # Reset window
+  terra::window(raster) <- NULL
+
   if (.write == TRUE) {
     cli::cli_alert("Writing RGB SpatRaster to {filename}")
 
@@ -236,9 +243,6 @@ plot_raster_rgb <- function(raster, .extent = NULL, .ext = NULL, .write = FALSE)
       device = .ext
     )
   }
-
-  # Reset window
-  terra::window(raster) <- NULL
 
   # Return plot as an object
   return(plot)
