@@ -69,6 +69,7 @@ stretch_raster_full <- function(raster, .ext = NULL, .write = TRUE) {
 #' @param raster a SpatRaster with calculated hyperspectral indices and RGB layers.
 #' @param .hsi_index a character indicating hyperspectral index layer to plot.
 #' @param .palette a character indicating one of \pkg{viridis} palettes of choice: "viridis”, “magma”, “plasma”, “inferno”, “civids”, “mako”, “rocket” and “turbo”.
+#' @param .extent an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
 #' @param .ext character, a graphic format extension.
 #' @param .write logical, should resulting SpatRaster be written to file.
 #'
@@ -76,7 +77,7 @@ stretch_raster_full <- function(raster, .ext = NULL, .write = TRUE) {
 #'
 #' @return a plot with color map of selected hyperspectral index.
 #' @export
-plot_raster_proxy <- function(raster, .hsi_index, .palette = c("viridis”, “magma”, “plasma”, “inferno”, “civids”, “mako”, “rocket”, “turbo"), .ext = NULL, .write = FALSE) {
+plot_raster_proxy <- function(raster, .hsi_index, .palette = c("viridis”, “magma”, “plasma”, “inferno”, “civids”, “mako”, “rocket”, “turbo"), .extent = NULL, .ext = NULL, .write = FALSE) {
   # Check if correct class is supplied.
   if (!inherits(raster, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
@@ -96,6 +97,14 @@ plot_raster_proxy <- function(raster, .hsi_index, .palette = c("viridis”, “m
     terra::sources() |>
     fs::path_file() |>
     fs::path_ext_remove()
+
+  if (is.null(.extent)) {
+    # Set window of interest
+    terra::window(raster) <- terra::ext(raster)
+  } else {
+    # Set window of interest
+    terra::window(raster) <- terra::ext(.extent)
+  }
 
   cli::cli_h1("{raster_name}")
 
@@ -143,6 +152,9 @@ plot_raster_proxy <- function(raster, .hsi_index, .palette = c("viridis”, “m
     )
   }
 
+  # Reset window
+  terra::window(raster) <- NULL
+
   # Return plot as an object
   return(plot)
 }
@@ -150,12 +162,13 @@ plot_raster_proxy <- function(raster, .hsi_index, .palette = c("viridis”, “m
 #' Spatial map plots of RGB image
 #'
 #' @param raster a SpatRaster with calculated hyperspectral indices and RGB layers or just RGB layers.
+#' @param .extent an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
 #' @param .ext character, a graphic format extension.
 #' @param .write logical, should resulting SpatRaster be written to file.
 #'
 #' @return a plot with color map of selected hyperspectral index.
 #' @export
-plot_raster_rgb <- function(raster, .ext = NULL, .write = FALSE) {
+plot_raster_rgb <- function(raster, .extent = NULL, .ext = NULL, .write = FALSE) {
   # Check if correct class is supplied.
   if (!inherits(raster, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
@@ -171,6 +184,14 @@ plot_raster_rgb <- function(raster, .ext = NULL, .write = FALSE) {
     terra::sources() |>
     fs::path_file() |>
     fs::path_ext_remove()
+
+  if (is.null(.extent)) {
+    # Set window of interest
+    terra::window(raster) <- terra::ext(raster)
+  } else {
+    # Set window of interest
+    terra::window(raster) <- terra::ext(.extent)
+  }
 
   cli::cli_h1("{raster_name}")
 
@@ -215,6 +236,9 @@ plot_raster_rgb <- function(raster, .ext = NULL, .write = FALSE) {
       device = .ext
     )
   }
+
+  # Reset window
+  terra::window(raster) <- NULL
 
   # Return plot as an object
   return(plot)
