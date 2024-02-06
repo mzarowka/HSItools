@@ -112,33 +112,3 @@ extract_spectral_indices <- function(raster, .hsi_index = NULL, .extent = NULL) 
   # Return object
   return(spectral_indices)
 }
-
-#' Create SpatVector from Shiny ROIs
-#'
-#' @param data run_core() output with ROIs.
-#' @param .geometry ROI geometry, defaults to wkt "POLYGON".
-#'
-#' @return SpatVect object suitable for plotting and setting extents.
-#' @export
-roi_to_vect <- function(data, .geometry = "POLYGON") {
-  # Extract data frame with ROIs
-  data <- data[["analysisRegions"]]
-
-  # Create polygons
-  rois_vect <- data |>
-    dplyr::mutate(
-      roi.id = paste0("ROI_", 1:dplyr::n()),
-      .before = 1) |>
-    dplyr::group_by(roi.id) |>
-    dplyr::group_split() |>
-    purrr::set_names(nm = paste0("ROI_", 1:nrow(data))) |>
-    purrr::map(\(i) dplyr::select(i, -roi.id)) |>
-    purrr::map(\(i) tidyr::pivot_longer(i, xmin:xmax, names_to = "xcor", values_to = "v1")) |>
-    purrr::map(\(i) tidyr::pivot_longer(i, ymin:ymax, names_to = "ycor", values_to = "v2")) |>
-    purrr::map(\(i) tibble::add_row(i, dplyr::slice_head(i, n = 1))) |>
-    purrr::map(\(i) dplyr::select(i, v1, v2)) |>
-    purrr::map(\(i) dplyr::arrange(i, v2)) |>
-    purrr::map(\(i) as.matrix(i))
-
-  return(rois_vect)
-}
