@@ -98,14 +98,6 @@ plot_raster_proxy <- function(raster, .hsi_index, .palette = c("viridis”, “m
     fs::path_file() |>
     fs::path_ext_remove()
 
-  if (is.null(.extent)) {
-    # Set window of interest
-    terra::window(raster) <- terra::ext(raster)
-  } else {
-    # Set window of interest
-    terra::window(raster) <- terra::ext(.extent)
-  }
-
   cli::cli_h1("{raster_name}")
 
   filename <- paste0(raster_src, "/", .hsi_index, "_", raster_name, ".", .ext)
@@ -113,6 +105,14 @@ plot_raster_proxy <- function(raster, .hsi_index, .palette = c("viridis”, “m
   # Subset SpatRaster
   hsi_layer <- raster |>
     terra::subset(.hsi_index)
+
+  if (is.null(.extent)) {
+    # Set window of interest
+    terra::window(raster) <- terra::ext(raster)
+  } else {
+    # Set window of interest
+    terra::window(raster) <- terra::ext(.extent)
+  }
 
   # Plot SpatRaster
   plot <- ggplot2::ggplot() +
@@ -142,6 +142,9 @@ plot_raster_proxy <- function(raster, .hsi_index, .palette = c("viridis”, “m
       y = "Depth"
     )
 
+  # Reset window
+  terra::window(raster) <- NULL
+
   if (.write == TRUE) {
     cli::cli_alert("Writing {(.hsi_index)} SpatRaster to {filename}")
 
@@ -151,9 +154,6 @@ plot_raster_proxy <- function(raster, .hsi_index, .palette = c("viridis”, “m
       device = .ext
     )
   }
-
-  # Reset window
-  terra::window(raster) <- NULL
 
   # Return plot as an object
   return(plot)
@@ -254,12 +254,13 @@ plot_raster_rgb <- function(raster, .extent = NULL, .ext = NULL, .write = FALSE)
 #' @param .hsi_index a character indicating hyperspectral index layer to plot.
 #' @param .palette a character indicating one of \pkg{viridis} palettes of choice: "viridis”, “magma”, “plasma”, “inferno”, “civids”, “mako”, “rocket” and “turbo”.
 #' @param .alpha a number in [0, 1] controlling transparency.
+#' @param .extent an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
 #' @param .ext character, a graphic format extension.
 #' @param .write logical, should resulting SpatRaster be written to file.
 #'
 #' @return a plot with color map of selected hyperspectral index overlain on RGB image.
 #' @export
-plot_raster_overlay <- function(raster, .hsi_index, .palette = c("viridis”, “magma”, “plasma”, “inferno”, “civids”, “mako”, “rocket”, “turbo"), .alpha = 0.5, .ext = NULL, .write = FALSE) {
+plot_raster_overlay <- function(raster, .hsi_index, .palette = c("viridis”, “magma”, “plasma”, “inferno”, “civids”, “mako”, “rocket”, “turbo"), .alpha = 0.5, .extent = NULL, .ext = NULL, .write = FALSE) {
   # Check if correct class is supplied.
   if (!inherits(raster, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
@@ -288,11 +289,23 @@ plot_raster_overlay <- function(raster, .hsi_index, .palette = c("viridis”, �
   hsi_layer <- raster |>
     terra::subset(.hsi_index)
 
-  raster <- HSItools::spectra_position(raster, spectra = c(650, 550, 450)) |>
-    HSItools::spectra_sub(raster = raster, spectra_tbl = _)
+  raster <- HSItools::spectra_position(
+    raster,
+    spectra = c(650, 550, 450)) |>
+    HSItools::spectra_sub(
+      raster = raster,
+      spectra_tbl = _)
 
   # Stretch SpatRaster
   raster <- terra::stretch(raster)
+
+  if (is.null(.extent)) {
+    # Set window of interest
+    terra::window(raster) <- terra::ext(raster)
+  } else {
+    # Set window of interest
+    terra::window(raster) <- terra::ext(.extent)
+  }
 
   # Plot SpatRaster
   plot <- ggplot2::ggplot() +
@@ -333,6 +346,9 @@ plot_raster_overlay <- function(raster, .hsi_index, .palette = c("viridis”, �
       x = "RGB",
       y = "Depth"
     )
+
+  # Reset window
+  terra::window(raster) <- NULL
 
   if (.write == TRUE) {
     cli::cli_alert("Writing {(.hsi_index)} overlay on RGB SpatRaster to {filename}")
@@ -449,9 +465,17 @@ plot_profile_spectral_series <- function(raster, .hsi_index, .extent = NULL, .ex
   hsi_layer <- raster |>
     terra::subset(.hsi_index)
 
+  if (is.null(.extent)) {
+    # Set window of interest
+    terra::window(raster) <- terra::ext(raster)
+  } else {
+    # Set window of interest
+    terra::window(raster) <- terra::ext(.extent)
+  }
+
   # Clean data
   data <- raster |>
-    HSItools::extract_spectral_series(.extent = .extent) |>
+    HSItools::extract_spectral_series() |>
     dplyr::select(.data$y, {{ .hsi_index }}) |>
     dplyr::rename(y = .data$y, proxy = {{ .hsi_index }})
 
@@ -480,6 +504,8 @@ plot_profile_spectral_series <- function(raster, .hsi_index, .extent = NULL, .ex
       x = proxy_name,
       y = "Depth"
     )
+
+  terra::window(raster) <- NULL
 
   if (.write == TRUE) {
     cli::cli_alert("Writing {(.hsi_index)} plot to {filename}")
@@ -527,9 +553,17 @@ plot_profile_spectral_profile <- function(raster, .extent = NULL, .ext = NULL, .
 
   filename <- paste0(raster_src, "/SPECTRAL_PROFILE_", raster_name, ".", .ext)
 
+  if (is.null(.extent)) {
+    # Set window of interest
+    terra::window(raster) <- terra::ext(raster)
+  } else {
+    # Set window of interest
+    terra::window(raster) <- terra::ext(.extent)
+  }
+
   # Clean data
   data <- raster |>
-    HSItools::extract_spectral_profile(.extent = .extent) |>
+    HSItools::extract_spectral_profile() |>
     dplyr::select(-c(.data$x, .data$y)) |>
     tidyr::pivot_longer(
       dplyr::everything(),
@@ -559,6 +593,8 @@ plot_profile_spectral_profile <- function(raster, .extent = NULL, .ext = NULL, .
       x = "Wavelength (nm)",
       y = "Reflectance"
     )
+
+  terra::window(raster) <- NULL
 
   if (.write == TRUE) {
     cli::cli_alert("Writing spectral profile plot to {filename}")
