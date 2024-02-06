@@ -557,7 +557,7 @@ run_core <- function(autoSave = TRUE){
           fs::dir_ls(type = "file", regexp = ".raw", recurse = TRUE)
       } else if (length(user_dir()) != 0 & useExample()) {
         user_dir() |>
-          fs::dir_ls(type = "file", regexp = ".tif", recurse = TRUE)
+          fs::dir_ls(type = "file", regexp = ".rds", recurse = TRUE)
       } else {
         NULL
       }
@@ -1192,7 +1192,7 @@ run_core <- function(autoSave = TRUE){
       #   allParams$directory <<- user_dir2()
       # }
       else {
-        allParams$directory <<- user_file()$datapath
+        allParams$directory <<- dirname(user_file()$datapath)
         #shinyalert::shinyalert(title = "No Data", text = "Please return to the 'Select Data' tab and choose data to analyze.")
       }
 
@@ -1200,7 +1200,7 @@ run_core <- function(autoSave = TRUE){
       allParams$distances <<- distances
       allParams$analysisOptions <<- analysisOptions
       if (autoSave==TRUE){
-        saveLoc <- paste0(getwd(),"/HSItools_core.rds")
+        saveLoc <- paste0(allParams$directory,"/HSItools_core.rds")
         saveRDS(allParams, saveLoc)
         cat("\n")
         cat(paste0("Output saved: ", saveLoc))
