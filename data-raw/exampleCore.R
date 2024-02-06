@@ -1,13 +1,13 @@
+#Read the tif files into R and store them as rda
+
 library(terra)
-#terra 1.5.23
+
 a1 <- terra::rast("data-raw/CORE_XYZ.tif")
-saveRDS(a1, "data/CORE_XYZ.rds")
+save("a1", file = "data/CORE_XYZ.rda")
 
 a1 <- terra::rast("data-raw/DARKREF_CORE_XYZ.tif")
-saveRDS(a1, "data/DARKREF_CORE_XYZ.rds")
-
+save("a1", file = "data/DARKREF_CORE_XYZ.rda")
 
 a1 <- terra::rast("data-raw/WHITEREF_CORE_XYZ.tif")
-saveRDS(a1, "data/WHITEREF_CORE_XYZ.rds")
-
+save("a1", file = "data/WHITEREF_CORE_XYZ.rda")
 

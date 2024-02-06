@@ -504,7 +504,7 @@ run_core <- function(autoSave = TRUE){
 
     observeEvent(input$file_dir_example, {
       useExample(TRUE)
-      user_dir(paste0(getwd(),"/data"))
+      user_dir(paste0(getwd(),"/inst/extdata"))
       # rasters(user_dir() |>
       #           fs::dir_ls(type = "file", regexp = ".tif", recurse = TRUE))
       # coreImage(terra::rast(user_file()$datapath))
@@ -557,7 +557,7 @@ run_core <- function(autoSave = TRUE){
           fs::dir_ls(type = "file", regexp = ".raw", recurse = TRUE)
       } else if (length(user_dir()) != 0 & useExample()) {
         user_dir() |>
-          fs::dir_ls(type = "file", regexp = ".rds", recurse = TRUE)
+          fs::dir_ls(type = "file", regexp = ".tif", recurse = TRUE)
       } else {
         NULL
       }
