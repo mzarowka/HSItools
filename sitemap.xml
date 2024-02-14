@@ -79,6 +79,9 @@
     <loc>/reference/normalization.html</loc>
   </url>
   <url>
+    <loc>/reference/pixel_to_metric.html</loc>
+  </url>
+  <url>
     <loc>/reference/plot_composite.html</loc>
   </url>
   <url>
@@ -110,6 +113,9 @@
   </url>
   <url>
     <loc>/reference/remove_continuum.html</loc>
+  </url>
+  <url>
+    <loc>/reference/roi_to_vect.html</loc>
   </url>
   <url>
     <loc>/reference/run_core.html</loc>
