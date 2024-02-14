@@ -1,13 +1,14 @@
 #' Create SpatVector from Shiny ROIs
 #'
-#' @param data run_core() output with ROIs.
+#' @param data \code{\link{run_core}} output with ROIs.
 #'
 #' @return SpatVector object suitable for plotting and setting extents.
-#' @export
 roi_to_vect <- function(data) {
   # Extract data frame with ROIs
   data <- data[["analysisRegions"]]
 
+  # Probably can do it quicker by bounding box of the points
+  # Remove some redundancies
   # Create polygons
   rois_vect <- data |>
     # Add grouping variable
@@ -57,14 +58,15 @@ roi_to_vect <- function(data) {
 
 #' Get depth in metric units
 #'
-#' @param pixel_ratio A source of conversion factor, either run_core() output or manually input.
-#' @param .unit metric unit to convert into, defaults to "mm". Accepts also "cm" and "um".
-#' @param .sample_start position of the sample beginning, from run_core().
-#' @param .sample_end position of the sample end, from run_core().
+#' @param extent an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
+#' @param pixel_ratio A source of conversion factor, either \code{\link{run_core}} output or manually input.
+#' @param unit metric unit to convert into, defaults to "mm". Accepts also "cm" and "um".
+#' @param sample_start position of the sample beginning, from \code{\link{run_core}}.
+#' @param sample_end position of the sample end, from \code{\link{run_core}}.
 #'
 #' @return lookup table with depths.
 #' @export
-px_to_metric <- function(pixel_ratio = NULL, .unit = "mm", .sample_start = NULL, .sample_end = NULL) {
+pixel_to_metric <- function(extent = NULL, pixel_ratio = NULL, unit = "mm", sample_start = 0, sample_end = NULL) {
 
 
 }

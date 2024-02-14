@@ -4,10 +4,12 @@
 \alias{plot_raster_rgb}
 \title{Spatial map plots of RGB image}
 \usage{
-plot_raster_rgb(raster, .ext = NULL, .write = FALSE)
+plot_raster_rgb(raster, .extent = NULL, .ext = NULL, .write = FALSE)
 }
 \arguments{
 \item{raster}{a SpatRaster with calculated hyperspectral indices and RGB layers or just RGB layers.}
+
+\item{.extent}{an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.}
 
 \item{.ext}{character, a graphic format extension.}
 

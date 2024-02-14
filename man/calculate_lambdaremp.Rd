@@ -4,12 +4,12 @@
 \alias{calculate_lambdaremp}
 \title{Calculate lambdaREMP}
 \usage{
-calculate_lambdaremp(raster, .edges, .ext, .write)
+calculate_lambdaremp(raster, .trough = c(660, 680), .ext, .write)
 }
 \arguments{
 \item{raster}{a terra SpatRaster of normalized capture data.}
 
-\item{.edges}{a numeric vector of two for the derivative calculation window.}
+\item{.trough}{character vector of wavelength to look for trough.}
 
 \item{.ext}{character, a graphic format extension.}
 
@@ -19,5 +19,5 @@ calculate_lambdaremp(raster, .edges, .ext, .write)
 one layer terra SpatRaster with calculated lambdaREMP values.
 }
 \description{
-Calcualte lambdaREMP after Ghanbari, H., Zilkey, D.R., Gregory-Eaves, I., Antoniades, D., 2023. A new index for the rapid generation of chlorophyll time series from hyperspectral imaging of sediment cores. Limnology and Oceanography: Methods 21, 703–717. https://doi.org/10.1002/lom3.10576
+Calculate lambdaREMP. A wavelength number between 660 and 680 nm, where first derivative equals zero. After Ghanbari, H., Zilkey, D.R., Gregory-Eaves, I., Antoniades, D., 2023. A new index for the rapid generation of chlorophyll time series from hyperspectral imaging of sediment cores. Limnology and Oceanography: Methods 21, 703–717. https://doi.org/10.1002/lom3.10576.
 }

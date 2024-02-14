@@ -4,7 +4,13 @@
 \alias{calculate_rabd}
 \title{Calculate Relative Absorption Band Depth (RABD)}
 \usage{
-calculate_rabd(raster, .edges, .trough, .rabd_name)
+calculate_rabd(
+  raster,
+  .edges,
+  .trough,
+  .rabd_name,
+  .rabd_type = c("strict", "max", "median")
+)
 }
 \arguments{
 \item{raster}{terra SpatRaster of normalized capture data.}

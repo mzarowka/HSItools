@@ -8,7 +8,6 @@ plot_profile_spectral_series(
   raster,
   .hsi_index,
   .extent = NULL,
-  .palette = c("red", "orange", "yellow", "green", "cyan", "blue", "purple", "magenta"),
   .ext = NULL,
   .write = FALSE
 )
@@ -19,8 +18,6 @@ plot_profile_spectral_series(
 \item{.hsi_index}{a character indicating hyperspectral index layer to plot.}
 
 \item{.extent}{an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.}
-
-\item{.palette}{a character indicating one of color palettes of choice. One of: "red", "orange", "yellow", "green", "cyan", "blue", "purple", "magenta".}
 
 \item{.ext}{character, a graphic format extension.}
 

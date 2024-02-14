@@ -10,6 +10,7 @@ plot_raster_overlay(
   .palette =
     c("viridis”, “magma”, “plasma”, “inferno”, “civids”, “mako”, “rocket”, “turbo"),
   .alpha = 0.5,
+  .extent = NULL,
   .ext = NULL,
   .write = FALSE
 )
@@ -22,6 +23,8 @@ plot_raster_overlay(
 \item{.palette}{a character indicating one of \pkg{viridis} palettes of choice: "viridis”, “magma”, “plasma”, “inferno”, “civids”, “mako”, “rocket” and “turbo”.}
 
 \item{.alpha}{a number in \link{0, 1} controlling transparency.}
+
+\item{.extent}{an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.}
 
 \item{.ext}{character, a graphic format extension.}
 
