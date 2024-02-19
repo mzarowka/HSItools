@@ -213,8 +213,10 @@ run_core <- function(autoSave = TRUE){
                                shiny::br(),
                                "Analysis Regions",
                                shiny::br(),
-                               shiny::tableOutput("analysisRegions"),
+                               DT::DTOutput("analysisRegions"),
                              ),
+                             shiny::br(),
+                             actionButton("removeRegion", "Remove highlighted region"),
                              shiny::br(),
                              actionButton("acceptAnalysisRegions", "Accept all selections"),
                                ),
@@ -442,6 +444,8 @@ run_core <- function(autoSave = TRUE){
 
     #checkbox to select all layers
     dt_proxy <- DT::dataTableProxy("layerTable1")
+    dt_proxy2 <- DT::dataTableProxy("analysisRegions")
+
     observeEvent(input$dt_sel, {
       custTableIndex(NULL)
       if (isTRUE(input$dt_sel) & isTRUE(input$halfRows)) {
@@ -527,11 +531,16 @@ run_core <- function(autoSave = TRUE){
     observeEvent(input$proceed_with_data, {
       #print(input$layerTable1_rows_all)
 
-      allParams$layers <<- as.numeric(names(coreImage())[input$layerTable1_rows_selected])
+      if (length(input$layerTable1_rows_selected) < 1){
+        shinyalert::shinyalert(title = "No Layers", text = "Please choose at least 1 layer to proceed!")
+      } else {
 
-      updateTabsetPanel(session=session,
-                        "tabset1",
-                        selected = "Crop Image")
+        allParams$layers <<- as.numeric(names(coreImage())[input$layerTable1_rows_selected])
+
+        updateTabsetPanel(session=session,
+                          "tabset1",
+                          selected = "Crop Image")
+      }
     })
 
     #print file path
@@ -856,7 +865,7 @@ run_core <- function(autoSave = TRUE){
                                      "xmax"=NA,
                                      "ymin"=NA,
                                      "ymax"=NA)
-    output$analysisRegions <- renderTable(analysisRegions$DT)
+    output$analysisRegions <- renderDT(analysisRegions$DT, rownames = FALSE, options = list(dom = 't'))
     # colnames(analysisRegions$DT) <- c("xmin", "xmax", "ymin", "ymax")
 
 
@@ -879,11 +888,20 @@ run_core <- function(autoSave = TRUE){
 
       #allParams$analysisRegions <- analysisRegions()
 
-      output$analysisRegions <- renderTable(analysisRegions$DT)
+      output$analysisRegions <- renderDT(analysisRegions$DT, rownames = FALSE, options = list(dom = 't'))
       #reset brush
       session$resetBrush("plotBrush")
       brush <<- NULL
 
+
+    })
+
+    observeEvent(input$removeRegion, {
+      if (!is.null(input$analysisRegions_rows_selected)) {
+
+        analysisRegions$DT <- analysisRegions$DT[-as.numeric(input$analysisRegions_rows_selected),]
+      }
+      output$analysisRegions <- renderDT(analysisRegions$DT, rownames = FALSE, options = list(dom = 't'))
     })
 
     # observeEvent(input$skipSelectAnalysisRegion, {
@@ -942,7 +960,7 @@ run_core <- function(autoSave = TRUE){
         "Choose layers to subset raster",
         wellPanel(
           shiny::fluidRow(column(6,
-          checkboxInput("dt_sel", "select/deselect all", value = FALSE)),
+          checkboxInput("dt_sel", "select/deselect all", value = TRUE)),
           column(6,
           checkboxInput("halfRows", "select every other row", value = FALSE))),
           "Choose Custom Wavelengths (comma separated)",
@@ -985,7 +1003,7 @@ run_core <- function(autoSave = TRUE){
           "Choose layers to subset raster",
           wellPanel(
             shiny::fluidRow(column(6,
-            checkboxInput("dt_sel", "select/deselect all", value = FALSE)),
+            checkboxInput("dt_sel", "select/deselect all", value = TRUE)),
             column(6,
             checkboxInput("halfRows", "select every other row", value = FALSE))),
             "Choose Custom Wavelengths (comma separated)",
@@ -1024,7 +1042,7 @@ run_core <- function(autoSave = TRUE){
           "Choose layers to subset raster",
           wellPanel(
             shiny::fluidRow(column(6,
-            checkboxInput("dt_sel", "select/deselect all", value = FALSE)),
+            checkboxInput("dt_sel", "select/deselect all", value = TRUE)),
             column(6,
             checkboxInput("halfRows", "select every other row", value = FALSE))),
             "Choose Custom Wavelengths (comma separated)",
@@ -1196,7 +1214,7 @@ run_core <- function(autoSave = TRUE){
         #shinyalert::shinyalert(title = "No Data", text = "Please return to the 'Select Data' tab and choose data to analyze.")
       }
 
-      allParams$analysisRegions <<- analysisRegions$DT
+      allParams$analysisRegions <<- roi_to_vect(analysisRegions$DT)
       allParams$distances <<- distances
       allParams$analysisOptions <<- analysisOptions
       if (autoSave==TRUE){

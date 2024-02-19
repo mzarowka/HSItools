@@ -4,8 +4,6 @@
 #'
 #' @return SpatVector object suitable for plotting and setting extents.
 roi_to_vect <- function(data) {
-  # Extract data frame with ROIs
-  data <- data[["analysisRegions"]]
 
   # Probably can do it quicker by bounding box of the points
   # Remove some redundancies
@@ -48,9 +46,7 @@ roi_to_vect <- function(data) {
     # Rename
     dplyr::rename(geometry = x) |>
     # To one sf
-    sf::st_as_sf() |>
-    # To SpatVector
-    terra::vect()
+    sf::st_as_sf()
 
   # Return SpatVector
   return(rois_vect)
