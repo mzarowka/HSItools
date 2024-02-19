@@ -73,7 +73,7 @@ remove_continuum <- function(raster, ...) {
 #'
 #' @return one layer terra SpatRaster with calculated RABD values
 #' @export
-calculate_rabd <- function(raster, .edges, .trough, .rabd_name, .rabd_type = c("strict", "max", "median")) {
+calculate_rabd <- function(raster, .edges, .trough, .rabd_name, .rabd_type = c("strict", "max", "median", "mid", "mean")) {
   # Check if correct class is supplied.
   if (!inherits(raster, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
@@ -92,20 +92,21 @@ calculate_rabd <- function(raster, .edges, .trough, .rabd_name, .rabd_type = c("
 
   cli::cli_h1("{raster_name}")
 
-  filename <- paste0(raster_src, "/", .rabd_name, "_", raster_name, ".tif")
-
-  cli::cli_alert("Writing {(.rabd_name)} to {filename}.")
-
   # Create empty SpatRaster template from original cropped raster
   template <- terra::rast(
     terra::ext(raster),
     resolution = terra::res(raster))
 
-  # Set layer name based on the rabd_name argument
-  names(template) <- .rabd_name
-
   # If RABD is defined as range and "max" is selected flexibly find the position of the absolute minimum within the range.
   if (.rabd_type == "max") {
+
+    # Set layer name based on the rabd_name argument
+    names(template) <- paste0(.rabd_name, "_max")
+
+    filename <- paste0(raster_src, "/", .rabd_name, "_max_", raster_name, ".tif")
+
+    cli::cli_alert("Writing {(.rabd_name)}_max to {filename}.")
+
   # Find trough position
   trough_position <- spectra_position(raster = raster, spectra = .trough) |>
     # Pull vector with positions
@@ -120,8 +121,15 @@ calculate_rabd <- function(raster, .edges, .trough, .rabd_name, .rabd_type = c("
     (\(x) as.integer(x[1]))()
 
   # If RABD is defined as range and "median" is selected find the middle position.
-  } else if (.rabd_type == "median") {
+  } else if (.rabd_type == "mid") {
     .trough <- stats::median(.trough)
+
+    # Set layer name based on the rabd_name argument
+    names(template) <- paste0(.rabd_name, "_mid")
+
+    filename <- paste0(raster_src, "/", .rabd_name, "_mid_", raster_name, ".tif")
+
+    cli::cli_alert("Writing {(.rabd_name)}_mid to {filename}.")
 
     # Find trough position
     trough_position <- spectra_position(raster = raster, spectra = .trough) |>
@@ -136,7 +144,16 @@ calculate_rabd <- function(raster, .edges, .trough, .rabd_name, .rabd_type = c("
       # Coerce to integer
       (\(x) as.integer(x[1]))()
 
-    } else if (.rabd_type == "strict") {
+  # If RABD is defined as a specific wavelength.
+  } else if (.rabd_type == "strict") {
+
+    # Set layer name based on the rabd_name argument
+    names(template) <- paste0(.rabd_name, "_strict")
+
+    filename <- paste0(raster_src, "/", .rabd_name, "_strict_", raster_name, ".tif")
+
+    cli::cli_alert("Writing {(.rabd_name)}_strict to {filename}.")
+
     # Find trough position
     trough_position <- spectra_position(raster = raster, spectra = .trough) |>
       # Pull vector with positions

@@ -10,11 +10,12 @@ roi_to_vect <- function(data) {
   # Probably can do it quicker by bounding box of the points
   # Remove some redundancies
   # Create polygons
-  rois_vect <- data |>
+  data <- data |>
     # Add grouping variable
     dplyr::mutate(
       roi.id = paste0("ROI_", 1:dplyr::n()),
-      .before = 1) |>
+      .before = 1
+    ) |>
     # Group by
     dplyr::group_by(roi.id) |>
     # Split
@@ -24,11 +25,24 @@ roi_to_vect <- function(data) {
     # Drop id
     purrr::map(\(i) dplyr::select(i, -roi.id)) |>
     # Pivot X
-    purrr::map(\(i) tidyr::pivot_longer(i, xmin:xmax, names_to = "xcor", values_to = "v1")) |>
+    purrr::map(\(i) tidyr::pivot_longer(
+      i,
+      xmin:xmax,
+      names_to = "xcor",
+      values_to = "v1"
+    )) |>
     # Pivot Y
-    purrr::map(\(i) tidyr::pivot_longer(i, ymin:ymax, names_to = "ycor", values_to = "v2")) |>
+    purrr::map(\(i) tidyr::pivot_longer(
+      i,
+      ymin:ymax,
+      names_to = "ycor",
+      values_to = "v2"
+    )) |>
     # Close polygon - duplicate first vertex
-    purrr::map(\(i) tibble::add_row(i, dplyr::slice_head(i, n = 1))) |>
+    purrr::map(\(i) tibble::add_row(
+      i,
+      dplyr::slice_head(i, n = 1)
+    )) |>
     # Select only x and y
     purrr::map(\(i) dplyr::select(i, v1, v2)) |>
     # To matrix for polygon
@@ -53,7 +67,7 @@ roi_to_vect <- function(data) {
     terra::vect()
 
   # Return SpatVector
-  return(rois_vect)
+  return(data)
 }
 
 #' Get depth in metric units
