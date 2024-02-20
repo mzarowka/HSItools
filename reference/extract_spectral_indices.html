@@ -57,7 +57,12 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">extract_spectral_indices</span><span class="op">(</span><span class="va">raster</span>, .hsi_index <span class="op">=</span> <span class="cn">NULL</span>, .extent <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">extract_spectral_indices</span><span class="op">(</span></span>
+<span>  <span class="va">raster</span>,</span>
+<span>  .hsi_index <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  .extent <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  .write <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -72,6 +77,10 @@
 
 <dt>.extent</dt>
 <dd><p>an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.</p></dd>
+
+
+<dt>.write</dt>
+<dd><p>optional, should output be written to csv file.</p></dd>
 
 </dl></div>
     <div class="section level2">

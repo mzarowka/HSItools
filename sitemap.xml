@@ -46,9 +46,6 @@
     <loc>/reference/calculate_rmean.html</loc>
   </url>
   <url>
-    <loc>/reference/composite_drive.html</loc>
-  </url>
-  <url>
     <loc>/reference/create_normalized_raster.html</loc>
   </url>
   <url>
@@ -104,12 +101,6 @@
   </url>
   <url>
     <loc>/reference/raster_crop.html</loc>
-  </url>
-  <url>
-    <loc>/reference/read_depth.html</loc>
-  </url>
-  <url>
-    <loc>/reference/read_hsi.html</loc>
   </url>
   <url>
     <loc>/reference/remove_continuum.html</loc>
