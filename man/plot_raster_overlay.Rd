@@ -22,7 +22,7 @@ plot_raster_overlay(
 
 \item{.palette}{a character indicating one of \pkg{viridis} palettes of choice: "viridis”, “magma”, “plasma”, “inferno”, “civids”, “mako”, “rocket” and “turbo”.}
 
-\item{.alpha}{a number in \link{0, 1} controlling transparency.}
+\item{.alpha}{a number in (0, 1) controlling transparency.}
 
 \item{.extent}{an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.}
 

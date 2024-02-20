@@ -15,24 +15,24 @@ roi_to_vect <- function(data) {
       .before = 1
     ) |>
     # Group by
-    dplyr::group_by(roi.id) |>
+    dplyr::group_by(.data$roi.id) |>
     # Split
     dplyr::group_split() |>
     # Set names
     purrr::set_names(nm = paste0("ROI_", 1:nrow(data))) |>
     # Drop id
-    purrr::map(\(i) dplyr::select(i, -roi.id)) |>
+    purrr::map(\(i) dplyr::select(i, -.data$roi.id)) |>
     # Pivot X
     purrr::map(\(i) tidyr::pivot_longer(
       i,
-      xmin:xmax,
+      .data$xmin:.data$xmax,
       names_to = "xcor",
       values_to = "v1"
     )) |>
     # Pivot Y
     purrr::map(\(i) tidyr::pivot_longer(
       i,
-      ymin:ymax,
+      .data$ymin:.data$ymax,
       names_to = "ycor",
       values_to = "v2"
     )) |>
@@ -42,7 +42,7 @@ roi_to_vect <- function(data) {
       dplyr::slice_head(i, n = 1)
     )) |>
     # Select only x and y
-    purrr::map(\(i) dplyr::select(i, v1, v2)) |>
+    purrr::map(\(i) dplyr::select(i, .data$v1, .data$v2)) |>
     # To matrix for polygon
     purrr::map(\(i) as.matrix(i)) |>
     # Create polygon
@@ -58,7 +58,7 @@ roi_to_vect <- function(data) {
     # Bind by row
     purrr::list_rbind(names_to = "roi.id") |>
     # Rename
-    dplyr::rename(geometry = x) |>
+    dplyr::rename(geometry = .data$x) |>
     # To one sf
     sf::st_as_sf()
 

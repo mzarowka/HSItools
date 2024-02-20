@@ -3,10 +3,11 @@
 #' @param raster terra SpatRaster with one layer with calculated values.
 #' @param .hsi_index character indicating hyperspectral index layer to plot.
 #' @param .extent an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
+#' @param .write optional, should output be written to csv file.
 #'
 #' @return tibble frame with XY coordinates and averaged proxy values.
 #' @export
-extract_spectral_series <- function(raster, .hsi_index = NULL, .extent = NULL) {
+extract_spectral_series <- function(raster, .hsi_index = NULL, .extent = NULL, .write = FALSE) {
   # Check if correct class is supplied.
   if (!inherits(raster, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
@@ -32,6 +33,11 @@ extract_spectral_series <- function(raster, .hsi_index = NULL, .extent = NULL) {
   # Reset window
   terra::window(raster) <- NULL
 
+  # Write to file
+  if (.write == TRUE) {
+    readr::write_csv(spectral_series, file = paste0())
+  }
+
   # Return object
   return(spectral_series)
 }
@@ -40,10 +46,11 @@ extract_spectral_series <- function(raster, .hsi_index = NULL, .extent = NULL) {
 #'
 #' @param raster a terra SpatRaster of normalized capture data.
 #' @param .extent an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
+#' @param .write optional, should output be written to csv file.
 #'
 #' @return a tibble with averaged spectral profile.
 #' @export
-extract_spectral_profile <- function(raster, .extent = NULL) {
+extract_spectral_profile <- function(raster, .extent = NULL, .write = FALSE) {
   # Check if correct class is supplied.
   if (!inherits(raster, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
@@ -70,6 +77,11 @@ extract_spectral_profile <- function(raster, .extent = NULL) {
   # Reset window
   terra::window(raster) <- NULL
 
+  # Write to file
+  if (.write == TRUE) {
+    readr::write_csv(spectral_profile, file = paste0())
+  }
+
   # Return object
   return(spectral_profile)
 }
@@ -79,10 +91,11 @@ extract_spectral_profile <- function(raster, .extent = NULL) {
 #' @param raster a terra SpatRaster of normalized capture data.
 #' @param .hsi_index character indicating hyperspectral index layer to plot.
 #' @param .extent an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
+#' @param .write optional, should output be written to csv file.
 #'
 #' @return a tibble with averaged value or multiple values of spectral indices.
 #' @export
-extract_spectral_indices <- function(raster, .hsi_index = NULL, .extent = NULL) {
+extract_spectral_indices <- function(raster, .hsi_index = NULL, .extent = NULL, .write = FALSE) {
   # Check if correct class is supplied.
   if (!inherits(raster, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
@@ -108,6 +121,11 @@ extract_spectral_indices <- function(raster, .hsi_index = NULL, .extent = NULL) 
 
   # Reset window
   terra::window(raster) <- NULL
+
+  # Write to file
+  if (.write == TRUE) {
+    readr::write_csv(spectral_indices, file = paste0())
+  }
 
   # Return object
   return(spectral_indices)

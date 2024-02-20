@@ -11,7 +11,7 @@ calculate_band_difference(raster, .edges, .difference_name)
 
 \item{.edges}{numeric vector of two for the difference.}
 
-\item{.ratio_name}{a character, lower case name of calculated difference.}
+\item{.difference_name}{a character, lower case name of calculated difference.}
 }
 \value{
 one layer terra SpatRaster with calculated difference values

@@ -19,7 +19,7 @@ plot_raster_proxy(
 
 \item{.hsi_index}{a character indicating hyperspectral index layer to plot.}
 
-\item{.palette}{a character indicating one of \pkg{viridis} palettes of choice: "viridis”, “magma”, “plasma”, “inferno”, “civids”, “mako”, “rocket” and “turbo”.}
+\item{.palette}{a character indicating one of \pkg{viridis} palettes of choice: "viridis", "magma", "plasma", "inferno", "civids", "mako", "rocket" and "turbo".}
 
 \item{.extent}{an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.}
 

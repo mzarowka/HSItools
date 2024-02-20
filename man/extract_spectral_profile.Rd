@@ -4,12 +4,14 @@
 \alias{extract_spectral_profile}
 \title{Extract spectral profile from the ROI}
 \usage{
-extract_spectral_profile(raster, .extent = NULL)
+extract_spectral_profile(raster, .extent = NULL, .write = FALSE)
 }
 \arguments{
 \item{raster}{a terra SpatRaster of normalized capture data.}
 
 \item{.extent}{an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.}
+
+\item{.write}{optional, should output be written to csv file.}
 }
 \value{
 a tibble with averaged spectral profile.

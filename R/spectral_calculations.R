@@ -70,10 +70,11 @@ remove_continuum <- function(raster, ...) {
 #' @param .edges numeric vector of two for the wide calculation window.
 #' @param .trough character vector of wavelength to look for trough.
 #' @param .rabd_name character, lower case name name of calculated RABD.
+#' @param .rabd_type character, lower case, type of RABD. One of "strict" - specific wavelength, "max" - flexible choice of the maximum reflectance dip, "mid" - middle point between the min and max .trough wavelength (simmilar to strict).
 #'
 #' @return one layer terra SpatRaster with calculated RABD values
 #' @export
-calculate_rabd <- function(raster, .edges, .trough, .rabd_name, .rabd_type = c("strict", "max", "median", "mid", "mean")) {
+calculate_rabd <- function(raster, .edges, .trough, .rabd_name, .rabd_type = c("strict", "max", "mid")) {
   # Check if correct class is supplied.
   if (!inherits(raster, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
@@ -307,7 +308,7 @@ calculate_band_ratio <- function(raster, .edges, .ratio_name) {
 #'
 #' @param raster terra SpatRaster of normalized capture data.
 #' @param .edges numeric vector of two for the difference.
-#' @param .ratio_name a character, lower case name of calculated difference.
+#' @param .difference_name a character, lower case name of calculated difference.
 #'
 #' @return one layer terra SpatRaster with calculated difference values
 #' @export

@@ -42,7 +42,9 @@ Imports:
     data.table,
     shinyalert,
     stringr,
-    tibble
+    tibble,
+    readr,
+    fs
 Depends: 
     R (>= 4.1.0)
 LazyData: true

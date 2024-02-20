@@ -9,7 +9,7 @@ calculate_rabd(
   .edges,
   .trough,
   .rabd_name,
-  .rabd_type = c("strict", "max", "median")
+  .rabd_type = c("strict", "max", "mid")
 )
 }
 \arguments{
@@ -20,6 +20,8 @@ calculate_rabd(
 \item{.trough}{character vector of wavelength to look for trough.}
 
 \item{.rabd_name}{character, lower case name name of calculated RABD.}
+
+\item{.rabd_type}{character, lower case, type of RABD. One of "strict" - specific wavelength, "max" - flexible choice of the maximum reflectance dip, "mid" - middle point between the min and max .trough wavelength (simmilar to strict).}
 }
 \value{
 one layer terra SpatRaster with calculated RABD values
