@@ -68,15 +68,43 @@ roi_to_vect <- function(data) {
 
 #' Get depth in metric units
 #'
-#' @param extent an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
-#' @param pixel_ratio A source of conversion factor, either \code{\link{run_core}} output or manually input.
+#' @param core \code{\link{run_core}} output. If provided fills pixel_ratio, sample_start and sample_end. Exlusive with pixel_ratio.
+#' @param pixel_ratio a source of conversion factor, manually input. Exlusive with pixel_ratio.
 #' @param unit metric unit to convert into, defaults to "mm". Accepts also "cm" and "um".
-#' @param sample_start position of the sample beginning, from \code{\link{run_core}}.
-#' @param sample_end position of the sample end, from \code{\link{run_core}}.
+#' @param sample_start position of the sample beginning, either from \code{\link{run_core}} output or manually input.
+#' @param sample_end position of the sample end, either from \code{\link{run_core}} output or manually input.
+#' @param extent a terra extent or terra SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
 #'
 #' @return lookup table with depths.
 #' @export
-pixel_to_metric <- function(extent = NULL, pixel_ratio = NULL, unit = "mm", sample_start = 0, sample_end = NULL) {
+pixel_to_distance <- function(core, pixel_ratio, unit = "mm", sample_start, sample_end, extent = NULL) {
+  # Here check if optional core is shiny output-like, S3 class
+  # if (!inherits(core, what = "CLASS-HERE")) {
+  #   rlang::abort(message = "Supplied \"core\" name is not a valid output of run_core().")
+  # }
 
+  # Check if only one argument is provided
+  rlang::check_exclusive(core, pixel_ratio, .require = TRUE)
 
+  # Calculate mm distance and depths
+
+  # Using run_core output
+  if (is.null(core) == FALSE) {
+    # Set core to run_core output
+    core <- core
+
+    # Extract pixel ratio
+    pixel_ratio <- core$distances$pixelRatio
+
+    # Extract sample_start
+    sample_start <- core$distances$startCore
+
+    # Extract sample_end
+    sample_end <- core$distances$endCore
+
+    # Get depth
+    pixel_depth <- "dupa"
+  } else {
+    depth <- "dupa"
+  }
 }

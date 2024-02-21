@@ -108,10 +108,10 @@ plot_raster_proxy <- function(raster, .hsi_index, .palette = c("viridis”, “m
 
   if (is.null(.extent)) {
     # Set window of interest
-    terra::window(raster) <- terra::ext(raster)
+    terra::window(hsi_layer) <- terra::ext(hsi_layer)
   } else {
     # Set window of interest
-    terra::window(raster) <- terra::ext(.extent)
+    terra::window(hsi_layer) <- terra::ext(.extent)
   }
 
   # Plot SpatRaster
