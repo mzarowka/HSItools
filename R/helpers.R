@@ -68,8 +68,8 @@ roi_to_vect <- function(data) {
 
 #' Get depth in metric units
 #'
-#' @param core \code{\link{run_core}} output. If provided fills pixel_ratio, sample_start and sample_end. Exlusive with pixel_ratio.
-#' @param pixel_ratio a source of conversion factor, manually input. Exlusive with pixel_ratio.
+#' @param core \code{\link{run_core}} output. If provided fills pixel_ratio, sample_start and sample_end. Exclusive with pixel_ratio.
+#' @param pixel_ratio a source of conversion factor, manually input. Exclusive with pixel_ratio.
 #' @param unit metric unit to convert into, defaults to "mm". Accepts also "cm" and "um".
 #' @param sample_start position of the sample beginning, either from \code{\link{run_core}} output or manually input.
 #' @param sample_end position of the sample end, either from \code{\link{run_core}} output or manually input.

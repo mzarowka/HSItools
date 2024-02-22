@@ -9,14 +9,14 @@ pixel_to_distance(
   pixel_ratio,
   unit = "mm",
   sample_start,
-  sample_end = NULL,
+  sample_end,
   extent = NULL
 )
 }
 \arguments{
-\item{core}{\code{\link{run_core}} output. If provided fills pixel_ratio, sample_start and sample_end.}
+\item{core}{\code{\link{run_core}} output. If provided fills pixel_ratio, sample_start and sample_end. Exclusive with pixel_ratio.}
 
-\item{pixel_ratio}{a source of conversion factor, either \code{\link{run_core}} output or manually input.}
+\item{pixel_ratio}{a source of conversion factor, manually input. Exclusive with pixel_ratio.}
 
 \item{unit}{metric unit to convert into, defaults to "mm". Accepts also "cm" and "um".}
 
