@@ -80,7 +80,7 @@ prepare_core <- function(core = NULL, .path = NULL, .layers = NULL, .extent = NU
     cli::cli_alert_info("{format(Sys.time())}: cropping rasters.")
 
     # Crop
-    rasters_cropped <- purrr::map2(rasters_subset, types, \(x, y) HSItools::raster_crop(x, y, big_roi, path = path))
+    rasters_cropped <- purrr::map2(rasters_subset, types, \(x, y) HSItools::raster_crop(raster = x, type = y, roi = big_roi))
 
     cli::cli_alert_info("{format(Sys.time())}: calculating reference rasters.")
 

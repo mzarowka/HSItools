@@ -1,25 +1,39 @@
 #' Extract average proxy series from ROI
 #'
 #' @param raster terra SpatRaster with one layer with calculated values.
-#' @param .hsi_index character indicating hyperspectral index layer to plot.
-#' @param .extent an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
-#' @param .write optional, should output be written to csv file.
+#' @param index character indicating hyperspectral index layer to plot.
+#' @param extent an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
+#' @param write optional, should output be written to csv file.
+#' @param ... further parameters for pixel_to_distance()
 #'
 #' @return tibble frame with XY coordinates and averaged proxy values.
 #' @export
-extract_spectral_series <- function(raster, .hsi_index = NULL, .extent = NULL, .write = FALSE) {
+extract_spectral_series <- function(raster, index = NULL, extent = NULL, write = FALSE, ...) {
+  # Get the parameters
+  parameters <- rlang::list2(...)
+
   # Check if correct class is supplied.
   if (!inherits(raster, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
   }
 
-  if (is.null(.extent)) {
+  # Set extents in windows
+  if (is.null(extent)) {
     # Set window of interest
     terra::window(raster) <- terra::ext(raster)
   } else {
     # Set window of interest
-    terra::window(raster) <- terra::ext(.extent)
+    terra::window(raster) <- terra::ext(extent)
   }
+
+  # Subset if layers provided
+  if (!is.null(index)) {
+    raster <- raster |>
+      terra::subset(index)
+  }
+
+  # Get depth values
+  depths <- HSItools::pixel_to_distance(core = parameters$core)
 
   spectral_series <- raster |>
     terra::aggregate(
@@ -28,13 +42,17 @@ extract_spectral_series <- function(raster, .hsi_index = NULL, .extent = NULL, .
     # Coerce do data frame with coordinates
     terra::as.data.frame(xy = TRUE) |>
     # To tibble
-    dplyr::tibble()
+    dplyr::tibble() |>
+    # Calculate metric depths
+    dplyr::mutate(
+      depth.mm = depths$distance - (.data$y * depths$pixel_ratio),
+      tube.mm = .data$depth.mm - depths$point_zero)
 
   # Reset window
   terra::window(raster) <- NULL
 
   # Write to file
-  if (.write == TRUE) {
+  if (write == TRUE) {
     readr::write_csv(spectral_series, file = paste0())
   }
 
@@ -72,7 +90,9 @@ extract_spectral_profile <- function(raster, .extent = NULL, .write = FALSE) {
     # Coerce do data frame with coordinates
     terra::as.data.frame(xy = TRUE) |>
     # To tibble
-    dplyr::tibble()
+    dplyr::tibble() |>
+    # Drop x and y
+    dplyr::select(-c(x, y))
 
   # Reset window
   terra::window(raster) <- NULL

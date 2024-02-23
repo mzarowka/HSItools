@@ -1,10 +1,17 @@
+# Split job by ROIs
+split_by_roi <- function(core, roi){
+  # Check if correct class is supplied.
+  if (!inherits(raster, what = "SpatRaster")) {
+    rlang::abort(message = "Supplied data is not a terra SpatRaster.")
+  }
+}
+
 #' Create SpatVector from Shiny ROIs
 #'
 #' @param data \code{\link{run_core}} output with ROIs.
 #'
 #' @return SpatVector object suitable for plotting and setting extents.
 roi_to_vect <- function(data) {
-
   # Probably can do it quicker by bounding box of the points
   # Remove some redundancies
   # Create polygons
@@ -70,14 +77,15 @@ roi_to_vect <- function(data) {
 #'
 #' @param core \code{\link{run_core}} output. If provided fills pixel_ratio, sample_start and sample_end. Exclusive with pixel_ratio.
 #' @param pixel_ratio a source of conversion factor, manually input. Exclusive with pixel_ratio.
-#' @param unit metric unit to convert into, defaults to "mm". Accepts also "cm" and "um".
-#' @param sample_start position of the sample beginning, either from \code{\link{run_core}} output or manually input.
+#' @param ymax_px pixel value of the top.
+#' @param ymin_px pixel value of the bottom, default to 0.
+#' @param sample_start position of the sample beginning (point zero), either from \code{\link{run_core}} output or manually input.
 #' @param sample_end position of the sample end, either from \code{\link{run_core}} output or manually input.
 #' @param extent a terra extent or terra SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
 #'
 #' @return lookup table with depths.
 #' @export
-pixel_to_distance <- function(core, pixel_ratio, unit = "mm", sample_start, sample_end, extent = NULL) {
+pixel_to_distance <- function(core, pixel_ratio, ymax, ymin = 0, sample_start, sample_end, extent = NULL) {
   # Here check if optional core is shiny output-like, S3 class
   # if (!inherits(core, what = "CLASS-HERE")) {
   #   rlang::abort(message = "Supplied \"core\" name is not a valid output of run_core().")
@@ -102,9 +110,31 @@ pixel_to_distance <- function(core, pixel_ratio, unit = "mm", sample_start, samp
     # Extract sample_end
     sample_end <- core$distances$endCore
 
-    # Get depth
-    pixel_depth <- "dupa"
+    # Extract full extent of the captured data
+    extent <- terra::ext(core$simpleRGB$ext)
+
+    # Get the full capture distance
+    distance <- (terra::ymax(extent) - terra::ymin(extent)) * (pixel_ratio)
   } else {
-    depth <- "dupa"
+
+    # Get the full capture distance
+    distance <- (ymax_px - ymin_px) * (pixel_ratio)
   }
+
+  # Reverse values, get metric zero at the capture top
+  capture_top <- c(y = (terra::ymax(extent) * pixel_ratio) - distance)
+
+  # Reverse values, get metric max at the capture bottom
+  capture_bottom <- c(y = (terra::ymin(extent) * pixel_ratio) + distance)
+
+  # Get the metric point of the sample beginning
+  point_zero <- capture_top - (sample_start[2] * pixel_ratio) + distance
+
+  # Return
+  return(list(
+    distance = distance,
+    capture_top = capture_top,
+    capture_bottom = capture_bottom,
+    point_zero = point_zero,
+    pixel_ratio = pixel_ratio))
 }

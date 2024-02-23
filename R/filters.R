@@ -60,7 +60,7 @@ filter_median <- function(raster = raster, window = 3, product = TRUE, ...){
 #' @return A filtered terra SpatRaster.
 #' @export
 #'
-filter_savgol <- function(raster, p = 3, n = p + 3 - p%%2, m = 0, ts = 1, .extent = NULL, .ext = NULL){
+filter_savgol <- function(raster, p = 3, n = p + 13 - p%%2, m = 0, ts = 1, .extent = NULL, .ext = NULL){
   # Check if correct class is supplied.
   if (!inherits(raster, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
@@ -79,7 +79,7 @@ filter_savgol <- function(raster, p = 3, n = p + 3 - p%%2, m = 0, ts = 1, .exten
 
   cli::cli_h1("{raster_name}")
 
-  filename <- paste0(raster_src, "/", raster_name, "savitzky-golay.", .ext)
+  filename <- paste0(raster_src, "/", raster_name, "_savitzky-golay.", .ext)
 
   if (is.null(.extent)) {
     # Set window of interest
