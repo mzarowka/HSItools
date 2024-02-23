@@ -4,7 +4,15 @@
 \alias{filter_savgol}
 \title{Apply a Savitzky-Golay smoothing filter}
 \usage{
-filter_savgol(raster, p = 3, n = p + 3 - p\%\%2, m = 0, ts = 1, ...)
+filter_savgol(
+  raster,
+  p = 3,
+  n = p + 13 - p\%\%2,
+  m = 0,
+  ts = 1,
+  .extent = NULL,
+  .ext = NULL
+)
 }
 \arguments{
 \item{raster}{a terra SpatRaster of normalized data}
@@ -17,7 +25,11 @@ filter_savgol(raster, p = 3, n = p + 3 - p\%\%2, m = 0, ts = 1, ...)
 
 \item{ts}{time scaling factor.}
 
-\item{...}{further parameters such as file path.}
+\item{.extent}{an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.}
+
+\item{.ext}{character, a graphic format extension.}
+
+\item{.write}{logical, should resulting SpatRaster be written to file.}
 }
 \value{
 A filtered terra SpatRaster.

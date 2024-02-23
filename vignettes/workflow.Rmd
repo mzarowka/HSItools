@@ -16,10 +16,11 @@ knitr::opts_chunk$set(
 
 ```{r setup}
 library(HSItools)
-library(tidyverse)
 library(patchwork)
 library(terra)
-library(tidyterra)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
 ```
 
 Here we present basic workflow for a single core with two ROIs (regions of interest). It is assumed that the output of run_core() function is available and stored on the disk.
