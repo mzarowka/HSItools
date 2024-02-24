@@ -58,7 +58,7 @@ It is a good idea to apply spectral smoothing, such as the Savitzky-Golay spectr
 ```{r sav-gol, warning=FALSE}
 reflectance_smooth <- reflectance |>
   # Specify the file extension
-  filter_savgol(.ext = "tif")
+  filter_savgol()
 ```
 
 We can plot the RGB preview at this stage, too.
@@ -72,19 +72,28 @@ plot_raster_rgb(reflectance_smooth)
 ```{r}
 # Spectral profile from the entire ROI
 reflectance_sp <- reflectance |>
+  # Use HSItools function to extract the profile
   extract_spectral_profile() |>
   # Pivot longer so for plotting
-  tidyr::pivot_longer(dplyr::everything(), names_to = "band", values_to = "reflectance", names_transform = readr::parse_number)
+  tidyr::pivot_longer(
+    dplyr::everything(),
+    names_to = "band",
+    values_to = "reflectance",
+    names_transform = readr::parse_number)
 
 # Peek into data
 head(reflectance_sp)
 
 # Spectral profile from the entire ROI
 reflectance_smooth_sp <- reflectance_smooth |>
-  # Extract data
+  # Use HSItools function to extract the profile
   extract_spectral_profile() |>
   # Pivot longer so for plotting
-  tidyr::pivot_longer(dplyr::everything(), names_to = "band", values_to = "reflectance_sg", names_transform = readr::parse_number)
+  tidyr::pivot_longer(
+    dplyr::everything(),
+    names_to = "band",
+    values_to = "reflectance_sg",
+    names_transform = readr::parse_number)
 
 # Peek into data
 head(reflectance_smooth_sp)
@@ -124,13 +133,13 @@ sp_compare +
 
 ### Continuum removal
 
-Optionally, we can process our data further by removing the continuum, which follows the rule of dividing thespectrum by its bounding box. This way spectrum becomes flatter.
+Optionally, we can process our data further by removing the continuum, which follows the rule of dividing the spectrum by its bounding box. This way spectrum becomes flatter.
 
 ```{r}
 # Calculate reflectance with removed continuum
 # Use the smoothed spectrum
-# reflectance_cr <- reflectance_smooth |>
-#   remove_continuum()
+reflectance_cr <- reflectance_smooth |>
+  remove_continuum()
 ```
 
 ## Index calculation
@@ -153,10 +162,10 @@ In this variant, for each pixel, a minimum reflectance is found in the trough an
 rabd660670max <- reflectance_smooth |>
   # Calculate max variant
   calculate_rabd(
-    .edges = proxies$rabd_b660b670$edges,
-    .trough = proxies$rabd_b660b670$trough,
-    .rabd_name = proxies$rabd_b660b670$proxy_name,
-    .rabd_type = "max")
+    edges = proxies$rabd_b660b670$edges,
+    trough = proxies$rabd_b660b670$trough,
+    rabd_name = proxies$rabd_b660b670$proxy_name,
+    rabd_type = "max")
 ```
 
 Plot. Hyperspectral imaging data is most fun when visualized. We use "viridis" palettes.
@@ -165,8 +174,8 @@ Plot. Hyperspectral imaging data is most fun when visualized. We use "viridis" p
 # Prepare the plot
 plot_rabd660670max <- rabd660670max |>
   plot_raster_proxy(
-    .hsi_index = names(rabd660670max),
-    .palette = "viridis")
+    hsi_index = names(rabd660670max),
+    palette = "viridis")
 
 # Print
 plot_rabd660670max
@@ -180,18 +189,18 @@ In this classic variant, specific wavelength is supplied and used to calculate R
 rabd665 <- reflectance_smooth |>
   # Calculate max variant
   calculate_rabd(
-    .edges = proxies$rabd_b660b670$edges,
-    .trough = 665,
-    .rabd_name = proxies$rabd_b660b670$proxy_name,
-    .rabd_type = "strict")
+    edges = proxies$rabd_b660b670$edges,
+    trough = 665,
+    rabd_name = proxies$rabd_b660b670$proxy_name,
+    rabd_type = "strict")
 ```
 
 ```{r}
 # Prepare the plot
 plot_rabd665 <- rabd665 |>
   plot_raster_proxy(
-    .hsi_index = names(rabd665),
-    .palette = "viridis")
+    hsi_index = names(rabd665),
+    palette = "viridis")
 
 # Print
 plot_rabd665
@@ -205,18 +214,18 @@ This is variant 2 (strict), with added shortcut of always finding the middle poi
 rabd660670mid <- reflectance_smooth |>
   # Calculate max variant
   calculate_rabd(
-    .edges = proxies$rabd_b660b670$edges,
-    .trough = proxies$rabd_b660b670$trough,
-    .rabd_name = proxies$rabd_b660b670$proxy_name,
-    .rabd_type = "mid")
+    edges = proxies$rabd_b660b670$edges,
+    trough = proxies$rabd_b660b670$trough,
+    rabd_name = proxies$rabd_b660b670$proxy_name,
+    rabd_type = "mid")
 ```
 
 ```{r}
 # Prepare the plot
 plot_rabd660670mid <- rabd660670mid |>
   plot_raster_proxy(
-    .hsi_index = names(rabd660670mid),
-    .palette = "viridis")
+    hsi_index = names(rabd660670mid),
+    palette = "viridis")
 
 # Print
 plot_rabd660670mid
@@ -241,13 +250,14 @@ Another popular and simple indices are band ratios, where reflectance at the wav
 ```{r}
 ratio_570630 <- reflectance_smooth |>
   calculate_band_ratio(
-    .edges = proxies$ratio_b570b630$edges,
-    .ratio_name = proxies$ratio_b570b630$proxy_name)
+    edges = proxies$ratio_b570b630$edges,
+    ratio_name = proxies$ratio_b570b630$proxy_name)
 ```
 
 ```{r}
 plot_ratio570630 <- ratio_570630 |>
-  plot_raster_proxy(.hsi_index = names(ratio_570630))
+  plot_raster_proxy(
+    hsi_index = names(ratio_570630))
 
 plot_ratio570630
 ```

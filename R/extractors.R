@@ -63,23 +63,24 @@ extract_spectral_series <- function(raster, index = NULL, extent = NULL, write =
 #' Extract spectral profile from the ROI
 #'
 #' @param raster a terra SpatRaster of normalized capture data.
-#' @param .extent an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
-#' @param .write optional, should output be written to csv file.
+#' @param extent an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
+#' @param write optional, should output be written to csv file.
 #'
 #' @return a tibble with averaged spectral profile.
 #' @export
-extract_spectral_profile <- function(raster, .extent = NULL, .write = FALSE) {
+extract_spectral_profile <- function(raster, extent = NULL, write = FALSE) {
+
   # Check if correct class is supplied.
   if (!inherits(raster, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
   }
 
-  if (is.null(.extent)) {
+  if (is.null(extent)) {
     # Set window of interest
     terra::window(raster) <- terra::ext(raster)
   } else {
     # Set window of interest
-    terra::window(raster) <- terra::ext(.extent)
+    terra::window(raster) <- terra::ext(extent)
   }
 
   # Aggregate SpatRaster into one data point
@@ -92,13 +93,13 @@ extract_spectral_profile <- function(raster, .extent = NULL, .write = FALSE) {
     # To tibble
     dplyr::tibble() |>
     # Drop x and y
-    dplyr::select(-c(x, y))
+    dplyr::select(-c(.data$x, .data$y))
 
   # Reset window
   terra::window(raster) <- NULL
 
   # Write to file
-  if (.write == TRUE) {
+  if (write == TRUE) {
     readr::write_csv(spectral_profile, file = paste0())
   }
 

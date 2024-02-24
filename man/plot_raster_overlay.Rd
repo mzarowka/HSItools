@@ -6,29 +6,29 @@
 \usage{
 plot_raster_overlay(
   raster,
-  .hsi_index,
-  .palette =
+  hsi_index,
+  palette =
     c("viridis”, “magma”, “plasma”, “inferno”, “civids”, “mako”, “rocket”, “turbo"),
-  .alpha = 0.5,
-  .extent = NULL,
-  .ext = NULL,
-  .write = FALSE
+  alpha = 0.5,
+  extent = NULL,
+  ext = NULL,
+  write = FALSE
 )
 }
 \arguments{
 \item{raster}{raster a SpatRaster with calculated hyperspectral indices and RGB layers.}
 
-\item{.hsi_index}{a character indicating hyperspectral index layer to plot.}
+\item{hsi_index}{a character indicating hyperspectral index layer to plot.}
 
-\item{.palette}{a character indicating one of \pkg{viridis} palettes of choice: "viridis”, “magma”, “plasma”, “inferno”, “civids”, “mako”, “rocket” and “turbo”.}
+\item{palette}{a character indicating one of \pkg{viridis} palettes of choice: "viridis”, “magma”, “plasma”, “inferno”, “civids”, “mako”, “rocket” and “turbo”.}
 
-\item{.alpha}{a number in (0, 1) controlling transparency.}
+\item{alpha}{a number in (0, 1) controlling transparency.}
 
-\item{.extent}{an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.}
+\item{extent}{an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.}
 
-\item{.ext}{character, a graphic format extension.}
+\item{ext}{character, a graphic format extension.}
 
-\item{.write}{logical, should resulting SpatRaster be written to file.}
+\item{write}{logical, should resulting SpatRaster be written to file.}
 }
 \value{
 a plot with color map of selected hyperspectral index overlain on RGB image.

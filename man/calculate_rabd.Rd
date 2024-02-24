@@ -6,22 +6,31 @@
 \usage{
 calculate_rabd(
   raster,
-  .edges,
-  .trough,
-  .rabd_name,
-  .rabd_type = c("strict", "max", "mid")
+  rabd_name,
+  rabd_type = c("strict", "max", "mid"),
+  edges,
+  trough,
+  extent = NULL,
+  ext = NULL,
+  filename = NULL
 )
 }
 \arguments{
 \item{raster}{terra SpatRaster of normalized capture data.}
 
-\item{.edges}{numeric vector of two for the wide calculation window.}
+\item{rabd_name}{character, lower case name name of calculated RABD.}
 
-\item{.trough}{character vector of wavelength to look for trough.}
+\item{rabd_type}{character, lower case, type of RABD. One of "strict" - specific wavelength, "max" - flexible choice of the maximum reflectance dip, "mid" - middle point between the min and max trough wavelength (similar to strict).}
 
-\item{.rabd_name}{character, lower case name name of calculated RABD.}
+\item{edges}{numeric vector of two for the wide calculation window.}
 
-\item{.rabd_type}{character, lower case, type of RABD. One of "strict" - specific wavelength, "max" - flexible choice of the maximum reflectance dip, "mid" - middle point between the min and max .trough wavelength (simmilar to strict).}
+\item{trough}{character vector of wavelength to look for trough.}
+
+\item{extent}{an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.}
+
+\item{ext}{character, a graphic format extension.}
+
+\item{filename}{NULL (default) to write automatically into products, provide full path and ext to override.}
 }
 \value{
 one layer terra SpatRaster with calculated RABD values

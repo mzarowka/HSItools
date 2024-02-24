@@ -19,15 +19,15 @@ pixel_to_distance(
 
 \item{pixel_ratio}{a source of conversion factor, manually input. Exclusive with pixel_ratio.}
 
+\item{ymax}{pixel value of the top.}
+
+\item{ymin}{pixel value of the bottom, default to 0.}
+
 \item{sample_start}{position of the sample beginning (point zero), either from \code{\link{run_core}} output or manually input.}
 
 \item{sample_end}{position of the sample end, either from \code{\link{run_core}} output or manually input.}
 
 \item{extent}{a terra extent or terra SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.}
-
-\item{ymax_px}{pixel value of the top.}
-
-\item{ymin_px}{pixel value of the bottom, default to 0.}
 }
 \value{
 lookup table with depths.

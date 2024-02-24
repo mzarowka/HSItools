@@ -4,16 +4,27 @@
 \alias{calculate_derivative}
 \title{Calculate derivative}
 \usage{
-calculate_derivative(raster, .edges, .ext, .write)
+calculate_derivative(
+  raster,
+  derivative_name,
+  edges,
+  extent = NULL,
+  ext = NULL,
+  filename = NULL
+)
 }
 \arguments{
-\item{raster}{a terra SpatRaster of normalized capture data.}
+\item{raster}{terra SpatRaster of normalized capture data.}
 
-\item{.edges}{a numeric vector of two for the derivative calculation window.}
+\item{derivative_name}{a character, lower case name of calculated difference.}
 
-\item{.ext}{character, a graphic format extension.}
+\item{edges}{numeric vector of two for the difference.}
 
-\item{.write}{logical, should resulting SpatRaster be written to file.}
+\item{extent}{an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.}
+
+\item{ext}{character, a graphic format extension.}
+
+\item{filename}{NULL (default) to write automatically into products, provide full path and ext to override.}
 }
 \value{
 one layer terra SpatRaster with calculated derivative values.

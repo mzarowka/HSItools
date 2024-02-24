@@ -67,6 +67,7 @@ spectra_sub <- function(raster, spectra_tbl) {
 #'
 #' @param raster terra SpatRaster to be cropped.
 #' @param type either data raster or reference raster.
+#' @param dir directory.
 #' @param roi Region Of Interest: cropping extent.
 #' @param ... additional arguments.
 #'
@@ -76,7 +77,7 @@ spectra_sub <- function(raster, spectra_tbl) {
 #' @description Crop SpatRaster to large ROI (entire core)
 #' For capture (core) SpatRaster use full extent
 #' For reference (white and dark) SpatRaster use only x-direction.
-raster_crop <- function(raster, dir = NULL, type, roi) {
+raster_crop <- function(raster, type, dir = NULL, roi) {
   # Check if correct class is supplied.
   if (!inherits(raster, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")

@@ -4,16 +4,30 @@
 \alias{calculate_raba}
 \title{Calculate Relative Absorption Band Area (RABA)}
 \usage{
-calculate_raba(raster, .edges, .trough, .raba_name)
+calculate_raba(
+  raster,
+  raba_name,
+  edges,
+  trough,
+  extent = NULL,
+  ext = NULL,
+  filename = NULL
+)
 }
 \arguments{
 \item{raster}{terra SpatRaster of normalized capture data.}
 
-\item{.edges}{numeric vector of two for the wide calculation window.}
+\item{raba_name}{character, lower case name name of calculated RABA.}
 
-\item{.trough}{character vector of wavelength to look for trough.}
+\item{edges}{numeric vector of two for the wide calculation window.}
 
-\item{.raba_name}{character, lower case name name of calculated RABA.}
+\item{trough}{character vector of wavelength to look for trough.}
+
+\item{extent}{an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.}
+
+\item{ext}{character, a graphic format extension.}
+
+\item{filename}{NULL (default) to write automatically into products, provide full path and ext to override.}
 }
 \value{
 one layer terra SpatRaster with calculated RABA values.

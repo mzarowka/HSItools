@@ -77,8 +77,8 @@ roi_to_vect <- function(data) {
 #'
 #' @param core \code{\link{run_core}} output. If provided fills pixel_ratio, sample_start and sample_end. Exclusive with pixel_ratio.
 #' @param pixel_ratio a source of conversion factor, manually input. Exclusive with pixel_ratio.
-#' @param ymax_px pixel value of the top.
-#' @param ymin_px pixel value of the bottom, default to 0.
+#' @param ymax pixel value of the top.
+#' @param ymin pixel value of the bottom, default to 0.
 #' @param sample_start position of the sample beginning (point zero), either from \code{\link{run_core}} output or manually input.
 #' @param sample_end position of the sample end, either from \code{\link{run_core}} output or manually input.
 #' @param extent a terra extent or terra SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
@@ -86,10 +86,6 @@ roi_to_vect <- function(data) {
 #' @return lookup table with depths.
 #' @export
 pixel_to_distance <- function(core, pixel_ratio, ymax, ymin = 0, sample_start, sample_end, extent = NULL) {
-  # Here check if optional core is shiny output-like, S3 class
-  # if (!inherits(core, what = "CLASS-HERE")) {
-  #   rlang::abort(message = "Supplied \"core\" name is not a valid output of run_core().")
-  # }
 
   # Check if only one argument is provided
   rlang::check_exclusive(core, pixel_ratio, .require = TRUE)
@@ -98,6 +94,11 @@ pixel_to_distance <- function(core, pixel_ratio, ymax, ymin = 0, sample_start, s
 
   # Using run_core output
   if (is.null(core) == FALSE) {
+    # Here check if optional core is shiny output-like, S3 class
+    # if (!inherits(core, what = "CLASS-HERE")) {
+    #   rlang::abort(message = "Supplied \"core\" name is not a valid output of run_core().")
+    # }
+
     # Set core to run_core output
     core <- core
 
@@ -118,7 +119,7 @@ pixel_to_distance <- function(core, pixel_ratio, ymax, ymin = 0, sample_start, s
   } else {
 
     # Get the full capture distance
-    distance <- (ymax_px - ymin_px) * (pixel_ratio)
+    distance <- (ymax - ymin) * (pixel_ratio)
   }
 
   # Reverse values, get metric zero at the capture top

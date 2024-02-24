@@ -4,14 +4,27 @@
 \alias{calculate_band_ratio}
 \title{Calculate band ratio}
 \usage{
-calculate_band_ratio(raster, .edges, .ratio_name)
+calculate_band_ratio(
+  raster,
+  ratio_name,
+  edges,
+  extent = NULL,
+  ext = NULL,
+  filename = NULL
+)
 }
 \arguments{
 \item{raster}{terra SpatRaster of normalized capture data.}
 
-\item{.edges}{numeric vector of two for the (numerator and denominator).}
+\item{ratio_name}{character, lower case name of calculated ratio.}
 
-\item{.ratio_name}{character, lower case name of calculated ratio.}
+\item{edges}{numeric vector of two for the (numerator and denominator).}
+
+\item{extent}{an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.}
+
+\item{ext}{character, a graphic format extension.}
+
+\item{filename}{NULL (default) to write automatically into products, provide full path and ext to override.}
 }
 \value{
 one layer terra SpatRaster with calculated ratio values.

@@ -6,22 +6,22 @@
 \usage{
 plot_profile_spectral_series(
   raster,
-  .hsi_index,
-  .extent = NULL,
-  .ext = NULL,
-  .write = FALSE
+  hsi_index,
+  extent = NULL,
+  ext = NULL,
+  write = FALSE
 )
 }
 \arguments{
 \item{raster}{a SpatRaster with calculated hyperspectral indices and RGB layers.}
 
-\item{.hsi_index}{a character indicating hyperspectral index layer to plot.}
+\item{hsi_index}{a character indicating hyperspectral index layer to plot.}
 
-\item{.extent}{an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.}
+\item{extent}{an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.}
 
-\item{.ext}{character, a graphic format extension.}
+\item{ext}{character, a graphic format extension.}
 
-\item{.write}{logical, should resulting SpatRaster be written to file.}
+\item{write}{logical, should resulting SpatRaster be written to file.}
 }
 \value{
 line plot with of selected hyperspectral index.

@@ -40,8 +40,8 @@ run_core <- function(autoSave = TRUE){
   library(DT)
   allParams <- list()
 
-  runApp(
-  shinyApp(
+  shiny::runApp(
+  shiny::shinyApp(
   ui = shiny::fluidPage(
     tags$head(tags$style(HTML('* {font-family: "Georgia"};'))),
     tags$style(type = "text/css", ".irs-grid-pol.small {height: 0px;}"),

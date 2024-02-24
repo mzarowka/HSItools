@@ -4,10 +4,16 @@
 \alias{calculate_rmean}
 \title{Calculate Rmean}
 \usage{
-calculate_rmean(raster)
+calculate_rmean(raster, extent = NULL, ext = NULL, filename = NULL)
 }
 \arguments{
 \item{raster}{a terra SpatRaster of normalized capture data.}
+
+\item{extent}{an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.}
+
+\item{ext}{character, a graphic format extension.}
+
+\item{filename}{NULL (default) to write automatically into products, provide full path and ext to override.}
 }
 \value{
 one layer terra SpatRaster with calculated Rmean values.
