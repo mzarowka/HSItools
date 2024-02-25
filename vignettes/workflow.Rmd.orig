@@ -1,5 +1,5 @@
 ---
-title: "workflow"
+title: "Basic workflow"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{workflow}
@@ -23,9 +23,9 @@ library(tidyr)
 library(ggplot2)
 ```
 
-Here we present basic workflow for a single core. It is assumed that the output of `run_core()` function is available and stored on the disk.
+Here, we present a basic workflow for a single core. It is assumed that the output of the `run_core()` function is available and stored on the disk.
 
-We're using internal `HSItools` package data here, which has substantially reduced spatial and spectral resolution.
+We're using some internal data here, substantially reducing spatial resolution.
 
 ## Basic workflow
 
@@ -33,8 +33,6 @@ We're using internal `HSItools` package data here, which has substantially reduc
 # Load run_core() output
 
 core <- readRDS("C:/GitHub/data/STL14_1A_28C_top_2022-11-11_16-30-51/HSItools_core.rds")
-
-# Because it is a package, directory structure is not the same as in the real data.
 ```
 
 ## Preprocessing
@@ -58,7 +56,7 @@ plot_raster_rgb(reflectance)
 
 ### Spectral smoothing
 
-It is a good idea to apply spectral smoothing, such as the Savitzky-Golay spectral filter. Spurious, random peaks and through do not influence the calculation results.
+Applying spectral smoothing, such as the Savitzky-Golay spectral filter, is a good idea. Spurious, random peaks and through do not influence the calculation results.
 
 ```{r sav-gol, warning=FALSE}
 reflectance_smooth <- reflectance |>
@@ -126,7 +124,7 @@ sp_compare <- dplyr::left_join(
 sp_compare
 ```
 
-Both plots look similar at this scale except for noisy UV and blue end. We can zoom it, preferably into a flat region.
+Both plots look similar at this scale except for noisy UV and blue. We can zoom it, preferably into a flat region.
 
 ```{r zoom-spectra}
 # Zoom by limits
@@ -138,7 +136,7 @@ sp_compare +
 
 ### Continuum removal
 
-Optionally, we can process our data further by removing the continuum, which follows the rule of dividing the spectrum by its bounding box. This way spectrum becomes flatter.
+We can process our data further by removing the continuum, which follows the rule of dividing the spectrum by its bounding box. This way, the spectrum becomes flatter.
 
 ```{r remove-continuum}
 # Calculate reflectance with removed continuum
@@ -149,15 +147,32 @@ reflectance_cr <- reflectance_smooth |>
 
 ## Index calculation
 
-At this point, it is fine to calculate selected indices or proxies.
+At this point, it is OK to calculate selected indices or proxies.
+
+Mean reflectance (Rmean)
+
+```{r rmean}
+rmean <- reflectance_smooth |>
+  calculate_rmean()
+```
+
+```{r rmean-plot}
+plot_rmean <- rmean |>
+  plot_raster_proxy(
+    hsi_index = names(rmean),
+    palette = "mako")
+
+# Print
+plot_rmean
+```
 
 ### Relative Absorption Band Depth (RABD).
 
-There are variations to the RABD calculation, but generally, the results are not drastically different. Let's calculate one of the most common indices, used for estimation of the total chloropigments-a - RABD660670.
+There are variations to the RABD calculation, but generally, the results are not drastically different. Let's calculate one of the most common indices to estimate the total chloropigments-*a* - RABD~660670~.
 
-You can use predefined values, or provide them manually. Let's calculate three different flavors.
+You can use predefined values or provide them manually. Let's calculate three different flavors.
 
-Name of the output informs you about the calculated proxy and additional modifications to the reflectance file, here we see that it was calculated with Savitzky-Golay smoothed reflectance.
+The name of the output informs you about the calculated proxy and additional modifications to the reflectance file; here, we see that it was calculated with Savitzky-Golay smoothed reflectance.
 
 #### Variant 1: max
 
@@ -188,7 +203,7 @@ plot_rabd660670max
 
 #### Variant 2: strict
 
-In this classic variant, specific wavelength is supplied and used to calculate RABD for every pixel.
+This classic variant supplies a specific wavelength to calculate RABD for every pixel.
 
 ```{r rabd-strict}
 rabd665 <- reflectance_smooth |>
@@ -213,7 +228,7 @@ plot_rabd665
 
 #### Variant 3: midpoint
 
-This is variant 2 (strict), with added shortcut of always finding the middle point between the through edges.
+This is variant 2 (strict), with the added shortcut of always finding the middle point between the through edges.
 
 ```{r rabd-mid}
 rabd660670mid <- reflectance_smooth |>
@@ -238,7 +253,7 @@ plot_rabd660670mid
 
 #### Compare
 
-We can compare these three plots, side by side. We're using `patchwork`.
+We can compare these three plots side by side. We're using `patchwork`.
 
 ```{r rabd-compare}
 plot_rabd660670max + plot_rabd665 + plot_rabd660670mid + patchwork::plot_layout(nrow = 1)
@@ -250,7 +265,7 @@ Similar, but not identical. As expected!
 
 ### Band ratios
 
-Another popular and simple indices are band ratios, where reflectance at the wavelength X is divided by reflectance at the wavelength Y.
+Another popular and straightforward indices are band ratios, where reflectance at the wavelength X is divided by reflectance at the wavelength Y.
 
 ```{r ratio}
 ratio_570630 <- reflectance_smooth |>
@@ -262,13 +277,39 @@ ratio_570630 <- reflectance_smooth |>
 ```{r ratio-plot}
 plot_ratio570630 <- ratio_570630 |>
   plot_raster_proxy(
-    hsi_index = names(ratio_570630), palette = "magma")
+    hsi_index = names(ratio_570630),
+    palette = "magma")
 
 plot_ratio570630
 ```
 
 ### Band differences
 
+```{r difference}
+difference_650675 <- reflectance_smooth |>
+  calculate_band_difference(
+    difference_name = proxies$diff_b650b675$proxy_name,
+    edges = proxies$diff_b650b675$edges)
+```
+
+```{r difference-plot}
+plot_difference_650675 <- difference_650675 |>
+  plot_raster_proxy(
+    hsi_index = names(difference_650675),
+    palette = "cividis")
+
+plot_difference_650675
+```
+
 ### Derivatives
 
+```{r}
+# derivative_690 <- reflectance_smooth |>
+#   calculate_derivative(derivative_name = proxies$deriv_b690)
+```
+
 ### lambdaREMP
+
+```{r}
+
+```

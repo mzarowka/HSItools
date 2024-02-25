@@ -1,5 +1,5 @@
 ---
-title: "workflow"
+title: "Basic workflow"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{workflow}
@@ -19,9 +19,9 @@ library(tidyr)
 library(ggplot2)
 ```
 
-Here we present basic workflow for a single core. It is assumed that the output of `run_core()` function is available and stored on the disk.
+Here, we present a basic workflow for a single core. It is assumed that the output of the `run_core()` function is available and stored on the disk.
 
-We're using internal `HSItools` package data here, which has substantially reduced spatial and spectral resolution.
+We're using some internal data here, substantially reducing spatial resolution.
 
 ## Basic workflow
 
@@ -30,8 +30,6 @@ We're using internal `HSItools` package data here, which has substantially reduc
 # Load run_core() output
 
 core <- readRDS("C:/GitHub/data/STL14_1A_28C_top_2022-11-11_16-30-51/HSItools_core.rds")
-
-# Because it is a package, directory structure is not the same as in the real data.
 ```
 
 ## Preprocessing
@@ -47,27 +45,27 @@ Before any spectral indices and properties are calculated, normalizing the data 
 reflectance <- core |>
   prepare_core()
 #> 
-#> ── STL14_1A_28C_top_2022-11-11_16-30-51 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-#> ℹ 2024-02-24 17:53:15: reading rasters.
-#> ℹ 2024-02-24 17:53:15: subsetting layers.
-#> ℹ 2024-02-24 17:53:15: cropping rasters.
+#> ── STL14_1A_28C_top_2022-11-11_16-30-51 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+#> ℹ 2024-02-24 18:18:51: reading rasters.
+#> ℹ 2024-02-24 18:18:51: subsetting layers.
+#> ℹ 2024-02-24 18:18:51: cropping rasters.
 #> → Dark reference
 #> |---------|---------|---------|---------|=========================================                                          
 #> → Captured data
 #> |---------|---------|---------|---------|=========================================                                          
 #> → White reference
 #> |---------|---------|---------|---------|=========================================                                          
-#> ℹ 2024-02-24 17:53:16: calculating reference rasters.
+#> ℹ 2024-02-24 18:18:52: calculating reference rasters.
 #> → Aggregate DARKREF
 #> → Disaggregate DARKREF
 #> |---------|---------|---------|---------|                                          
 #> → Aggregate WHITEREF
 #> → Disaggregate WHITEREF
 #> |---------|---------|---------|---------|                                          
-#> ℹ 2024-02-24 17:53:55: calculating reflectance raster.
+#> ℹ 2024-02-24 18:19:29: calculating reflectance raster.
 #> |---------|---------|---------|---------|=========================================                                          
-#> ℹ 2024-02-24 17:53:56: cleaning up.
-#> ✔ 2024-02-24 17:53:56: finished.
+#> ℹ 2024-02-24 18:19:30: cleaning up.
+#> ✔ 2024-02-24 18:19:30: finished.
 ```
 
 We can plot the RGB preview at this stage.
@@ -76,14 +74,14 @@ We can plot the RGB preview at this stage.
 ```r
 plot_raster_rgb(reflectance)
 #> 
-#> ── REFLECTANCE_STL14_1A_28C_top_2022-11-11_16-30-51 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+#> ── REFLECTANCE_STL14_1A_28C_top_2022-11-11_16-30-51 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ```
 
 ![plot of chunk reflectance_rgb](figure/reflectance_rgb-1.png)
 
 ### Spectral smoothing
 
-It is a good idea to apply spectral smoothing, such as the Savitzky-Golay spectral filter. Spurious, random peaks and through do not influence the calculation results.
+Applying spectral smoothing, such as the Savitzky-Golay spectral filter, is a good idea. Spurious, random peaks and through do not influence the calculation results.
 
 
 ```r
@@ -91,10 +89,10 @@ reflectance_smooth <- reflectance |>
   # Specify the file extension
   filter_savgol()
 #> 
-#> ── REFLECTANCE_STL14_1A_28C_top_2022-11-11_16-30-51 ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-#> ℹ 2024-02-24 17:53:56: calculating Savitzky-Golay filtered raster.
+#> ── REFLECTANCE_STL14_1A_28C_top_2022-11-11_16-30-51 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+#> ℹ 2024-02-24 18:19:31: calculating Savitzky-Golay filtered raster.
 #> |---------|---------|---------|---------|=========================================                                          
-#> ✔ 2024-02-24 17:53:58: finished.
+#> ✔ 2024-02-24 18:19:31: finished.
 ```
 
 We can plot the RGB preview at this stage, too.
@@ -103,7 +101,7 @@ We can plot the RGB preview at this stage, too.
 ```r
 plot_raster_rgb(reflectance_smooth)
 #> 
-#> ── REFLECTANCE_STL14_1A_28C_top_2022-11-11_16-30-51_savitzky-golay ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+#> ── REFLECTANCE_STL14_1A_28C_top_2022-11-11_16-30-51_savitzky-golay ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ```
 
 ![plot of chunk savgol_rgb](figure/savgol_rgb-1.png)
@@ -183,7 +181,7 @@ sp_compare
 
 ![plot of chunk peek-spectra](figure/peek-spectra-1.png)
 
-Both plots look similar at this scale except for noisy UV and blue end. We can zoom it, preferably into a flat region.
+Both plots look similar at this scale except for noisy UV and blue. We can zoom it, preferably into a flat region.
 
 
 ```r
@@ -198,7 +196,7 @@ sp_compare +
 
 ### Continuum removal
 
-Optionally, we can process our data further by removing the continuum, which follows the rule of dividing the spectrum by its bounding box. This way spectrum becomes flatter.
+We can process our data further by removing the continuum, which follows the rule of dividing the spectrum by its bounding box. This way, the spectrum becomes flatter.
 
 
 ```r
@@ -207,28 +205,54 @@ Optionally, we can process our data further by removing the continuum, which fol
 reflectance_cr <- reflectance_smooth |>
   remove_continuum()
 #> 
-#> ── REFLECTANCE_STL14_1A_28C_top_2022-11-11_16-30-51_savitzky-golay ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-#> ℹ 2024-02-24 17:53:59: calculating continuum removed raster.
+#> ── REFLECTANCE_STL14_1A_28C_top_2022-11-11_16-30-51_savitzky-golay ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+#> ℹ 2024-02-24 18:19:32: calculating continuum removed raster.
 #> Warning in f(names[[col]]): NAs introduced by coercion
 #> |---------|---------|---------|---------|=============================
 #> Warning in regularize.values(x, y, ties, missing(ties), na.rm = na.rm): collapsing to unique 'x' values
 #> ==========
 #> Warning in regularize.values(x, y, ties, missing(ties), na.rm = na.rm): collapsing to unique 'x' values
 #> ==                                          
-#> ✔ 2024-02-24 17:53:59: finished.
+#> ✔ 2024-02-24 18:19:33: finished.
 ```
 
 ## Index calculation
 
-At this point, it is fine to calculate selected indices or proxies.
+At this point, it is OK to calculate selected indices or proxies.
+
+Mean reflectance (Rmean)
+
+
+```r
+rmean <- reflectance_smooth |>
+  calculate_rmean()
+#> 
+#> ── REFLECTANCE_STL14_1A_28C_top_2022-11-11_16-30-51_savitzky-golay ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+#> → Writing RMEAN to C:/GitHub/data/STL14_1A_28C_top_2022-11-11_16-30-51/products/RMEAN_REFLECTANCE_STL14_1A_28C_top_2022-11-11_16-30-51_savitzky-golay.tif.
+```
+
+
+```r
+plot_rmean <- rmean |>
+  plot_raster_proxy(
+    hsi_index = names(rmean),
+    palette = "mako")
+#> 
+#> ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+# Print
+plot_rmean
+```
+
+![plot of chunk rmean-plot](figure/rmean-plot-1.png)
 
 ### Relative Absorption Band Depth (RABD).
 
-There are variations to the RABD calculation, but generally, the results are not drastically different. Let's calculate one of the most common indices, used for estimation of the total chloropigments-a - RABD660670.
+There are variations to the RABD calculation, but generally, the results are not drastically different. Let's calculate one of the most common indices to estimate the total chloropigments-*a* - RABD~660670~.
 
-You can use predefined values, or provide them manually. Let's calculate three different flavors.
+You can use predefined values or provide them manually. Let's calculate three different flavors.
 
-Name of the output informs you about the calculated proxy and additional modifications to the reflectance file, here we see that it was calculated with Savitzky-Golay smoothed reflectance.
+The name of the output informs you about the calculated proxy and additional modifications to the reflectance file; here, we see that it was calculated with Savitzky-Golay smoothed reflectance.
 
 #### Variant 1: max
 
@@ -244,7 +268,7 @@ rabd660670max <- reflectance_smooth |>
     rabd_name = proxies$rabd_b660b670$proxy_name,
     rabd_type = "max")
 #> 
-#> ── REFLECTANCE_STL14_1A_28C_top_2022-11-11_16-30-51_savitzky-golay ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+#> ── REFLECTANCE_STL14_1A_28C_top_2022-11-11_16-30-51_savitzky-golay ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 #> → Writing rabd660670_max to C:/GitHub/data/STL14_1A_28C_top_2022-11-11_16-30-51/products/rabd660670_max_REFLECTANCE_STL14_1A_28C_top_2022-11-11_16-30-51_savitzky-golay.tif.
 ```
 
@@ -258,7 +282,7 @@ plot_rabd660670max <- rabd660670max |>
     hsi_index = names(rabd660670max),
     palette = "viridis")
 #> 
-#> ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+#> ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 # Print
 plot_rabd660670max
@@ -268,7 +292,7 @@ plot_rabd660670max
 
 #### Variant 2: strict
 
-In this classic variant, specific wavelength is supplied and used to calculate RABD for every pixel.
+This classic variant supplies a specific wavelength to calculate RABD for every pixel.
 
 
 ```r
@@ -280,7 +304,7 @@ rabd665 <- reflectance_smooth |>
     rabd_name = proxies$rabd_b660b670$proxy_name,
     rabd_type = "strict")
 #> 
-#> ── REFLECTANCE_STL14_1A_28C_top_2022-11-11_16-30-51_savitzky-golay ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+#> ── REFLECTANCE_STL14_1A_28C_top_2022-11-11_16-30-51_savitzky-golay ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 #> → Writing rabd660670_strict to C:/GitHub/data/STL14_1A_28C_top_2022-11-11_16-30-51/products/rabd660670_strict_REFLECTANCE_STL14_1A_28C_top_2022-11-11_16-30-51_savitzky-golay.tif.
 ```
 
@@ -292,7 +316,7 @@ plot_rabd665 <- rabd665 |>
     hsi_index = names(rabd665),
     palette = "viridis")
 #> 
-#> ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+#> ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 # Print
 plot_rabd665
@@ -302,7 +326,7 @@ plot_rabd665
 
 #### Variant 3: midpoint
 
-This is variant 2 (strict), with added shortcut of always finding the middle point between the through edges.
+This is variant 2 (strict), with the added shortcut of always finding the middle point between the through edges.
 
 
 ```r
@@ -314,7 +338,7 @@ rabd660670mid <- reflectance_smooth |>
     rabd_name = proxies$rabd_b660b670$proxy_name,
     rabd_type = "mid")
 #> 
-#> ── REFLECTANCE_STL14_1A_28C_top_2022-11-11_16-30-51_savitzky-golay ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+#> ── REFLECTANCE_STL14_1A_28C_top_2022-11-11_16-30-51_savitzky-golay ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 #> → Writing rabd660670_mid to C:/GitHub/data/STL14_1A_28C_top_2022-11-11_16-30-51/products/rabd660670_mid_REFLECTANCE_STL14_1A_28C_top_2022-11-11_16-30-51_savitzky-golay.tif.
 ```
 
@@ -326,7 +350,7 @@ plot_rabd660670mid <- rabd660670mid |>
     hsi_index = names(rabd660670mid),
     palette = "viridis")
 #> 
-#> ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+#> ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 # Print
 plot_rabd660670mid
@@ -336,7 +360,7 @@ plot_rabd660670mid
 
 #### Compare
 
-We can compare these three plots, side by side. We're using `patchwork`.
+We can compare these three plots side by side. We're using `patchwork`.
 
 
 ```r
@@ -351,7 +375,7 @@ Similar, but not identical. As expected!
 
 ### Band ratios
 
-Another popular and simple indices are band ratios, where reflectance at the wavelength X is divided by reflectance at the wavelength Y.
+Another popular and straightforward indices are band ratios, where reflectance at the wavelength X is divided by reflectance at the wavelength Y.
 
 
 ```r
@@ -360,7 +384,7 @@ ratio_570630 <- reflectance_smooth |>
     edges = proxies$ratio_b570b630$edges,
     ratio_name = proxies$ratio_b570b630$proxy_name)
 #> 
-#> ── REFLECTANCE_STL14_1A_28C_top_2022-11-11_16-30-51_savitzky-golay ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+#> ── REFLECTANCE_STL14_1A_28C_top_2022-11-11_16-30-51_savitzky-golay ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 #> → Writing r570r630 to C:/GitHub/data/STL14_1A_28C_top_2022-11-11_16-30-51/products/r570r630_REFLECTANCE_STL14_1A_28C_top_2022-11-11_16-30-51_savitzky-golay.tif.
 ```
 
@@ -368,9 +392,10 @@ ratio_570630 <- reflectance_smooth |>
 ```r
 plot_ratio570630 <- ratio_570630 |>
   plot_raster_proxy(
-    hsi_index = names(ratio_570630), palette = "magma")
+    hsi_index = names(ratio_570630),
+    palette = "magma")
 #> 
-#> ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+#> ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 plot_ratio570630
 ```
@@ -379,6 +404,39 @@ plot_ratio570630
 
 ### Band differences
 
+
+```r
+difference_650675 <- reflectance_smooth |>
+  calculate_band_difference(
+    difference_name = proxies$diff_b650b675$proxy_name,
+    edges = proxies$diff_b650b675$edges)
+#> 
+#> ── REFLECTANCE_STL14_1A_28C_top_2022-11-11_16-30-51_savitzky-golay ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+#> → Writing r570r630 to C:/GitHub/data/STL14_1A_28C_top_2022-11-11_16-30-51/products/r570r630_REFLECTANCE_STL14_1A_28C_top_2022-11-11_16-30-51_savitzky-golay.tif.
+```
+
+
+```r
+plot_difference_650675 <- difference_650675 |>
+  plot_raster_proxy(
+    hsi_index = names(difference_650675),
+    palette = "cividis")
+#> 
+#> ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+plot_difference_650675
+```
+
+![plot of chunk difference-plot](figure/difference-plot-1.png)
+
 ### Derivatives
 
+
+```r
+# derivative_690 <- reflectance_smooth |>
+#   calculate_derivative(derivative_name = proxies$deriv_b690)
+```
+
 ### lambdaREMP
+
+
