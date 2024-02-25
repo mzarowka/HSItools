@@ -508,7 +508,7 @@ run_core <- function(autoSave = TRUE){
 
     observeEvent(input$file_dir_example, {
       useExample(TRUE)
-      user_dir(paste0(getwd(),"/inst/extdata"))
+      user_dir(fs::path_package("HSItools", "/inst/extdata/"))
       # rasters(user_dir() |>
       #           fs::dir_ls(type = "file", regexp = ".tif", recurse = TRUE))
       # coreImage(terra::rast(user_file()$datapath))

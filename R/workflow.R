@@ -12,26 +12,26 @@
 #' Prepare core based on shiny output
 #'
 #' @param core shiny output.
-#' @param .path path to the directory with captured data. Defaults to NULL and shiny output.
-#' @param .layers numeric vector, selection of layers (wavelengths) to use. Defaults to NULL and shiny output.
-#' @param .extent extent of the captured data. Defaults to NULL and shiny output. If "capture" then uses entire extent of captured data.
-#' @param .normalize logical, should data be normalized.
+#' @param path path to the directory with captured data. Defaults to NULL and shiny output.
+#' @param layers numeric vector, selection of layers (wavelengths) to use. Defaults to NULL and shiny output.
+#' @param extent extent of the captured data. Defaults to NULL and shiny output. If "capture" then uses entire extent of captured data.
+#' @param normalize logical, should data be normalized.
 #'
 #' @return reflectance SpatRaster.
 #' @export
-prepare_core <- function(core = NULL, .path = NULL, .layers = NULL, .extent = NULL, .normalize = TRUE) {
-  if (is.null(.path) == TRUE) {
+prepare_core <- function(core = NULL, path = NULL, layers = NULL, extent = NULL, normalize = TRUE) {
+  if (is.null(path) == TRUE) {
     # Get path
     path <- core$directory
   } else {
-    path <- .path
+    path <- path
   }
 
-  if (is.null(.layers) == TRUE) {
+  if (is.null(layers) == TRUE) {
     # Get path
     layers <- core$layers
   } else {
-    layers <- .layers
+    layers <- layers
   }
 
   cli::cli_h1("{basename(path)}")
@@ -43,17 +43,17 @@ prepare_core <- function(core = NULL, .path = NULL, .layers = NULL, .extent = NU
   files <- fs::dir_ls(paste0(path, "/capture"))
 
   # Check if file needs to be normalized from .raw
-  if (.normalize == TRUE) {
+  if (normalize == TRUE) {
     # List files: CAPTURE, DARKREF and WHITEREF
     files <- fs::path_filter(files, regexp = ".raw")
 
     # SpatRaster types
     types <- list("darkref", "capture", "whiteref")
 
-    if (is.null(.extent) == TRUE) {
+    if (is.null(extent) == TRUE) {
       # Get path
       extent <- core$cropImage
-    } else if (.extent == "capture") {
+    } else if (extent == "capture") {
       extent <- terra::rast(files[[2]]) |>
         terra::ext()
     }
@@ -75,17 +75,26 @@ prepare_core <- function(core = NULL, .path = NULL, .layers = NULL, .extent = NU
 
     # Subset bands in the SpatRasters
     rasters_subset <- rasters |>
-      purrr::map(\(x) HSItools::spectra_sub(raster = x, spectra_tbl = band_position))
+      purrr::map(\(x) HSItools::spectra_sub(
+        raster = x,
+        spectra_tbl = band_position))
 
     cli::cli_alert_info("{format(Sys.time())}: cropping rasters.")
 
     # Crop
-    rasters_cropped <- purrr::map2(rasters_subset, types, \(x, y) HSItools::raster_crop(raster = x, type = y, roi = big_roi))
+    rasters_cropped <- purrr::map2(rasters_subset, types, \(x, y) HSItools::raster_crop(
+      raster = x,
+      type = y,
+      roi = big_roi))
 
     cli::cli_alert_info("{format(Sys.time())}: calculating reference rasters.")
 
     # Prepare reference SpatRasters
-    rasters_references <- purrr::map2(rasters_cropped[c(1, 3)], types[c(1, 3)], \(x, y) HSItools::create_reference_raster(raster = x, ref_type = y, roi = big_roi, path = path))
+    rasters_references <- purrr::map2(rasters_cropped[c(1, 3)], types[c(1, 3)], \(x, y) HSItools::create_reference_raster(
+      raster = x,
+      ref_type = y,
+      roi = big_roi,
+      path = path))
 
     cli::cli_alert_info("{format(Sys.time())}: calculating reflectance raster.")
 

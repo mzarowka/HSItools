@@ -12,13 +12,18 @@ split_by_roi <- function(core, roi){
 #'
 #' @return SpatVector object suitable for plotting and setting extents.
 roi_to_vect <- function(data) {
+  # Check number of ROIs
+  if (nrow(data) == 1) {
+  data <- data
+
+  } else {
   # Probably can do it quicker by bounding box of the points
   # Remove some redundancies
   # Create polygons
   data <- data |>
     # Add grouping variable
     dplyr::mutate(
-      roi.id = paste0("ROI_", 1:dplyr::n()),
+      roi.id = paste0("ROI_", 1:nrow(.data)),
       .before = 1
     ) |>
     # Group by
@@ -68,6 +73,7 @@ roi_to_vect <- function(data) {
     dplyr::rename(geometry = .data$x) |>
     # To one sf
     sf::st_as_sf()
+  }
 
   # Return SpatVector
   return(data)
