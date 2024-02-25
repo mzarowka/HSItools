@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">HSItools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9006</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9007</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -25,6 +25,7 @@
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/shiny_gui.html">Graphical user interface with Shiny</a>
+    <a class="dropdown-item" href="../articles/workflow.html">workflow</a>
   </div>
 </li>
 <li class="nav-item">
@@ -47,7 +48,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="" class="logo" alt=""><h1>Get depth in metric units</h1>
-      <small class="dont-index">Source: <a href="https://github.com/mzarowka/HSItools/blob/HEAD/R/helpers.R" class="external-link"><code>R/helpers.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/mzarowka/HSItools/blob/HEAD/R/utils.R" class="external-link"><code>R/utils.R</code></a></small>
       <div class="d-none name"><code>pixel_to_distance.Rd</code></div>
     </div>
 
@@ -60,9 +61,10 @@
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">pixel_to_distance</span><span class="op">(</span></span>
 <span>  <span class="va">core</span>,</span>
 <span>  <span class="va">pixel_ratio</span>,</span>
-<span>  unit <span class="op">=</span> <span class="st">"mm"</span>,</span>
+<span>  <span class="va">ymax</span>,</span>
+<span>  ymin <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  <span class="va">sample_start</span>,</span>
-<span>  sample_end <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  <span class="va">sample_end</span>,</span>
 <span>  extent <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -70,19 +72,23 @@
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>core</dt>
-<dd><p><code><a href="run_core.html">run_core</a></code> output. If provided fills pixel_ratio, sample_start and sample_end.</p></dd>
+<dd><p><code><a href="run_core.html">run_core</a></code> output. If provided fills pixel_ratio, sample_start and sample_end. Exclusive with pixel_ratio.</p></dd>
 
 
 <dt>pixel_ratio</dt>
-<dd><p>a source of conversion factor, either <code><a href="run_core.html">run_core</a></code> output or manually input.</p></dd>
+<dd><p>a source of conversion factor, manually input. Exclusive with pixel_ratio.</p></dd>
 
 
-<dt>unit</dt>
-<dd><p>metric unit to convert into, defaults to "mm". Accepts also "cm" and "um".</p></dd>
+<dt>ymax</dt>
+<dd><p>pixel value of the top.</p></dd>
+
+
+<dt>ymin</dt>
+<dd><p>pixel value of the bottom, default to 0.</p></dd>
 
 
 <dt>sample_start</dt>
-<dd><p>position of the sample beginning, either from <code><a href="run_core.html">run_core</a></code> output or manually input.</p></dd>
+<dd><p>position of the sample beginning (point zero), either from <code><a href="run_core.html">run_core</a></code> output or manually input.</p></dd>
 
 
 <dt>sample_end</dt>

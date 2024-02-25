@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">HSItools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9006</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9007</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -25,6 +25,7 @@
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/shiny_gui.html">Graphical user interface with Shiny</a>
+    <a class="dropdown-item" href="../articles/workflow.html">workflow</a>
   </div>
 </li>
 <li class="nav-item">
@@ -59,12 +60,12 @@
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">plot_raster_proxy</span><span class="op">(</span></span>
 <span>  <span class="va">raster</span>,</span>
-<span>  <span class="va">.hsi_index</span>,</span>
-<span>  .palette <span class="op">=</span></span>
+<span>  <span class="va">hsi_index</span>,</span>
+<span>  palette <span class="op">=</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"viridis”, “magma”, “plasma”, “inferno”, “civids”, “mako”, “rocket”, “turbo"</span><span class="op">)</span>,</span>
-<span>  .extent <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  .ext <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  .write <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  extent <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  ext <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  write <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -74,23 +75,23 @@
 <dd><p>a SpatRaster with calculated hyperspectral indices and RGB layers.</p></dd>
 
 
-<dt>.hsi_index</dt>
+<dt>hsi_index</dt>
 <dd><p>a character indicating hyperspectral index layer to plot.</p></dd>
 
 
-<dt>.palette</dt>
+<dt>palette</dt>
 <dd><p>a character indicating one of <span class="pkg">viridis</span> palettes of choice: "viridis", "magma", "plasma", "inferno", "civids", "mako", "rocket" and "turbo".</p></dd>
 
 
-<dt>.extent</dt>
+<dt>extent</dt>
 <dd><p>an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.</p></dd>
 
 
-<dt>.ext</dt>
+<dt>ext</dt>
 <dd><p>character, a graphic format extension.</p></dd>
 
 
-<dt>.write</dt>
+<dt>write</dt>
 <dd><p>logical, should resulting SpatRaster be written to file.</p></dd>
 
 </dl></div>

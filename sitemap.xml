@@ -16,6 +16,9 @@
     <loc>/articles/shiny_gui.html</loc>
   </url>
   <url>
+    <loc>/articles/workflow.html</loc>
+  </url>
+  <url>
     <loc>/authors.html</loc>
   </url>
   <url>
@@ -98,6 +101,9 @@
   </url>
   <url>
     <loc>/reference/prepare_core.html</loc>
+  </url>
+  <url>
+    <loc>/reference/proxies.html</loc>
   </url>
   <url>
     <loc>/reference/raster_crop.html</loc>

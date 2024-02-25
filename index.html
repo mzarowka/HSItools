@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="index.html">HSItools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9006</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9007</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -42,6 +42,7 @@
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="articles/shiny_gui.html">Graphical user interface with Shiny</a>
+    <a class="dropdown-item" href="articles/workflow.html">workflow</a>
   </div>
 </li>
 <li class="nav-item">
@@ -89,8 +90,20 @@
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/mzarowka/HSItools" class="external-link">HSItools</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="co">## Run shiny app and store results for processing</span></span>
-<span><span class="va">core</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/run_core.html">run_core</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<span><span class="co"># Run shiny app and store results for further processing</span></span>
+<span><span class="va">core</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/run_core.html">run_core</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Get reflectance, normalize the capture</span></span>
+<span><span class="va">reflectance</span> <span class="op">&lt;-</span> <span class="va">core</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="reference/prepare_core.html">prepare_core</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Create RGB preview - to file</span></span>
+<span><span class="va">rgb_preview</span> <span class="op">&lt;-</span> <span class="va">reflectance</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="reference/stretch_raster_full.html">stretch_raster_full</a></span><span class="op">(</span><span class="va">reflectance</span>, write <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Plot RGB preview</span></span>
+<span><span class="va">rgb_plot</span> <span class="op">&lt;-</span> <span class="va">reflectance</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="reference/plot_raster_rgb.html">plot_raster_rgb</a></span><span class="op">(</span><span class="va">reflectance</span><span class="op">)</span></span></code></pre></div>
 <p>Maurycy Żarczyński is founded by the Polish National Agency for Academic Exchange (BPN/BEK/2021/1/00133/U/0001).</p>
 </div>
 </div>
