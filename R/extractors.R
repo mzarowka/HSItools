@@ -3,12 +3,13 @@
 #' @param raster terra SpatRaster with one layer with calculated values.
 #' @param index character indicating hyperspectral index layer to plot.
 #' @param extent an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
-#' @param write optional, should output be written to csv file.
+#' @param ext character, a graphic format extension.
+#' @param filename NULL (default) to write automatically into products, provide full path and ext to override.
 #' @param ... further parameters for pixel_to_distance()
 #'
 #' @return tibble frame with XY coordinates and averaged proxy values.
 #' @export
-extract_spectral_series <- function(raster, index = NULL, extent = NULL, write = FALSE, ...) {
+extract_spectral_series <- function(raster, index = NULL, extent = NULL, ext = NULL, filename = FALSE, ...) {
   # Get the parameters
   parameters <- rlang::list2(...)
 
@@ -16,6 +17,17 @@ extract_spectral_series <- function(raster, index = NULL, extent = NULL, write =
   if (!inherits(raster, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
   }
+
+  # Raster source directory
+  raster_src <- raster |>
+    terra::sources() |>
+    fs::path_dir()
+
+  # Raster source name
+  raster_name <- raster |>
+    terra::sources() |>
+    fs::path_file() |>
+    fs::path_ext_remove()
 
   # Set extents in windows
   if (is.null(extent)) {
@@ -30,6 +42,13 @@ extract_spectral_series <- function(raster, index = NULL, extent = NULL, write =
   if (!is.null(index)) {
     raster <- raster |>
       terra::subset(index)
+  }
+
+  # Check type of filename
+  if (is.null(filename) == TRUE) {
+    filename <- paste0(raster_src, "/spectral_profile_", raster_name, ".csv")
+  } else {
+    filename <- fs::path(filename, ext = ext)
   }
 
   # Get depth values
