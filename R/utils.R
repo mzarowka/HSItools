@@ -13,7 +13,7 @@ split_by_roi <- function(core, roi){
 #' @return SpatVector object suitable for plotting and setting extents.
 roi_to_vect <- function(data) {
   # Check number of ROIs
-  if (nrow(data) == 1) {
+  if (sum(is.na(data)) > 0) {
   data <- data
 
   } else {
@@ -23,7 +23,7 @@ roi_to_vect <- function(data) {
   data <- data |>
     # Add grouping variable
     dplyr::mutate(
-      roi.id = paste0("ROI_", 1:nrow(.data)),
+      roi.id = paste0("ROI_", 1:nrow(data)),
       .before = 1
     ) |>
     # Group by

@@ -14,7 +14,7 @@
 calculate_rabd <- function(
     raster,
     rabd_name,
-    rabd_type = c("strict", "max", "mid"),
+    rabd_type = "max",
     edges,
     trough,
     extent = NULL,

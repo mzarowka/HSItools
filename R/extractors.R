@@ -2,32 +2,19 @@
 #'
 #' @param raster terra SpatRaster with one layer with calculated values.
 #' @param index character indicating hyperspectral index layer to plot.
+#' @param calibration result of pixel_to_distance or actual call to pixel_to_distance with appropriate input.
 #' @param extent an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
 #' @param ext character, a graphic format extension.
-#' @param filename NULL (default) to write automatically into products, provide full path and ext to override.
-#' @param ... further parameters for pixel_to_distance()
+#' @param filename empty = in memory, TRUE = guess name and attempt write, or user specified path to glue with ext.
 #'
 #' @return tibble frame with XY coordinates and averaged proxy values.
 #' @export
-extract_spectral_series <- function(raster, index = NULL, extent = NULL, ext = NULL, filename = FALSE, ...) {
-  # Get the parameters
-  parameters <- rlang::list2(...)
+extract_spectral_series <- function(raster, index = NULL, calibration = NULL, extent = NULL, ext = NULL, filename = NULL) {
 
   # Check if correct class is supplied.
   if (!inherits(raster, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
   }
-
-  # Raster source directory
-  raster_src <- raster |>
-    terra::sources() |>
-    fs::path_dir()
-
-  # Raster source name
-  raster_name <- raster |>
-    terra::sources() |>
-    fs::path_file() |>
-    fs::path_ext_remove()
 
   # Set extents in windows
   if (is.null(extent)) {
@@ -43,17 +30,7 @@ extract_spectral_series <- function(raster, index = NULL, extent = NULL, ext = N
     raster <- raster |>
       terra::subset(index)
   }
-
-  # Check type of filename
-  if (is.null(filename) == TRUE) {
-    filename <- paste0(raster_src, "/spectral_profile_", raster_name, ".csv")
-  } else {
-    filename <- fs::path(filename, ext = ext)
-  }
-
-  # Get depth values
-  depths <- HSItools::pixel_to_distance(core = parameters$core)
-
+  if (is.null(calibration) == TRUE) {
   spectral_series <- raster |>
     terra::aggregate(
       fact = c(1, terra::ncol(raster)),
@@ -61,19 +38,60 @@ extract_spectral_series <- function(raster, index = NULL, extent = NULL, ext = N
     # Coerce do data frame with coordinates
     terra::as.data.frame(xy = TRUE) |>
     # To tibble
-    dplyr::tibble() |>
-    # Calculate metric depths
-    dplyr::mutate(
-      depth.mm = depths$distance - (.data$y * depths$pixel_ratio),
-      tube.mm = .data$depth.mm - depths$point_zero)
+    dplyr::tibble()
+
+  } else {
+    spectral_series <- raster |>
+      terra::aggregate(
+        fact = c(1, terra::ncol(raster)),
+        fun = "mean") |>
+      # Coerce do data frame with coordinates
+      terra::as.data.frame(xy = TRUE) |>
+      # To tibble
+      dplyr::tibble() |>
+      # Calculate metric depths
+      dplyr::mutate(
+        depth.mm = calibration$distance - (.data$y * calibration$pixel_ratio),
+        tube.mm = .data$depth.mm - calibration$point_zero)
+  }
 
   # Reset window
   terra::window(raster) <- NULL
 
-  # Write to file
-  if (write == TRUE) {
-    readr::write_csv(spectral_series, file = paste0())
-  }
+  if (is.null(filename) == TRUE) {
+    spectral_series
+  } else if (filename == TRUE) {
+    # Check source
+    if (terra::sources(raster) == "") {
+      rlang::warn(message = "In memory object. Using working directory instead.")
+
+      filename <- paste0(getwd(), "/spectral_profile.csv")
+
+      readr::write_csv(spectral_series, file = filename)
+
+      print(filename)
+    } else {
+
+      # Raster source directory
+      raster_src <- raster |>
+        terra::sources() |>
+        fs::path_dir()
+
+      # Raster source name
+      raster_name <- raster |>
+        terra::sources() |>
+        fs::path_file() |>
+        fs::path_ext_remove()
+
+      filename <- paste0(raster_src, "/spectral_profile_", raster_name, ".csv")
+
+      readr::write_csv(spectral_series, file = filename)
+    }
+    } else {
+      filename <- fs::path(filename, ext = ext)
+
+      readr::write_csv(spectral_series, file = filename)
+    }
 
   # Return object
   return(spectral_series)
