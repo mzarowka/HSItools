@@ -106,7 +106,7 @@ raster_crop <- function(raster, type, dir = NULL, roi) {
       fs::path_file() |>
       fs::path_ext_remove()
 
-    filename <- paste0(raster_src, "/products", raster_name, "_cropped.tif")
+    filename <- paste0(raster_src, "/products/", raster_name, "_cropped.tif")
 
     # Crop
     raster <- terra::crop(
