@@ -110,69 +110,69 @@ resolution.</p>
 <p>Before any spectral indices and properties are calculated,
 normalizing the data and expressing it as a reflectance is
 necessary.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Here we use run_core() output, so further function arguments are filled automatically.</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Output is written to the file.</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>reflectance <span class="ot">&lt;-</span> core <span class="sc">|&gt;</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">prepare_core</span>()</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ── STL14_1A_28C_top_2022-11-11_16-30-51 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────</span></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ℹ 2024-02-24 18:18:51: reading rasters.</span></span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ℹ 2024-02-24 18:18:51: subsetting layers.</span></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ℹ 2024-02-24 18:18:51: cropping rasters.</span></span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; → Dark reference</span></span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="sc">|---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span></span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="er">=========================================</span></span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>                                          </span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; → Captured data</span></span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span></span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="er">=========================================</span></span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>                                          </span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; → White reference</span></span>
-<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span></span>
-<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a><span class="er">=========================================</span></span>
-<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>                                          </span>
-<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ℹ 2024-02-24 18:18:52: calculating reference rasters.</span></span>
-<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; → Aggregate DARKREF</span></span>
-<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; → Disaggregate DARKREF</span></span>
-<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span></span>
-<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>                                          </span>
-<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; → Aggregate WHITEREF</span></span>
-<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; → Disaggregate WHITEREF</span></span>
-<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span></span>
-<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a>                                          </span>
-<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ℹ 2024-02-24 18:19:29: calculating reflectance raster.</span></span>
-<span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb3-50"><a href="#cb3-50" aria-hidden="true" tabindex="-1"></a><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span></span>
-<span id="cb3-51"><a href="#cb3-51" aria-hidden="true" tabindex="-1"></a><span class="er">=========================================</span></span>
-<span id="cb3-52"><a href="#cb3-52" aria-hidden="true" tabindex="-1"></a>                                          </span>
-<span id="cb3-53"><a href="#cb3-53" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-54"><a href="#cb3-54" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-55"><a href="#cb3-55" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ℹ 2024-02-24 18:19:30: cleaning up.</span></span>
-<span id="cb3-56"><a href="#cb3-56" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ✔ 2024-02-24 18:19:30: finished.</span></span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="co"># Here we use run_core() output, so further function arguments are filled automatically.</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="co"># Output is written to the file.</span></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>reflectance <span class="ot">&lt;-</span> core <span class="sc">|&gt;</span></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>  <span class="fu">prepare_core</span>()</span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="co">#&gt; ── STL14_1A_28C_top_2022-11-11_16-30-51 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────</span></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="co">#&gt; ℹ 2024-02-24 18:18:51: reading rasters.</span></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="co">#&gt; ℹ 2024-02-24 18:18:51: subsetting layers.</span></span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a><span class="co">#&gt; ℹ 2024-02-24 18:18:51: cropping rasters.</span></span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a><span class="co">#&gt; → Dark reference</span></span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a><span class="sc">|---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span></span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a><span class="er">=========================================</span></span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a>                                          </span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a></span>
+<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a></span>
+<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a><span class="co">#&gt; → Captured data</span></span>
+<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span></span>
+<span id="cb3-20"><a href="#cb3-20" tabindex="-1"></a><span class="er">=========================================</span></span>
+<span id="cb3-21"><a href="#cb3-21" tabindex="-1"></a>                                          </span>
+<span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a></span>
+<span id="cb3-23"><a href="#cb3-23" tabindex="-1"></a></span>
+<span id="cb3-24"><a href="#cb3-24" tabindex="-1"></a><span class="co">#&gt; → White reference</span></span>
+<span id="cb3-25"><a href="#cb3-25" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-26"><a href="#cb3-26" tabindex="-1"></a><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span></span>
+<span id="cb3-27"><a href="#cb3-27" tabindex="-1"></a><span class="er">=========================================</span></span>
+<span id="cb3-28"><a href="#cb3-28" tabindex="-1"></a>                                          </span>
+<span id="cb3-29"><a href="#cb3-29" tabindex="-1"></a></span>
+<span id="cb3-30"><a href="#cb3-30" tabindex="-1"></a></span>
+<span id="cb3-31"><a href="#cb3-31" tabindex="-1"></a><span class="co">#&gt; ℹ 2024-02-24 18:18:52: calculating reference rasters.</span></span>
+<span id="cb3-32"><a href="#cb3-32" tabindex="-1"></a><span class="co">#&gt; → Aggregate DARKREF</span></span>
+<span id="cb3-33"><a href="#cb3-33" tabindex="-1"></a><span class="co">#&gt; → Disaggregate DARKREF</span></span>
+<span id="cb3-34"><a href="#cb3-34" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-35"><a href="#cb3-35" tabindex="-1"></a><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span></span>
+<span id="cb3-36"><a href="#cb3-36" tabindex="-1"></a></span>
+<span id="cb3-37"><a href="#cb3-37" tabindex="-1"></a>                                          </span>
+<span id="cb3-38"><a href="#cb3-38" tabindex="-1"></a></span>
+<span id="cb3-39"><a href="#cb3-39" tabindex="-1"></a></span>
+<span id="cb3-40"><a href="#cb3-40" tabindex="-1"></a><span class="co">#&gt; → Aggregate WHITEREF</span></span>
+<span id="cb3-41"><a href="#cb3-41" tabindex="-1"></a><span class="co">#&gt; → Disaggregate WHITEREF</span></span>
+<span id="cb3-42"><a href="#cb3-42" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-43"><a href="#cb3-43" tabindex="-1"></a><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span></span>
+<span id="cb3-44"><a href="#cb3-44" tabindex="-1"></a></span>
+<span id="cb3-45"><a href="#cb3-45" tabindex="-1"></a>                                          </span>
+<span id="cb3-46"><a href="#cb3-46" tabindex="-1"></a></span>
+<span id="cb3-47"><a href="#cb3-47" tabindex="-1"></a></span>
+<span id="cb3-48"><a href="#cb3-48" tabindex="-1"></a><span class="co">#&gt; ℹ 2024-02-24 18:19:29: calculating reflectance raster.</span></span>
+<span id="cb3-49"><a href="#cb3-49" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-50"><a href="#cb3-50" tabindex="-1"></a><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span></span>
+<span id="cb3-51"><a href="#cb3-51" tabindex="-1"></a><span class="er">=========================================</span></span>
+<span id="cb3-52"><a href="#cb3-52" tabindex="-1"></a>                                          </span>
+<span id="cb3-53"><a href="#cb3-53" tabindex="-1"></a></span>
+<span id="cb3-54"><a href="#cb3-54" tabindex="-1"></a></span>
+<span id="cb3-55"><a href="#cb3-55" tabindex="-1"></a><span class="co">#&gt; ℹ 2024-02-24 18:19:30: cleaning up.</span></span>
+<span id="cb3-56"><a href="#cb3-56" tabindex="-1"></a><span class="co">#&gt; ✔ 2024-02-24 18:19:30: finished.</span></span></code></pre></div>
 <p>We can plot the RGB preview at this stage.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_raster_rgb.html">plot_raster_rgb</a></span><span class="op">(</span><span class="va">reflectance</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── REFLECTANCE_STL14_1A_28C_top_2022-11-11_16-30-51 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────</span></span></code></pre></div>
-<div class="figure">
-<img src="figure/reflectance_rgb-1.png" alt=""><p class="caption">plot of chunk reflectance_rgb</p>
+<div class="float">
+<img src="figure/reflectance_rgb-1.png" alt="plot of chunk reflectance_rgb"><div class="figcaption">plot of chunk reflectance_rgb</div>
 </div>
 </div>
 <div class="section level3">
@@ -181,26 +181,26 @@ necessary.</p>
 <p>Applying spectral smoothing, such as the Savitzky-Golay spectral
 filter, is a good idea. Spurious, random peaks and through do not
 influence the calculation results.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>reflectance_smooth <span class="ot">&lt;-</span> reflectance <span class="sc">|&gt;</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Specify the file extension</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter_savgol</span>()</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ── REFLECTANCE_STL14_1A_28C_top_2022-11-11_16-30-51 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ℹ 2024-02-24 18:19:31: calculating Savitzky-Golay filtered raster.</span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="sc">|---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="er">=========================================</span></span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>                                          </span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ✔ 2024-02-24 18:19:31: finished.</span></span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>reflectance_smooth <span class="ot">&lt;-</span> reflectance <span class="sc">|&gt;</span></span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>  <span class="co"># Specify the file extension</span></span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>  <span class="fu">filter_savgol</span>()</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="co">#&gt; ── REFLECTANCE_STL14_1A_28C_top_2022-11-11_16-30-51 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────</span></span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a><span class="co">#&gt; ℹ 2024-02-24 18:19:31: calculating Savitzky-Golay filtered raster.</span></span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a><span class="sc">|---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span></span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="er">=========================================</span></span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a>                                          </span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a></span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a></span>
+<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a><span class="co">#&gt; ✔ 2024-02-24 18:19:31: finished.</span></span></code></pre></div>
 <p>We can plot the RGB preview at this stage, too.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_raster_rgb.html">plot_raster_rgb</a></span><span class="op">(</span><span class="va">reflectance_smooth</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── REFLECTANCE_STL14_1A_28C_top_2022-11-11_16-30-51_savitzky-golay ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────</span></span></code></pre></div>
-<div class="figure">
-<img src="figure/savgol_rgb-1.png" alt=""><p class="caption">plot of chunk savgol_rgb</p>
+<div class="float">
+<img src="figure/savgol_rgb-1.png" alt="plot of chunk savgol_rgb"><div class="figcaption">plot of chunk savgol_rgb</div>
 </div>
 </div>
 <div class="section level3">
@@ -274,8 +274,8 @@ influence the calculation results.</p>
 <span></span>
 <span><span class="co"># Print</span></span>
 <span><span class="va">sp_compare</span></span></code></pre></div>
-<div class="figure">
-<img src="figure/peek-spectra-1.png" alt=""><p class="caption">plot of chunk peek-spectra</p>
+<div class="float">
+<img src="figure/peek-spectra-1.png" alt="plot of chunk peek-spectra"><div class="figcaption">plot of chunk peek-spectra</div>
 </div>
 <p>Both plots look similar at this scale except for noisy UV and blue.
 We can zoom it, preferably into a flat region.</p>
@@ -285,8 +285,8 @@ We can zoom it, preferably into a flat region.</p>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/coord_cartesian.html" class="external-link">coord_cartesian</a></span><span class="op">(</span></span>
 <span>    xlim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">600</span>, <span class="fl">650</span><span class="op">)</span>,</span>
 <span>    ylim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.1330</span>, <span class="fl">0.1360</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<div class="figure">
-<img src="figure/zoom-spectra-1.png" alt=""><p class="caption">plot of chunk zoom-spectra</p>
+<div class="float">
+<img src="figure/zoom-spectra-1.png" alt="plot of chunk zoom-spectra"><div class="figcaption">plot of chunk zoom-spectra</div>
 </div>
 </div>
 <div class="section level3">
@@ -295,25 +295,25 @@ We can zoom it, preferably into a flat region.</p>
 <p>We can process our data further by removing the continuum, which
 follows the rule of dividing the spectrum by its bounding box. This way,
 the spectrum becomes flatter.</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate reflectance with removed continuum</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Use the smoothed spectrum</span></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>reflectance_cr <span class="ot">&lt;-</span> reflectance_smooth <span class="sc">|&gt;</span></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">remove_continuum</span>()</span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ── REFLECTANCE_STL14_1A_28C_top_2022-11-11_16-30-51_savitzky-golay ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────</span></span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ℹ 2024-02-24 18:19:32: calculating continuum removed raster.</span></span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Warning in f(names[[col]]): NAs introduced by coercion</span></span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="sc">|---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span></span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="er">=============================</span></span>
-<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Warning in regularize.values(x, y, ties, missing(ties), na.rm = na.rm): collapsing to unique 'x' values</span></span>
-<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ==========</span></span>
-<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Warning in regularize.values(x, y, ties, missing(ties), na.rm = na.rm): collapsing to unique 'x' values</span></span>
-<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ==</span></span>
-<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>                                          </span>
-<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ✔ 2024-02-24 18:19:33: finished.</span></span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="co"># Calculate reflectance with removed continuum</span></span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a><span class="co"># Use the smoothed spectrum</span></span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>reflectance_cr <span class="ot">&lt;-</span> reflectance_smooth <span class="sc">|&gt;</span></span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>  <span class="fu">remove_continuum</span>()</span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a><span class="co">#&gt; ── REFLECTANCE_STL14_1A_28C_top_2022-11-11_16-30-51_savitzky-golay ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────</span></span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a><span class="co">#&gt; ℹ 2024-02-24 18:19:32: calculating continuum removed raster.</span></span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a><span class="co">#&gt; Warning in f(names[[col]]): NAs introduced by coercion</span></span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a><span class="sc">|---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span></span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a><span class="er">=============================</span></span>
+<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a><span class="co">#&gt; Warning in regularize.values(x, y, ties, missing(ties), na.rm = na.rm): collapsing to unique 'x' values</span></span>
+<span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a><span class="co">#&gt; ==========</span></span>
+<span id="cb9-14"><a href="#cb9-14" tabindex="-1"></a><span class="co">#&gt; Warning in regularize.values(x, y, ties, missing(ties), na.rm = na.rm): collapsing to unique 'x' values</span></span>
+<span id="cb9-15"><a href="#cb9-15" tabindex="-1"></a><span class="co">#&gt; ==</span></span>
+<span id="cb9-16"><a href="#cb9-16" tabindex="-1"></a>                                          </span>
+<span id="cb9-17"><a href="#cb9-17" tabindex="-1"></a></span>
+<span id="cb9-18"><a href="#cb9-18" tabindex="-1"></a></span>
+<span id="cb9-19"><a href="#cb9-19" tabindex="-1"></a><span class="co">#&gt; ✔ 2024-02-24 18:19:33: finished.</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -337,8 +337,8 @@ the spectrum becomes flatter.</p>
 <span></span>
 <span><span class="co"># Print</span></span>
 <span><span class="va">plot_rmean</span></span></code></pre></div>
-<div class="figure">
-<img src="figure/rmean-plot-1.png" alt=""><p class="caption">plot of chunk rmean-plot</p>
+<div class="float">
+<img src="figure/rmean-plot-1.png" alt="plot of chunk rmean-plot"><div class="figcaption">plot of chunk rmean-plot</div>
 </div>
 <div class="section level3">
 <h3 id="relative-absorption-band-depth-rabd-">Relative Absorption Band Depth (RABD).<a class="anchor" aria-label="anchor" href="#relative-absorption-band-depth-rabd-"></a>
@@ -381,8 +381,8 @@ the trough and flexibly used for calculations.</p>
 <span></span>
 <span><span class="co"># Print</span></span>
 <span><span class="va">plot_rabd660670max</span></span></code></pre></div>
-<div class="figure">
-<img src="figure/rabd-max-plot-1.png" alt=""><p class="caption">plot of chunk rabd-max-plot</p>
+<div class="float">
+<img src="figure/rabd-max-plot-1.png" alt="plot of chunk rabd-max-plot"><div class="figcaption">plot of chunk rabd-max-plot</div>
 </div>
 </div>
 <div class="section level4">
@@ -412,8 +412,8 @@ for every pixel.</p>
 <span></span>
 <span><span class="co"># Print</span></span>
 <span><span class="va">plot_rabd665</span></span></code></pre></div>
-<div class="figure">
-<img src="figure/rabd-strict-plot-1.png" alt=""><p class="caption">plot of chunk rabd-strict-plot</p>
+<div class="float">
+<img src="figure/rabd-strict-plot-1.png" alt="plot of chunk rabd-strict-plot"><div class="figcaption">plot of chunk rabd-strict-plot</div>
 </div>
 </div>
 <div class="section level4">
@@ -443,8 +443,8 @@ the middle point between the through edges.</p>
 <span></span>
 <span><span class="co"># Print</span></span>
 <span><span class="va">plot_rabd660670mid</span></span></code></pre></div>
-<div class="figure">
-<img src="figure/rabd-mid-plot-1.png" alt=""><p class="caption">plot of chunk rabd-mid-plot</p>
+<div class="float">
+<img src="figure/rabd-mid-plot-1.png" alt="plot of chunk rabd-mid-plot"><div class="figcaption">plot of chunk rabd-mid-plot</div>
 </div>
 </div>
 <div class="section level4">
@@ -454,8 +454,8 @@ the middle point between the through edges.</p>
 <code>patchwork</code>.</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">plot_rabd660670max</span> <span class="op">+</span> <span class="va">plot_rabd665</span> <span class="op">+</span> <span class="va">plot_rabd660670mid</span> <span class="op">+</span> <span class="fu">patchwork</span><span class="fu">::</span><span class="fu"><a href="https://patchwork.data-imaginist.com/reference/plot_layout.html" class="external-link">plot_layout</a></span><span class="op">(</span>nrow <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
-<div class="figure">
-<img src="figure/rabd-compare-1.png" alt=""><p class="caption">plot of chunk rabd-compare</p>
+<div class="float">
+<img src="figure/rabd-compare-1.png" alt="plot of chunk rabd-compare"><div class="figcaption">plot of chunk rabd-compare</div>
 </div>
 <p>Similar, but not identical. As expected!</p>
 </div>
@@ -487,8 +487,8 @@ wavelength Y.</p>
 <span><span class="co">#&gt; ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────</span></span>
 <span></span>
 <span><span class="va">plot_ratio570630</span></span></code></pre></div>
-<div class="figure">
-<img src="figure/ratio-plot-1.png" alt=""><p class="caption">plot of chunk ratio-plot</p>
+<div class="float">
+<img src="figure/ratio-plot-1.png" alt="plot of chunk ratio-plot"><div class="figcaption">plot of chunk ratio-plot</div>
 </div>
 </div>
 <div class="section level3">
@@ -511,8 +511,8 @@ wavelength Y.</p>
 <span><span class="co">#&gt; ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────</span></span>
 <span></span>
 <span><span class="va">plot_difference_650675</span></span></code></pre></div>
-<div class="figure">
-<img src="figure/difference-plot-1.png" alt=""><p class="caption">plot of chunk difference-plot</p>
+<div class="float">
+<img src="figure/difference-plot-1.png" alt="plot of chunk difference-plot"><div class="figcaption">plot of chunk difference-plot</div>
 </div>
 </div>
 <div class="section level3">
