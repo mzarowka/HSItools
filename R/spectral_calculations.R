@@ -39,6 +39,27 @@ calculate_rabd <- function(
 
   cli::cli_h1("{raster_name}")
 
+  # Check type of filename
+  if (is.null(filename) == TRUE) {
+    filename <- paste0(raster_src, "/", rabd_name, "_max_", raster_name, ".tif")
+  } else {
+    filename <- fs::path(filename, ext = ext)
+  }
+
+  # Check extent type
+  if (is.null(extent) == TRUE) {
+    # Set window of interest
+    raster <- raster
+  } else {
+    print("crops")
+    # Set window of interest
+    raster <- terra::crop(
+      raster,
+      extent,
+      filename = filename,
+      overwrite = TRUE)
+  }
+
   # Create empty SpatRaster template from original cropped raster
   template <- terra::rast(
     terra::ext(raster),
@@ -48,21 +69,22 @@ calculate_rabd <- function(
   # If RABD is defined as range and "max" is selected flexibly find the position of the absolute minimum within the range.
   if (rabd_type == "max") {
 
-    # Check type of filename
-    if (is.null(filename) == TRUE) {
-      filename <- paste0(raster_src, "/", rabd_name, "_max_", raster_name, ".tif")
-    } else {
-      filename <- fs::path(filename, ext = ext)
-    }
-
-    # Check extent type
-    if (is.null(extent)) {
-      # Set window of interest
-      terra::window(raster) <- terra::ext(raster)
-    } else {
-      # Set window of interest
-      terra::window(raster) <- terra::ext(extent)
-    }
+    # # Check type of filename
+    # if (is.null(filename) == TRUE) {
+    #   filename <- paste0(raster_src, "/", rabd_name, "_max_", raster_name, ".tif")
+    # } else {
+    #   filename <- fs::path(filename, ext = ext)
+    # }
+    #
+    # # Check extent type
+    # if (is.null(extent) == TRUE) {
+    #   # Set window of interest
+    #   raster <- raster
+    # } else {
+    #   print("crops")
+    #   # Set window of interest
+    #   raster <- terra::crop(raster, y = extent, filename = filename, overwrite = TRUE)
+    # }
 
       # Set layer name based on the rabd_name argument
     names(template) <- paste0(rabd_name, "_max")
@@ -94,7 +116,7 @@ calculate_rabd <- function(
     }
 
     # Check extent type
-    if (is.null(extent)) {
+    if (is.null(extent) == TRUE) {
       # Set window of interest
       terra::window(raster) <- terra::ext(raster)
     } else {
@@ -201,9 +223,6 @@ calculate_rabd <- function(
     template,
     filename = filename,
     overwrite = TRUE)
-
-  # Reset window
-  terra::window(raster) <- NULL
 
   # Return raster
   return(template)
