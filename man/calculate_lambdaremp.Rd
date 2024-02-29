@@ -4,16 +4,24 @@
 \alias{calculate_lambdaremp}
 \title{Calculate lambdaREMP}
 \usage{
-calculate_lambdaremp(raster, .trough = c(660, 680), .ext, .write)
+calculate_lambdaremp(
+  raster,
+  trough = c(660, 680),
+  extent = NULL,
+  ext = NULL,
+  filename = NULL
+)
 }
 \arguments{
 \item{raster}{a terra SpatRaster of normalized capture data.}
 
-\item{.trough}{character vector of wavelength to look for trough.}
+\item{trough}{character vector of wavelength to look for trough.}
 
-\item{.ext}{character, a graphic format extension.}
+\item{extent}{an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.}
 
-\item{.write}{logical, should resulting SpatRaster be written to file.}
+\item{ext}{character, a graphic format extension.}
+
+\item{filename}{NULL (default) to write automatically into products, provide full path and ext to override.}
 }
 \value{
 one layer terra SpatRaster with calculated lambdaREMP values.

@@ -33,9 +33,9 @@ proxies <- list(
   ratio_b660b670 = list(proxy_type = "band ratio", proxy_name = "r660r670", edges = c(660, 670), trough = NA, reference = "na", interpretation = "clay minerals, dust"),
   ratio_blr750lr673 = list(proxy_type = "band ratio", proxy_name = "log(r750)_log(r673)", edges = c(750, 673), trough = NA, reference = "na", interpretation = "clay minerals, dust"),
   # band differences
-  diff_b675b750 = list(proxy_type = "band difference", proxy_name = "r570r630", edges = c(675, 750), trough = NA, reference = "na", interpretation = "clay minerals, dust"),
-  diff_b650b675 = list(proxy_type = "band difference", proxy_name = "r570r630", edges = c(650, 675), trough = NA, reference = "na", interpretation = "clay minerals, dust"),
-  diff_b660b690 = list(proxy_type = "band difference", proxy_name = "r570r630", edges = c(660, 690), trough = NA, reference = "na", interpretation = "clay minerals, dust"),
+  diff_b675b750 = list(proxy_type = "band difference", proxy_name = "d675d750", edges = c(675, 750), trough = NA, reference = "na", interpretation = "clay minerals, dust"),
+  diff_b650b675 = list(proxy_type = "band difference", proxy_name = "d650d675", edges = c(650, 675), trough = NA, reference = "na", interpretation = "clay minerals, dust"),
+  diff_b660b690 = list(proxy_type = "band difference", proxy_name = "d660d690", edges = c(660, 690), trough = NA, reference = "na", interpretation = "clay minerals, dust"),
   # derivatives
   lambdaremp = list(proxy_type = "derivative", proxy_name = "λremp", edges = c(570, 630), trough = NA, reference = "na", interpretation = "clay minerals, dust"),
   deriv_b675 = list(proxy_type = "derivative", proxy_name = "d675", edges = c(570, 630), trough = NA, reference = "na", interpretation = "clay minerals, dust"),

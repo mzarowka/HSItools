@@ -67,6 +67,7 @@ spectra_sub <- function(raster, spectra_tbl) {
 #'
 #' @param raster terra SpatRaster to be cropped.
 #' @param type either data raster or reference raster.
+#' @param dir directory.
 #' @param roi Region Of Interest: cropping extent.
 #' @param ... additional arguments.
 #'
@@ -76,24 +77,42 @@ spectra_sub <- function(raster, spectra_tbl) {
 #' @description Crop SpatRaster to large ROI (entire core)
 #' For capture (core) SpatRaster use full extent
 #' For reference (white and dark) SpatRaster use only x-direction.
-raster_crop <- function(raster, type, roi, ...) {
-  # Store additional parameters
-  params <- rlang::list2(...)
-
+raster_crop <- function(raster, type, dir = NULL, roi) {
   # Check if correct class is supplied.
   if (!inherits(raster, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
+  }
+
+  # Check number of rois and prepare ids.
+  if (length(roi) == 1) {
+    roi_id <- NULL
+  } else {
+    roi_id <- paste0("ROI_", seq(1:length(roi)))
   }
 
   # If cropping entire capture SpatRaster use entire large ROI
   if (type == "capture") {
     cli::cli_alert("Captured data")
 
+    # Raster source directory
+    raster_src <- raster |>
+      terra::sources() |>
+      fs::path_dir() |>
+      fs::path_dir()
+
+    # Raster source name
+    raster_name <- raster |>
+      terra::sources() |>
+      fs::path_file() |>
+      fs::path_ext_remove()
+
+    filename <- paste0(raster_src, "/products/", raster_name, "_cropped.tif")
+
     # Crop
     raster <- terra::crop(
       raster,
       roi,
-      filename = paste0(params$path, "/products/", basename(params$path), "_cropped.tif"),
+      filename = filename,
       overwrite = TRUE,
       steps = terra::ncell(raster) * terra::nlyr(raster))
 
@@ -102,6 +121,20 @@ raster_crop <- function(raster, type, roi, ...) {
   } else if (type == "whiteref") {
     cli::cli_alert("White reference")
 
+    # Raster source directory
+    raster_src <- raster |>
+      terra::sources() |>
+      fs::path_dir() |>
+      fs::path_dir()
+
+    # Raster source name
+    raster_name <- raster |>
+      terra::sources() |>
+      fs::path_file() |>
+      fs::path_ext_remove()
+
+    filename <- paste0(raster_src, "/products/WHITEREFF_", raster_name, "_cropped.tif")
+
     # Crop
     raster <- terra::crop(
       raster,
@@ -109,7 +142,7 @@ raster_crop <- function(raster, type, roi, ...) {
         terra::xmax(roi),
         terra::ymin(raster),
         terra::ymax(raster)),
-      filename = paste0(params$path, "/products/WHITEREF_", basename(params$path), "_cropped.tif"),
+      filename = filename,
       overwrite = TRUE,
       steps = terra::ncell(raster) * terra::nlyr(raster))
 
@@ -117,6 +150,20 @@ raster_crop <- function(raster, type, roi, ...) {
   } else if (type == "darkref") {
     cli::cli_alert("Dark reference")
 
+    # Raster source directory
+    raster_src <- raster |>
+      terra::sources() |>
+      fs::path_dir() |>
+      fs::path_dir()
+
+    # Raster source name
+    raster_name <- raster |>
+      terra::sources() |>
+      fs::path_file() |>
+      fs::path_ext_remove()
+
+    filename <- paste0(raster_src, "/products/DARKREF_", raster_name, "_cropped.tif")
+
     # Crop
     raster <- terra::crop(
       raster,
@@ -124,7 +171,7 @@ raster_crop <- function(raster, type, roi, ...) {
         terra::xmax(roi),
         terra::ymin(raster),
         terra::ymax(raster)),
-      filename = paste0(params$path, "/products/DARKREF_", basename(params$path), "_cropped.tif"),
+      filename = filename,
       overwrite = TRUE,
       steps = terra::ncell(raster) * terra::nlyr(raster))
   }
@@ -155,11 +202,20 @@ create_reference_raster <- function(raster, roi, ref_type, ...) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
   }
 
+  # Check number of rois and prepare ids.
+  if (length(roi) == 1) {
+    roi_id <- NULL
+  } else {
+    roi_id <- paste0("ROI_", seq(1:length(roi)))
+  }
+
   if (ref_type == "whiteref") {
     name <- "WHITEREF"
+
   } else {
     name <- "DARKREF"
   }
+
   # Aggregate data into one row SpatRaster, divide by number of rows
   cli::cli_alert("Aggregate { name }")
 

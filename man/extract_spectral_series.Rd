@@ -4,14 +4,24 @@
 \alias{extract_spectral_series}
 \title{Extract average proxy series from ROI}
 \usage{
-extract_spectral_series(raster, .hsi_index = NULL, .extent = NULL)
+extract_spectral_series(
+  raster,
+  index = NULL,
+  extent = NULL,
+  write = FALSE,
+  ...
+)
 }
 \arguments{
 \item{raster}{terra SpatRaster with one layer with calculated values.}
 
-\item{.hsi_index}{character indicating hyperspectral index layer to plot.}
+\item{index}{character indicating hyperspectral index layer to plot.}
 
-\item{.extent}{an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.}
+\item{extent}{an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.}
+
+\item{write}{optional, should output be written to csv file.}
+
+\item{...}{further parameters for pixel_to_distance()}
 }
 \value{
 tibble frame with XY coordinates and averaged proxy values.

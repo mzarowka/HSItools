@@ -4,12 +4,14 @@
 \alias{raster_crop}
 \title{Crop SpatRaster}
 \usage{
-raster_crop(raster, type, roi, ...)
+raster_crop(raster, type, dir = NULL, roi)
 }
 \arguments{
 \item{raster}{terra SpatRaster to be cropped.}
 
 \item{type}{either data raster or reference raster.}
+
+\item{dir}{directory.}
 
 \item{roi}{Region Of Interest: cropping extent.}
 

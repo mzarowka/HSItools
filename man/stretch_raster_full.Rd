@@ -4,14 +4,14 @@
 \alias{stretch_raster_full}
 \title{Stretch and optionally save full RGB preview of SpatRaster}
 \usage{
-stretch_raster_full(raster, .ext = NULL, .write = TRUE)
+stretch_raster_full(raster, ext = NULL, write = TRUE)
 }
 \arguments{
 \item{raster}{a SpatRaster, preferably reflectance file.}
 
-\item{.ext}{character, a graphic format extension.}
+\item{ext}{character, a graphic format extension.}
 
-\item{.write}{logical, should resulting SpatRaster be written to file.}
+\item{write}{logical, should resulting SpatRaster be written to file.}
 }
 \description{
 Stretch and optionally save full RGB preview of SpatRaster

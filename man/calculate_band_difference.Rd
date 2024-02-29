@@ -4,14 +4,27 @@
 \alias{calculate_band_difference}
 \title{Calculate band difference}
 \usage{
-calculate_band_difference(raster, .edges, .difference_name)
+calculate_band_difference(
+  raster,
+  difference_name,
+  edges,
+  extent = NULL,
+  ext = NULL,
+  filename = NULL
+)
 }
 \arguments{
 \item{raster}{terra SpatRaster of normalized capture data.}
 
-\item{.edges}{numeric vector of two for the difference.}
+\item{difference_name}{a character, lower case name of calculated difference.}
 
-\item{.ratio_name}{a character, lower case name of calculated difference.}
+\item{edges}{numeric vector of two for the difference.}
+
+\item{extent}{an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.}
+
+\item{ext}{character, a graphic format extension.}
+
+\item{filename}{NULL (default) to write automatically into products, provide full path and ext to override.}
 }
 \value{
 one layer terra SpatRaster with calculated difference values
