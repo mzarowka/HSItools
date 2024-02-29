@@ -39,25 +39,20 @@ calculate_rabd <- function(
 
   cli::cli_h1("{raster_name}")
 
-  # Check type of filename
-  if (is.null(filename) == TRUE) {
-    filename <- paste0(raster_src, "/", rabd_name, "_max_", raster_name, ".tif")
-  } else {
-    filename <- fs::path(filename, ext = ext)
-  }
+  # # Check type of filename
+  # if (is.null(filename) == TRUE) {
+  #   filename <- paste0(raster_src, "/", rabd_name, "_max_", raster_name, ".tif")
+  # } else {
+  #   filename <- fs::path(filename, ext = ext)
+  # }
 
   # Check extent type
   if (is.null(extent) == TRUE) {
     # Set window of interest
     raster <- raster
   } else {
-    print("crops")
     # Set window of interest
-    raster <- terra::crop(
-      raster,
-      extent,
-      filename = filename,
-      overwrite = TRUE)
+    terra::window(raster) <- terra::ext(extent)
   }
 
   # Create empty SpatRaster template from original cropped raster
@@ -69,12 +64,12 @@ calculate_rabd <- function(
   # If RABD is defined as range and "max" is selected flexibly find the position of the absolute minimum within the range.
   if (rabd_type == "max") {
 
-    # # Check type of filename
-    # if (is.null(filename) == TRUE) {
-    #   filename <- paste0(raster_src, "/", rabd_name, "_max_", raster_name, ".tif")
-    # } else {
-    #   filename <- fs::path(filename, ext = ext)
-    # }
+    # Check type of filename
+    if (is.null(filename) == TRUE) {
+      filename <- paste0(raster_src, "/", rabd_name, "_max_", raster_name, ".tif")
+    } else {
+      filename <- fs::path(filename, ext = ext)
+    }
     #
     # # Check extent type
     # if (is.null(extent) == TRUE) {
@@ -224,6 +219,9 @@ calculate_rabd <- function(
     filename = filename,
     overwrite = TRUE)
 
+  # Reset the window
+  terra::window(raster) <- NULL
+
   # Return raster
   return(template)
 }
@@ -267,6 +265,15 @@ calculate_raba <- function(
 
   cli::cli_h1("{raster_name}")
 
+  # Check extent type
+  if (is.null(extent) == TRUE) {
+    # Set window of interest
+    raster <- raster
+  } else {
+    # Set window of interest
+    terra::window(raster) <- terra::ext(extent)
+  }
+
   # Check type of filename
   if (is.null(filename) == TRUE) {
     filename <- paste0(raster_src, "/", raba_name, "_", raster_name, ".tif")
@@ -274,19 +281,21 @@ calculate_raba <- function(
     filename <- fs::path(filename, ext = ext)
   }
 
-  # Check extent type
-  if (is.null(extent)) {
-    # Set window of interest
-    terra::window(raster) <- terra::ext(raster)
-  } else {
-    # Set window of interest
-    terra::window(raster) <- terra::ext(extent)
-  }
+  # # Check extent type
+  # if (is.null(extent)) {
+  #   # Set window of interest
+  #   terra::window(raster) <- terra::ext(raster)
+  # } else {
+  #   # Set window of interest
+  #   terra::window(raster) <- terra::ext(extent)
+  # }
 
   cli::cli_alert("Writing {raba_name} to {filename}.")
 
   # Create empty SpatRaster template from original cropped raster
-  template <- terra::rast(terra::ext(raster), resolution = terra::res(raster))
+  template <- terra::rast(
+    terra::ext(raster),
+    resolution = terra::res(raster))
 
   # Set layer name based on the raba_name argument
   names(template) <- raba_name
@@ -343,20 +352,20 @@ calculate_band_ratio <- function(
 
   cli::cli_h1("{raster_name}")
 
+  # Check extent type
+  if (is.null(extent) == TRUE) {
+    # Set window of interest
+    raster <- raster
+  } else {
+    # Set window of interest
+    terra::window(raster) <- terra::ext(extent)
+  }
+
   # Check type of filename
   if (is.null(filename) == TRUE) {
     filename <- paste0(raster_src, "/", ratio_name, "_", raster_name, ".tif")
   } else {
     filename <- fs::path(filename, ext = ext)
-  }
-
-  # Check extent type
-  if (is.null(extent)) {
-    # Set window of interest
-    terra::window(raster) <- terra::ext(raster)
-  } else {
-    # Set window of interest
-    terra::window(raster) <- terra::ext(extent)
   }
 
   cli::cli_alert("Writing {ratio_name} to {filename}.")
@@ -367,14 +376,14 @@ calculate_band_ratio <- function(
     dplyr::pull(var = 2)
 
   # Divide
-  raster <- terra::subset(raster, edge_positions[1]) / terra::subset(raster, edge_positions[2])
+  template <- terra::subset(raster, edge_positions[1]) / terra::subset(raster, edge_positions[2])
 
   # Set layer name
-  names(raster) <- ratio_name
+  names(template) <- ratio_name
 
   # Write new raster to file based on paths stored in the environment
   terra::writeRaster(
-    raster,
+    template,
     filename = filename,
     overwrite = TRUE)
 
@@ -382,7 +391,7 @@ calculate_band_ratio <- function(
   terra::window(raster) <- NULL
 
   # Return
-  return(raster)
+  return(template)
 }
 
 #' Calculate band difference
@@ -424,6 +433,15 @@ calculate_band_difference <- function(
 
   cli::cli_h1("{raster_name}")
 
+  # Check extent type
+  if (is.null(extent) == TRUE) {
+    # Set window of interest
+    raster <- raster
+  } else {
+    # Set window of interest
+    terra::window(raster) <- terra::ext(extent)
+  }
+
   # Check type of filename
   if (is.null(filename) == TRUE) {
     filename <- paste0(raster_src, "/", difference_name, "_", raster_name, ".tif")
@@ -431,14 +449,14 @@ calculate_band_difference <- function(
     filename <- fs::path(filename, ext = ext)
   }
 
-  # Check extent type
-  if (is.null(extent)) {
-    # Set window of interest
-    terra::window(raster) <- terra::ext(raster)
-  } else {
-    # Set window of interest
-    terra::window(raster) <- terra::ext(extent)
-  }
+  # # Check extent type
+  # if (is.null(extent)) {
+  #   # Set window of interest
+  #   terra::window(raster) <- terra::ext(raster)
+  # } else {
+  #   # Set window of interest
+  #   terra::window(raster) <- terra::ext(extent)
+  # }
 
   cli::cli_alert("Writing {difference_name} to {filename}.")
 
@@ -447,15 +465,15 @@ calculate_band_difference <- function(
     # Pull vector with positions
     dplyr::pull(var = 2)
 
-  # Divide
-  raster <- terra::subset(raster, edge_positions[1]) - terra::subset(raster, edge_positions[2])
+  # Substract
+  template <- terra::subset(raster, edge_positions[1]) - terra::subset(raster, edge_positions[2])
 
   # Set layer name
-  names(raster) <- difference_name
+  names(template) <- difference_name
 
   # Write new raster to file based on paths stored in the environment
   terra::writeRaster(
-    raster,
+    template,
     filename = filename,
     overwrite = TRUE)
 
@@ -463,7 +481,7 @@ calculate_band_difference <- function(
   terra::window(raster) <- NULL
 
   # Return raster
-  return(raster)
+  return(template)
 }
 
 #' Calculate Rmean
@@ -502,6 +520,15 @@ calculate_rmean <- function(
 
   cli::cli_h1("{raster_name}")
 
+  # Check extent type
+  if (is.null(extent) == TRUE) {
+    # Set window of interest
+    raster <- raster
+  } else {
+    # Set window of interest
+    terra::window(raster) <- terra::ext(extent)
+  }
+
   # Check type of filename
   if (is.null(filename) == TRUE) {
     filename <- paste0(raster_src, "/RMEAN_", raster_name, ".tif")
@@ -509,26 +536,26 @@ calculate_rmean <- function(
     filename <- fs::path(filename, ext = ext)
   }
 
-  # Check extent type
-  if (is.null(extent)) {
-    # Set window of interest
-    terra::window(raster) <- terra::ext(raster)
-  } else {
-    # Set window of interest
-    terra::window(raster) <- terra::ext(extent)
-  }
+  # # Check extent type
+  # if (is.null(extent)) {
+  #   # Set window of interest
+  #   terra::window(raster) <- terra::ext(raster)
+  # } else {
+  #   # Set window of interest
+  #   terra::window(raster) <- terra::ext(extent)
+  # }
 
   cli::cli_alert("Writing RMEAN to {filename}.")
 
   # Apply mean function over entire SpatRaster
-  raster <- terra::app(raster, fun = "mean")
+  template <- terra::app(raster, fun = "mean")
 
   # Set layer name
-  names(raster) <- "rmean"
+  names(template) <- "rmean"
 
   # Write new raster to file based on paths stored in the environment
   terra::writeRaster(
-    raster,
+    template,
     filename = filename,
     overwrite = TRUE
   )
@@ -537,7 +564,7 @@ calculate_rmean <- function(
   terra::window(raster) <- NULL
 
   # Return
-  return(raster)
+  return(template)
 }
 
 #' Calculate lambdaREMP
@@ -578,6 +605,15 @@ calculate_lambdaremp <- function(
 
   cli::cli_h1("{raster_name}")
 
+  # Check extent type
+  if (is.null(extent) == TRUE) {
+    # Set window of interest
+    raster <- raster
+  } else {
+    # Set window of interest
+    terra::window(raster) <- terra::ext(extent)
+  }
+
   # Check type of filename
   if (is.null(filename) == TRUE) {
     filename <- paste0(raster_src, "/", "lambdaREMP_", raster_name, ".tif")
@@ -585,14 +621,19 @@ calculate_lambdaremp <- function(
     filename <- fs::path(filename, ext = ext)
   }
 
-  # Check extent type
-  if (is.null(extent)) {
-    # Set window of interest
-    terra::window(raster) <- terra::ext(raster)
-  } else {
-    # Set window of interest
-    terra::window(raster) <- terra::ext(extent)
-  }
+  # Create empty SpatRaster template from original cropped raster
+  template <- terra::rast(
+    terra::ext(raster),
+    resolution = terra::res(raster))
+
+  # # Check extent type
+  # if (is.null(extent)) {
+  #   # Set window of interest
+  #   terra::window(raster) <- terra::ext(raster)
+  # } else {
+  #   # Set window of interest
+  #   terra::window(raster) <- terra::ext(extent)
+  # }
 
   cli::cli_alert("Writing lambdaREMP to {filename}.")
 
@@ -603,9 +644,6 @@ calculate_lambdaremp <- function(
     # Subset normalized raster to match trough
     (\(x) terra::subset(raster, x))()
   # Calculate derivative
-
-  # Create empty SpatRaster template from original cropped raster
-  template <- terra::rast(terra::ext(raster), resolution = terra::res(raster))
 
   terra::values(template) <- remp
 
@@ -664,6 +702,15 @@ calculate_derivative <- function(
 
   cli::cli_h1("{raster_name}")
 
+  # Check extent type
+  if (is.null(extent) == TRUE) {
+    # Set window of interest
+    raster <- raster
+  } else {
+    # Set window of interest
+    terra::window(raster) <- terra::ext(extent)
+  }
+
   # Check type of filename
   if (is.null(filename) == TRUE) {
     filename <- paste0(raster_src, "/", derivative_name, "_", raster_name, ".tif")
@@ -671,14 +718,14 @@ calculate_derivative <- function(
     filename <- fs::path(filename, ext = ext)
   }
 
-  # Check extent type
-  if (is.null(extent)) {
-    # Set window of interest
-    terra::window(raster) <- terra::ext(raster)
-  } else {
-    # Set window of interest
-    terra::window(raster) <- terra::ext(extent)
-  }
+  # # Check extent type
+  # if (is.null(extent)) {
+  #   # Set window of interest
+  #   terra::window(raster) <- terra::ext(raster)
+  # } else {
+  #   # Set window of interest
+  #   terra::window(raster) <- terra::ext(extent)
+  # }
 
   cli::cli_alert("Writing {derivative_name} to {filename}.")
 
@@ -688,14 +735,14 @@ calculate_derivative <- function(
     dplyr::pull(var = 2)
 
   # Find derivative value
-  raster
+  # derivative
 
   # Set layer name
-  names(raster) <- derivative_name
+  names(template) <- derivative_name
 
   # Write new raster to file based on paths stored in the environment
   terra::writeRaster(
-    raster,
+    template,
     filename = filename,
     overwrite = TRUE
   )
@@ -704,5 +751,5 @@ calculate_derivative <- function(
   terra::window(raster) <- NULL
 
   # Return raster
-  return(raster)
+  return(template)
 }
