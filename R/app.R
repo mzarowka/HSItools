@@ -177,16 +177,15 @@ run_core <- function(autoSave = TRUE){
                              br(),
                              br(),
                              br(),
-                             sidebarLayout(
-                               fluid = FALSE,
-                               sidebarPanel(
-                                 style = "position:fixed; margin-top:150px;",
-                                 width=2,
-                             align="center",
-                             # actionButton("skipSelectAnalysisRegion", "Analyze full image (skip region selection step)",
-                             #              style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
-                             shiny::br(),
-                             shiny::br(),
+                             mainPanel(
+                               shiny::br(),
+                               shiny::br(),
+                               fixedRow(
+                                 column(3,
+                                        wellPanel(
+                                          id = "Analysisregions",
+                                          style = "height:600px; overflow-y: scroll; overflow-x:scroll; max-width: 800px",
+
                              actionButton("selectAnalysisRegion", "Add selected region"),
                              shiny::br(),
                              shiny::br(),
@@ -208,26 +207,26 @@ run_core <- function(autoSave = TRUE){
                                  shiny::verbatimTextOutput("ymax"),
                                ),
                              ),
-                             shiny::fluidRow(
+                             shiny::fixedRow(
                                align="center",
                                shiny::br(),
                                "Analysis Regions",
                                shiny::br(),
-                               DT::DTOutput("analysisRegions"),
+                               column(width=12,
+                                DT::DTOutput("analysisRegions",width = "100%"),
+                                style = "height:200px; overflow-y: scroll; overflow-x:visible"
+                               ),
                              ),
                              shiny::br(),
                              actionButton("removeRegion", "Remove highlighted region"),
                              shiny::br(),
                              actionButton("acceptAnalysisRegions", "Accept all selections"),
                                ),
-                             mainPanel(
-                             shiny::br(),
-                             shiny::br(),
-                             fixedRow(
+                               ),
                                column(
-                                 6,
+                                 5,
                                  wellPanel(
-                                   id = "fullCorePanel",style = "overflow-y:visible; overflow-x:scroll; max-width: 800px",
+                                   id = "fullCorePanel",style = "height:600px; overflow-y: scroll; overflow-x:scroll; max-width: 800px",
                                  "Full Core",
                                  sliderInput(
                                    inputId="selectionSize2",
@@ -261,9 +260,9 @@ run_core <- function(autoSave = TRUE){
                              ),
                                ),
                              column(
-                               6,
+                               4,
                                wellPanel(
-                                 id = "currentselectionPanel",style = "overflow-y:visible; overflow-x:scroll; max-width: 1600px",
+                                 id = "currentselectionPanel",style = "height:600px; overflow-y: scroll; overflow-x:scroll; max-width: 1600px",
                                "Current Selection (Note image scrollbar below image)",
                                sliderInput(
                                  inputId="selectionSize",
@@ -290,8 +289,9 @@ run_core <- function(autoSave = TRUE){
                              ),
                              ),
                              ),
+                             width = 12,
                              ),
-                    ),),
+                    ),
                     tabPanel("Distance Calibration",
                              align="center",
                              shiny::br(),
@@ -865,7 +865,10 @@ run_core <- function(autoSave = TRUE){
                                      "xmax"=NA,
                                      "ymin"=NA,
                                      "ymax"=NA)
-    output$analysisRegions <- renderDT(analysisRegions$DT, rownames = FALSE, options = list(dom = 't'))
+    output$analysisRegions <- renderDT(analysisRegions$DT, rownames = FALSE, options = list(dom = 't',
+                                                                                            scrollX=TRUE,
+                                                                                            autoWidth = TRUE,
+                                                                                            columnDefs = list(list(width = '15px', targets = "_all"))))
     # colnames(analysisRegions$DT) <- c("xmin", "xmax", "ymin", "ymax")
 
 
@@ -888,7 +891,10 @@ run_core <- function(autoSave = TRUE){
 
       #allParams$analysisRegions <- analysisRegions()
 
-      output$analysisRegions <- renderDT(analysisRegions$DT, rownames = FALSE, options = list(dom = 't'))
+      output$analysisRegions <- renderDT(analysisRegions$DT, rownames = FALSE, options = list(dom = 't',
+                                                                                              scrollX=TRUE,
+                                                                                              autoWidth = TRUE,
+                                                                                              columnDefs = list(list(width = '15px', targets = "_all"))))
       #reset brush
       session$resetBrush("plotBrush")
       brush <<- NULL
@@ -901,7 +907,10 @@ run_core <- function(autoSave = TRUE){
 
         analysisRegions$DT <- analysisRegions$DT[-as.numeric(input$analysisRegions_rows_selected),]
       }
-      output$analysisRegions <- renderDT(analysisRegions$DT, rownames = FALSE, options = list(dom = 't'))
+      output$analysisRegions <- renderDT(analysisRegions$DT, rownames = FALSE, options = list(dom = 't',
+                                                                                              scrollX=TRUE,
+                                                                                              autoWidth = TRUE,
+                                                                                              columnDefs = list(list(width = '15px', targets = "_all"))))
     })
 
     # observeEvent(input$skipSelectAnalysisRegion, {
