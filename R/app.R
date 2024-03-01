@@ -576,15 +576,44 @@ run_core <- function(autoSave = TRUE){
       # }
       })
 
+    files1 <- reactive({
+      m <- rasterGuess(rasters())
+      shinyFiles::shinyFileChoose(input, 'select_core',roots=shinyFiles::getVolumes())
+      shinyFiles::shinyFileChoose(input, 'select_white',roots=shinyFiles::getVolumes())
+      shinyFiles::shinyFileChoose(input, 'select_dark',roots=shinyFiles::getVolumes())
+      if (length(input$select_core)!=1){
+        m$core <- unname(shinyFiles::parseFilePaths(roots = shinyFiles::getVolumes(), input$select_core)$datapath)
+      }
+      if (length(input$select_white)!=1){
+        m$white <- unname(shinyFiles::parseFilePaths(roots = shinyFiles::getVolumes(), input$select_white)$datapath)
+      }
+      if (length(input$select_dark)!=1){
+        m$dark <- unname(shinyFiles::parseFilePaths(roots = shinyFiles::getVolumes(), input$select_dark)$datapath)
+      }
+      m
 
-    #coreImage <- reactiveVal()
+    })
+
+    rasterGuess = function(dir1){
+      f1 <- list()
+        for (ii in dir1){
+          if (grepl("white", tolower(ii))){
+            f1$white <- ii
+          } else if (grepl("dark", tolower(ii))){
+            f1$dark <- ii
+          } else if (grepl("core", tolower(ii)) || grepl("tif", tolower(ii)) || grepl("raw", tolower(ii))){
+            f1$core <- ii
+          }
+        }
+      return(f1)
+    }
 
     coreImage <- reactive({
 
       if (length(rasters()) == 0 & length(user_datapath()) == 0){
         NULL
       } else if (length(user_dir()) != 0){
-        return(terra::rast(rasters()[2]))
+        return(terra::rast(files1()$core))
         } else if (length(user_datapath()) != 0) {
 
           return(terra::rast(user_file()$datapath))
@@ -653,9 +682,19 @@ run_core <- function(autoSave = TRUE){
       ncol(coreImage()) * 10^(input$scaleDistImg)
     })
 
+    renderFN <- function(fullPath){
+      if (length(fullPath)==0){
+        ""
+      } else {
+        basename(fullPath)
+      }
+    }
 
     # Print raster files
-    output$core_dir <- renderPrint(rasters())
+    output$core_file <- renderText(renderFN(files1()$core))
+
+    output$white_file <- renderText(renderFN(files1()$white))
+    output$dark_file <- renderText(renderFN(files1()$dark))
 
     # Print core info
     output$core_info <- renderText(coreInfo(), sep = "\n")
@@ -669,19 +708,11 @@ run_core <- function(autoSave = TRUE){
     output$core_plot <- renderPlot(plot1(), height = imgH, width = imgW, res = 20)
 
     source_coords <- reactiveValues(
-
-        #xy=data.frame(x=c(1,1),  y=c(nrow(terra::rast(rasters()[2])[[1]]),nrow(terra::rast(rasters()[2])[[1]])))
-
         xy=data.frame(x=c(1,1),  y=c(1,1))
-
       )
 
     sample_coords <- reactiveValues(
-
-      #xy=data.frame(x=c(1,1),  y=c(nrow(terra::rast(rasters()[2])[[1]]),nrow(terra::rast(rasters()[2])[[1]])))
-
       xy=data.frame(x=c(1,1),  y=c(1,1))
-
     )
 
     observeEvent(input$plot_click, {
@@ -954,30 +985,49 @@ run_core <- function(autoSave = TRUE){
         shiny::fluidRow(
         shiny::column(
           12,
-          "Selected core directory",
+          strong("Selected core directory"),
           shiny::br(),
           shiny::verbatimTextOutput("core_dir_show"),
           shiny::br(),
-          "Raster files in the directory",
+          strong("Raster files in the directory"),
           shiny::br(),
-          shiny::verbatimTextOutput("core_dir"),
+            shiny::fluidRow(
+              shiny::column(
+                4,
+                "Image",
+                shiny::verbatimTextOutput("core_file"),
+                shinyFiles::shinyFilesButton(id = "select_core", label="Change Selection",title = "Choose your primary image file",multiple = FALSE),
+              ),
+              shiny::column(
+                4,
+                "White Reference",
+                shiny::verbatimTextOutput("white_file"),
+                shinyFiles::shinyFilesButton(id = "select_white", label="Change Selection",title = "Choose your white reference",multiple = FALSE),
+              ),
+              shiny::column(
+                4,
+                "Dark Reference",
+                shiny::verbatimTextOutput("dark_file"),
+                shinyFiles::shinyFilesButton(id = "select_dark", label="Change Selection",title = "Choose your dark reference",multiple = FALSE),
+              ),
+            ),
           shiny::br(),
-          "Raster details",
+          #"Raster details",
           shiny::br(),
           shiny::verbatimTextOutput("core_info"),
         ),
-        "Choose layers to subset raster",
+        strong("Choose layers to subset raster"),
         wellPanel(
           shiny::fluidRow(column(6,
           checkboxInput("dt_sel", "select/deselect all", value = TRUE)),
           column(6,
           checkboxInput("halfRows", "select every other row", value = FALSE))),
-          "Choose Custom Wavelengths (comma separated)",
+          strong("Choose Custom Wavelengths (comma separated)"),
           shiny::fluidRow(column(8,
                                  textInput(label = NULL,"findWavelength", placeholder = "450,550,650",width = "100%")),
                           column(4,actionButton("custom_wavelengths", "Select",width = "100%"))
           ),
-          "Choose Wavelength Range (min/max)",
+          strong("Choose Wavelength Range (min/max)"),
           shiny::fluidRow(column(4,
                                  numericInput(label = NULL,"minWave", value = 550, width = "100%")),
                           column(4,
@@ -997,30 +1047,46 @@ run_core <- function(autoSave = TRUE){
         shiny::fluidRow(
           shiny::column(
             12,
-            "Selected core directory",
+            strong("Selected core directory"),
             shiny::br(),
             shiny::verbatimTextOutput("core_dir_show"),
             shiny::br(),
-            "Raster files in the directory",
+            strong("Raster files in the directory"),
             shiny::br(),
-            shiny::verbatimTextOutput("core_dir"),
+            shiny::fluidRow(
+              shiny::column(
+                4,
+                "Image",
+                shiny::verbatimTextOutput("core_file"),
+              ),
+              shiny::column(
+                4,
+                "White Reference",
+                shiny::verbatimTextOutput("white_file"),
+              ),
+              shiny::column(
+                4,
+                "Dark Reference",
+                shiny::verbatimTextOutput("dark_file"),
+              ),
+            ),
             shiny::br(),
-            "Raster details",
+            strong("Raster details"),
             shiny::br(),
             shiny::verbatimTextOutput("core_info"),
           ),
-          "Choose layers to subset raster",
+          strong("Choose layers to subset raster"),
           wellPanel(
             shiny::fluidRow(column(6,
             checkboxInput("dt_sel", "select/deselect all", value = TRUE)),
             column(6,
             checkboxInput("halfRows", "select every other row", value = FALSE))),
-            "Choose Custom Wavelengths (comma separated)",
+            strong("Choose Custom Wavelengths (comma separated)"),
             shiny::fluidRow(column(8,
             textInput(label = NULL,"findWavelength", placeholder = "450,550,650",width = "100%")),
             column(4,actionButton("custom_wavelengths", "Select",width = "100%"))
             ),
-            "Choose Wavelength Range (min/max)",
+            strong("Choose Wavelength Range (min/max)"),
             shiny::fluidRow(column(4,
                                    numericInput(label = NULL,"minWave", value = 550, width = "100%")),
                             column(4,
@@ -1173,6 +1239,8 @@ run_core <- function(autoSave = TRUE){
       }
     })
 
+
+
     observeEvent(input$range_waves, {
 
       if (input$minWave > input$maxWave){
@@ -1211,6 +1279,7 @@ run_core <- function(autoSave = TRUE){
       analysisOptions$proxies <- input$choice_proxies
 
       allParams$simpleRGB <<- plot1()
+      allParams$rasterPaths <<- files1()
 
       if (length(user_dir()) != 0){
         allParams$directory <<- user_dir()
