@@ -582,13 +582,13 @@ run_core <- function(autoSave = TRUE){
       shinyFiles::shinyFileChoose(input, 'select_white',roots=shinyFiles::getVolumes())
       shinyFiles::shinyFileChoose(input, 'select_dark',roots=shinyFiles::getVolumes())
       if (length(input$select_core)!=1){
-        m$core <- unname(shinyFiles::parseFilePaths(roots = shinyFiles::getVolumes(), input$select_core)$datapath)
+        m$capture <- unname(shinyFiles::parseFilePaths(roots = shinyFiles::getVolumes(), input$select_core)$datapath)
       }
       if (length(input$select_white)!=1){
-        m$white <- unname(shinyFiles::parseFilePaths(roots = shinyFiles::getVolumes(), input$select_white)$datapath)
+        m$whiteref <- unname(shinyFiles::parseFilePaths(roots = shinyFiles::getVolumes(), input$select_white)$datapath)
       }
       if (length(input$select_dark)!=1){
-        m$dark <- unname(shinyFiles::parseFilePaths(roots = shinyFiles::getVolumes(), input$select_dark)$datapath)
+        m$darkref <- unname(shinyFiles::parseFilePaths(roots = shinyFiles::getVolumes(), input$select_dark)$datapath)
       }
       m
 
@@ -691,10 +691,10 @@ run_core <- function(autoSave = TRUE){
     }
 
     # Print raster files
-    output$core_file <- renderText(renderFN(files1()$core))
+    output$core_file <- renderText(renderFN(files1()$capture))
 
-    output$white_file <- renderText(renderFN(files1()$white))
-    output$dark_file <- renderText(renderFN(files1()$dark))
+    output$white_file <- renderText(renderFN(files1()$whiteref))
+    output$dark_file <- renderText(renderFN(files1()$darkref))
 
     # Print core info
     output$core_info <- renderText(coreInfo(), sep = "\n")

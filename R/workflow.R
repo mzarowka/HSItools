@@ -20,18 +20,31 @@
 #' @return reflectance SpatRaster.
 #' @export
 prepare_core <- function(core = NULL, path = NULL, layers = NULL, extent = NULL, normalize = TRUE) {
-  if (is.null(path) == TRUE) {
+  if (!is.null(core) == TRUE) {
     # Get path
     path <- core$directory
   } else {
     path <- path
   }
 
-  if (is.null(layers) == TRUE) {
+  if (!is.null(core) == TRUE) {
     # Get path
     layers <- core$layers
   } else {
     layers <- layers
+  }
+
+  # List data files in the directory
+  if (!is.null(core) == TRUE) {
+    files <- core$rasterPaths
+  } else {
+    files <- files <- fs::dir_ls(paste0(path, "/capture")) |>
+      fs::path_filter(regexp = ".raw")
+    files <- list(
+      capture = fs::path_filter(files, regexp = "WHITE|DARK", invert = TRUE),
+      darkref = fs::path_filter(files, regexp = "DARK"),
+      whiteref = fs::path_filter(files, regexp = "WHITE")
+    )
   }
 
   cli::cli_h1("{basename(path)}")
@@ -39,13 +52,10 @@ prepare_core <- function(core = NULL, path = NULL, layers = NULL, extent = NULL,
   # Create products directory and store path
   products <- fs::dir_create(paste0(path, "/products"))
 
-  # List data files in the directory
-  files <- fs::dir_ls(paste0(path, "/capture"))
-
   # Check if file needs to be normalized from .raw
   if (normalize == TRUE) {
     # List files: CAPTURE, DARKREF and WHITEREF
-    files <- fs::path_filter(files, regexp = ".raw")
+    # files <- fs::path_filter(files, regexp = ".raw")
 
     # SpatRaster types
     types <- list(capture = "capture", darkref = "darkref", whiteref = "whiteref")
@@ -54,7 +64,7 @@ prepare_core <- function(core = NULL, path = NULL, layers = NULL, extent = NULL,
       # Get path
       extent <- core$cropImage
     } else if (extent == "capture") {
-      extent <- terra::rast(fs::path_filter(files, regexp = "WHITE|DARK", invert = TRUE)) |>
+      extent <- terra::rast(files[["capture"]]) |>
         terra::ext()
     }
 
@@ -64,11 +74,7 @@ prepare_core <- function(core = NULL, path = NULL, layers = NULL, extent = NULL,
     cli::cli_alert_info("{format(Sys.time())}: reading rasters.")
 
     # Get paths separated
-    files_path <- list(
-      capture = fs::path_filter(files, regexp = "WHITE|DARK", invert = TRUE),
-      darkref = fs::path_filter(files, regexp = "DARK"),
-      whiteref = fs::path_filter(files, regexp = "WHITE")
-      )
+    # files_path <-
 
     # Print for user to check
     cli::cli_inform("Proceeding with the following \"CAPTURE\", \"DARK reference\", and \"WHITE reference\"")
