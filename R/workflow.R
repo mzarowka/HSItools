@@ -54,7 +54,7 @@ prepare_core <- function(core = NULL, path = NULL, layers = NULL, extent = NULL,
       # Get path
       extent <- core$cropImage
     } else if (extent == "capture") {
-      extent <- terra::rast(files[[2]]) |>
+      extent <- terra::rast(fs::path_filter(files, regexp = "WHITE|DARK", invert = TRUE)) |>
         terra::ext()
     }
 
