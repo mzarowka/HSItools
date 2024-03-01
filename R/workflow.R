@@ -48,7 +48,7 @@ prepare_core <- function(core = NULL, path = NULL, layers = NULL, extent = NULL,
     files <- fs::path_filter(files, regexp = ".raw")
 
     # SpatRaster types
-    types <- list("darkref", "capture", "whiteref")
+    types <- list(capture = "capture", darkref = "darkref", whiteref = "whiteref")
 
     if (is.null(extent) == TRUE) {
       # Get path
@@ -63,13 +63,24 @@ prepare_core <- function(core = NULL, path = NULL, layers = NULL, extent = NULL,
 
     cli::cli_alert_info("{format(Sys.time())}: reading rasters.")
 
+    # Get paths separated
+    files_path <- list(
+      capture = fs::path_filter(files, regexp = "WHITE|DARK", invert = TRUE),
+      darkref = fs::path_filter(files, regexp = "DARK"),
+      whiteref = fs::path_filter(files, regexp = "WHITE")
+      )
+
+    # Print for user to check
+    cli::cli_inform("Proceeding with the following \"CAPTURE\", \"DARK reference\", and \"WHITE reference\"")
+    cli::cli_li(files_path)
+
     # Read SpatRasters
-    rasters <- files |>
+    rasters <- files_path |>
       # Load SpatRasters
       purrr::map(\(x) terra::rast(x))
 
     # Get band positions - the same for all three SpatRasters
-    band_position <- HSItools::spectra_position(rasters[[1]], layers)
+    band_position <- HSItools::spectra_position(rasters[["capture"]], layers)
 
     cli::cli_alert_info("{format(Sys.time())}: subsetting layers.")
 
@@ -82,27 +93,33 @@ prepare_core <- function(core = NULL, path = NULL, layers = NULL, extent = NULL,
     cli::cli_alert_info("{format(Sys.time())}: cropping rasters.")
 
     # Crop
-    rasters_cropped <- purrr::map2(rasters_subset, types, \(x, y) HSItools::raster_crop(
-      raster = x,
-      type = y,
-      roi = big_roi))
+    rasters_cropped <- purrr::map2(
+      rasters_subset,
+      types,
+      \(x, y) HSItools::raster_crop(
+        raster = x,
+        type = y,
+        roi = big_roi))
 
     cli::cli_alert_info("{format(Sys.time())}: calculating reference rasters.")
 
     # Prepare reference SpatRasters
-    rasters_references <- purrr::map2(rasters_cropped[c(1, 3)], types[c(1, 3)], \(x, y) HSItools::create_reference_raster(
-      raster = x,
-      ref_type = y,
-      roi = big_roi,
-      path = path))
+    rasters_references <- purrr::map2(
+      rasters_cropped[c("darkref", "whiteref")],
+      types[c("darkref", "whiteref")],
+      \(x, y) HSItools::create_reference_raster(
+        raster = x,
+        ref_type = y,
+        roi = big_roi,
+        path = path))
 
     cli::cli_alert_info("{format(Sys.time())}: calculating reflectance raster.")
 
     # Normalize data
     reflectance <- HSItools::create_normalized_raster(
-      capture = rasters_cropped[[2]],
-      whiteref = rasters_references[[2]],
-      darkref = rasters_references[[1]],
+      capture = rasters_cropped[["capture"]],
+      whiteref = rasters_references[["whiteref"]],
+      darkref = rasters_references[["darkref"]],
       fun = normalization,
       path = path)
 
