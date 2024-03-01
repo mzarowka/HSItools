@@ -508,7 +508,8 @@ run_core <- function(autoSave = TRUE){
 
     observeEvent(input$file_dir_example, {
       useExample(TRUE)
-      user_dir(paste0(getwd(),"/inst/extdata"))
+      path1 <- file.path(system.file(package = "HSItools"), "extdata")
+      user_dir(path1)
       # rasters(user_dir() |>
       #           fs::dir_ls(type = "file", regexp = ".tif", recurse = TRUE))
       # coreImage(terra::rast(user_file()$datapath))
@@ -581,39 +582,37 @@ run_core <- function(autoSave = TRUE){
       shinyFiles::shinyFileChoose(input, 'select_core',roots=shinyFiles::getVolumes())
       shinyFiles::shinyFileChoose(input, 'select_white',roots=shinyFiles::getVolumes())
       shinyFiles::shinyFileChoose(input, 'select_dark',roots=shinyFiles::getVolumes())
-      if (length(input$select_core)!=1){
+      if (length(input$select_core)>=2){
         m$capture <- unname(shinyFiles::parseFilePaths(roots = shinyFiles::getVolumes(), input$select_core)$datapath)
       }
-      if (length(input$select_white)!=1){
+      if (length(input$select_white)>=2){
         m$whiteref <- unname(shinyFiles::parseFilePaths(roots = shinyFiles::getVolumes(), input$select_white)$datapath)
       }
-      if (length(input$select_dark)!=1){
+      if (length(input$select_dark)>=2){
         m$darkref <- unname(shinyFiles::parseFilePaths(roots = shinyFiles::getVolumes(), input$select_dark)$datapath)
       }
       m
-
     })
 
     rasterGuess = function(dir1){
       f1 <- list()
         for (ii in dir1){
           if (grepl("white", tolower(ii))){
-            f1$white <- ii
+            f1$whiteref <- ii
           } else if (grepl("dark", tolower(ii))){
-            f1$dark <- ii
+            f1$darkref <- ii
           } else if (grepl("core", tolower(ii)) || grepl("tif", tolower(ii)) || grepl("raw", tolower(ii))){
-            f1$core <- ii
+            f1$capture <- ii
           }
         }
       return(f1)
     }
 
     coreImage <- reactive({
-
       if (length(rasters()) == 0 & length(user_datapath()) == 0){
         NULL
       } else if (length(user_dir()) != 0){
-        return(terra::rast(files1()$core))
+        return(terra::rast(files1()$capture))
         } else if (length(user_datapath()) != 0) {
 
           return(terra::rast(user_file()$datapath))
