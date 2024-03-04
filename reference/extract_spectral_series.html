@@ -61,9 +61,10 @@
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">extract_spectral_series</span><span class="op">(</span></span>
 <span>  <span class="va">raster</span>,</span>
 <span>  index <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  calibration <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  extent <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  write <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  <span class="va">...</span></span>
+<span>  ext <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  filename <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -77,16 +78,20 @@
 <dd><p>character indicating hyperspectral index layer to plot.</p></dd>
 
 
+<dt>calibration</dt>
+<dd><p>result of pixel_to_distance or actual call to pixel_to_distance with appropriate input.</p></dd>
+
+
 <dt>extent</dt>
 <dd><p>an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.</p></dd>
 
 
-<dt>write</dt>
-<dd><p>optional, should output be written to csv file.</p></dd>
+<dt>ext</dt>
+<dd><p>character, a graphic format extension.</p></dd>
 
 
-<dt>...</dt>
-<dd><p>further parameters for pixel_to_distance()</p></dd>
+<dt>filename</dt>
+<dd><p>empty = in memory, TRUE = guess name and attempt write, or user specified path to glue with ext.</p></dd>
 
 </dl></div>
     <div class="section level2">
