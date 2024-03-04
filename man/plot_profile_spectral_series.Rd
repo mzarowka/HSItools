@@ -7,9 +7,10 @@
 plot_profile_spectral_series(
   raster,
   hsi_index,
+  calibration = NULL,
   extent = NULL,
   ext = NULL,
-  write = FALSE
+  filename = FALSE
 )
 }
 \arguments{
@@ -17,11 +18,13 @@ plot_profile_spectral_series(
 
 \item{hsi_index}{a character indicating hyperspectral index layer to plot.}
 
-\item{extent}{an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.}
+\item{calibration}{result of pixel_to_distance or actual call to pixel_to_distance with appropriate input.}
+
+\item{extent}{a terra extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.}
 
 \item{ext}{character, a graphic format extension.}
 
-\item{write}{logical, should resulting SpatRaster be written to file.}
+\item{filename}{empty = in memory, TRUE = guess name and attempt write, or user specified path to glue with ext.}
 }
 \value{
 line plot with of selected hyperspectral index.

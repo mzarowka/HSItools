@@ -6,22 +6,22 @@
 \usage{
 prepare_core(
   core = NULL,
-  .path = NULL,
-  .layers = NULL,
-  .extent = NULL,
-  .normalize = TRUE
+  path = NULL,
+  layers = NULL,
+  extent = NULL,
+  normalize = TRUE
 )
 }
 \arguments{
 \item{core}{shiny output.}
 
-\item{.path}{path to the directory with captured data. Defaults to NULL and shiny output.}
+\item{path}{path to the directory with captured data. Defaults to NULL and shiny output.}
 
-\item{.layers}{numeric vector, selection of layers (wavelengths) to use. Defaults to NULL and shiny output.}
+\item{layers}{numeric vector, selection of layers (wavelengths) to use. Defaults to NULL and shiny output.}
 
-\item{.extent}{extent of the captured data. Defaults to NULL and shiny output. If "capture" then uses entire extent of captured data.}
+\item{extent}{extent of the captured data. Defaults to NULL and shiny output. If "capture" then uses entire extent of captured data.}
 
-\item{.normalize}{logical, should data be normalized.}
+\item{normalize}{logical, should data be normalized.}
 }
 \value{
 reflectance SpatRaster.

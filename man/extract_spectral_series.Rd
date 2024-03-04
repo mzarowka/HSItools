@@ -7,9 +7,10 @@
 extract_spectral_series(
   raster,
   index = NULL,
+  calibration = NULL,
   extent = NULL,
-  write = FALSE,
-  ...
+  ext = NULL,
+  filename = NULL
 )
 }
 \arguments{
@@ -17,11 +18,13 @@ extract_spectral_series(
 
 \item{index}{character indicating hyperspectral index layer to plot.}
 
+\item{calibration}{result of pixel_to_distance or actual call to pixel_to_distance with appropriate input.}
+
 \item{extent}{an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.}
 
-\item{write}{optional, should output be written to csv file.}
+\item{ext}{character, a graphic format extension.}
 
-\item{...}{further parameters for pixel_to_distance()}
+\item{filename}{empty = in memory, TRUE = guess name and attempt write, or user specified path to glue with ext.}
 }
 \value{
 tibble frame with XY coordinates and averaged proxy values.

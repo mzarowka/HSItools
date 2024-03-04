@@ -145,3 +145,37 @@ pixel_to_distance <- function(core, pixel_ratio, ymax, ymin = 0, sample_start, s
     point_zero = point_zero,
     pixel_ratio = pixel_ratio))
 }
+
+
+#' Adjust paths from Shiny output
+#'
+#' @param run_core_output
+#'
+#' @return run_core_output
+#' @export
+#'
+#' @examples
+#' a1 <- readRDS(file.path(system.file(package = "HSItools"),"extdata/HSItools_core.rds"))
+#' change_output_dir(a1)
+#'
+change_output_dir = function(run_core_output){
+  #currentRoot <- rprojroot::find_root(rprojroot::criteria$is_rstudio_project)
+  currentRoot <- getwd()
+  shinyRoot <- run_core_output$directory
+  if (currentRoot == shinyRoot){
+    message("Current path is consistent with with Shiny output!")
+  } else {
+    #Set the paths in the core output to mesh with the user's current root
+    newDir <- choose.dir(caption = paste0("Find the directory with the name: ",basename(run_core_output$directory)))
+    if (basename(run_core_output$directory) != basename(newDir)){
+      stop("The directory names must match!")
+    } else {
+      run_core_output$directory <- newDir
+      regex1 <- paste0(".*",basename(newDir))
+      fileNames <- gsub(regex1,"",run_core_output$rasterPaths)
+      fullPaths <- file.path(newDir, fileNames)
+      run_core_output$rasterPaths <- fullPaths
+    }
+  }
+  return(run_core_output)
+}
