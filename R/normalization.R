@@ -69,7 +69,6 @@ spectra_sub <- function(raster, spectra_tbl) {
 #' @param type either data raster or reference raster.
 #' @param dir directory.
 #' @param roi Region Of Interest: cropping extent.
-#' @param ... additional arguments.
 #'
 #' @return terra SpatRaster cropped to ROI.
 #' @export

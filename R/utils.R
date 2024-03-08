@@ -166,16 +166,33 @@ change_output_dir = function(run_core_output){
     message("Current path is consistent with with Shiny output!")
   } else {
     #Set the paths in the core output to mesh with the user's current root
-    newDir <- choose.dir(caption = paste0("Find the directory with the name: ",basename(run_core_output$directory)))
+    newDir <- choose.dir(caption = paste0("Find the directory with the name: ", basename(run_core_output$directory)))
     if (basename(run_core_output$directory) != basename(newDir)){
-      stop("The directory names must match!")
+      rlang::abort("The directory names must match!")
     } else {
       run_core_output$directory <- newDir
-      regex1 <- paste0(".*",basename(newDir))
-      fileNames <- gsub(regex1,"",run_core_output$rasterPaths)
+      regex1 <- paste0(".*", basename(newDir))
+      fileNames <- gsub(regex1,"", run_core_output$rasterPaths)
       fullPaths <- file.path(newDir, fileNames)
       run_core_output$rasterPaths <- fullPaths
     }
   }
   return(run_core_output)
+}
+
+# Function to run other function and then move output, useful for mapping over rois
+get_and_move <- function(fun, name, ...) {
+  parameters <- list(...)
+
+  if (fun == prepare_core()) {
+    object <- prepare_core(core = parameters$core, path = parameters$path, layers = parameters$layers, extent = parameters$extent, normalize = parameters$normalize, integration = integration)
+  }
+
+  object_source <- terra::sources(object)
+
+  object_destination <- sub(pattern = "products/", replacement = paste0("products/", name)) |>
+    sub(pattern = ".tif", replacement = paste0("_", name, ".tif"))
+
+  fs::file_move(object_source, object_destination)
+
 }
