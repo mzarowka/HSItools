@@ -9,7 +9,8 @@ prepare_core(
   path = NULL,
   layers = NULL,
   extent = NULL,
-  normalize = TRUE
+  normalize = TRUE,
+  integration = NULL
 )
 }
 \arguments{
@@ -22,6 +23,8 @@ prepare_core(
 \item{extent}{extent of the captured data. Defaults to NULL and shiny output. If "capture" then uses entire extent of captured data.}
 
 \item{normalize}{logical, should data be normalized.}
+
+\item{integration}{logical, wether references were scanned with different settings.}
 }
 \value{
 reflectance SpatRaster.

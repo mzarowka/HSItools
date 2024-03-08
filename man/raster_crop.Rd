@@ -14,8 +14,6 @@ raster_crop(raster, type, dir = NULL, roi)
 \item{dir}{directory.}
 
 \item{roi}{Region Of Interest: cropping extent.}
-
-\item{...}{additional arguments.}
 }
 \value{
 terra SpatRaster cropped to ROI.

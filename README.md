@@ -24,7 +24,10 @@ You can install the development version of HSItools like so:
 
 ## Example
 
-This is a basic example which shows you how to solve a common problem:
+The basic workflow includes running the shiny app to choose analysis
+options and visually interact with the core image. After this,
+reflectance is calculated and all subsequent operations use reflectance
+or its subsets.
 
 ``` r
 library(HSItools)
@@ -36,9 +39,9 @@ core <- run_core()
 reflectance <- core |>
   prepare_core()
 
-# Create RGB preview - to file
+# Create RGB preview and write to file
 rgb_preview <- reflectance |>
-  stretch_raster_full(reflectance, write = TRUE)
+  stretch_raster_full(reflectance, ext = "tif", write = TRUE)
 
 # Plot RGB preview
 rgb_plot <- reflectance |>
@@ -46,4 +49,4 @@ rgb_plot <- reflectance |>
 ```
 
 Maurycy Żarczyński is founded by the Polish National Agency for Academic
-Exchange (BPN/BEK/2021/1/00133/U/0001).
+Exchange (BPN/BEK/2021/1/00133).
