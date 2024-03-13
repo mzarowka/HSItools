@@ -21,7 +21,7 @@ knitr::opts_chunk$set(
 
 <!-- badges: end -->
 
-HSItools is an R package to process and visualize hyperspectral core scanning data.
+HSItools is an R package to process and visualize hyperspectral core scanning data.![HSItools logo](images/package_logo.png){width="192"}
 
 ## Installation
 

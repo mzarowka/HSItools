@@ -10,7 +10,8 @@
 <!-- badges: end -->
 
 HSItools is an R package to process and visualize hyperspectral core
-scanning data.
+scanning
+data.<img src="images/package_logo.png" width="192" alt="HSItools logo" />
 
 ## Installation
 
