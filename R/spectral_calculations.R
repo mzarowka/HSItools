@@ -26,6 +26,9 @@ calculate_rabd <- function(
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
   }
 
+  # Named list with write options
+  wopts <- list(steps = terra::ncell(raster) * terra::nlyr(raster))
+
   # Raster source directory
   raster_src <- raster |>
     terra::sources() |>
@@ -217,7 +220,8 @@ calculate_rabd <- function(
   terra::writeRaster(
     template,
     filename = filename,
-    overwrite = TRUE)
+    overwrite = TRUE,
+    wopt = wopts)
 
   # Reset the window
   terra::window(raster) <- NULL
