@@ -56,4 +56,4 @@ rgb_plot <- reflectance |>
   plot_raster_rgb(reflectance)
 ```
 
-Maurycy Żarczyński is founded by the Polish National Agency for Academic Exchange (BPN/BEK/2021/1/00133).
+Maurycy Żarczyński is founded by the Polish National Agency for Academic Exchange (BPN/BEK/2021/1/00133).![NAWA logo](man/figures/nawa_logo.png){width="192"}

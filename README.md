@@ -50,4 +50,5 @@ rgb_plot <- reflectance |>
 ```
 
 Maurycy Żarczyński is founded by the Polish National Agency for Academic
-Exchange (BPN/BEK/2021/1/00133).
+Exchange
+(BPN/BEK/2021/1/00133).<img src="man/figures/nawa_logo.png" width="192" alt="NAWA logo" />
