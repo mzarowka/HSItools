@@ -32,12 +32,14 @@
 #'
 #' @param autoSave save shiny app output to rds file. Defaults to true. Saves in current working directory.
 #'
+#' @import shiny
+#' @import DT
+#' @import shinyFiles
+#' @importFrom shinyalert shinyalert
 #' @return an object with processing settings.
 #' @export
 run_core <- function(autoSave = TRUE){
 
-  library(shiny)
-  library(DT)
   allParams <- list()
 
   shiny::runApp(
@@ -427,6 +429,11 @@ run_core <- function(autoSave = TRUE){
   ),
 
   server = function(input, output, session) {
+
+    session$onSessionEnded(function() {
+      stopApp()
+    })
+
     countRegions <- reactiveValues(count = 0)
     clickCounter <- reactiveValues(count=1)
     volumes <- c(shinyFiles::getVolumes()())
@@ -641,7 +648,7 @@ run_core <- function(autoSave = TRUE){
 
     })
 
-    output$layerTable1 <- renderDT(layersTable(), height = 100)
+    output$layerTable1 <- DT::renderDT(layersTable(), height = 100)
 
     colorSelection <- reactive({
       if (!is.null(coreImage())){
@@ -895,7 +902,7 @@ run_core <- function(autoSave = TRUE){
                                      "xmax"=NA,
                                      "ymin"=NA,
                                      "ymax"=NA)
-    output$analysisRegions <- renderDT(analysisRegions$DT, rownames = FALSE, options = list(dom = 't',
+    output$analysisRegions <- DT::renderDT(analysisRegions$DT, rownames = FALSE, options = list(dom = 't',
                                                                                             scrollX=TRUE,
                                                                                             autoWidth = TRUE,
                                                                                             columnDefs = list(list(width = '15px', targets = "_all"))))
@@ -921,8 +928,7 @@ run_core <- function(autoSave = TRUE){
 
       #allParams$analysisRegions <- analysisRegions()
 
-      output$analysisRegions <- renderDT(analysisRegions$DT, rownames = FALSE, options = list(dom = 't',
-                                                                                              scrollX=TRUE,
+      output$analysisRegions <- DT::renderDT(analysisRegions$DT, rownames = FALSE, options = list(dom = 't',
                                                                                               autoWidth = TRUE,
                                                                                               columnDefs = list(list(width = '15px', targets = "_all"))))
       #reset brush
@@ -937,7 +943,7 @@ run_core <- function(autoSave = TRUE){
 
         analysisRegions$DT <- analysisRegions$DT[-as.numeric(input$analysisRegions_rows_selected),]
       }
-      output$analysisRegions <- renderDT(analysisRegions$DT, rownames = FALSE, options = list(dom = 't',
+      output$analysisRegions <- DT::renderDT(analysisRegions$DT, rownames = FALSE, options = list(dom = 't',
                                                                                               scrollX=TRUE,
                                                                                               autoWidth = TRUE,
                                                                                               columnDefs = list(list(width = '15px', targets = "_all"))))
@@ -1033,7 +1039,7 @@ run_core <- function(autoSave = TRUE){
                                  numericInput(label = NULL,"maxWave", value = 650, width = "100%")),
                           column(4,actionButton("range_waves", "Select",width = "100%"))
           ),
-          DTOutput("layerTable1"),
+          DT::DTOutput("layerTable1"),
         ),
         wellPanel(
           textOutput("currentSelection"),
@@ -1092,7 +1098,7 @@ run_core <- function(autoSave = TRUE){
                                    numericInput(label = NULL,"maxWave", value = 650, width = "100%")),
                             column(4,actionButton("range_waves", "Select",width = "100%"))
             ),
-            DTOutput("layerTable1"),
+            DT::DTOutput("layerTable1"),
             wellPanel(
               textOutput("currentSelection"),
             )
@@ -1131,7 +1137,7 @@ run_core <- function(autoSave = TRUE){
                                    numericInput(label = NULL,"maxWave", value = 650, width = "100%")),
                             column(4,actionButton("range_waves", "Select",width = "100%"))
             ),
-            DTOutput("layerTable1"),
+            DT::DTOutput("layerTable1"),
             wellPanel(
               textOutput("currentSelection"),
             )
@@ -1141,7 +1147,8 @@ run_core <- function(autoSave = TRUE){
     })
 
     observeEvent(input$begin, {
-      #print("1 executing ok")
+      print("button clicked")
+      shinyalert::shinyalert("clicked")
       #distances <- list()
       #distances$pointA <- round(unlist(source_coords$xy[pointA(),]))
       #distances$pointB <- round(unlist(source_coords$xy[pointB(),]))
