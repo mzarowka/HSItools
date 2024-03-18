@@ -495,6 +495,7 @@ run_core <- function(autoSave = TRUE){
     user_dir <- reactiveVal()
 
     observeEvent(input$file_dir, {
+      print("accepting user dir")
       useExample(FALSE)
       user_dir(shinyFiles::parseDirPath(volumes, selection = input$file_dir))
     })
@@ -514,8 +515,10 @@ run_core <- function(autoSave = TRUE){
 
 
     observeEvent(input$file_dir_example, {
+      print("using example dir")
       useExample(TRUE)
       path1 <- file.path(system.file(package = "HSItools"), "extdata")
+      print(path1)
       user_dir(path1)
       # rasters(user_dir() |>
       #           fs::dir_ls(type = "file", regexp = ".tif", recurse = TRUE))
@@ -648,7 +651,7 @@ run_core <- function(autoSave = TRUE){
 
     })
 
-    output$layerTable1 <- DT::renderDT(layersTable(), height = 100)
+    output$layerTable1 <- DT::renderDT(layersTable(), height = 100, server = FALSE)
 
     colorSelection <- reactive({
       if (!is.null(coreImage())){
@@ -843,6 +846,7 @@ run_core <- function(autoSave = TRUE){
 
     observeEvent(input$selectPlotRegion, {
       ext1 <- unname(as.vector(terra::ext(coreImage())))
+
       if (is.null(brush)){
         allParams$cropImage <<- ext1
       } else {
@@ -853,21 +857,19 @@ run_core <- function(autoSave = TRUE){
 
 
     zoomedPlot <- reactive({
-      if (!is.null(brush)){
-        plotsmall <- terra::plotRGB(x = coreImage(), r = RGBlayers()[1], g = RGBlayers()[2], b = RGBlayers()[3], stretch = "hist",
-                       ext=terra::ext(x_range(input$plotBrush)[1], x_range(input$plotBrush)[2], y_range(input$plotBrush)[1], y_range(input$plotBrush)[2])
-        )
+      if (!is.null(input$plotBrush)){
+        a1 <- terra::crop(x=coreImage(),y=terra::ext(c(x_range(input$plotBrush)[1], x_range(input$plotBrush)[2], y_range(input$plotBrush)[1], y_range(input$plotBrush)[2])))
+        suppressWarnings(terra::plotRGB(x = a1, r = RGBlayers()[1], g = RGBlayers()[2], b = RGBlayers()[3], stretch = "hist"))
       } else {
-        plotsmall <- terra::plotRGB(x = coreImage(), r = RGBlayers()[1], g = RGBlayers()[2], b = RGBlayers()[3], stretch = "hist")
+        terra::plotRGB(x = coreImage(), r = RGBlayers()[1], g = RGBlayers()[2], b = RGBlayers()[3], stretch = "hist")
       }
-      plotsmall
     })
 
     output$cropped_plot <- renderPlot({
-      #cat(allParams$cropImage)
-      terra::plotRGB(x = coreImage(), r = RGBlayers()[1], g = RGBlayers()[2], b = RGBlayers()[3], stretch = "hist",
-                     ext=terra::ext(allParams$cropImage)
-                     )
+
+      a1 <- terra::crop(x=coreImage(),y=terra::ext(allParams$cropImage))
+      suppressWarnings(terra::plotRGB(x = a1, r = RGBlayers()[1], g = RGBlayers()[2], b = RGBlayers()[3], stretch = "hist"))
+
       if (sum(complete.cases(analysisRegions$DT))>0){
         for (i in 1:nrow(analysisRegions$DT)){
           polygon(x=c(analysisRegions$DT[i,1], analysisRegions$DT[i,2], analysisRegions$DT[i,2], analysisRegions$DT[i,1]),
@@ -905,7 +907,8 @@ run_core <- function(autoSave = TRUE){
     output$analysisRegions <- DT::renderDT(analysisRegions$DT, rownames = FALSE, options = list(dom = 't',
                                                                                             scrollX=TRUE,
                                                                                             autoWidth = TRUE,
-                                                                                            columnDefs = list(list(width = '15px', targets = "_all"))))
+                                                                                            columnDefs = list(list(width = '15px', targets = "_all"))),
+                                           server = FALSE)
     # colnames(analysisRegions$DT) <- c("xmin", "xmax", "ymin", "ymax")
 
 
@@ -930,7 +933,8 @@ run_core <- function(autoSave = TRUE){
 
       output$analysisRegions <- DT::renderDT(analysisRegions$DT, rownames = FALSE, options = list(dom = 't',
                                                                                               autoWidth = TRUE,
-                                                                                              columnDefs = list(list(width = '15px', targets = "_all"))))
+                                                                                              columnDefs = list(list(width = '15px', targets = "_all"))),
+                                             server = FALSE)
       #reset brush
       session$resetBrush("plotBrush")
       brush <<- NULL
@@ -946,7 +950,8 @@ run_core <- function(autoSave = TRUE){
       output$analysisRegions <- DT::renderDT(analysisRegions$DT, rownames = FALSE, options = list(dom = 't',
                                                                                               scrollX=TRUE,
                                                                                               autoWidth = TRUE,
-                                                                                              columnDefs = list(list(width = '15px', targets = "_all"))))
+                                                                                              columnDefs = list(list(width = '15px', targets = "_all"))),
+                                             server = FALSE)
     })
 
     # observeEvent(input$skipSelectAnalysisRegion, {
