@@ -1147,8 +1147,6 @@ run_core <- function(autoSave = TRUE){
     })
 
     observeEvent(input$begin, {
-      print("button clicked")
-      shinyalert::shinyalert("clicked")
       #distances <- list()
       #distances$pointA <- round(unlist(source_coords$xy[pointA(),]))
       #distances$pointB <- round(unlist(source_coords$xy[pointB(),]))
