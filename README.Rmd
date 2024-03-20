@@ -21,7 +21,7 @@ knitr::opts_chunk$set(
 
 <!-- badges: end -->
 
-HSItools is an R package to process and visualize hyperspectral core scanning data.![HSItools logo](man/figures/package_logo.png){width="192"}
+HSItools is an R package to process and visualize hyperspectral core scanning data.![HSItools logo](man/figures/package_logo.png){width="150"}
 
 ## Installation
 
@@ -56,4 +56,6 @@ rgb_plot <- reflectance |>
   plot_raster_rgb(reflectance)
 ```
 
-Maurycy Żarczyński is founded by the Polish National Agency for Academic Exchange (BPN/BEK/2021/1/00133).![NAWA logo](man/figures/nawa_logo.png){width="192"}
+Maurycy Żarczyński is founded by the Polish National Agency for Academic Exchange (BPN/BEK/2021/1/00133).
+
+![NAWA logo](man/figures/nawa_logo.png){width="192"}

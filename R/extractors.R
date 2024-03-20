@@ -63,7 +63,7 @@ extract_spectral_series <- function(raster, index = NULL, calibration = NULL, ex
   } else if (filename == TRUE) {
     # Check source
     if (terra::sources(raster) == "") {
-      rlang::warn(message = "In memory object. Using working directory instead.")
+      rlang::warn(message = "In memory object. Using working directory.")
 
       filename <- paste0(getwd(), "/spectral_profile.csv")
 

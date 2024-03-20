@@ -16,7 +16,9 @@ run_core_output
 Adjust paths from Shiny output
 }
 \examples{
+if (interactive() == TRUE) {
 a1 <- readRDS(file.path(system.file(package = "HSItools"),"extdata/HSItools_core.rds"))
 change_output_dir(a1)
+}
 
 }

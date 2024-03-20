@@ -868,8 +868,15 @@ run_core <- function(autoSave = TRUE){
 
     zoomedPlot <- reactive({
       if (!is.null(input$plotBrush)){
+<<<<<<< HEAD
         a1 <- terra::crop(x=coreRGB(),y=terra::ext(c(x_range(input$plotBrush)[1], x_range(input$plotBrush)[2], y_range(input$plotBrush)[1], y_range(input$plotBrush)[2])))
         suppressWarnings(terra::plotRGB(x = a1, stretch = "hist"))
+=======
+        print("cropping zoomedPlot...")
+        a1 <- terra::crop(x=coreImage(),y=terra::ext(c(x_range(input$plotBrush)[1], x_range(input$plotBrush)[2], y_range(input$plotBrush)[1], y_range(input$plotBrush)[2])))
+        print("plotting zoomedPlot...")
+        suppressWarnings(terra::plotRGB(x = a1, r = RGBlayers()[1], g = RGBlayers()[2], b = RGBlayers()[3], stretch = "hist"))
+>>>>>>> 9c0e37951104438c1a6ebd0c33bfcdb9c4bec40f
       } else {
         terra::plotRGB(x = coreRGB(), stretch = "hist")
       }
@@ -877,8 +884,16 @@ run_core <- function(autoSave = TRUE){
 
     output$cropped_plot <- renderPlot({
 
+<<<<<<< HEAD
       a1 <- terra::crop(x=coreRGB(),y=terra::ext(allParams$cropImage))
       suppressWarnings(terra::plotRGB(x = a1, stretch = "hist"))
+=======
+      print("cropping cropped_plot...")
+
+      a1 <- terra::crop(x=coreImage(),y=terra::ext(allParams$cropImage))
+      print("plotting cropped_plot...")
+      suppressWarnings(terra::plotRGB(x = a1, r = RGBlayers()[1], g = RGBlayers()[2], b = RGBlayers()[3], stretch = "hist"))
+>>>>>>> 9c0e37951104438c1a6ebd0c33bfcdb9c4bec40f
 
       if (sum(complete.cases(analysisRegions$DT))>0){
         for (i in 1:nrow(analysisRegions$DT)){
