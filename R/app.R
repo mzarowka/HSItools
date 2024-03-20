@@ -159,6 +159,7 @@ run_core <- function(autoSave = TRUE){
                                shiny::br(),
                                shiny::verbatimTextOutput("color_warning"),
                                shiny::br(),
+                             shiny::textOutput("rgb_info"),
                                 shinycssloaders::withSpinner(shiny::plotOutput(outputId = "core_plot",
                                                                             width = "100%",
                                                                             brush = brushOpts(
@@ -430,6 +431,8 @@ run_core <- function(autoSave = TRUE){
 
   server = function(input, output, session) {
 
+    aaa <- terra::rast(system.file("extdata/CORE_XYZ.tif",package = "HSItools"))
+
     session$onSessionEnded(function() {
       stopApp()
     })
@@ -495,7 +498,6 @@ run_core <- function(autoSave = TRUE){
     user_dir <- reactiveVal()
 
     observeEvent(input$file_dir, {
-      print("accepting user dir")
       useExample(FALSE)
       user_dir(shinyFiles::parseDirPath(volumes, selection = input$file_dir))
     })
@@ -515,7 +517,6 @@ run_core <- function(autoSave = TRUE){
 
 
     observeEvent(input$file_dir_example, {
-      print("using example dir")
       useExample(TRUE)
       path1 <- file.path(system.file(package = "HSItools"), "extdata")
       print(path1)
@@ -631,7 +632,14 @@ run_core <- function(autoSave = TRUE){
       }
     })
 
-    #coreInfo <- reactiveVal()
+    coreRGB <- reactive({
+      if (length(user_dir()) != 0) {
+        a0 <- terra::subset(coreImage(),subset=c(1,1,7))
+      } else {
+        NULL
+      }
+    })
+
 
 
     coreInfo <- reactive({
@@ -710,7 +718,9 @@ run_core <- function(autoSave = TRUE){
 
     #make plot
     plot1 <- reactive({
-        terra::plotRGB(x = coreImage(), r = RGBlayers()[1], g = RGBlayers()[2], b = RGBlayers()[3], stretch = "hist")
+        #terra::plotRGB(x = coreImage(), r = RGBlayers()[1], g = RGBlayers()[2], b = RGBlayers()[3], stretch = "hist")
+      #raster::plotRGB(coreRGB())
+      raster::plotRGB(coreRGB(), stretch="linear")
     })
 
     #render plot
@@ -858,17 +868,17 @@ run_core <- function(autoSave = TRUE){
 
     zoomedPlot <- reactive({
       if (!is.null(input$plotBrush)){
-        a1 <- terra::crop(x=coreImage(),y=terra::ext(c(x_range(input$plotBrush)[1], x_range(input$plotBrush)[2], y_range(input$plotBrush)[1], y_range(input$plotBrush)[2])))
-        suppressWarnings(terra::plotRGB(x = a1, r = RGBlayers()[1], g = RGBlayers()[2], b = RGBlayers()[3], stretch = "hist"))
+        a1 <- terra::crop(x=coreRGB(),y=terra::ext(c(x_range(input$plotBrush)[1], x_range(input$plotBrush)[2], y_range(input$plotBrush)[1], y_range(input$plotBrush)[2])))
+        suppressWarnings(terra::plotRGB(x = a1, stretch = "hist"))
       } else {
-        terra::plotRGB(x = coreImage(), r = RGBlayers()[1], g = RGBlayers()[2], b = RGBlayers()[3], stretch = "hist")
+        terra::plotRGB(x = coreRGB(), stretch = "hist")
       }
     })
 
     output$cropped_plot <- renderPlot({
 
-      a1 <- terra::crop(x=coreImage(),y=terra::ext(allParams$cropImage))
-      suppressWarnings(terra::plotRGB(x = a1, r = RGBlayers()[1], g = RGBlayers()[2], b = RGBlayers()[3], stretch = "hist"))
+      a1 <- terra::crop(x=coreRGB(),y=terra::ext(allParams$cropImage))
+      suppressWarnings(terra::plotRGB(x = a1, stretch = "hist"))
 
       if (sum(complete.cases(analysisRegions$DT))>0){
         for (i in 1:nrow(analysisRegions$DT)){
