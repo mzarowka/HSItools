@@ -155,8 +155,10 @@ pixel_to_distance <- function(core, pixel_ratio, ymax, ymin = 0, sample_start, s
 #' @export
 #'
 #' @examples
+#' if (interactive() == TRUE) {
 #' a1 <- readRDS(file.path(system.file(package = "HSItools"),"extdata/HSItools_core.rds"))
 #' change_output_dir(a1)
+#' }
 #'
 change_output_dir = function(run_core_output){
   #currentRoot <- rprojroot::find_root(rprojroot::criteria$is_rstudio_project)
