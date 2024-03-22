@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">HSItools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9008</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9009</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -174,8 +174,9 @@ necessary.</p>
 <span><span class="co">#&gt; |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          </span></span></code></pre></div>
 <p>At this stage, we can plot the RGB preview. Our example file has only
 eight random wavelengths, so it is impossible to plot true RGB. Instead,
-we use the first, middle, and last available layer. Here it results in
-somewhat gray image.</p>
+we use the first, middle, and last available layer, which results in a
+somewhat gray image. Additionally, we provide calibration so depths are
+displayed as mm rather than pixels; don’t mind the odd values.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_raster_rgb.html">plot_raster_rgb</a></span><span class="op">(</span></span>
 <span>  <span class="va">reflectance</span>,</span>
@@ -186,8 +187,9 @@ somewhat gray image.</p>
 <h3 id="spectral-smoothing">Spectral smoothing<a class="anchor" aria-label="anchor" href="#spectral-smoothing"></a>
 </h3>
 <p>Applying spectral smoothing, such as the Savitzky-Golay spectral
-filter, is a good idea. Spurious, random peaks and through do not
-influence the calculation results.</p>
+filter <span class="citation">(Savitzky and Golay 1964)</span>, is a
+good idea. Spurious, random peaks and throughs do not influence the
+calculation results as much.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">reflectance_smooth</span> <span class="op">&lt;-</span> <span class="va">reflectance</span> <span class="op">|&gt;</span></span>
 <span>  <span class="co"># Specify the file extension</span></span>
@@ -203,6 +205,8 @@ influence the calculation results.</p>
 <div class="section level3">
 <h3 id="peek-into-spectra">Peek into spectra<a class="anchor" aria-label="anchor" href="#peek-into-spectra"></a>
 </h3>
+<p>Let’s compare these two spectra. Unsurprisingly, they are very
+similar again—the number of wavelengths is drastically reduced.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Spectral profile from the entire ROI</span></span>
 <span><span class="va">reflectance_sp</span> <span class="op">&lt;-</span> <span class="va">reflectance</span> <span class="op">|&gt;</span></span>
@@ -295,10 +299,11 @@ the spectrum becomes flatter.</p>
 <div class="section level2">
 <h2 id="index-calculation">Index calculation<a class="anchor" aria-label="anchor" href="#index-calculation"></a>
 </h2>
-<p>At this point, it is OK to calculate selected indices or proxies.
-Additionally, we provide calibration so depths are displayed as mm
-rather than pixels (mind odd values).</p>
-<p>Mean reflectance (<em>Rmean</em>)</p>
+<p>At this point, we can start calculating selected indices or
+proxies.</p>
+<div class="section level3">
+<h3 id="mean-reflectance-rmean">Mean reflectance (<em>Rmean</em>)<a class="anchor" aria-label="anchor" href="#mean-reflectance-rmean"></a>
+</h3>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">rmean</span> <span class="op">&lt;-</span> <span class="va">reflectance_smooth</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/calculate_rmean.html">calculate_rmean</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
@@ -312,12 +317,13 @@ rather than pixels (mind odd values).</p>
 <span><span class="co"># Print</span></span>
 <span><span class="va">plot_rmean</span></span></code></pre></div>
 <p><img src="workflow_files/figure-html/rmean-plot-1.png" width="700"></p>
+</div>
 <div class="section level3">
 <h3 id="relative-absorption-band-depth-rabd-">Relative Absorption Band Depth (RABD).<a class="anchor" aria-label="anchor" href="#relative-absorption-band-depth-rabd-"></a>
 </h3>
 <p>The RABD calculation has variations, but the results are generally
 not drastically different. Let’s calculate one of the most common
-indices to estimate the total chloropigments-a:
+indices to estimate the total chloropigments-<em>a</em>:
 RABD<sub>660:670</sub>.</p>
 <p>You can use predefined values or provide them manually. Let’s
 calculate three different flavors.</p>
@@ -328,7 +334,7 @@ was calculated with Savitzky-Golay smoothed reflectance.</p>
 <h4 id="variant-1-max">Variant 1: max<a class="anchor" aria-label="anchor" href="#variant-1-max"></a>
 </h4>
 <p>In this variant, a minimum reflectance is found in the trough for
-each pixeland flexibly used for calculations.</p>
+each pixel and flexibly used for calculations.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">rabd660670max</span> <span class="op">&lt;-</span> <span class="va">reflectance_smooth</span> <span class="op">|&gt;</span></span>
 <span>  <span class="co"># Calculate max variant</span></span>
@@ -338,7 +344,7 @@ each pixeland flexibly used for calculations.</p>
 <span>    rabd_name <span class="op">=</span> <span class="va">proxies</span><span class="op">$</span><span class="va">rabd_b660b670</span><span class="op">$</span><span class="va">proxy_name</span>,</span>
 <span>    rabd_type <span class="op">=</span> <span class="st">"max"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; |---------|---------|---------|---------|=========================================                                          </span></span></code></pre></div>
-<p>Plot. Hyperspectral imaging data is most interesing when visualized.
+<p>Plot. Hyperspectral imaging data is most interesting when visualized.
 We use <code>viridis</code> palettes. There is not much to see, and
 values are unrealistic because the number of layers is dramatically
 reduced.</p>
@@ -424,10 +430,15 @@ the middle point between the through edges.</p>
 <div class="section level3">
 <h3 id="band-ratios">Band ratios<a class="anchor" aria-label="anchor" href="#band-ratios"></a>
 </h3>
-<p>Another popular and straightforward indices are band ratios, where
-reflectance at the wavelength X is divided by reflectance at the
-wavelength Y.</p>
+<p>Another popular and straightforward index is band ratios, where
+reflectance at wavelength X is divided by reflectance at wavelength
+Y.</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">ratio_570630</span> <span class="op">&lt;-</span> <span class="va">reflectance_smooth</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/calculate_band_ratio.html">calculate_band_ratio</a></span><span class="op">(</span></span>
+<span>    edges <span class="op">=</span> <span class="va">proxies</span><span class="op">$</span><span class="va">ratio_b570b630</span><span class="op">$</span><span class="va">edges</span>,</span>
+<span>    ratio_name <span class="op">=</span> <span class="va">proxies</span><span class="op">$</span><span class="va">ratio_b570b630</span><span class="op">$</span><span class="va">proxy_name</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">plot_ratio570630</span> <span class="op">&lt;-</span> <span class="va">ratio_570630</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/plot_raster_proxy.html">plot_raster_proxy</a></span><span class="op">(</span></span>
 <span>    hsi_index <span class="op">=</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">ratio_570630</span><span class="op">)</span>,</span>
@@ -440,12 +451,12 @@ wavelength Y.</p>
 <div class="section level3">
 <h3 id="band-differences">Band differences<a class="anchor" aria-label="anchor" href="#band-differences"></a>
 </h3>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">difference_650675</span> <span class="op">&lt;-</span> <span class="va">reflectance_smooth</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/calculate_band_difference.html">calculate_band_difference</a></span><span class="op">(</span></span>
 <span>    difference_name <span class="op">=</span> <span class="va">proxies</span><span class="op">$</span><span class="va">diff_b650b675</span><span class="op">$</span><span class="va">proxy_name</span>,</span>
 <span>    edges <span class="op">=</span> <span class="va">proxies</span><span class="op">$</span><span class="va">diff_b650b675</span><span class="op">$</span><span class="va">edges</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">plot_difference_650675</span> <span class="op">&lt;-</span> <span class="va">difference_650675</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/plot_raster_proxy.html">plot_raster_proxy</a></span><span class="op">(</span></span>
 <span>    hsi_index <span class="op">=</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">difference_650675</span><span class="op">)</span>,</span>
@@ -458,13 +469,27 @@ wavelength Y.</p>
 <div class="section level3">
 <h3 id="derivatives">Derivatives<a class="anchor" aria-label="anchor" href="#derivatives"></a>
 </h3>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># derivative_690 &lt;- reflectance_smooth |&gt;</span></span>
 <span><span class="co">#   calculate_derivative(derivative_name = proxies$deriv_b690)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="lambdaremp">lambdaREMP<a class="anchor" aria-label="anchor" href="#lambdaremp"></a>
 </h3>
+<p>This index was introduced in the paper “Ghanbari, H., Zilkey, D.R.,
+Gregory-Eaves, I., Antoniades, D., 2023. A new index for the rapid
+generation of chlorophyll time series from hyperspectral imaging of
+sediment cores. Limnology and Oceanography: Methods 21, 703–717. <a href="https://doi.org/10.1002/lom3.10576" class="external-link uri">https://doi.org/10.1002/lom3.10576</a>”</p>
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># lambdaremp &lt;- reflectance_smooth |&gt;</span></span>
+<span><span class="co">#   calculate_remp()</span></span></code></pre></div>
+<div id="refs" class="references csl-bib-body hanging-indent" entry-spacing="0">
+<div id="ref-savitzky1964" class="csl-entry">
+Savitzky, Abraham., and M. J. E. Golay. 1964. <span>“Smoothing and
+Differentiation of Data by Simplified Least Squares Procedures.”</span>
+<em>Analytical Chemistry</em> 36 (8): 1627–39. <a href="https://doi.org/10.1021/ac60214a047" class="external-link">https://doi.org/10.1021/ac60214a047</a>.
+</div>
+</div>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
