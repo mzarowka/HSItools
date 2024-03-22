@@ -5,6 +5,7 @@ vignette: >
   %\VignetteIndexEntry{Basic workflow}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+bibliography: references.bib
 ---
 
 ```{r, include = FALSE}
@@ -76,7 +77,7 @@ reflectance <- core |>
   prepare_core()
 ```
 
-At this stage, we can plot the RGB preview. Our example file has only eight random wavelengths, so it is impossible to plot true RGB. Instead, we use the first, middle, and last available layer. Here it results in somewhat gray image.
+At this stage, we can plot the RGB preview. Our example file has only eight random wavelengths, so it is impossible to plot true RGB. Instead, we use the first, middle, and last available layer, which results in a somewhat gray image. Additionally, we provide calibration so depths are displayed as mm rather than pixels; don't mind the odd values.
 
 ```{r reflectance_rgb, warning=FALSE}
 plot_raster_rgb(
@@ -86,7 +87,7 @@ plot_raster_rgb(
 
 ### Spectral smoothing
 
-Applying spectral smoothing, such as the Savitzky-Golay spectral filter, is a good idea. Spurious, random peaks and through do not influence the calculation results.
+Applying spectral smoothing, such as the Savitzky-Golay spectral filter [@savitzky1964], is a good idea. Spurious, random peaks and throughs do not influence the calculation results as much.
 
 ```{r sav-gol, message=FALSE, warning=FALSE}
 reflectance_smooth <- reflectance |>
@@ -103,6 +104,8 @@ plot_raster_rgb(
 ```
 
 ### Peek into spectra
+
+Let's compare these two spectra. Unsurprisingly, they are very similar again—the number of wavelengths is drastically reduced.
 
 ```{r peek-spectra}
 # Spectral profile from the entire ROI
@@ -174,9 +177,9 @@ reflectance_cr <- reflectance_smooth |>
 
 ## Index calculation
 
-At this point, it is OK to calculate selected indices or proxies. Additionally, we provide calibration so depths are displayed as mm rather than pixels (mind odd values).
+At this point, we can start calculating selected indices or proxies.
 
-Mean reflectance (*Rmean*)
+### Mean reflectance (*Rmean*)
 
 ```{r rmean, message=FALSE}
 rmean <- reflectance_smooth |>
@@ -196,7 +199,7 @@ plot_rmean
 
 ### Relative Absorption Band Depth (RABD).
 
-The RABD calculation has variations, but the results are generally not drastically different. Let's calculate one of the most common indices to estimate the total chloropigments-a: RABD~660:670~.
+The RABD calculation has variations, but the results are generally not drastically different. Let's calculate one of the most common indices to estimate the total chloropigments-*a*: RABD~660:670~.
 
 You can use predefined values or provide them manually. Let's calculate three different flavors.
 
@@ -204,7 +207,7 @@ The name of the output informs you about the calculated proxy and additional mod
 
 #### Variant 1: max
 
-In this variant, a minimum reflectance is found in the trough for each pixeland flexibly used for calculations.
+In this variant, a minimum reflectance is found in the trough for each pixel and flexibly used for calculations.
 
 ```{r rabd-max, message=FALSE}
 rabd660670max <- reflectance_smooth |>
@@ -216,7 +219,7 @@ rabd660670max <- reflectance_smooth |>
     rabd_type = "max")
 ```
 
-Plot. Hyperspectral imaging data is most interesing when visualized. We use `viridis` palettes. There is not much to see, and values are unrealistic because the number of layers is dramatically reduced.
+Plot. Hyperspectral imaging data is most interesting when visualized. We use `viridis` palettes. There is not much to see, and values are unrealistic because the number of layers is dramatically reduced.
 
 ```{r rabd-max-plot}
 # Prepare the plot
@@ -296,9 +299,9 @@ Similar, but not identical. As expected!
 
 ### Band ratios
 
-Another popular and straightforward indices are band ratios, where reflectance at the wavelength X is divided by reflectance at the wavelength Y.
+Another popular and straightforward index is band ratios, where reflectance at wavelength X is divided by reflectance at wavelength Y.
 
-```{r ratio, echo=FALSE, message=FALSE}
+```{r ratio, message=FALSE}
 ratio_570630 <- reflectance_smooth |>
   calculate_band_ratio(
     edges = proxies$ratio_b570b630$edges,
@@ -336,13 +339,16 @@ plot_difference_650675
 
 ### Derivatives
 
-```{r}
+```{r derivative, message=FALSE}
 # derivative_690 <- reflectance_smooth |>
 #   calculate_derivative(derivative_name = proxies$deriv_b690)
 ```
 
 ### lambdaREMP
 
-```{r}
+This index was introduced in the paper "Ghanbari, H., Zilkey, D.R., Gregory-Eaves, I., Antoniades, D., 2023. A new index for the rapid generation of chlorophyll time series from hyperspectral imaging of sediment cores. Limnology and Oceanography: Methods 21, 703–717. <https://doi.org/10.1002/lom3.10576>"
 
+```{r remp, message=FALSE}
+# lambdaremp <- reflectance_smooth |>
+#   calculate_remp()
 ```
