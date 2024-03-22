@@ -1,3 +1,74 @@
+#' Find position of selected spectra
+#'
+#' @family Utilities
+#' @param raster a terra SpatRaster.
+#' @param spectra vector with choice of desired spectra.
+#'
+#' @return positions (indices) of desired spectra in SpatRaster
+#' @export
+#'
+#' @description find index position of the nearest spectra (band) in the dataset.
+#' Match for the lowest difference between integer band and actual SpatRaster band.
+#' This will produce duplicates with multiple bands. Drop.
+spectra_position <- function(
+    raster,
+    spectra) {
+  # Check if correct class is supplied.
+  if (!inherits(raster, what = "SpatRaster")) {
+    rlang::abort(message = "Supplied data is not a terra SpatRaster.")
+  }
+
+  # Find index (position) of selected spectra by comparing choice and names
+  spectraIndex <- purrr::map(spectra, \(x) which.min(abs(x - as.numeric(names(raster))))) |>
+    # Get positions
+    purrr::as_vector()
+
+  # Create tibble with spectra of choice and respective position
+  spectraIndex <- dplyr::tibble(
+    spectra = spectra,
+    position = spectraIndex) |>
+    # Keep second observation if duplicates are present
+    # From experience closer to desired product
+    dplyr::slice_tail(by = .data$position)
+
+  # Return values
+  return(spectraIndex)
+}
+
+#' Subset SpatRaster by spectra
+#'
+#' @family Utilities
+#' @param raster a terra SpatRaster to be subset.
+#' @param spectra_tbl a tibble with spectra positions from spectra_position.
+#'
+#' @return SpatRaster subset to contain only required spectral bands.
+#' @export
+#'
+#' @description subset SpatRaster with spectra (bands) positions.
+spectra_sub <- function(
+    raster,
+    spectra_tbl) {
+  # Check if correct class is supplied.
+  if (!inherits(raster, what = "SpatRaster")) {
+    rlang::abort(message = "Supplied data is not a terra SpatRaster.")
+  }
+
+  # Get spectra from tibble
+  spectra <- dplyr::pull(spectra_tbl, 1)
+
+  # Get positions from tibble
+  position <- dplyr::pull(spectra_tbl, 2)
+
+  # Subset raster by position
+  raster <- terra::subset(raster, position)
+
+  # Set raster names to match spectra
+  names(raster) <- as.character(spectra)
+
+  # Return raster
+  return(raster)
+}
+
 # Split job by ROIs
 split_by_roi <- function(core, roi){
   # Check if correct class is supplied.
@@ -8,7 +79,9 @@ split_by_roi <- function(core, roi){
 
 #' Create SpatVector from Shiny ROIs
 #'
+#' @family Utilities
 #' @param data \code{\link{run_core}} output with ROIs.
+#' @export
 #'
 #' @return SpatVector object suitable for plotting and setting extents.
 roi_to_vect <- function(data) {
@@ -81,6 +154,7 @@ roi_to_vect <- function(data) {
 
 #' Get depth in metric units
 #'
+#' @family Utilities
 #' @param core \code{\link{run_core}} output. If provided fills pixel_ratio, sample_start and sample_end. Exclusive with pixel_ratio.
 #' @param pixel_ratio a source of conversion factor, manually input. Exclusive with pixel_ratio.
 #' @param ymax pixel value of the top.
@@ -91,7 +165,14 @@ roi_to_vect <- function(data) {
 #'
 #' @return lookup table with depths.
 #' @export
-pixel_to_distance <- function(core, pixel_ratio, ymax, ymin = 0, sample_start, sample_end, extent = NULL) {
+pixel_to_distance <- function(
+    core,
+    pixel_ratio,
+    ymax,
+    ymin = 0,
+    sample_start,
+    sample_end,
+    extent = NULL) {
 
   # Check if only one argument is provided
   rlang::check_exclusive(core, pixel_ratio, .require = TRUE)
@@ -149,6 +230,7 @@ pixel_to_distance <- function(core, pixel_ratio, ymax, ymin = 0, sample_start, s
 
 #' Adjust paths from Shiny output
 #'
+#' @family Utilities
 #' @param run_core_output
 #'
 #' @return run_core_output
@@ -160,7 +242,9 @@ pixel_to_distance <- function(core, pixel_ratio, ymax, ymin = 0, sample_start, s
 #' change_output_dir(a1)
 #' }
 #'
-change_output_dir = function(run_core_output){
+change_output_dir = function(
+    run_core_output){
+
   #currentRoot <- rprojroot::find_root(rprojroot::criteria$is_rstudio_project)
   currentRoot <- getwd()
   shinyRoot <- run_core_output$directory

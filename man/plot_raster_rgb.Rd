@@ -15,7 +15,7 @@ plot_raster_rgb(
 \arguments{
 \item{raster}{a SpatRaster with calculated hyperspectral indices and RGB layers or just RGB layers.}
 
-\item{calibration}{result of pixel_to_distance or actuall call to pixel_to_distance with appropriate input.}
+\item{calibration}{result of pixel_to_distance or actual call to pixel_to_distance with appropriate input.}
 
 \item{extent}{an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.}
 
@@ -29,3 +29,13 @@ a plot with color map of selected hyperspectral index.
 \description{
 Spatial map plots of RGB image
 }
+\seealso{
+Other Plotting: 
+\code{\link{plot_composite}()},
+\code{\link{plot_profile_spectral_profile}()},
+\code{\link{plot_profile_spectral_series}()},
+\code{\link{plot_raster_overlay}()},
+\code{\link{plot_raster_proxy}()},
+\code{\link{stretch_raster_full}()}
+}
+\concept{Plotting}

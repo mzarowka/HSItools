@@ -21,7 +21,7 @@ plot_raster_proxy(
 
 \item{hsi_index}{a character indicating hyperspectral index layer to plot.}
 
-\item{calibration}{result of pixel_to_distance or actuall call to pixel_to_distance with appropriate input.}
+\item{calibration}{result of pixel_to_distance or actual call to pixel_to_distance with appropriate input.}
 
 \item{palette}{a character indicating one of \pkg{viridis} palettes of choice: "viridis", "magma", "plasma", "inferno", "civids", "mako", "rocket" and "turbo”.}
 
@@ -37,3 +37,13 @@ a plot with color map of selected hyperspectral index.
 \description{
 Plot spatial map plots of calculated proxies, and optionally save to file
 }
+\seealso{
+Other Plotting: 
+\code{\link{plot_composite}()},
+\code{\link{plot_profile_spectral_profile}()},
+\code{\link{plot_profile_spectral_series}()},
+\code{\link{plot_raster_overlay}()},
+\code{\link{plot_raster_rgb}()},
+\code{\link{stretch_raster_full}()}
+}
+\concept{Plotting}

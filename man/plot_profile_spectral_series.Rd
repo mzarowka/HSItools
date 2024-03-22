@@ -32,3 +32,13 @@ line plot with of selected hyperspectral index.
 \description{
 Line plots of calculated proxies series
 }
+\seealso{
+Other Plotting: 
+\code{\link{plot_composite}()},
+\code{\link{plot_profile_spectral_profile}()},
+\code{\link{plot_raster_overlay}()},
+\code{\link{plot_raster_proxy}()},
+\code{\link{plot_raster_rgb}()},
+\code{\link{stretch_raster_full}()}
+}
+\concept{Plotting}

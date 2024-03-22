@@ -1,11 +1,16 @@
 #' Stretch and optionally save full RGB preview of SpatRaster
 #'
+#' @family Plotting
 #' @param raster a SpatRaster, preferably reflectance file.
 #' @param ext character, a graphic format extension.
 #' @param write logical, should resulting SpatRaster be written to file.
 #'
 #' @export
-stretch_raster_full <- function(raster, ext = NULL, write = TRUE) {
+stretch_raster_full <- function(
+    raster,
+    ext = NULL,
+    write = TRUE) {
+
   # Check if correct class is supplied.
   if (!inherits(raster, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
@@ -26,16 +31,27 @@ stretch_raster_full <- function(raster, ext = NULL, write = TRUE) {
     fs::path_file() |>
     fs::path_ext_remove()
 
-  cli::cli_h1("{raster_name}")
-
+  # Prepare name
   filename <- paste0(raster_src, "/RGB_", raster_name, ".", ext)
+
+  # Check if there are values close to RGB, within the 25 nm.
+  if (all(purrr::list_c(purrr::map(c(450, 550, 650), \(i) dplyr::near(i, as.numeric(names(raster)), tol = 25)))) == TRUE) {
+    spectra <- c(450, 550, 650)
+  } else {
+    rlang::warn("No layers matching the RGB. Using the first, middle and last available layers.")
+    spectra <- c(
+      min(1:terra::nlyr(raster)),
+      terra::median(1:terra::nlyr(raster)),
+      max(terra::nlyr(raster))) |>
+      (\(i) as.numeric(names(1:terra::subset(raster, i))))()
+  }
 
   # Check if raster is written to file
   if (write == FALSE) {
     # Subset and write to RGB
     raster <- HSItools::spectra_position(
       raster,
-      spectra = c(650, 550, 450)
+      spectra = spectra
     ) |>
       HSItools::spectra_sub(
         raster = raster,
@@ -43,12 +59,11 @@ stretch_raster_full <- function(raster, ext = NULL, write = TRUE) {
       ) |>
       terra::stretch()
   } else {
-    cli::cli_alert("Writing RGB SpatRaster to {filename}")
 
     # Subset and write to RGB
     raster <- HSItools::spectra_position(
       raster,
-      spectra = c(650, 550, 450)
+      spectra = spectra
     ) |>
       HSItools::spectra_sub(
         raster = raster,
@@ -66,8 +81,9 @@ stretch_raster_full <- function(raster, ext = NULL, write = TRUE) {
 
 #' Plot spatial map plots of calculated proxies, and optionally save to file
 #'
+#' @family Plotting
 #' @param raster a SpatRaster with calculated hyperspectral indices and RGB layers.
-#' @param calibration result of pixel_to_distance or actuall call to pixel_to_distance with appropriate input.
+#' @param calibration result of pixel_to_distance or actual call to pixel_to_distance with appropriate input.
 #' @param hsi_index a character indicating hyperspectral index layer to plot.
 #' @param palette a character indicating one of \pkg{viridis} palettes of choice: "viridis", "magma", "plasma", "inferno", "civids", "mako", "rocket" and "turbo”.
 #' @param extent an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
@@ -78,7 +94,15 @@ stretch_raster_full <- function(raster, ext = NULL, write = TRUE) {
 #'
 #' @return a plot with color map of selected hyperspectral index.
 #' @export
-plot_raster_proxy <- function(raster, hsi_index, calibration = NULL, palette = c("viridis", "magma", "plasma", "inferno", "civids", "mako", "rocket", "turbo"), extent = NULL, ext = NULL, write = FALSE, ...) {
+plot_raster_proxy <- function(
+    raster,
+    hsi_index,
+    calibration = NULL,
+    palette = c("viridis", "magma", "plasma", "inferno", "civids", "mako", "rocket", "turbo"),
+    extent = NULL,
+    ext = NULL,
+    write = FALSE,
+    ...) {
   # Check if correct class is supplied.
   if (!inherits(raster, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
@@ -141,7 +165,7 @@ plot_raster_proxy <- function(raster, hsi_index, calibration = NULL, palette = c
     ggplot2::labs(
       x = hsi_index,
       y = "Depth (px)",
-      fill = "RABD"
+      fill = "Value"
     )
 
   } else {
@@ -176,7 +200,7 @@ plot_raster_proxy <- function(raster, hsi_index, calibration = NULL, palette = c
       ggplot2::labs(
         x = hsi_index,
         y = "Depth (mm)",
-        fill = "RABD"
+        fill = "Value"
       )
   }
 
@@ -199,15 +223,21 @@ plot_raster_proxy <- function(raster, hsi_index, calibration = NULL, palette = c
 
 #' Spatial map plots of RGB image
 #'
+#' @family Plotting
 #' @param raster a SpatRaster with calculated hyperspectral indices and RGB layers or just RGB layers.
-#' @param calibration result of pixel_to_distance or actuall call to pixel_to_distance with appropriate input.
+#' @param calibration result of pixel_to_distance or actual call to pixel_to_distance with appropriate input.
 #' @param extent an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
 #' @param ext character, a graphic format extension.
 #' @param write logical, should resulting SpatRaster be written to file.
 #'
 #' @return a plot with color map of selected hyperspectral index.
 #' @export
-plot_raster_rgb <- function(raster, calibration = NULL, extent = NULL, ext = NULL, write = FALSE) {
+plot_raster_rgb <- function(
+    raster,
+    calibration = NULL,
+    extent = NULL,
+    ext = NULL,
+    write = FALSE) {
   # Check if correct class is supplied.
   if (!inherits(raster, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
@@ -224,11 +254,25 @@ plot_raster_rgb <- function(raster, calibration = NULL, extent = NULL, ext = NUL
     fs::path_file() |>
     fs::path_ext_remove()
 
+  # Prepare filename
   filename <- paste0(raster_src, "/RGB_GG_", raster_name, ".", ext)
 
+  # Check if there are values close to RGB, within the 25 nm.
+  if (all(purrr::list_c(purrr::map(c(450, 550, 650), \(i) dplyr::near(i, as.numeric(names(raster)), tol = 25)))) == TRUE) {
+    spectra <- c(450, 550, 650)
+  } else {
+    rlang::warn("No layers matching the RGB. Using the first, middle and last available layers.")
+    spectra <- c(
+      min(1:terra::nlyr(raster)),
+      terra::median(1:terra::nlyr(raster)),
+      max(1:terra::nlyr(raster))) |>
+      (\(i) as.numeric(names(terra::subset(raster, i))))()
+  }
+
+  # Prepare SpatRaster
   raster <- HSItools::spectra_position(
     raster,
-    spectra = c(650, 550, 450)) |>
+    spectra = spectra) |>
     HSItools::spectra_sub(
       raster = raster,
       spectra_tbl = _)
@@ -317,6 +361,7 @@ plot_raster_rgb <- function(raster, calibration = NULL, extent = NULL, ext = NUL
 
 #' Overlay color plot of proxy on RGB
 #'
+#' @family Plotting
 #' @param raster raster a SpatRaster with calculated hyperspectral indices and RGB layers.
 #' @param hsi_index a character indicating hyperspectral index layer to plot.
 #' @param palette a character indicating one of \pkg{viridis} palettes of choice: "viridis”, “magma”, “plasma”, “inferno”, “civids”, “mako”, “rocket” and “turbo”.
@@ -327,7 +372,14 @@ plot_raster_rgb <- function(raster, calibration = NULL, extent = NULL, ext = NUL
 #'
 #' @return a plot with color map of selected hyperspectral index overlain on RGB image.
 #' @export
-plot_raster_overlay <- function(raster, hsi_index, palette = c("viridis”, “magma”, “plasma”, “inferno”, “civids”, “mako”, “rocket”, “turbo"), alpha = 0.5, extent = NULL, ext = NULL, write = FALSE) {
+plot_raster_overlay <- function(
+    raster,
+    hsi_index,
+    palette = c("viridis”, “magma”, “plasma”, “inferno”, “civids”, “mako”, “rocket”, “turbo"),
+    alpha = 0.5,
+    extent = NULL,
+    ext = NULL,
+    write = FALSE) {
   # Check if correct class is supplied.
   if (!inherits(raster, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
@@ -432,6 +484,7 @@ plot_raster_overlay <- function(raster, hsi_index, palette = c("viridis”, “m
 #' Composite hyperspectral indices plots
 #' Can composite line profiles and SpatRasters
 #'
+#' @family Plotting
 #' @param raster a SpatRaster with REFLECTANCE file. Used for correct placement.
 #' @param plots a list of plots.
 #' @param ext character, a graphic format extension.
@@ -489,6 +542,7 @@ plot_composite <- function(raster, plots, ext = NULL, write = FALSE) {
 
 #' Line plots of calculated proxies series
 #'
+#' @family Plotting
 #' @param raster a SpatRaster with calculated hyperspectral indices and RGB layers.
 #' @param hsi_index a character indicating hyperspectral index layer to plot.
 #' @param calibration result of pixel_to_distance or actual call to pixel_to_distance with appropriate input.
@@ -638,6 +692,7 @@ plot_profile_spectral_series <- function(raster, hsi_index, calibration = NULL, 
 
 #' Line plot of spectral profile from the ROI
 #'
+#' @family Plotting
 #' @param raster Reflectance SpatRaster.
 #' @param extent an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
 #' @param ext character, a graphic format extension.

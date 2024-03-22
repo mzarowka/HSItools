@@ -10,8 +10,13 @@
 <!-- badges: end -->
 
 HSItools is an R package to process and visualize hyperspectral core
-scanning data.<img src="man/figures/package_logo.png" width="192"
+scanning data.
+
+<figure>
+<img src="man/figures/package_logo.png" width="150"
 alt="HSItools logo" />
+<figcaption aria-hidden="true">HSItools logo</figcaption>
+</figure>
 
 ## Installation
 
@@ -50,5 +55,9 @@ rgb_plot <- reflectance |>
 ```
 
 Maurycy Żarczyński is founded by the Polish National Agency for Academic
-Exchange
-(BPN/BEK/2021/1/00133).<img src="man/figures/nawa_logo.png" width="192" alt="NAWA logo" />
+Exchange (BPN/BEK/2021/1/00133).
+
+<figure>
+<img src="man/figures/nawa_logo.png" width="192" alt="NAWA logo" />
+<figcaption aria-hidden="true">NAWA logo</figcaption>
+</figure>

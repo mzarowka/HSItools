@@ -35,3 +35,11 @@ lookup table with depths.
 \description{
 Get depth in metric units
 }
+\seealso{
+Other Utilities: 
+\code{\link{change_output_dir}()},
+\code{\link{roi_to_vect}()},
+\code{\link{spectra_position}()},
+\code{\link{spectra_sub}()}
+}
+\concept{Utilities}

@@ -42,13 +42,6 @@ calculate_rabd <- function(
 
   cli::cli_h1("{raster_name}")
 
-  # # Check type of filename
-  # if (is.null(filename) == TRUE) {
-  #   filename <- paste0(raster_src, "/", rabd_name, "_max_", raster_name, ".tif")
-  # } else {
-  #   filename <- fs::path(filename, ext = ext)
-  # }
-
   # Check extent type
   if (is.null(extent) == TRUE) {
     # Set window of interest
@@ -73,16 +66,6 @@ calculate_rabd <- function(
     } else {
       filename <- fs::path(filename, ext = ext)
     }
-    #
-    # # Check extent type
-    # if (is.null(extent) == TRUE) {
-    #   # Set window of interest
-    #   raster <- raster
-    # } else {
-    #   print("crops")
-    #   # Set window of interest
-    #   raster <- terra::crop(raster, y = extent, filename = filename, overwrite = TRUE)
-    # }
 
       # Set layer name based on the rabd_name argument
     names(template) <- paste0(rabd_name, "_max")

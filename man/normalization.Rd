@@ -19,3 +19,10 @@ a normalized terra SpatRaster of the capture.
 \description{
 normalize captured hyperspectral data with white and dark reference according to equation from Butz et al. 2016.
 }
+\seealso{
+Other Normalization: 
+\code{\link{create_normalized_raster}()},
+\code{\link{create_reference_raster}()},
+\code{\link{raster_crop}()}
+}
+\concept{Normalization}

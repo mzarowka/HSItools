@@ -23,3 +23,10 @@ Crop SpatRaster to large ROI (entire core)
 For capture (core) SpatRaster use full extent
 For reference (white and dark) SpatRaster use only x-direction.
 }
+\seealso{
+Other Normalization: 
+\code{\link{create_normalized_raster}()},
+\code{\link{create_reference_raster}()},
+\code{\link{normalization}()}
+}
+\concept{Normalization}

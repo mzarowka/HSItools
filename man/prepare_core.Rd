@@ -24,7 +24,7 @@ prepare_core(
 
 \item{normalize}{logical, should data be normalized.}
 
-\item{integration}{logical, wether references were scanned with different settings.}
+\item{integration}{logical, whether references were scanned with different settings.}
 }
 \value{
 reflectance SpatRaster.

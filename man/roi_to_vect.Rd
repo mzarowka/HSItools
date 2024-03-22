@@ -15,3 +15,11 @@ SpatVector object suitable for plotting and setting extents.
 \description{
 Create SpatVector from Shiny ROIs
 }
+\seealso{
+Other Utilities: 
+\code{\link{change_output_dir}()},
+\code{\link{pixel_to_distance}()},
+\code{\link{spectra_position}()},
+\code{\link{spectra_sub}()}
+}
+\concept{Utilities}

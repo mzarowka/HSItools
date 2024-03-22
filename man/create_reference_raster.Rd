@@ -2,22 +2,7 @@
 % Please edit documentation in R/normalization.R
 \name{create_reference_raster}
 \alias{create_reference_raster}
-\title{#' Create reference SpatRaster
-#'
-#' @param raster terra SpatRaster of the captured reference.
-#' @param roi Region Of Interest: extent to match data raster.
-#' @param ref_type type of reference, one of "whiteref" or "darkref".
-#' @param ... additional arguments.
-#'
-#' @return a terra SpatRaster of reference matching the data raster extent.
-#' @export
-#'
-#' @description Creating reference SpatRaster covering core extent
-#' Create one mean reference row SpatRaster by averaging data every column by aggregation
-#' Create reference SpatRaster matching capture SpatRaster extent by disaggregation.
-create_reference_raster_disagg <- function(raster, roi, ref_type, ...) {Store additional parameters
-
-params <- rlang::list2(...)}
+\title{Create reference SpatRaster}
 \usage{
 create_reference_raster(raster, roi, ref_type, ...)
 }
@@ -38,54 +23,10 @@ Creating reference SpatRaster covering core extent
 Create one mean reference row SpatRaster by averaging data every column by aggregation
 Create reference SpatRaster matching capture SpatRaster extent by disaggregation.
 }
-\section{Check if correct class is supplied.}{
-if (!inherits(raster, what = "SpatRaster")) {
-rlang::abort(message = "Supplied data is not a terra SpatRaster.")
+\seealso{
+Other Normalization: 
+\code{\link{create_normalized_raster}()},
+\code{\link{normalization}()},
+\code{\link{raster_crop}()}
 }
-}
-
-\section{Check number of rois and prepare ids.}{
-if (length(roi) == 1) {
-roi_id <- NULL
-} else {
-roi_id <- paste0("ROI_", seq(1:length(roi)))
-}
-
-if (ref_type == "whiteref") {
-name <- "WHITEREF"
-
-} else {
-name <- "DARKREF"
-}
-}
-
-\section{Aggregate data into one row SpatRaster, divide by number of rows}{
-cli::cli_alert("Aggregate { name }")
-
-raster <- terra::aggregate(
-raster,
-fact = c(terra::nrow(raster), 1),
-fun = "mean",
-overwrite = TRUE,
-steps = terra::ncell(raster) * terra::nlyr(raster))
-}
-
-\section{Set new extent to match extent of capture SpatRaster}{
-terra::ext(raster) <- roi
-}
-
-\section{Disaggregate data over entire extent to match capture SpatRaster extent, multiply by ymax}{
-cli::cli_alert("Disaggregate { name }")
-
-raster <- terra::disagg(
-raster,
-fact = c(terra::ymax(raster), 1),
-filename = paste0(params$path, "/products/", name, "_", basename(params$path), "_disaggregated.tif"),
-overwrite = TRUE,
-steps = terra::ncell(raster) * terra::nlyr(raster))
-}
-
-\section{Return raster}{
-
-}
-
+\concept{Normalization}

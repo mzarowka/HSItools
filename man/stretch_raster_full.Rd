@@ -16,3 +16,13 @@ stretch_raster_full(raster, ext = NULL, write = TRUE)
 \description{
 Stretch and optionally save full RGB preview of SpatRaster
 }
+\seealso{
+Other Plotting: 
+\code{\link{plot_composite}()},
+\code{\link{plot_profile_spectral_profile}()},
+\code{\link{plot_profile_spectral_series}()},
+\code{\link{plot_raster_overlay}()},
+\code{\link{plot_raster_proxy}()},
+\code{\link{plot_raster_rgb}()}
+}
+\concept{Plotting}

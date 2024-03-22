@@ -29,3 +29,10 @@ normalized terra SpatRaster of the capture.
 \description{
 apply normalization function over the combination of capture and reference SpatRasters using terra spatial dataset.
 }
+\seealso{
+Other Normalization: 
+\code{\link{create_reference_raster}()},
+\code{\link{normalization}()},
+\code{\link{raster_crop}()}
+}
+\concept{Normalization}

@@ -22,3 +22,11 @@ change_output_dir(a1)
 }
 
 }
+\seealso{
+Other Utilities: 
+\code{\link{pixel_to_distance}()},
+\code{\link{roi_to_vect}()},
+\code{\link{spectra_position}()},
+\code{\link{spectra_sub}()}
+}
+\concept{Utilities}
