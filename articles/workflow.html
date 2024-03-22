@@ -83,10 +83,36 @@
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/mzarowka/HSItools" class="external-link">HSItools</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: replacing previous import 'DT::dataTableOutput' by</span></span>
+<span><span class="co">#&gt; 'shiny::dataTableOutput' when loading 'HSItools'</span></span>
+<span><span class="co">#&gt; Warning: replacing previous import 'DT::renderDataTable' by</span></span>
+<span><span class="co">#&gt; 'shiny::renderDataTable' when loading 'HSItools'</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://patchwork.data-imaginist.com" class="external-link">patchwork</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rspatial.org/" class="external-link">terra</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; terra 1.7.71</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Attaching package: 'terra'</span></span>
+<span><span class="co">#&gt; The following object is masked from 'package:patchwork':</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;     area</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Attaching package: 'dplyr'</span></span>
+<span><span class="co">#&gt; The following objects are masked from 'package:terra':</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;     intersect, union</span></span>
+<span><span class="co">#&gt; The following objects are masked from 'package:stats':</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;     filter, lag</span></span>
+<span><span class="co">#&gt; The following objects are masked from 'package:base':</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;     intersect, setdiff, setequal, union</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyr.tidyverse.org" class="external-link">tidyr</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Attaching package: 'tidyr'</span></span>
+<span><span class="co">#&gt; The following object is masked from 'package:terra':</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;     extract</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span></code></pre></div>
 <p>Here, we present a basic workflow for a single core. It is assumed
 that the output of the <code><a href="../reference/run_core.html">run_core()</a></code> function is available and
@@ -96,10 +122,40 @@ resolution.</p>
 <div class="section level2">
 <h2 id="basic-workflow">Basic workflow<a class="anchor" aria-label="anchor" href="#basic-workflow"></a>
 </h2>
+<p>Typically at this point you are going to use the shiny app output of
+the <code><a href="../reference/run_core.html">run_core()</a></code> function stored in the *.rds file. Here, for
+the vignette we recreate this output by hand. You can also produce these
+files this way, without running shiny app.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Load run_core() output</span></span>
 <span></span>
-<span><span class="va">core</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/serialize.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">"C:/GitHub/data/STL14_1A_28C_top_2022-11-11_16-30-51/HSItools_core.rds"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">core</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>  analysisOptions <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    normalize <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>    integration <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>    proxies <span class="op">=</span> <span class="st">'rabd_b660b670'</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  layers <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">560.84</span>, <span class="fl">585.49</span>, <span class="fl">610.24</span>, <span class="fl">635.08</span>, <span class="fl">660.02</span>, <span class="fl">685.05</span>, <span class="fl">710.19</span>, <span class="fl">735.41</span><span class="op">)</span>,</span>
+<span>  cropImage <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">948</span>, <span class="fl">1283</span>, <span class="fl">13143</span>, <span class="fl">13211</span><span class="op">)</span>,</span>
+<span>  simpleRGB <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>ext <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>xmin <span class="op">=</span> <span class="fl">88</span>, xmax <span class="op">=</span> <span class="fl">1287</span>, ymin <span class="op">=</span> <span class="fl">13132</span>, ymax <span class="op">=</span> <span class="fl">13217</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  rasterPaths <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    capture <span class="op">=</span> <span class="fu">fs</span><span class="fu">::</span><span class="fu"><a href="https://fs.r-lib.org/reference/path_package.html" class="external-link">path_package</a></span><span class="op">(</span>package <span class="op">=</span> <span class="st">"HSItools"</span>, <span class="st">"extdata/CORE_XYZ/CORE_XYZ.tif"</span><span class="op">)</span>,</span>
+<span>    darkref <span class="op">=</span> <span class="fu">fs</span><span class="fu">::</span><span class="fu"><a href="https://fs.r-lib.org/reference/path_package.html" class="external-link">path_package</a></span><span class="op">(</span>package <span class="op">=</span> <span class="st">"HSItools"</span>, <span class="st">"extdata/CORE_XYZ/DARKREF_CORE_XYZ.tif"</span><span class="op">)</span>,</span>
+<span>    whiteref <span class="op">=</span> <span class="fu">fs</span><span class="fu">::</span><span class="fu"><a href="https://fs.r-lib.org/reference/path_package.html" class="external-link">path_package</a></span><span class="op">(</span>package <span class="op">=</span> <span class="st">"HSItools"</span>, <span class="st">"extdata/CORE_XYZ/WHITEREF_CORE_XYZ.tif"</span><span class="op">)</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  directory <span class="op">=</span> <span class="fu">fs</span><span class="fu">::</span><span class="fu"><a href="https://fs.r-lib.org/reference/path_package.html" class="external-link">path_package</a></span><span class="op">(</span>package <span class="op">=</span> <span class="st">"HSItools"</span>, <span class="st">"extdata/CORE_XYZ"</span><span class="op">)</span>,</span>
+<span>  analysisRegions <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  distances <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    startCore <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>x1 <span class="op">=</span> <span class="fl">1</span>, x2 <span class="op">=</span> <span class="fl">1</span>, y1 <span class="op">=</span> <span class="fl">1</span>, y2 <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>,</span>
+<span>    endCore <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>x1 <span class="op">=</span> <span class="fl">1</span>, x2 <span class="op">=</span> <span class="fl">1</span>, y1 <span class="op">=</span> <span class="fl">1</span>, y2 <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>,</span>
+<span>    startScale <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fl">1159</span>, y <span class="op">=</span> <span class="fl">13204</span><span class="op">)</span>,</span>
+<span>    endScale <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fl">1164</span>, y <span class="op">=</span> <span class="fl">13148</span><span class="op">)</span>,</span>
+<span>    coreDist <span class="op">=</span> <span class="fl">56</span>,</span>
+<span>    scaleDist <span class="op">=</span> <span class="fl">61</span>,</span>
+<span>    scaleDistmm <span class="op">=</span> <span class="fl">5</span>,</span>
+<span>    pixelRatio <span class="op">=</span> <span class="fl">0.08196721</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="preprocessing">Preprocessing<a class="anchor" aria-label="anchor" href="#preprocessing"></a>
@@ -110,70 +166,21 @@ resolution.</p>
 <p>Before any spectral indices and properties are calculated,
 normalizing the data and expressing it as a reflectance is
 necessary.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="co"># Here we use run_core() output, so further function arguments are filled automatically.</span></span>
-<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="co"># Output is written to the file.</span></span>
-<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>reflectance <span class="ot">&lt;-</span> core <span class="sc">|&gt;</span></span>
-<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>  <span class="fu">prepare_core</span>()</span>
-<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="co">#&gt; ── STL14_1A_28C_top_2022-11-11_16-30-51 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────</span></span>
-<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="co">#&gt; ℹ 2024-02-24 18:18:51: reading rasters.</span></span>
-<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="co">#&gt; ℹ 2024-02-24 18:18:51: subsetting layers.</span></span>
-<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a><span class="co">#&gt; ℹ 2024-02-24 18:18:51: cropping rasters.</span></span>
-<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a><span class="co">#&gt; → Dark reference</span></span>
-<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a><span class="sc">|---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span></span>
-<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a><span class="er">=========================================</span></span>
-<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a>                                          </span>
-<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a></span>
-<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a></span>
-<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a><span class="co">#&gt; → Captured data</span></span>
-<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span></span>
-<span id="cb3-20"><a href="#cb3-20" tabindex="-1"></a><span class="er">=========================================</span></span>
-<span id="cb3-21"><a href="#cb3-21" tabindex="-1"></a>                                          </span>
-<span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a></span>
-<span id="cb3-23"><a href="#cb3-23" tabindex="-1"></a></span>
-<span id="cb3-24"><a href="#cb3-24" tabindex="-1"></a><span class="co">#&gt; → White reference</span></span>
-<span id="cb3-25"><a href="#cb3-25" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb3-26"><a href="#cb3-26" tabindex="-1"></a><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span></span>
-<span id="cb3-27"><a href="#cb3-27" tabindex="-1"></a><span class="er">=========================================</span></span>
-<span id="cb3-28"><a href="#cb3-28" tabindex="-1"></a>                                          </span>
-<span id="cb3-29"><a href="#cb3-29" tabindex="-1"></a></span>
-<span id="cb3-30"><a href="#cb3-30" tabindex="-1"></a></span>
-<span id="cb3-31"><a href="#cb3-31" tabindex="-1"></a><span class="co">#&gt; ℹ 2024-02-24 18:18:52: calculating reference rasters.</span></span>
-<span id="cb3-32"><a href="#cb3-32" tabindex="-1"></a><span class="co">#&gt; → Aggregate DARKREF</span></span>
-<span id="cb3-33"><a href="#cb3-33" tabindex="-1"></a><span class="co">#&gt; → Disaggregate DARKREF</span></span>
-<span id="cb3-34"><a href="#cb3-34" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb3-35"><a href="#cb3-35" tabindex="-1"></a><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span></span>
-<span id="cb3-36"><a href="#cb3-36" tabindex="-1"></a></span>
-<span id="cb3-37"><a href="#cb3-37" tabindex="-1"></a>                                          </span>
-<span id="cb3-38"><a href="#cb3-38" tabindex="-1"></a></span>
-<span id="cb3-39"><a href="#cb3-39" tabindex="-1"></a></span>
-<span id="cb3-40"><a href="#cb3-40" tabindex="-1"></a><span class="co">#&gt; → Aggregate WHITEREF</span></span>
-<span id="cb3-41"><a href="#cb3-41" tabindex="-1"></a><span class="co">#&gt; → Disaggregate WHITEREF</span></span>
-<span id="cb3-42"><a href="#cb3-42" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb3-43"><a href="#cb3-43" tabindex="-1"></a><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span></span>
-<span id="cb3-44"><a href="#cb3-44" tabindex="-1"></a></span>
-<span id="cb3-45"><a href="#cb3-45" tabindex="-1"></a>                                          </span>
-<span id="cb3-46"><a href="#cb3-46" tabindex="-1"></a></span>
-<span id="cb3-47"><a href="#cb3-47" tabindex="-1"></a></span>
-<span id="cb3-48"><a href="#cb3-48" tabindex="-1"></a><span class="co">#&gt; ℹ 2024-02-24 18:19:29: calculating reflectance raster.</span></span>
-<span id="cb3-49"><a href="#cb3-49" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb3-50"><a href="#cb3-50" tabindex="-1"></a><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span></span>
-<span id="cb3-51"><a href="#cb3-51" tabindex="-1"></a><span class="er">=========================================</span></span>
-<span id="cb3-52"><a href="#cb3-52" tabindex="-1"></a>                                          </span>
-<span id="cb3-53"><a href="#cb3-53" tabindex="-1"></a></span>
-<span id="cb3-54"><a href="#cb3-54" tabindex="-1"></a></span>
-<span id="cb3-55"><a href="#cb3-55" tabindex="-1"></a><span class="co">#&gt; ℹ 2024-02-24 18:19:30: cleaning up.</span></span>
-<span id="cb3-56"><a href="#cb3-56" tabindex="-1"></a><span class="co">#&gt; ✔ 2024-02-24 18:19:30: finished.</span></span></code></pre></div>
-<p>We can plot the RGB preview at this stage.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Here we use run_core() output, so further function arguments are filled automatically.</span></span>
+<span><span class="co"># Output is written to the file.</span></span>
+<span><span class="va">reflectance</span> <span class="op">&lt;-</span> <span class="va">core</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/prepare_core.html">prepare_core</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          </span></span></code></pre></div>
+<p>At this stage, we can plot the RGB preview. Our example file has only
+eight random wavelengths, so it is impossible to plot true RGB. Instead,
+we use the first, middle, and last available layer. Here it results in
+somewhat gray image.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_raster_rgb.html">plot_raster_rgb</a></span><span class="op">(</span><span class="va">reflectance</span><span class="op">)</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; ── REFLECTANCE_STL14_1A_28C_top_2022-11-11_16-30-51 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────</span></span></code></pre></div>
-<div class="float">
-<img src="figure/reflectance_rgb-1.png" alt="plot of chunk reflectance_rgb"><div class="figcaption">plot of chunk reflectance_rgb</div>
-</div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_raster_rgb.html">plot_raster_rgb</a></span><span class="op">(</span></span>
+<span>  <span class="va">reflectance</span>,</span>
+<span>  calibration <span class="op">=</span> <span class="fu"><a href="../reference/pixel_to_distance.html">pixel_to_distance</a></span><span class="op">(</span><span class="va">core</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="workflow_files/figure-html/reflectance_rgb-1.png" width="700"></p>
 </div>
 <div class="section level3">
 <h3 id="spectral-smoothing">Spectral smoothing<a class="anchor" aria-label="anchor" href="#spectral-smoothing"></a>
@@ -181,27 +188,17 @@ necessary.</p>
 <p>Applying spectral smoothing, such as the Savitzky-Golay spectral
 filter, is a good idea. Spurious, random peaks and through do not
 influence the calculation results.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>reflectance_smooth <span class="ot">&lt;-</span> reflectance <span class="sc">|&gt;</span></span>
-<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>  <span class="co"># Specify the file extension</span></span>
-<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>  <span class="fu">filter_savgol</span>()</span>
-<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="co">#&gt; ── REFLECTANCE_STL14_1A_28C_top_2022-11-11_16-30-51 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────</span></span>
-<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a><span class="co">#&gt; ℹ 2024-02-24 18:19:31: calculating Savitzky-Golay filtered raster.</span></span>
-<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a><span class="sc">|---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span></span>
-<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="er">=========================================</span></span>
-<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a>                                          </span>
-<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a></span>
-<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a></span>
-<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a><span class="co">#&gt; ✔ 2024-02-24 18:19:31: finished.</span></span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">reflectance_smooth</span> <span class="op">&lt;-</span> <span class="va">reflectance</span> <span class="op">|&gt;</span></span>
+<span>  <span class="co"># Specify the file extension</span></span>
+<span>  <span class="fu"><a href="../reference/filter_savgol.html">filter_savgol</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; |---------|---------|---------|---------|=========================================                                          </span></span></code></pre></div>
 <p>We can plot the RGB preview at this stage, too.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_raster_rgb.html">plot_raster_rgb</a></span><span class="op">(</span><span class="va">reflectance_smooth</span><span class="op">)</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; ── REFLECTANCE_STL14_1A_28C_top_2022-11-11_16-30-51_savitzky-golay ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────</span></span></code></pre></div>
-<div class="float">
-<img src="figure/savgol_rgb-1.png" alt="plot of chunk savgol_rgb"><div class="figcaption">plot of chunk savgol_rgb</div>
-</div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_raster_rgb.html">plot_raster_rgb</a></span><span class="op">(</span></span>
+<span>  <span class="va">reflectance_smooth</span>,</span>
+<span>  calibration <span class="op">=</span> <span class="fu"><a href="../reference/pixel_to_distance.html">pixel_to_distance</a></span><span class="op">(</span><span class="va">core</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="workflow_files/figure-html/savgol_rgb-1.png" width="700"></p>
 </div>
 <div class="section level3">
 <h3 id="peek-into-spectra">Peek into spectra<a class="anchor" aria-label="anchor" href="#peek-into-spectra"></a>
@@ -220,15 +217,15 @@ influence the calculation results.</p>
 <span></span>
 <span><span class="co"># Peek into data</span></span>
 <span><span class="fu"><a href="https://rspatial.github.io/terra/reference/headtail.html" class="external-link">head</a></span><span class="op">(</span><span class="va">reflectance_sp</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # A tibble: 6 × 2</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 2</span></span></span>
 <span><span class="co">#&gt;    band reflectance</span></span>
-<span><span class="co">#&gt;   &lt;dbl&gt;       &lt;dbl&gt;</span></span>
-<span><span class="co">#&gt; 1  396.      0.108 </span></span>
-<span><span class="co">#&gt; 2  397       0.105 </span></span>
-<span><span class="co">#&gt; 3  398.      0.100 </span></span>
-<span><span class="co">#&gt; 4  400.      0.0997</span></span>
-<span><span class="co">#&gt; 5  401.      0.0978</span></span>
-<span><span class="co">#&gt; 6  403.      0.0987</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  561.       0.297</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  585.       0.303</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  610.       0.297</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  635.       0.298</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>  660.       0.292</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>  685.       0.276</span></span>
 <span></span>
 <span><span class="co"># Spectral profile from the entire ROI</span></span>
 <span><span class="va">reflectance_smooth_sp</span> <span class="op">&lt;-</span> <span class="va">reflectance_smooth</span> <span class="op">|&gt;</span></span>
@@ -243,15 +240,15 @@ influence the calculation results.</p>
 <span></span>
 <span><span class="co"># Peek into data</span></span>
 <span><span class="fu"><a href="https://rspatial.github.io/terra/reference/headtail.html" class="external-link">head</a></span><span class="op">(</span><span class="va">reflectance_smooth_sp</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # A tibble: 6 × 2</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 2</span></span></span>
 <span><span class="co">#&gt;    band reflectance_sg</span></span>
-<span><span class="co">#&gt;   &lt;dbl&gt;          &lt;dbl&gt;</span></span>
-<span><span class="co">#&gt; 1  396.         0.108 </span></span>
-<span><span class="co">#&gt; 2  397          0.105 </span></span>
-<span><span class="co">#&gt; 3  398.         0.102 </span></span>
-<span><span class="co">#&gt; 4  400.         0.100 </span></span>
-<span><span class="co">#&gt; 5  401.         0.0980</span></span>
-<span><span class="co">#&gt; 6  403.         0.0962</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  561.          0.297</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  585.          0.303</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  610.          0.297</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  635.          0.298</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>  660.          0.292</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>  685.          0.277</span></span>
 <span></span>
 <span><span class="co"># Plot both profiles data</span></span>
 <span><span class="va">sp_compare</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span></span>
@@ -262,9 +259,14 @@ influence the calculation results.</p>
 <span>    <span class="op">-</span><span class="va">band</span>,</span>
 <span>    names_to <span class="op">=</span> <span class="st">"type"</span>,</span>
 <span>    values_to <span class="op">=</span> <span class="st">"reflectance"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">band</span>, <span class="va">reflectance</span>, color <span class="op">=</span> <span class="va">type</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span></span>
+<span>      <span class="va">band</span>,</span>
+<span>      <span class="va">reflectance</span>,</span>
+<span>      color <span class="op">=</span> <span class="va">type</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_continuous</a></span><span class="op">(</span>breaks <span class="op">=</span> <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/pretty_breaks.html" class="external-link">pretty_breaks</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_x_continuous</a></span><span class="op">(</span></span>
+<span>    breaks <span class="op">=</span> <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/pretty_breaks.html" class="external-link">pretty_breaks</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
 <span>    x <span class="op">=</span> <span class="st">"Wavelength (nm)"</span>,</span>
 <span>    y <span class="op">=</span> <span class="st">"Reflectance"</span>,</span>
@@ -274,20 +276,7 @@ influence the calculation results.</p>
 <span></span>
 <span><span class="co"># Print</span></span>
 <span><span class="va">sp_compare</span></span></code></pre></div>
-<div class="float">
-<img src="figure/peek-spectra-1.png" alt="plot of chunk peek-spectra"><div class="figcaption">plot of chunk peek-spectra</div>
-</div>
-<p>Both plots look similar at this scale except for noisy UV and blue.
-We can zoom it, preferably into a flat region.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Zoom by limits</span></span>
-<span><span class="va">sp_compare</span> <span class="op">+</span></span>
-<span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/coord_cartesian.html" class="external-link">coord_cartesian</a></span><span class="op">(</span></span>
-<span>    xlim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">600</span>, <span class="fl">650</span><span class="op">)</span>,</span>
-<span>    ylim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.1330</span>, <span class="fl">0.1360</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<div class="float">
-<img src="figure/zoom-spectra-1.png" alt="plot of chunk zoom-spectra"><div class="figcaption">plot of chunk zoom-spectra</div>
-</div>
+<p><img src="workflow_files/figure-html/peek-spectra-1.png" width="700"></p>
 </div>
 <div class="section level3">
 <h3 id="continuum-removal">Continuum removal<a class="anchor" aria-label="anchor" href="#continuum-removal"></a>
@@ -295,58 +284,41 @@ We can zoom it, preferably into a flat region.</p>
 <p>We can process our data further by removing the continuum, which
 follows the rule of dividing the spectrum by its bounding box. This way,
 the spectrum becomes flatter.</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="co"># Calculate reflectance with removed continuum</span></span>
-<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a><span class="co"># Use the smoothed spectrum</span></span>
-<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>reflectance_cr <span class="ot">&lt;-</span> reflectance_smooth <span class="sc">|&gt;</span></span>
-<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>  <span class="fu">remove_continuum</span>()</span>
-<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a><span class="co">#&gt; ── REFLECTANCE_STL14_1A_28C_top_2022-11-11_16-30-51_savitzky-golay ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────</span></span>
-<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a><span class="co">#&gt; ℹ 2024-02-24 18:19:32: calculating continuum removed raster.</span></span>
-<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a><span class="co">#&gt; Warning in f(names[[col]]): NAs introduced by coercion</span></span>
-<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a><span class="sc">|---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span><span class="sc">---------</span><span class="er">|</span></span>
-<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a><span class="er">=============================</span></span>
-<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a><span class="co">#&gt; Warning in regularize.values(x, y, ties, missing(ties), na.rm = na.rm): collapsing to unique 'x' values</span></span>
-<span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a><span class="co">#&gt; ==========</span></span>
-<span id="cb9-14"><a href="#cb9-14" tabindex="-1"></a><span class="co">#&gt; Warning in regularize.values(x, y, ties, missing(ties), na.rm = na.rm): collapsing to unique 'x' values</span></span>
-<span id="cb9-15"><a href="#cb9-15" tabindex="-1"></a><span class="co">#&gt; ==</span></span>
-<span id="cb9-16"><a href="#cb9-16" tabindex="-1"></a>                                          </span>
-<span id="cb9-17"><a href="#cb9-17" tabindex="-1"></a></span>
-<span id="cb9-18"><a href="#cb9-18" tabindex="-1"></a></span>
-<span id="cb9-19"><a href="#cb9-19" tabindex="-1"></a><span class="co">#&gt; ✔ 2024-02-24 18:19:33: finished.</span></span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Calculate reflectance with removed continuum</span></span>
+<span><span class="co"># Use the smoothed spectrum</span></span>
+<span><span class="va">reflectance_cr</span> <span class="op">&lt;-</span> <span class="va">reflectance_smooth</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/remove_continuum.html">remove_continuum</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; |---------|---------|---------|---------|=========================================                                          </span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
 <h2 id="index-calculation">Index calculation<a class="anchor" aria-label="anchor" href="#index-calculation"></a>
 </h2>
-<p>At this point, it is OK to calculate selected indices or proxies.</p>
-<p>Mean reflectance (Rmean)</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<p>At this point, it is OK to calculate selected indices or proxies.
+Additionally, we provide calibration so depths are displayed as mm
+rather than pixels (mind odd values).</p>
+<p>Mean reflectance (<em>Rmean</em>)</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">rmean</span> <span class="op">&lt;-</span> <span class="va">reflectance_smooth</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/calculate_rmean.html">calculate_rmean</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; ── REFLECTANCE_STL14_1A_28C_top_2022-11-11_16-30-51_savitzky-golay ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────</span></span>
-<span><span class="co">#&gt; → Writing RMEAN to C:/GitHub/data/STL14_1A_28C_top_2022-11-11_16-30-51/products/RMEAN_REFLECTANCE_STL14_1A_28C_top_2022-11-11_16-30-51_savitzky-golay.tif.</span></span></code></pre></div>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<span>  <span class="fu"><a href="../reference/calculate_rmean.html">calculate_rmean</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">plot_rmean</span> <span class="op">&lt;-</span> <span class="va">rmean</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/plot_raster_proxy.html">plot_raster_proxy</a></span><span class="op">(</span></span>
 <span>    hsi_index <span class="op">=</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">rmean</span><span class="op">)</span>,</span>
-<span>    palette <span class="op">=</span> <span class="st">"mako"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────</span></span>
+<span>    palette <span class="op">=</span> <span class="st">"mako"</span>,</span>
+<span>    calibration <span class="op">=</span> <span class="fu"><a href="../reference/pixel_to_distance.html">pixel_to_distance</a></span><span class="op">(</span><span class="va">core</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Print</span></span>
 <span><span class="va">plot_rmean</span></span></code></pre></div>
-<div class="float">
-<img src="figure/rmean-plot-1.png" alt="plot of chunk rmean-plot"><div class="figcaption">plot of chunk rmean-plot</div>
-</div>
+<p><img src="workflow_files/figure-html/rmean-plot-1.png" width="700"></p>
 <div class="section level3">
 <h3 id="relative-absorption-band-depth-rabd-">Relative Absorption Band Depth (RABD).<a class="anchor" aria-label="anchor" href="#relative-absorption-band-depth-rabd-"></a>
 </h3>
-<p>There are variations to the RABD calculation, but generally, the
-results are not drastically different. Let’s calculate one of the most
-common indices to estimate the total chloropigments-<em>a</em> -
-RABD<sub>660670</sub>.</p>
+<p>The RABD calculation has variations, but the results are generally
+not drastically different. Let’s calculate one of the most common
+indices to estimate the total chloropigments-a:
+RABD<sub>660:670</sub>.</p>
 <p>You can use predefined values or provide them manually. Let’s
 calculate three different flavors.</p>
 <p>The name of the output informs you about the calculated proxy and
@@ -355,9 +327,9 @@ was calculated with Savitzky-Golay smoothed reflectance.</p>
 <div class="section level4">
 <h4 id="variant-1-max">Variant 1: max<a class="anchor" aria-label="anchor" href="#variant-1-max"></a>
 </h4>
-<p>In this variant, for each pixel, a minimum reflectance is found in
-the trough and flexibly used for calculations.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<p>In this variant, a minimum reflectance is found in the trough for
+each pixeland flexibly used for calculations.</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">rabd660670max</span> <span class="op">&lt;-</span> <span class="va">reflectance_smooth</span> <span class="op">|&gt;</span></span>
 <span>  <span class="co"># Calculate max variant</span></span>
 <span>  <span class="fu"><a href="../reference/calculate_rabd.html">calculate_rabd</a></span><span class="op">(</span></span>
@@ -365,32 +337,29 @@ the trough and flexibly used for calculations.</p>
 <span>    trough <span class="op">=</span> <span class="va">proxies</span><span class="op">$</span><span class="va">rabd_b660b670</span><span class="op">$</span><span class="va">trough</span>,</span>
 <span>    rabd_name <span class="op">=</span> <span class="va">proxies</span><span class="op">$</span><span class="va">rabd_b660b670</span><span class="op">$</span><span class="va">proxy_name</span>,</span>
 <span>    rabd_type <span class="op">=</span> <span class="st">"max"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; ── REFLECTANCE_STL14_1A_28C_top_2022-11-11_16-30-51_savitzky-golay ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────</span></span>
-<span><span class="co">#&gt; → Writing rabd660670_max to C:/GitHub/data/STL14_1A_28C_top_2022-11-11_16-30-51/products/rabd660670_max_REFLECTANCE_STL14_1A_28C_top_2022-11-11_16-30-51_savitzky-golay.tif.</span></span></code></pre></div>
-<p>Plot. Hyperspectral imaging data is most fun when visualized. We use
-“viridis” palettes.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<span><span class="co">#&gt; |---------|---------|---------|---------|=========================================                                          </span></span></code></pre></div>
+<p>Plot. Hyperspectral imaging data is most interesing when visualized.
+We use <code>viridis</code> palettes. There is not much to see, and
+values are unrealistic because the number of layers is dramatically
+reduced.</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Prepare the plot</span></span>
 <span><span class="va">plot_rabd660670max</span> <span class="op">&lt;-</span> <span class="va">rabd660670max</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/plot_raster_proxy.html">plot_raster_proxy</a></span><span class="op">(</span></span>
 <span>    hsi_index <span class="op">=</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">rabd660670max</span><span class="op">)</span>,</span>
-<span>    palette <span class="op">=</span> <span class="st">"viridis"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────</span></span>
+<span>    palette <span class="op">=</span> <span class="st">"viridis"</span>,</span>
+<span>    calibration <span class="op">=</span> <span class="fu"><a href="../reference/pixel_to_distance.html">pixel_to_distance</a></span><span class="op">(</span><span class="va">core</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Print</span></span>
 <span><span class="va">plot_rabd660670max</span></span></code></pre></div>
-<div class="float">
-<img src="figure/rabd-max-plot-1.png" alt="plot of chunk rabd-max-plot"><div class="figcaption">plot of chunk rabd-max-plot</div>
-</div>
+<p><img src="workflow_files/figure-html/rabd-max-plot-1.png" width="700"></p>
 </div>
 <div class="section level4">
 <h4 id="variant-2-strict">Variant 2: strict<a class="anchor" aria-label="anchor" href="#variant-2-strict"></a>
 </h4>
 <p>This classic variant supplies a specific wavelength to calculate RABD
 for every pixel.</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">rabd665</span> <span class="op">&lt;-</span> <span class="va">reflectance_smooth</span> <span class="op">|&gt;</span></span>
 <span>  <span class="co"># Calculate max variant</span></span>
 <span>  <span class="fu"><a href="../reference/calculate_rabd.html">calculate_rabd</a></span><span class="op">(</span></span>
@@ -398,30 +367,25 @@ for every pixel.</p>
 <span>    trough <span class="op">=</span> <span class="fl">665</span>,</span>
 <span>    rabd_name <span class="op">=</span> <span class="va">proxies</span><span class="op">$</span><span class="va">rabd_b660b670</span><span class="op">$</span><span class="va">proxy_name</span>,</span>
 <span>    rabd_type <span class="op">=</span> <span class="st">"strict"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; ── REFLECTANCE_STL14_1A_28C_top_2022-11-11_16-30-51_savitzky-golay ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────</span></span>
-<span><span class="co">#&gt; → Writing rabd660670_strict to C:/GitHub/data/STL14_1A_28C_top_2022-11-11_16-30-51/products/rabd660670_strict_REFLECTANCE_STL14_1A_28C_top_2022-11-11_16-30-51_savitzky-golay.tif.</span></span></code></pre></div>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<span><span class="co">#&gt; |---------|---------|---------|---------|=========================================                                          </span></span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Prepare the plot</span></span>
 <span><span class="va">plot_rabd665</span> <span class="op">&lt;-</span> <span class="va">rabd665</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/plot_raster_proxy.html">plot_raster_proxy</a></span><span class="op">(</span></span>
 <span>    hsi_index <span class="op">=</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">rabd665</span><span class="op">)</span>,</span>
-<span>    palette <span class="op">=</span> <span class="st">"viridis"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────</span></span>
+<span>    palette <span class="op">=</span> <span class="st">"viridis"</span>,</span>
+<span>    calibration <span class="op">=</span> <span class="fu"><a href="../reference/pixel_to_distance.html">pixel_to_distance</a></span><span class="op">(</span><span class="va">core</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Print</span></span>
 <span><span class="va">plot_rabd665</span></span></code></pre></div>
-<div class="float">
-<img src="figure/rabd-strict-plot-1.png" alt="plot of chunk rabd-strict-plot"><div class="figcaption">plot of chunk rabd-strict-plot</div>
-</div>
+<p><img src="workflow_files/figure-html/rabd-strict-plot-1.png" width="700"></p>
 </div>
 <div class="section level4">
 <h4 id="variant-3-midpoint">Variant 3: midpoint<a class="anchor" aria-label="anchor" href="#variant-3-midpoint"></a>
 </h4>
 <p>This is variant 2 (strict), with the added shortcut of always finding
 the middle point between the through edges.</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">rabd660670mid</span> <span class="op">&lt;-</span> <span class="va">reflectance_smooth</span> <span class="op">|&gt;</span></span>
 <span>  <span class="co"># Calculate max variant</span></span>
 <span>  <span class="fu"><a href="../reference/calculate_rabd.html">calculate_rabd</a></span><span class="op">(</span></span>
@@ -429,34 +393,27 @@ the middle point between the through edges.</p>
 <span>    trough <span class="op">=</span> <span class="va">proxies</span><span class="op">$</span><span class="va">rabd_b660b670</span><span class="op">$</span><span class="va">trough</span>,</span>
 <span>    rabd_name <span class="op">=</span> <span class="va">proxies</span><span class="op">$</span><span class="va">rabd_b660b670</span><span class="op">$</span><span class="va">proxy_name</span>,</span>
 <span>    rabd_type <span class="op">=</span> <span class="st">"mid"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; ── REFLECTANCE_STL14_1A_28C_top_2022-11-11_16-30-51_savitzky-golay ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────</span></span>
-<span><span class="co">#&gt; → Writing rabd660670_mid to C:/GitHub/data/STL14_1A_28C_top_2022-11-11_16-30-51/products/rabd660670_mid_REFLECTANCE_STL14_1A_28C_top_2022-11-11_16-30-51_savitzky-golay.tif.</span></span></code></pre></div>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<span><span class="co">#&gt; |---------|---------|---------|---------|=========================================                                          </span></span></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Prepare the plot</span></span>
 <span><span class="va">plot_rabd660670mid</span> <span class="op">&lt;-</span> <span class="va">rabd660670mid</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/plot_raster_proxy.html">plot_raster_proxy</a></span><span class="op">(</span></span>
 <span>    hsi_index <span class="op">=</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">rabd660670mid</span><span class="op">)</span>,</span>
-<span>    palette <span class="op">=</span> <span class="st">"viridis"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────</span></span>
+<span>    palette <span class="op">=</span> <span class="st">"viridis"</span>,</span>
+<span>    calibration <span class="op">=</span> <span class="fu"><a href="../reference/pixel_to_distance.html">pixel_to_distance</a></span><span class="op">(</span><span class="va">core</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Print</span></span>
 <span><span class="va">plot_rabd660670mid</span></span></code></pre></div>
-<div class="float">
-<img src="figure/rabd-mid-plot-1.png" alt="plot of chunk rabd-mid-plot"><div class="figcaption">plot of chunk rabd-mid-plot</div>
-</div>
+<p><img src="workflow_files/figure-html/rabd-mid-plot-1.png" width="700"></p>
 </div>
 <div class="section level4">
 <h4 id="compare">Compare<a class="anchor" aria-label="anchor" href="#compare"></a>
 </h4>
 <p>We can compare these three plots side by side. We’re using
 <code>patchwork</code>.</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">plot_rabd660670max</span> <span class="op">+</span> <span class="va">plot_rabd665</span> <span class="op">+</span> <span class="va">plot_rabd660670mid</span> <span class="op">+</span> <span class="fu">patchwork</span><span class="fu">::</span><span class="fu"><a href="https://patchwork.data-imaginist.com/reference/plot_layout.html" class="external-link">plot_layout</a></span><span class="op">(</span>nrow <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
-<div class="float">
-<img src="figure/rabd-compare-1.png" alt="plot of chunk rabd-compare"><div class="figcaption">plot of chunk rabd-compare</div>
-</div>
+<p><img src="workflow_files/figure-html/rabd-compare-1.png" width="700"></p>
 <p>Similar, but not identical. As expected!</p>
 </div>
 </div>
@@ -470,55 +427,38 @@ the middle point between the through edges.</p>
 <p>Another popular and straightforward indices are band ratios, where
 reflectance at the wavelength X is divided by reflectance at the
 wavelength Y.</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">ratio_570630</span> <span class="op">&lt;-</span> <span class="va">reflectance_smooth</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/calculate_band_ratio.html">calculate_band_ratio</a></span><span class="op">(</span></span>
-<span>    edges <span class="op">=</span> <span class="va">proxies</span><span class="op">$</span><span class="va">ratio_b570b630</span><span class="op">$</span><span class="va">edges</span>,</span>
-<span>    ratio_name <span class="op">=</span> <span class="va">proxies</span><span class="op">$</span><span class="va">ratio_b570b630</span><span class="op">$</span><span class="va">proxy_name</span><span class="op">)</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; ── REFLECTANCE_STL14_1A_28C_top_2022-11-11_16-30-51_savitzky-golay ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────</span></span>
-<span><span class="co">#&gt; → Writing r570r630 to C:/GitHub/data/STL14_1A_28C_top_2022-11-11_16-30-51/products/r570r630_REFLECTANCE_STL14_1A_28C_top_2022-11-11_16-30-51_savitzky-golay.tif.</span></span></code></pre></div>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">plot_ratio570630</span> <span class="op">&lt;-</span> <span class="va">ratio_570630</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/plot_raster_proxy.html">plot_raster_proxy</a></span><span class="op">(</span></span>
 <span>    hsi_index <span class="op">=</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">ratio_570630</span><span class="op">)</span>,</span>
-<span>    palette <span class="op">=</span> <span class="st">"magma"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────</span></span>
+<span>    palette <span class="op">=</span> <span class="st">"magma"</span>,</span>
+<span>    calibration <span class="op">=</span> <span class="fu"><a href="../reference/pixel_to_distance.html">pixel_to_distance</a></span><span class="op">(</span><span class="va">core</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">plot_ratio570630</span></span></code></pre></div>
-<div class="float">
-<img src="figure/ratio-plot-1.png" alt="plot of chunk ratio-plot"><div class="figcaption">plot of chunk ratio-plot</div>
-</div>
+<p><img src="workflow_files/figure-html/ratio-plot-1.png" width="700"></p>
 </div>
 <div class="section level3">
 <h3 id="band-differences">Band differences<a class="anchor" aria-label="anchor" href="#band-differences"></a>
 </h3>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">difference_650675</span> <span class="op">&lt;-</span> <span class="va">reflectance_smooth</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/calculate_band_difference.html">calculate_band_difference</a></span><span class="op">(</span></span>
 <span>    difference_name <span class="op">=</span> <span class="va">proxies</span><span class="op">$</span><span class="va">diff_b650b675</span><span class="op">$</span><span class="va">proxy_name</span>,</span>
-<span>    edges <span class="op">=</span> <span class="va">proxies</span><span class="op">$</span><span class="va">diff_b650b675</span><span class="op">$</span><span class="va">edges</span><span class="op">)</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; ── REFLECTANCE_STL14_1A_28C_top_2022-11-11_16-30-51_savitzky-golay ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────</span></span>
-<span><span class="co">#&gt; → Writing r570r630 to C:/GitHub/data/STL14_1A_28C_top_2022-11-11_16-30-51/products/r570r630_REFLECTANCE_STL14_1A_28C_top_2022-11-11_16-30-51_savitzky-golay.tif.</span></span></code></pre></div>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<span>    edges <span class="op">=</span> <span class="va">proxies</span><span class="op">$</span><span class="va">diff_b650b675</span><span class="op">$</span><span class="va">edges</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">plot_difference_650675</span> <span class="op">&lt;-</span> <span class="va">difference_650675</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/plot_raster_proxy.html">plot_raster_proxy</a></span><span class="op">(</span></span>
 <span>    hsi_index <span class="op">=</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">difference_650675</span><span class="op">)</span>,</span>
-<span>    palette <span class="op">=</span> <span class="st">"cividis"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────</span></span>
+<span>    palette <span class="op">=</span> <span class="st">"cividis"</span>,</span>
+<span>    calibration <span class="op">=</span> <span class="fu"><a href="../reference/pixel_to_distance.html">pixel_to_distance</a></span><span class="op">(</span><span class="va">core</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">plot_difference_650675</span></span></code></pre></div>
-<div class="float">
-<img src="figure/difference-plot-1.png" alt="plot of chunk difference-plot"><div class="figcaption">plot of chunk difference-plot</div>
-</div>
+<p><img src="workflow_files/figure-html/difference-plot-1.png" width="700"></p>
 </div>
 <div class="section level3">
 <h3 id="derivatives">Derivatives<a class="anchor" aria-label="anchor" href="#derivatives"></a>
 </h3>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># derivative_690 &lt;- reflectance_smooth |&gt;</span></span>
 <span><span class="co">#   calculate_derivative(derivative_name = proxies$deriv_b690)</span></span></code></pre></div>
 </div>
