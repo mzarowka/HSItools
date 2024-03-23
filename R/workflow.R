@@ -84,8 +84,6 @@ prepare_core <- function(core = NULL, path = NULL, layers = NULL, extent = NULL,
     )
   }
 
-  cli::cli_h1("{basename(path)}")
-
   # Create products directory and store path
   # If no rois are selected create only products
   products <- fs::dir_create(paste0(path, "/products"))
@@ -105,29 +103,12 @@ prepare_core <- function(core = NULL, path = NULL, layers = NULL, extent = NULL,
       }
     } else if (is.null(extent) == TRUE) {
       extent <- core$cropImage
+
     } else if (inherits(extent, what = "SpatExtent") == TRUE) {
       extent <- terra::ext(extent)
     }
-    # if (is.null(extent) == TRUE) {
-    #   # Get path
-    #   extent <- core$cropImage
-    # } else if (extent == "capture") {
-    #   extent <- terra::rast(files[["capture"]]) |>
-    #     terra::ext()
-    # } else if (!is.null(extent) == TRUE) {
-    #   extent <- terra::ext(roi)
-    # }
 
     big_roi <- terra::ext(extent)
-
-    cli::cli_alert_info("{format(Sys.time())}: reading rasters.")
-
-    # Get paths separated
-    # files_path <-
-
-    # Print for user to check
-    cli::cli_inform("Proceeding with the following \"CAPTURE\", \"DARK reference\", and \"WHITE reference\"")
-    cli::cli_li(files)
 
     # Read SpatRasters
     rasters <- files |>
@@ -137,15 +118,11 @@ prepare_core <- function(core = NULL, path = NULL, layers = NULL, extent = NULL,
     # Get band positions - the same for all three SpatRasters
     band_position <- HSItools::spectra_position(rasters[["capture"]], layers)
 
-    cli::cli_alert_info("{format(Sys.time())}: subsetting layers.")
-
     # Subset bands in the SpatRasters
     rasters_subset <- rasters |>
       purrr::map(\(x) HSItools::spectra_sub(
         raster = x,
         spectra_tbl = band_position))
-
-    cli::cli_alert_info("{format(Sys.time())}: cropping rasters.")
 
     # Crop
     rasters_cropped <- purrr::map2(
@@ -155,8 +132,6 @@ prepare_core <- function(core = NULL, path = NULL, layers = NULL, extent = NULL,
         raster = x,
         type = y,
         roi = big_roi))
-
-    cli::cli_alert_info("{format(Sys.time())}: calculating reference rasters.")
 
     # Prepare reference SpatRasters
     rasters_references <- purrr::map2(
@@ -168,8 +143,6 @@ prepare_core <- function(core = NULL, path = NULL, layers = NULL, extent = NULL,
         roi = big_roi,
         path = path))
 
-    cli::cli_alert_info("{format(Sys.time())}: calculating reflectance raster.")
-
     # Normalize data
     reflectance <- HSItools::create_normalized_raster(
       capture = rasters_cropped[["capture"]],
@@ -178,13 +151,9 @@ prepare_core <- function(core = NULL, path = NULL, layers = NULL, extent = NULL,
       fun = normalization,
       path = path)
 
-    cli::cli_alert_info("{format(Sys.time())}: cleaning up.")
-
     # Remove temporary disaggregated files
-    fs::dir_ls(products, regexp = "disaggregated|cropped") |>
+    fs::dir_ls(products, regexp = "resampled|cropped") |>
       fs::file_delete()
-
-    cli::cli_alert_success("{format(Sys.time())}: finished.")
 
   } else {
     reflectance <- fs::path_filter(files, regexp = "REFLECTANCE")

@@ -29,3 +29,13 @@ one layer terra SpatRaster with calculated lambdaREMP values.
 \description{
 Calculate lambdaREMP. A wavelength number between 660 and 680 nm, where first derivative equals zero. After Ghanbari, H., Zilkey, D.R., Gregory-Eaves, I., Antoniades, D., 2023. A new index for the rapid generation of chlorophyll time series from hyperspectral imaging of sediment cores. Limnology and Oceanography: Methods 21, 703–717. https://doi.org/10.1002/lom3.10576.
 }
+\seealso{
+Other Spectral calculations: 
+\code{\link{calculate_band_difference}()},
+\code{\link{calculate_band_ratio}()},
+\code{\link{calculate_derivative}()},
+\code{\link{calculate_raba}()},
+\code{\link{calculate_rabd}()},
+\code{\link{calculate_rmean}()}
+}
+\concept{Spectral calculations}

@@ -52,14 +52,14 @@ core <- list(
   directory = fs::path_package(package = "HSItools", "extdata/CORE_XYZ"),
   analysisRegions = NULL,
   distances = list(
-    startCore = c(x1 = 1, x2 = 1, y1 = 1, y2 = 1),
-    endCore = c(x1 = 1, x2 = 1, y1 = 1, y2 = 1),
-    startScale = c(x = 1159, y = 13204),
-    endScale = c(x = 1164, y = 13148),
-    coreDist = 56,
-    scaleDist = 61,
-    scaleDistmm = 5,
-    pixelRatio = 0.08196721
+    startCore = c(x = 1133, y = 13217),
+    endCore = c(x = 1133, y = 13132),
+    startScale = c(x = 1148, y = 13206),
+    endScale = c(x = 1149, y = 13137),
+    coreDist = 69,
+    scaleDist = 70,
+    scaleDistmm = 6,
+    pixelRatio = 0.0857142857142857
   )
 )
 ```

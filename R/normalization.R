@@ -19,16 +19,8 @@ raster_crop <- function(raster, type, dir = NULL, roi) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
   }
 
-  # Check number of rois and prepare ids.
-  if (length(roi) == 1) {
-    roi_id <- NULL
-  } else {
-    roi_id <- paste0("ROI_", seq(1:length(roi)))
-  }
-
   # If cropping entire capture SpatRaster use entire large ROI
   if (type == "capture") {
-    cli::cli_alert("Captured data")
 
     # Raster source directory
     raster_src <- raster |>
@@ -55,7 +47,6 @@ raster_crop <- function(raster, type, dir = NULL, roi) {
     # If cropping reference SpatRaster use only xmin and xmax from large ROI
     # White reference SpatRaster
   } else if (type == "whiteref") {
-    cli::cli_alert("White reference")
 
     # Raster source directory
     raster_src <- raster |>
@@ -84,7 +75,6 @@ raster_crop <- function(raster, type, dir = NULL, roi) {
 
     # Dark reference SpatRaster
   } else if (type == "darkref") {
-    cli::cli_alert("Dark reference")
 
     # Raster source directory
     raster_src <- raster |>
@@ -140,13 +130,6 @@ create_reference_raster <- function(raster, roi, ref_type, ...) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
   }
 
-  # Check number of rois and prepare ids.
-  if (length(roi) == 1) {
-    roi_id <- NULL
-  } else {
-    roi_id <- paste0("ROI_", seq(1:length(roi)))
-  }
-
   if (ref_type == "whiteref") {
     name <- "WHITEREF"
 
@@ -161,8 +144,6 @@ create_reference_raster <- function(raster, roi, ref_type, ...) {
   template_core <- terra::rast(terra::ext(roi), resolution = c(1, 1), nlyrs = terra::nlyr(raster))
 
   # Aggregate data into one row SpatRaster, divide by number of rows
-  cli::cli_alert("Aggregate { name }")
-
   raster <- terra::aggregate(
     raster,
     fact = c(terra::nrow(raster), 1),
@@ -174,13 +155,12 @@ create_reference_raster <- function(raster, roi, ref_type, ...) {
   terra::ext(raster) <- roi
 
   # Scale and resample data over entire extent to match capture SpatRaster extent, multiply by ymax
-  cli::cli_alert("Scaling and resampling { name }")
-
   raster <- raster |>
     terra::rescale(fx = 1, fy = terra::nrow(template_core) * 2) |>
     terra::resample(
       template_core,
-      filename = paste0(params$path, "/products/", name, "_", basename(params$path), "_disaggregated.tif"))
+      filename = paste0(params$path, "/products/", name, "_", basename(params$path), "_resampled.tif"),
+      overwrite = TRUE)
 
   # Return raster
   return(raster)
@@ -245,13 +225,29 @@ create_normalized_raster <- function(capture = capture, whiteref = whiteref, dar
     # Create terra dataset
     terra::sds()
 
+  # Initialize a counter for appending numbers
+  counter <- 1
+
   # Do the while loop for file naming
+  filename <- paste0(params$path, "/products/REFLECTANCE_", basename(params$path), "_ROI_", 0 + counter, ".tif")
+
+  # Generate the full file path
+  file_path <- filename
+
+  # Check if the file exists
+  while (file.exists(file_path)) {
+    # Increment the counter
+    counter <- counter + 1
+
+      # Append the counter to the base file name
+      file_path <- paste0(params$path, "/products/REFLECTANCE_", basename(params$path), "_ROI_", 0 + counter, ".tif")
+  }
 
   # Apply function over the dataset and write to file
   raster <- terra::lapp(
     x = dataset,
     fun = fun,
-    filename = paste0(params$path, "/products/REFLECTANCE_", basename(params$path), ".tif"),
+    filename = file_path,
     overwrite = TRUE,
     wopt = wopts)
 }

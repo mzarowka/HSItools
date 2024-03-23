@@ -431,7 +431,7 @@ run_core <- function(autoSave = TRUE){
 
       server = function(input, output, session) {
 
-        aaa <- terra::rast(system.file("extdata/CORE_XYZ.tif",package = "HSItools"))
+        aaa <- terra::rast(system.file("extdata/CORE_XYZ/CORE_XYZ.tif",package = "HSItools"))
 
         session$onSessionEnded(function() {
           stopApp()
@@ -518,7 +518,7 @@ run_core <- function(autoSave = TRUE){
 
         observeEvent(input$file_dir_example, {
           useExample(TRUE)
-          path1 <- file.path(system.file(package = "HSItools"), "extdata")
+          path1 <- file.path(system.file(package = "HSItools"), "extdata/CORE_XYZ")
           print(path1)
           user_dir(path1)
           # rasters(user_dir() |>

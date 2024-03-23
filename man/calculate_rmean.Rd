@@ -21,3 +21,13 @@ one layer terra SpatRaster with calculated Rmean values.
 \description{
 calculate mean reflectance from all layers for given pixel.
 }
+\seealso{
+Other Spectral calculations: 
+\code{\link{calculate_band_difference}()},
+\code{\link{calculate_band_ratio}()},
+\code{\link{calculate_derivative}()},
+\code{\link{calculate_lambdaremp}()},
+\code{\link{calculate_raba}()},
+\code{\link{calculate_rabd}()}
+}
+\concept{Spectral calculations}

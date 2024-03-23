@@ -35,3 +35,13 @@ one layer terra SpatRaster with calculated RABA values.
 \description{
 Calculate Relative Absorption Band Area (RABA)
 }
+\seealso{
+Other Spectral calculations: 
+\code{\link{calculate_band_difference}()},
+\code{\link{calculate_band_ratio}()},
+\code{\link{calculate_derivative}()},
+\code{\link{calculate_lambdaremp}()},
+\code{\link{calculate_rabd}()},
+\code{\link{calculate_rmean}()}
+}
+\concept{Spectral calculations}

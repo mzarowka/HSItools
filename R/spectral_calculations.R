@@ -1,5 +1,7 @@
 #' Calculate Relative Absorption Band Depth (RABD)
 #'
+#' @family Spectral calculations
+#'
 #' @param raster terra SpatRaster of normalized capture data.
 #' @param rabd_name character, lower case name name of calculated RABD.
 #' @param rabd_type character, lower case, type of RABD. One of "strict" - specific wavelength, "max" - flexible choice of the maximum reflectance dip, "mid" - middle point between the min and max trough wavelength (similar to strict).
@@ -40,8 +42,6 @@ calculate_rabd <- function(
     fs::path_file() |>
     fs::path_ext_remove()
 
-  cli::cli_h1("{raster_name}")
-
   # Check extent type
   if (is.null(extent) == TRUE) {
     # Set window of interest
@@ -69,8 +69,6 @@ calculate_rabd <- function(
 
       # Set layer name based on the rabd_name argument
     names(template) <- paste0(rabd_name, "_max")
-
-    cli::cli_alert("Writing {rabd_name}_max to {filename}.")
 
     # Find trough position
     trough_position <- spectra_position(
@@ -107,8 +105,6 @@ calculate_rabd <- function(
 
     # Set layer name based on the rabd_name argument
     names(template) <- paste0(rabd_name, "_mid")
-
-    cli::cli_alert("Writing {rabd_name}_mid to {filename}.")
 
     # Find trough position
     trough <- stats::median(trough)
@@ -147,8 +143,6 @@ calculate_rabd <- function(
 
     # Set layer name based on the rabd_name argument
     names(template) <- paste0(rabd_name, "_strict")
-
-    cli::cli_alert("Writing {rabd_name}_strict to {filename}.")
 
     # Find trough position
     trough_position <- spectra_position(raster = raster, spectra = trough) |>
@@ -215,6 +209,8 @@ calculate_rabd <- function(
 
 #' Calculate Relative Absorption Band Area (RABA)
 #'
+#' @family Spectral calculations
+#'
 #' @param raster terra SpatRaster of normalized capture data.
 #' @param raba_name character, lower case name name of calculated RABA.
 #' @param edges numeric vector of two for the wide calculation window.
@@ -250,8 +246,6 @@ calculate_raba <- function(
     fs::path_file() |>
     fs::path_ext_remove()
 
-  cli::cli_h1("{raster_name}")
-
   # Check extent type
   if (is.null(extent) == TRUE) {
     # Set window of interest
@@ -267,17 +261,6 @@ calculate_raba <- function(
   } else {
     filename <- fs::path(filename, ext = ext)
   }
-
-  # # Check extent type
-  # if (is.null(extent)) {
-  #   # Set window of interest
-  #   terra::window(raster) <- terra::ext(raster)
-  # } else {
-  #   # Set window of interest
-  #   terra::window(raster) <- terra::ext(extent)
-  # }
-
-  cli::cli_alert("Writing {raba_name} to {filename}.")
 
   # Create empty SpatRaster template from original cropped raster
   template <- terra::rast(
@@ -301,6 +284,8 @@ calculate_raba <- function(
 }
 
 #' Calculate band ratio
+#'
+#' @family Spectral calculations
 #'
 #' @param raster terra SpatRaster of normalized capture data.
 #' @param ratio_name character, lower case name of calculated ratio.
@@ -337,8 +322,6 @@ calculate_band_ratio <- function(
     fs::path_file() |>
     fs::path_ext_remove()
 
-  cli::cli_h1("{raster_name}")
-
   # Check extent type
   if (is.null(extent) == TRUE) {
     # Set window of interest
@@ -354,8 +337,6 @@ calculate_band_ratio <- function(
   } else {
     filename <- fs::path(filename, ext = ext)
   }
-
-  cli::cli_alert("Writing {ratio_name} to {filename}.")
 
   # Find edge positions
   edge_positions <- spectra_position(raster = raster, spectra = edges) |>
@@ -382,6 +363,8 @@ calculate_band_ratio <- function(
 }
 
 #' Calculate band difference
+#'
+#' @family Spectral calculations
 #'
 #' @param raster terra SpatRaster of normalized capture data.
 #' @param difference_name a character, lower case name of calculated difference.
@@ -418,8 +401,6 @@ calculate_band_difference <- function(
     fs::path_file() |>
     fs::path_ext_remove()
 
-  cli::cli_h1("{raster_name}")
-
   # Check extent type
   if (is.null(extent) == TRUE) {
     # Set window of interest
@@ -436,23 +417,12 @@ calculate_band_difference <- function(
     filename <- fs::path(filename, ext = ext)
   }
 
-  # # Check extent type
-  # if (is.null(extent)) {
-  #   # Set window of interest
-  #   terra::window(raster) <- terra::ext(raster)
-  # } else {
-  #   # Set window of interest
-  #   terra::window(raster) <- terra::ext(extent)
-  # }
-
-  cli::cli_alert("Writing {difference_name} to {filename}.")
-
   # Find edge positions
   edge_positions <- spectra_position(raster = raster, spectra = edges) |>
     # Pull vector with positions
     dplyr::pull(var = 2)
 
-  # Substract
+  # Subtract
   template <- terra::subset(raster, edge_positions[1]) - terra::subset(raster, edge_positions[2])
 
   # Set layer name
@@ -472,6 +442,8 @@ calculate_band_difference <- function(
 }
 
 #' Calculate Rmean
+#'
+#' @family Spectral calculations
 #'
 #' @param raster a terra SpatRaster of normalized capture data.
 #' @param extent an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
@@ -505,8 +477,6 @@ calculate_rmean <- function(
     fs::path_file() |>
     fs::path_ext_remove()
 
-  cli::cli_h1("{raster_name}")
-
   # Check extent type
   if (is.null(extent) == TRUE) {
     # Set window of interest
@@ -522,17 +492,6 @@ calculate_rmean <- function(
   } else {
     filename <- fs::path(filename, ext = ext)
   }
-
-  # # Check extent type
-  # if (is.null(extent)) {
-  #   # Set window of interest
-  #   terra::window(raster) <- terra::ext(raster)
-  # } else {
-  #   # Set window of interest
-  #   terra::window(raster) <- terra::ext(extent)
-  # }
-
-  cli::cli_alert("Writing RMEAN to {filename}.")
 
   # Apply mean function over entire SpatRaster
   template <- terra::app(raster, fun = "mean")
@@ -555,6 +514,8 @@ calculate_rmean <- function(
 }
 
 #' Calculate lambdaREMP
+#'
+#' @family Spectral calculations
 #'
 #' @param raster a terra SpatRaster of normalized capture data.
 #' @param trough character vector of wavelength to look for trough.
@@ -590,8 +551,6 @@ calculate_lambdaremp <- function(
     fs::path_file() |>
     fs::path_ext_remove()
 
-  cli::cli_h1("{raster_name}")
-
   # Check extent type
   if (is.null(extent) == TRUE) {
     # Set window of interest
@@ -612,17 +571,6 @@ calculate_lambdaremp <- function(
   template <- terra::rast(
     terra::ext(raster),
     resolution = terra::res(raster))
-
-  # # Check extent type
-  # if (is.null(extent)) {
-  #   # Set window of interest
-  #   terra::window(raster) <- terra::ext(raster)
-  # } else {
-  #   # Set window of interest
-  #   terra::window(raster) <- terra::ext(extent)
-  # }
-
-  cli::cli_alert("Writing lambdaREMP to {filename}.")
 
   # Find trough position
   remp <- spectra_position(raster = raster, spectra = trough) |>
@@ -652,6 +600,8 @@ calculate_lambdaremp <- function(
 }
 
 #' Calculate derivative
+#'
+#' @family Spectral calculations
 #'
 #' @param raster terra SpatRaster of normalized capture data.
 #' @param derivative_name a character, lower case name of calculated difference.
@@ -687,8 +637,6 @@ calculate_derivative <- function(
     fs::path_file() |>
     fs::path_ext_remove()
 
-  cli::cli_h1("{raster_name}")
-
   # Check extent type
   if (is.null(extent) == TRUE) {
     # Set window of interest
@@ -704,17 +652,6 @@ calculate_derivative <- function(
   } else {
     filename <- fs::path(filename, ext = ext)
   }
-
-  # # Check extent type
-  # if (is.null(extent)) {
-  #   # Set window of interest
-  #   terra::window(raster) <- terra::ext(raster)
-  # } else {
-  #   # Set window of interest
-  #   terra::window(raster) <- terra::ext(extent)
-  # }
-
-  cli::cli_alert("Writing {derivative_name} to {filename}.")
 
   # Find edge positions
   edge_positions <- spectra_position(raster = raster, spectra = edges) |>

@@ -32,3 +32,13 @@ one layer terra SpatRaster with calculated difference values
 \description{
 calculate band difference of selected wavelengths.
 }
+\seealso{
+Other Spectral calculations: 
+\code{\link{calculate_band_ratio}()},
+\code{\link{calculate_derivative}()},
+\code{\link{calculate_lambdaremp}()},
+\code{\link{calculate_raba}()},
+\code{\link{calculate_rabd}()},
+\code{\link{calculate_rmean}()}
+}
+\concept{Spectral calculations}
