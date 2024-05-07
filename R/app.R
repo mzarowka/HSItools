@@ -633,7 +633,7 @@ run_core <- function(autoSave = TRUE){
         })
 
         coreRGB <- reactive({
-          if (length(user_dir()) != 0) {
+          if (length(coreImage()) != 0) {
             a0 <- terra::subset(coreImage(),subset=c(1,1,7))
           } else {
             NULL
