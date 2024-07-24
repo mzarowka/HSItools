@@ -6,7 +6,6 @@
 <!-- badges: start -->
 
 [![R-CMD-check](https://github.com/mzarowka/HSItools/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/mzarowka/HSItools/actions/workflows/R-CMD-check.yaml)
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/mzarowka/HSItools/master?urlpath=rstudio)
 
 <!-- badges: end -->
 
