@@ -34,7 +34,8 @@ extract_spectral_series <- function(raster, index = NULL, calibration = NULL, ex
   spectral_series <- raster |>
     terra::aggregate(
       fact = c(1, terra::ncol(raster)),
-      fun = "mean") |>
+      fun = "mean",
+      na.rm = TRUE) |>
     # Coerce do data frame with coordinates
     terra::as.data.frame(xy = TRUE) |>
     # To tibble
@@ -44,7 +45,8 @@ extract_spectral_series <- function(raster, index = NULL, calibration = NULL, ex
     spectral_series <- raster |>
       terra::aggregate(
         fact = c(1, terra::ncol(raster)),
-        fun = "mean") |>
+        fun = "mean",
+        na.rm = TRUE) |>
       # Coerce do data frame with coordinates
       terra::as.data.frame(xy = TRUE) |>
       # To tibble
