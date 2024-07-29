@@ -8,7 +8,7 @@ proxies <- list(
 # Relative absorption band depth = RABD
   rabd_b510 = list(proxy_type = "rabd", proxy_name = "rabd510", edges = c(590, 730), trough = 510, reference = "na", interpretation = "carotenoids-hsi"),
   rabd_b616 = list(proxy_type = "rabd", proxy_name = "rabd615", edges = c(590, 730), trough = 615, reference = "na", interpretation = "phycocyanin-hsi"),
-  rabd_b620 = list(proxy_type = "rabd", proxy_name = "rabd610620", edges = c(590, 640), trough = 615, reference = "von Gunten, L., Grosjean, M., Kamenik, C., Fujak, M., Urrutia, R., 2012. Calibrating biogeochemical and physical climate proxies from non-varved lake sediments with meteorological data: methods and case studies. J Paleolimnol 47, 583–600. https://doi.org/10.1007/s10933-012-9582-9
+  rabd_b620 = list(proxy_type = "rabd", proxy_name = "rabd620", edges = c(590, 640), trough = 615, reference = "von Gunten, L., Grosjean, M., Kamenik, C., Fujak, M., Urrutia, R., 2012. Calibrating biogeochemical and physical climate proxies from non-varved lake sediments with meteorological data: methods and case studies. J Paleolimnol 47, 583–600. https://doi.org/10.1007/s10933-012-9582-9
 ", interpretation = "albite"),
   rabd_b640b655 = list(proxy_type = "rabd", proxy_name = "rabd640655", edges = c(590, 730), trough = 647.5, reference = "na", interpretation = "tchl-ahsi"),
   rabd_b660 = list(proxy_type = "rabd", proxy_name = "rabd660", edges = c(590, 730), trough = 660, reference = "na", interpretation = "tchl-ahsi"),
@@ -44,7 +44,7 @@ proxies <- list(
   diff_b660b690 = list(proxy_type = "band difference", proxy_name = "d660d690", edges = c(660, 690), trough = NA, reference = "na", interpretation = "clay minerals, dust"),
 
 # Derivatives
-  lambdaremp = list(proxy_type = "derivative", proxy_name = "λremp", band = NA, reference = "na", interpretation = "clay minerals, dust"),
+  lambdaremp = list(proxy_type = "derivative", proxy_name = "λremp", band = NA, reference = "na", interpretation = "tchl-a"),
   deriv_b550 = list(proxy_type = "derivative", proxy_name = "d550", band = 550, reference = "na", interpretation = "clay minerals, dust"),
   deriv_b675 = list(proxy_type = "derivative", proxy_name = "d675", band = 675, reference = "na", interpretation = "clay minerals, dust"),
   deriv_b690 = list(proxy_type = "derivative", proxy_name = "d690", band = 690, reference = "na", interpretation = "clay minerals, dust"),

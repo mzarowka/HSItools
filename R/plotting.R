@@ -254,7 +254,7 @@ plot_raster_rgb <- function(
   filename <- paste0(raster_src, "/RGB_GG_", raster_name, ".", ext)
 
   # Check if there are values close to RGB, within the 25 nm.
-  if (all(purrr::list_c(purrr::map(c(450, 550, 650), \(i) dplyr::near(i, as.numeric(names(raster)), tol = 25)))) == TRUE) {
+  if (all(any(purrr::list_c(purrr::map(c(450, 550, 650), \(i) dplyr::near(i, as.numeric(names(raster)), tol = 25))))) == TRUE) {
     spectra <- c(450, 550, 650)
   } else {
     rlang::warn("No layers matching the RGB. Using the first, middle and last available layers.")
