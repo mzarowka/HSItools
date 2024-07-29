@@ -16,10 +16,6 @@ stretch_raster_full <- function(
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
   }
 
-  # Check if SpatRaster has bands close to RGB. Important for longer wavelengths.
-  # if ()
-  #  rlang::warn(message = "Supplied SpatRaster has no wavelengths close to RGB.")
-
   # Raster source directory
   raster_src <- raster |>
     terra::sources() |>
@@ -35,8 +31,8 @@ stretch_raster_full <- function(
   filename <- paste0(raster_src, "/RGB_", raster_name, ".", ext)
 
   # Check if there are values close to RGB, within the 25 nm.
-  if (all(purrr::list_c(purrr::map(c(450, 550, 650), \(i) dplyr::near(i, as.numeric(names(raster)), tol = 25)))) == TRUE) {
-    spectra <- c(450, 550, 650)
+  if (all(any(purrr::list_c(purrr::map(c(450, 550, 650), \(i) dplyr::near(i, as.numeric(names(raster)), tol = 25))))) == TRUE) {
+    spectra <- c(650, 550, 450)
   } else {
     rlang::warn("No layers matching the RGB. Using the first, middle and last available layers.")
     spectra <- c(
@@ -57,7 +53,7 @@ stretch_raster_full <- function(
         raster = raster,
         spectra_tbl = _
       ) |>
-      terra::stretch()
+      terra::stretch(filename = NULL)
   } else {
 
     # Subset and write to RGB
