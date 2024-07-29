@@ -601,7 +601,8 @@ plot_profile_spectral_series <- function(raster, hsi_index, calibration = NULL, 
     # Modify theme
     ggplot2::theme(
       panel.background = ggplot2::element_blank(),
-      axis.line = ggplot2::element_line(color = "black")
+      axis.line = ggplot2::element_line(color = "black"),
+      legend.text.position = "bottom"
     ) +
     # Add labels
     ggplot2::labs(
@@ -627,8 +628,8 @@ plot_profile_spectral_series <- function(raster, hsi_index, calibration = NULL, 
       # Modify theme
       ggplot2::theme(
         panel.background = ggplot2::element_blank(),
-        axis.line.y.left = ggplot2::element_line(color = "black"),
-        axis.line.x.bottom = ggplot2::element_line(color = "black")
+        axis.line = ggplot2::element_line(color = "black"),
+        legend.text.position = "bottom"
       ) +
       # Add labels
       ggplot2::labs(
