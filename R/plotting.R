@@ -146,6 +146,7 @@ plot_raster_proxy <- function(
         theme = ggplot2::theme(
           title = ggplot2::element_text(hsi_index),
           legend.position = "bottom",
+          legend.text.position = "bottom",
           legend.ticks = ggplot2::element_blank()))
     ) +
     # Fix the coordinates
@@ -177,6 +178,7 @@ plot_raster_proxy <- function(
           theme = ggplot2::theme(
             title = ggplot2::element_text(hsi_index),
             legend.position = "bottom",
+            legend.text.position = "bottom",
             legend.ticks = ggplot2::element_blank()))
       ) +
       # Fix the coordinates
@@ -602,6 +604,7 @@ plot_profile_spectral_series <- function(raster, hsi_index, calibration = NULL, 
     ggplot2::theme(
       panel.background = ggplot2::element_blank(),
       axis.line = ggplot2::element_line(color = "black"),
+      panel.border = element_rect(color = "black", fill = NA),
       legend.text.position = "bottom"
     ) +
     # Add labels
@@ -629,6 +632,7 @@ plot_profile_spectral_series <- function(raster, hsi_index, calibration = NULL, 
       ggplot2::theme(
         panel.background = ggplot2::element_blank(),
         axis.line = ggplot2::element_line(color = "black"),
+        panel.border = element_rect(color = "black", fill = NA),
         legend.text.position = "bottom"
       ) +
       # Add labels
