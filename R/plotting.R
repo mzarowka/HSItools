@@ -2,13 +2,13 @@
 #'
 #' @family Plotting
 #' @param raster a SpatRaster, preferably reflectance file.
-#' @param ext character, a graphic format extension.
+#' @param extension character, a graphic format extension, defaults to "tif".
 #' @param write logical, should resulting SpatRaster be written to file.
 #'
 #' @export
 stretch_raster_full <- function(
     raster,
-    ext = NULL,
+    extension = NULL,
     write = TRUE) {
 
   # Check if correct class is supplied.
@@ -28,7 +28,11 @@ stretch_raster_full <- function(
     fs::path_ext_remove()
 
   # Prepare name
+  if (is.null(filename) == TRUE) {
+    filename <- paste0(raster_src, "/RGB_", raster_name, ".tif")
+  } else {
   filename <- paste0(raster_src, "/RGB_", raster_name, ".", ext)
+  }
 
   # Check if there are values close to RGB, within the 25 nm.
   if (all(any(purrr::list_c(purrr::map(c(450, 550, 650), \(i) dplyr::near(i, as.numeric(names(raster)), tol = 25))))) == TRUE) {
