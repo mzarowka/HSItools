@@ -27,12 +27,7 @@ stretch_raster_full <- function(
     fs::path_file() |>
     fs::path_ext_remove()
 
-  # Prepare name
-  if (is.null(filename) == TRUE) {
-    filename <- paste0(raster_src, "/RGB_", raster_name, ".tif")
-  } else {
-  filename <- paste0(raster_src, "/RGB_", raster_name, ".", ext)
-  }
+  filename <- paste0(raster_src, "/RGB_", raster_name, ".", extension)
 
   # Check if there are values close to RGB, within the 25 nm.
   if (all(any(purrr::list_c(purrr::map(c(450, 550, 650), \(i) dplyr::near(i, as.numeric(names(raster)), tol = 25))))) == TRUE) {
@@ -87,7 +82,7 @@ stretch_raster_full <- function(
 #' @param hsi_index a character indicating hyperspectral index layer to plot.
 #' @param palette a character indicating one of \pkg{viridis} palettes of choice: "viridis", "magma", "plasma", "inferno", "civids", "mako", "rocket" and "turbo”.
 #' @param extent an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
-#' @param ext character, a graphic format extension.
+#' @param extension character, a graphic format extension.
 #' @param write logical, should resulting SpatRaster be written to file.
 #'
 #' @importFrom ggplot2 theme
@@ -100,7 +95,7 @@ plot_raster_proxy <- function(
     calibration = NULL,
     palette = c("viridis", "magma", "plasma", "inferno", "civids", "mako", "rocket", "turbo"),
     extent = NULL,
-    ext = NULL,
+    extension = NULL,
     write = FALSE,
     ...) {
   # Check if correct class is supplied.
@@ -123,7 +118,7 @@ plot_raster_proxy <- function(
     fs::path_file() |>
     fs::path_ext_remove()
 
-  filename <- paste0(raster_src, "/", hsi_index, "_", raster_name, ".", ext)
+  filename <- paste0(raster_src, "/", hsi_index, "_", raster_name, ".", extension)
 
   # Subset SpatRaster
   hsi_layer <- raster |>
@@ -215,7 +210,7 @@ plot_raster_proxy <- function(
     ggplot2::ggsave(
       plot = plot,
       filename = filename,
-      device = ext
+      device = extension
     )
   }
 
@@ -229,7 +224,7 @@ plot_raster_proxy <- function(
 #' @param raster a SpatRaster with calculated hyperspectral indices and RGB layers or just RGB layers.
 #' @param calibration result of pixel_to_distance or actual call to pixel_to_distance with appropriate input.
 #' @param extent an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
-#' @param ext character, a graphic format extension.
+#' @param extension character, a graphic format extension.
 #' @param write logical, should resulting SpatRaster be written to file.
 #'
 #' @return a plot with color map of selected hyperspectral index.
@@ -238,7 +233,7 @@ plot_raster_rgb <- function(
     raster,
     calibration = NULL,
     extent = NULL,
-    ext = NULL,
+    extension = NULL,
     write = FALSE) {
   # Check if correct class is supplied.
   if (!inherits(raster, what = "SpatRaster")) {
@@ -257,7 +252,7 @@ plot_raster_rgb <- function(
     fs::path_ext_remove()
 
   # Prepare filename
-  filename <- paste0(raster_src, "/RGB_GG_", raster_name, ".", ext)
+  filename <- paste0(raster_src, "/RGB_GG_", raster_name, ".", extension)
 
   # Check if there are values close to RGB, within the 25 nm.
   if (all(any(purrr::list_c(purrr::map(c(450, 550, 650), \(i) dplyr::near(i, as.numeric(names(raster)), tol = 25))))) == TRUE) {
@@ -353,7 +348,7 @@ plot_raster_rgb <- function(
     ggplot2::ggsave(
       plot = plot,
       filename = filename,
-      device = ext
+      device = extension
     )
   }
 
@@ -369,7 +364,7 @@ plot_raster_rgb <- function(
 #' @param palette a character indicating one of \pkg{viridis} palettes of choice: "viridis”, “magma”, “plasma”, “inferno”, “civids”, “mako”, “rocket” and “turbo”.
 #' @param alpha a number in (0, 1) controlling transparency.
 #' @param extent an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
-#' @param ext character, a graphic format extension.
+#' @param extension character, a graphic format extension.
 #' @param write logical, should resulting SpatRaster be written to file.
 #'
 #' @return a plot with color map of selected hyperspectral index overlain on RGB image.
@@ -380,7 +375,7 @@ plot_raster_overlay <- function(
     palette = c("viridis”, “magma”, “plasma”, “inferno”, “civids”, “mako”, “rocket”, “turbo"),
     alpha = 0.5,
     extent = NULL,
-    ext = NULL,
+    extension = NULL,
     write = FALSE) {
   # Check if correct class is supplied.
   if (!inherits(raster, what = "SpatRaster")) {
@@ -402,7 +397,7 @@ plot_raster_overlay <- function(
     fs::path_file() |>
     fs::path_ext_remove()
 
-  filename <- paste0(raster_src, "/OVERLAY_", hsi_index, "_", raster_name, ".", ext)
+  filename <- paste0(raster_src, "/OVERLAY_", hsi_index, "_", raster_name, ".", extension)
 
   # Subset SpatRaster
   hsi_layer <- raster |>
@@ -475,7 +470,7 @@ plot_raster_overlay <- function(
     ggplot2::ggsave(
       plot = plot,
       filename = filename,
-      device = ext
+      device = extension
     )
   }
 
@@ -489,12 +484,12 @@ plot_raster_overlay <- function(
 #' @family Plotting
 #' @param raster a SpatRaster with REFLECTANCE file. Used for correct placement.
 #' @param plots a list of plots.
-#' @param ext character, a graphic format extension.
+#' @param extension character, a graphic format extension.
 #' @param write logical, should resulting \pkg{ggplot2} object be written to file.
 #'
 #' @return a plot.
 #' @export
-plot_composite <- function(raster, plots, ext = NULL, write = FALSE) {
+plot_composite <- function(raster, plots, extension = NULL, write = FALSE) {
   # Check if correct class is supplied.
   if (!inherits(raster, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
@@ -516,7 +511,7 @@ plot_composite <- function(raster, plots, ext = NULL, write = FALSE) {
     fs::path_file() |>
     fs::path_ext_remove()
 
-  filename <- paste0(raster_src, "/COMPOSITE_", raster_name, ".", ext)
+  filename <- paste0(raster_src, "/COMPOSITE_", raster_name, ".", extension)
 
   # Create a plot composed from a list of plots
   plot <- plots |>
@@ -534,7 +529,7 @@ plot_composite <- function(raster, plots, ext = NULL, write = FALSE) {
     ggplot2::ggsave(
       plot = plot,
       filename = filename,
-      device = ext
+      device = extension
     )
   }
 
@@ -549,14 +544,14 @@ plot_composite <- function(raster, plots, ext = NULL, write = FALSE) {
 #' @param hsi_index a character indicating hyperspectral index layer to plot.
 #' @param calibration result of pixel_to_distance or actual call to pixel_to_distance with appropriate input.
 #' @param extent a terra extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
-#' @param ext character, a graphic format extension.
-#' @param filename empty = in memory, TRUE = guess name and attempt write, or user specified path to glue with ext.
+#' @param extension character, a graphic format extension.
+#' @param filename empty = in memory, TRUE = guess name and attempt write, or user specified path to glue with extension.
 #'
 #' @importFrom rlang .data
 #'
 #' @return line plot with of selected hyperspectral index.
 #' @export
-plot_profile_spectral_series <- function(raster, hsi_index, calibration = NULL, extent = NULL, ext = NULL, filename = FALSE) {
+plot_profile_spectral_series <- function(raster, hsi_index, calibration = NULL, extent = NULL, extension = NULL, filename = FALSE) {
   # Check if correct class is supplied.
   if (!inherits(raster, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
@@ -665,25 +660,25 @@ plot_profile_spectral_series <- function(raster, hsi_index, calibration = NULL, 
       fs::path_file() |>
       fs::path_ext_remove()
 
-    filename <- paste0(raster_src, "/", hsi_index, "_line_", raster_name, ".", ext)
+    filename <- paste0(raster_src, "/", hsi_index, "_line_", raster_name, ".", extension)
 
     cli::cli_alert("Writing {hsi_index} plot to {filename}")
 
     ggplot2::ggsave(
       plot = plot,
       filename = filename,
-      device = ext
+      device = extension
     )
 
   } else if (is.character(filename) & !is.null(filename)) {
-    filename <- paste0(filename, ".", ext)
+    filename <- paste0(filename, ".", extension)
 
     cli::cli_alert("Writing {hsi_index} plot to {filename}")
 
     ggplot2::ggsave(
       plot = plot,
       filename = filename,
-      device = ext
+      device = extension
     )
 
     } else {
@@ -699,14 +694,14 @@ plot_profile_spectral_series <- function(raster, hsi_index, calibration = NULL, 
 #' @family Plotting
 #' @param raster Reflectance SpatRaster.
 #' @param extent an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
-#' @param ext character, a graphic format extension.
+#' @param extension character, a graphic format extension.
 #' @param write logical, should resulting SpatRaster be written to file.
 #'
 #' @importFrom rlang .data
 #'
 #' @return line plot with of selected hyperspectral index.
 #' @export
-plot_profile_spectral_profile <- function(raster, extent = NULL, ext = NULL, write = FALSE) {
+plot_profile_spectral_profile <- function(raster, extent = NULL, extension = NULL, write = FALSE) {
 
   # Check if correct class is supplied.
   if (!inherits(raster, what = "SpatRaster")) {
@@ -724,7 +719,7 @@ plot_profile_spectral_profile <- function(raster, extent = NULL, ext = NULL, wri
     fs::path_file() |>
     fs::path_ext_remove()
 
-  filename <- paste0(raster_src, "/SPECTRAL_PROFILE_", raster_name, ".", ext)
+  filename <- paste0(raster_src, "/SPECTRAL_PROFILE_", raster_name, ".", extension)
 
   if (is.null(extent)) {
     # Set window of interest
@@ -774,7 +769,7 @@ plot_profile_spectral_profile <- function(raster, extent = NULL, ext = NULL, wri
     ggplot2::ggsave(
       plot = plot,
       filename = filename,
-      device = ext
+      device = extension
     )
   }
 
