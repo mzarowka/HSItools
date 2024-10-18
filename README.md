@@ -23,9 +23,9 @@ alt="HSItools logo" />
 You can install the development version of HSItools like so:
 
 ``` r
-# install.packages("pak")
+install.packages("pak")
 
-# pak::pak("mzarowka/HSItools)
+pak::pak("mzarowka/HSItools")
 ```
 
 ## Example
