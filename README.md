@@ -47,7 +47,7 @@ reflectance <- core |>
 
 # Create RGB preview and write to file
 rgb_preview <- reflectance |>
-  stretch_raster_full(reflectance, ext = "tif", write = TRUE)
+  stretch_raster_full(ext = "tif", write = TRUE)
 
 # Plot RGB preview
 rgb_plot <- reflectance |>
