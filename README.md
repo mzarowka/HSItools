@@ -51,7 +51,7 @@ rgb_preview <- reflectance |>
 
 # Plot RGB preview
 rgb_plot <- reflectance |>
-  plot_raster_rgb(reflectance)
+  plot_raster_rgb()
 ```
 
 Maurycy Żarczyński is founded by the Polish National Agency for Academic
