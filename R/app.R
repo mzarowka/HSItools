@@ -500,7 +500,7 @@ run_core <- function(autoSave = TRUE){
 
         observeEvent(input$file_dir, {
           useExample(FALSE)
-          user_dir(gsub(here::here(), "", shinyFiles::parseDirPath(volumes, selection = input$file_dir)))
+          user_dir(gsub(getwd(), "", shinyFiles::parseDirPath(volumes, selection = input$file_dir)))
         })
         #   dir1 <- shinyFiles::parseDirPath(volumes, selection = input$file_dir)
         #   print(dir1)
