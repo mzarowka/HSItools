@@ -9,7 +9,7 @@ plot_profile_spectral_series(
   hsi_index,
   calibration = NULL,
   extent = NULL,
-  ext = NULL,
+  extension = NULL,
   filename = FALSE
 )
 }
@@ -22,9 +22,9 @@ plot_profile_spectral_series(
 
 \item{extent}{a terra extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.}
 
-\item{ext}{character, a graphic format extension.}
+\item{extension}{character, a graphic format extension.}
 
-\item{filename}{empty = in memory, TRUE = guess name and attempt write, or user specified path to glue with ext.}
+\item{filename}{empty = in memory, TRUE = guess name and attempt write, or user specified path to glue with extension.}
 }
 \value{
 line plot with of selected hyperspectral index.

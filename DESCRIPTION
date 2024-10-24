@@ -43,7 +43,8 @@ Imports:
     tibble,
     readr,
     fs,
-    sf
+    sf,
+    here
 Depends: 
     R (>= 4.1.0)
 LazyData: true

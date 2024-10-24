@@ -11,7 +11,7 @@ plot_raster_proxy(
   palette = c("viridis", "magma", "plasma", "inferno", "civids", "mako", "rocket",
     "turbo"),
   extent = NULL,
-  ext = NULL,
+  extension = NULL,
   write = FALSE,
   ...
 )
@@ -27,7 +27,7 @@ plot_raster_proxy(
 
 \item{extent}{an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.}
 
-\item{ext}{character, a graphic format extension.}
+\item{extension}{character, a graphic format extension.}
 
 \item{write}{logical, should resulting SpatRaster be written to file.}
 }

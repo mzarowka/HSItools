@@ -36,6 +36,7 @@
 #' @import DT
 #' @import shinyFiles
 #' @importFrom shinyalert shinyalert
+#' @importFrom here here
 #' @return an object with processing settings.
 #' @export
 run_core <- function(autoSave = TRUE){
@@ -499,7 +500,7 @@ run_core <- function(autoSave = TRUE){
 
         observeEvent(input$file_dir, {
           useExample(FALSE)
-          user_dir(shinyFiles::parseDirPath(volumes, selection = input$file_dir))
+          user_dir(gsub(here::here(), "", shinyFiles::parseDirPath(volumes, selection = input$file_dir)))
         })
         #   dir1 <- shinyFiles::parseDirPath(volumes, selection = input$file_dir)
         #   print(dir1)
@@ -1307,7 +1308,7 @@ run_core <- function(autoSave = TRUE){
           #   allParams$directory <<- user_dir2()
           # }
           else {
-            allParams$directory <<- dirname(user_file()$datapath)
+            allParams$directory <<- dirname(gsub(here::here(), "", user_file()$datapath))
             #shinyalert::shinyalert(title = "No Data", text = "Please return to the 'Select Data' tab and choose data to analyze.")
           }
 

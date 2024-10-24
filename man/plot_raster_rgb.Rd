@@ -8,7 +8,7 @@ plot_raster_rgb(
   raster,
   calibration = NULL,
   extent = NULL,
-  ext = NULL,
+  extension = NULL,
   write = FALSE
 )
 }
@@ -19,7 +19,7 @@ plot_raster_rgb(
 
 \item{extent}{an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.}
 
-\item{ext}{character, a graphic format extension.}
+\item{extension}{character, a graphic format extension.}
 
 \item{write}{logical, should resulting SpatRaster be written to file.}
 }

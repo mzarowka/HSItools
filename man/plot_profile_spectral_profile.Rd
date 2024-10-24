@@ -4,14 +4,19 @@
 \alias{plot_profile_spectral_profile}
 \title{Line plot of spectral profile from the ROI}
 \usage{
-plot_profile_spectral_profile(raster, extent = NULL, ext = NULL, write = FALSE)
+plot_profile_spectral_profile(
+  raster,
+  extent = NULL,
+  extension = NULL,
+  write = FALSE
+)
 }
 \arguments{
 \item{raster}{Reflectance SpatRaster.}
 
 \item{extent}{an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.}
 
-\item{ext}{character, a graphic format extension.}
+\item{extension}{character, a graphic format extension.}
 
 \item{write}{logical, should resulting SpatRaster be written to file.}
 }
