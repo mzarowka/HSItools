@@ -500,7 +500,7 @@ run_core <- function(autoSave = TRUE){
 
         observeEvent(input$file_dir, {
           useExample(FALSE)
-          user_dir(gsub(getwd(), "", shinyFiles::parseDirPath(volumes, selection = input$file_dir)))
+          user_dir(shinyFiles::parseDirPath(volumes, selection = input$file_dir))
         })
         #   dir1 <- shinyFiles::parseDirPath(volumes, selection = input$file_dir)
         #   print(dir1)
@@ -1299,24 +1299,14 @@ run_core <- function(autoSave = TRUE){
           analysisOptions$proxies <- input$choice_proxies
 
           allParams$simpleRGB <<- plot1()
-          allParams$rasterPaths <<- files1()
+          allParams$rasterPaths <<- lapply(files1(), function(x) sub(paste0(user_dir(),"/"), "", x))
 
-          if (length(user_dir()) != 0){
-            allParams$directory <<- user_dir()
-          }
-          # else if (length(user_dir2()) != 0){
-          #   allParams$directory <<- user_dir2()
-          # }
-          else {
-            allParams$directory <<- dirname(gsub(here::here(), "", user_file()$datapath))
-            #shinyalert::shinyalert(title = "No Data", text = "Please return to the 'Select Data' tab and choose data to analyze.")
-          }
 
           allParams$analysisRegions <<- roi_to_vect(analysisRegions$DT)
           allParams$distances <<- distances
           allParams$analysisOptions <<- analysisOptions
           if (autoSave==TRUE){
-            saveLoc <- paste0(allParams$directory,"/HSItools_core.rds")
+            saveLoc <- normalizePath(paste0(user_dir(),"/HSItools_core.rds"))
             saveRDS(allParams, saveLoc)
             cat("\n")
             cat(paste0("Output saved: ", saveLoc))
@@ -1325,6 +1315,18 @@ run_core <- function(autoSave = TRUE){
             cat("\n")
             cat("\n")
           }
+
+          if (length(user_dir()) != 0){
+            allParams$directory <<- basename(user_dir())
+          }
+          # else if (length(user_dir2()) != 0){
+          #   allParams$directory <<- user_dir2()
+          # }
+          else {
+            allParams$directory <<- dirname(user_file()$datapath)
+            #shinyalert::shinyalert(title = "No Data", text = "Please return to the 'Select Data' tab and choose data to analyze.")
+          }
+
           stopApp(invisible(allParams))
         })
 
