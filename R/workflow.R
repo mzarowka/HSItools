@@ -73,7 +73,7 @@ prepare_core <- function(core = NULL, path = NULL, layers = NULL, extent = NULL,
     layers <- layers
 
     # Get files
-    files <- files <- fs::dir_ls(paste0(path, "/capture")) |>
+    files <- fs::dir_ls(paste0(path, "/capture")) |>
       fs::path_filter(regexp = ".raw|.tif")
 
     # List files
