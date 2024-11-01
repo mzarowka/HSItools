@@ -23,10 +23,15 @@ alt="HSItools logo" />
 You can install the development version of HSItools like so:
 
 ``` r
-install.packages("pak")
+# install.packages("pak")
 
-pak::pak("mzarowka/HSItools")
+# pak::pak("mzarowka/HSItools)
 ```
+
+## Book
+
+An extensive tutorial is available at:
+<https://mzarowka.quarto.pub/hsitools>
 
 ## Example
 
@@ -47,11 +52,11 @@ reflectance <- core |>
 
 # Create RGB preview and write to file
 rgb_preview <- reflectance |>
-  stretch_raster_full(ext = "tif", write = TRUE)
+  stretch_raster_full(reflectance, ext = "tif", write = TRUE)
 
 # Plot RGB preview
 rgb_plot <- reflectance |>
-  plot_raster_rgb()
+  plot_raster_rgb(reflectance)
 ```
 
 Maurycy Żarczyński is founded by the Polish National Agency for Academic

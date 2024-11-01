@@ -35,6 +35,10 @@ You can install the development version of HSItools like so:
 # pak::pak("mzarowka/HSItools)
 ```
 
+## Book
+
+An extensive tutorial is available at: <https://mzarowka.quarto.pub/hsitools>
+
 ## Example
 
 The basic workflow includes running the shiny app to choose analysis options and visually interact with the core image. After this, reflectance is calculated and all subsequent operations use reflectance or its subsets.
