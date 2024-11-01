@@ -173,12 +173,14 @@ create_reference_raster <- function(raster, roi, ref_type, ...) {
 #' @param capture a terra SpatRaster of captured data.
 #' @param whiteref a terra SpatRaster of the white reference matching capture extent.
 #' @param darkref a terra SpatRaster of the dark reference matching capture extent.
+#' @param tintw integration time of the white reference.
+#' @param tints integration time of the captured data (sample).
 #'
 #' @return a normalized terra SpatRaster of the capture.
 #'
 #' @description normalize captured hyperspectral data with white and dark reference according to equation from Butz et al. 2016.
 #'
-normalization <- function(capture = capture, whiteref = whiteref, darkref = darkref) {
+normalization <- function(capture = capture, whiteref = whiteref, darkref = darkref, tintw = tintw, tints = tints) {
   # Calculate numerator
   numerator <- capture - darkref
 
@@ -191,8 +193,14 @@ normalization <- function(capture = capture, whiteref = whiteref, darkref = dark
   # Calculate denominator
   denominator <- whiteref - darkref
 
+  # Calculate integration fraction
+  f_tint <- tintw / tints
+
   # Normalize
   raster <- numerator / denominator
+
+  # Correct with tint
+  raster <- raster * f_tint
 
   # Return raster
   return(raster)
@@ -205,6 +213,8 @@ normalization <- function(capture = capture, whiteref = whiteref, darkref = dark
 #' @param capture terra SpatRaster of captured data.
 #' @param whiteref terra SpatRaster of the white reference matching capture extent.
 #' @param darkref terra SpatRaster of the dark reference matching capture extent.
+#' @param tintw integration time of the white reference.
+#' @param tints integration time of the captured data (sample).
 #' @param fun function to apply: normalization.
 #' @param ... additional arguments.
 #'
@@ -212,7 +222,15 @@ normalization <- function(capture = capture, whiteref = whiteref, darkref = dark
 #' @export
 #'
 #' @description apply normalization function over the combination of capture and reference SpatRasters using terra spatial dataset.
-create_normalized_raster <- function(capture = capture, whiteref = whiteref, darkref = darkref, fun = normalization, ...) {
+create_normalized_raster <- function(
+    capture = capture,
+    whiteref = whiteref,
+    darkref = darkref,
+    tintw = tintw,
+    tints = tints,
+    fun = normalization,
+    ...) {
+
   # Store additional parameters
   params <- rlang::list2(...)
 
@@ -248,6 +266,8 @@ create_normalized_raster <- function(capture = capture, whiteref = whiteref, dar
     x = dataset,
     fun = fun,
     filename = file_path,
+    tints = tints,
+    tintw = tintw,
     overwrite = TRUE,
     wopt = wopts)
 }

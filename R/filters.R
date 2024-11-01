@@ -32,8 +32,6 @@ remove_continuum <- function(
     fs::path_file() |>
     fs::path_ext_remove()
 
-  cli::cli_h1("{raster_name}")
-
   # Check type of filename
   if (is.null(filename) == TRUE) {
     filename <- paste0(raster_src, "/", raster_name, "_continuum-removed.tif")
@@ -52,8 +50,6 @@ remove_continuum <- function(
 
   # Named list with write options
   wopts <- list(steps = terra::ncell(raster) * terra::nlyr(raster))
-
-  cli::cli_alert_info("{format(Sys.time())}: calculating continuum removed raster.")
 
   # Extract names
   band_names <- names(raster)
@@ -100,9 +96,6 @@ remove_continuum <- function(
 
   # Update names on disk
   terra::update(raster, names = TRUE)
-
-  cli::cli_alert_success("{format(Sys.time())}: finished.")
-
   # Reset window
   terra::window(raster) <- NULL
 
@@ -144,8 +137,6 @@ filter_median <- function(
     fs::path_file() |>
     fs::path_ext_remove()
 
-  cli::cli_h1("{raster_name}")
-
   # Check type of filename
   if (is.null(filename) == TRUE) {
     filename <- paste0(raster_src, "/", raster_name, "_median.tif")
@@ -165,8 +156,6 @@ filter_median <- function(
   # Named list with write options
   wopts <- list(steps = terra::ncell(raster) * terra::nlyr(raster))
 
-  cli::cli_alert_info("{format(Sys.time())}: calculating median filtered raster.")
-
   # Apply terra focal statistic with 3 x 3 window
   raster <- terra::focal(
     raster,
@@ -176,8 +165,6 @@ filter_median <- function(
     overwrite = TRUE,
     wopt = wopts
   )
-
-  cli::cli_alert_success("{format(Sys.time())}: finished.")
 
   # Reset window
   terra::window(raster) <- NULL
@@ -220,8 +207,6 @@ filter_savgol <- function(raster, p = 3, n = p + 13 - p %% 2, m = 0, ts = 1, ext
     fs::path_file() |>
     fs::path_ext_remove()
 
-  cli::cli_h1("{raster_name}")
-
   # Check type of filename
   if (is.null(filename) == TRUE) {
     filename <- paste0(raster_src, "/", raster_name, "_savitzky-golay.tif")
@@ -244,8 +229,6 @@ filter_savgol <- function(raster, p = 3, n = p + 13 - p %% 2, m = 0, ts = 1, ext
   # Extract names
   band_names <- names(raster)
 
-  cli::cli_alert_info("{format(Sys.time())}: calculating Savitzky-Golay filtered raster.")
-
   # Apply Savitzky-Golay filter
   raster <- terra::app(
     raster,
@@ -260,8 +243,6 @@ filter_savgol <- function(raster, p = 3, n = p + 13 - p %% 2, m = 0, ts = 1, ext
 
   # Update names on disk
   terra::update(raster, names = TRUE)
-
-  cli::cli_alert_success("{format(Sys.time())}: finished.")
 
   # Reset window
   terra::window(raster) <- NULL

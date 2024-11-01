@@ -1,69 +1,31 @@
-# General workflow
-# Get capture raster from shiny output
-# Get white reference raster from shiny output
-# Get dark reference raster from shiny output
-# Set workflow mode 1: normalize or not
-# Set workflow mode 2: normalize full or cropped
-# Set workflow mode 3: normalize rois only?
-# Set workflow mode 4: normalize subset of layers
-# Set workflow mode 5: different white reference capture time
-get_reflectance <- function(core = NULL, path = NULL, layers = NULL, extent = NULL, normalize = TRUE, integration = NULL, roi = FALSE) {
-  # Create main products dir
-
-  # If no rois are selected create only products
-  if (roi == FALSE){
-    products <- fs::dir_create(paste0(path, "/products"))
-
-    reflectance <- prepare_core(core = core, path = path, layers = layers, extent = extent, normalize = normalize, integration = integration)
-    # If rois are selected, create appropriate output directories
-  } else {
-    # Create appopriate sub directories
-    products <- fs::dir_create(paste0(path, "/products/", core$analysisRegions$roi.id))
-
-    # Prepare core for each ROI and move to appropriate directory, rename
-    core <- core
-
-    extent =
-
-    reflectance <- extent |>
-      dplyr::group_split(roi.id) |>
-      purrr::set_names(nm = core[["analysisRegions"]][["roi.id"]]) |>
-      purrr::map(\(i) terra::ext(i)) |>
-      purrr::map(\(i) get_and_move(prepare_core(), name = i, core = core, path = path, layers = layers, extent = i, normalize = normalize, integration = integration))
-  }
-
-  # Return
-  return(reflectance)
-
-}
-
-
-#' Prepare core based on shiny output
+#' Get the reflectance
 #'
 #' @param core shiny output.
 #' @param path path to the directory with captured data. Defaults to NULL and shiny output.
 #' @param layers numeric vector, selection of layers (wavelengths) to use. Defaults to NULL and shiny output.
 #' @param extent extent of the captured data. Defaults to NULL and shiny output. If "capture" then uses entire extent of captured data.
 #' @param normalize logical, should data be normalized.
-#' @param integration logical, whether references were scanned with different settings.
+#' @param integration logical, whether white reference was scanned with different settings.
+#' @param tintw integration time of the white reference.
+#' @param tintd integration time of the captured data (sample).
 #'
 #' @return reflectance SpatRaster.
 #' @export
-prepare_core <- function(core = NULL, path = NULL, layers = NULL, extent = NULL, normalize = TRUE, integration = NULL) {
+prepare_core <- function(core = NULL, path = NULL, layers = NULL, extent = NULL, normalize = TRUE, integration = NULL, tintw = 1, tints = 1) {
   if (!is.null(core) == TRUE) {
     # Get path
-    path <- core$directory
+    path <- fs::path(getwd(), core$directory)
 
     # Get layers
     layers <- core$layers
 
     # Get files
-    files <- core$rasterPaths
+    files <-  core$rasterPaths
 
     files <- list(
-      capture = files[["capture"]],
-      darkref = files[["darkref"]],
-      whiteref = files[["whiteref"]])
+      capture = fs::path(getwd(), files[["capture"]]),
+      darkref = fs::path(getwd(), files[["darkref"]]),
+      whiteref = fs::path(getwd(), files[["whiteref"]]))
 
   } else {
     # Get path
@@ -90,8 +52,6 @@ prepare_core <- function(core = NULL, path = NULL, layers = NULL, extent = NULL,
 
   # Check if file needs to be normalized from .raw
   if (normalize == TRUE) {
-    # List files: CAPTURE, DARKREF and WHITEREF
-    # files <- fs::path_filter(files, regexp = ".raw")
 
     # SpatRaster types
     types <- list(capture = "capture", darkref = "darkref", whiteref = "whiteref")
@@ -148,10 +108,12 @@ prepare_core <- function(core = NULL, path = NULL, layers = NULL, extent = NULL,
       capture = rasters_cropped[["capture"]],
       whiteref = rasters_references[["whiteref"]],
       darkref = rasters_references[["darkref"]],
+      tintw = tintw,
+      tints = tints,
       fun = normalization,
       path = path)
 
-    # Remove temporary disaggregated files
+    # Remove temporary files
     fs::dir_ls(products, regexp = "resampled|cropped") |>
       fs::file_delete()
 
