@@ -23,9 +23,9 @@ prepare_core <- function(core = NULL, path = NULL, layers = NULL, extent = NULL,
     files <-  core$rasterPaths
 
     files <- list(
-      capture = fs::path(getwd(), files[["capture"]]),
-      darkref = fs::path(getwd(), files[["darkref"]]),
-      whiteref = fs::path(getwd(), files[["whiteref"]]))
+      capture = fs::path(path, files[["capture"]]),
+      darkref = fs::path(path, files[["darkref"]]),
+      whiteref = fs::path(path, files[["whiteref"]]))
 
   } else {
     # Get path

@@ -8,6 +8,8 @@ create_normalized_raster(
   capture = capture,
   whiteref = whiteref,
   darkref = darkref,
+  tintw = tintw,
+  tints = tints,
   fun = normalization,
   ...
 )
@@ -18,6 +20,10 @@ create_normalized_raster(
 \item{whiteref}{terra SpatRaster of the white reference matching capture extent.}
 
 \item{darkref}{terra SpatRaster of the dark reference matching capture extent.}
+
+\item{tintw}{integration time of the white reference.}
+
+\item{tints}{integration time of the captured data (sample).}
 
 \item{fun}{function to apply: normalization.}
 

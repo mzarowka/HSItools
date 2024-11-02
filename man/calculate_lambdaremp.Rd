@@ -34,6 +34,7 @@ Other Spectral calculations:
 \code{\link{calculate_band_difference}()},
 \code{\link{calculate_band_ratio}()},
 \code{\link{calculate_derivative}()},
+\code{\link{calculate_ndi}()},
 \code{\link{calculate_raba}()},
 \code{\link{calculate_rabd}()},
 \code{\link{calculate_rmean}()}

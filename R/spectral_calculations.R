@@ -605,7 +605,7 @@ calculate_lambdaremp <- function(
 #'
 #' @param raster terra SpatRaster of normalized capture data.
 #' @param derivative_name a character, lower case name of calculated difference.
-#' @param edges numeric vector of two for the difference.
+#' @param band numeric vector of one, to find derivative.
 #' @param extent an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
 #' @param ext character, a graphic format extension.
 #' @param filename NULL (default) to write automatically into products, provide full path and ext to override.
@@ -616,7 +616,7 @@ calculate_lambdaremp <- function(
 calculate_derivative <- function(
     raster,
     derivative_name,
-    edges,
+    band,
     extent = NULL,
     ext = NULL,
     filename = NULL) {
@@ -670,6 +670,85 @@ calculate_derivative <- function(
     filename = filename,
     overwrite = TRUE
   )
+
+  # Reset window
+  terra::window(raster) <- NULL
+
+  # Return raster
+  return(template)
+}
+
+#' Calculate normalized difference index (NDI)
+#'
+#' @family Spectral calculations
+#'
+#' @param raster terra SpatRaster of normalized capture data.
+#' @param ndi_name a character, lower case name of calculated NDI
+#' @param edges numeric vector of two for the difference.
+#' @param extent an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
+#' @param ext character, a graphic format extension.
+#' @param filename NULL (default) to write automatically into products, provide full path and ext to override.
+#'
+#' @return one layer terra SpatRaster with calculated NDI values
+#' @export
+#'
+#' @description calculate band difference of selected wavelengths.
+calculate_ndi <- function(
+    raster,
+    ndi_name,
+    edges,
+    extent = NULL,
+    ext = NULL,
+    filename = NULL) {
+
+  # Check if correct class is supplied.
+  if (!inherits(raster, what = "SpatRaster")) {
+    rlang::abort(message = "Supplied data is not a terra SpatRaster.")
+  }
+
+  # Raster source directory
+  raster_src <- raster |>
+    terra::sources() |>
+    fs::path_dir()
+
+  # Raster source name
+  raster_name <- raster |>
+    terra::sources() |>
+    fs::path_file() |>
+    fs::path_ext_remove()
+
+  # Check extent type
+  if (is.null(extent) == TRUE) {
+    # Set window of interest
+    raster <- raster
+  } else {
+    # Set window of interest
+    terra::window(raster) <- terra::ext(extent)
+  }
+
+  # Check type of filename
+  if (is.null(filename) == TRUE) {
+    filename <- paste0(raster_src, "/", ndi_name, "_", raster_name, ".tif")
+  } else {
+    filename <- fs::path(filename, ext = ext)
+  }
+
+  # Find edge positions
+  edge_positions <- spectra_position(raster = raster, spectra = edges) |>
+    # Pull vector with positions
+    dplyr::pull(var = 2)
+
+  # Subtract
+  template <- (terra::subset(raster, edge_positions[1]) - terra::subset(raster, edge_positions[2])) / (terra::subset(raster, edge_positions[1]) + terra::subset(raster, edge_positions[2]))
+
+  # Set layer name
+  names(template) <- ndi_name
+
+  # Write new raster to file based on paths stored in the environment
+  terra::writeRaster(
+    template,
+    filename = filename,
+    overwrite = TRUE)
 
   # Reset window
   terra::window(raster) <- NULL

@@ -3,6 +3,7 @@
 export(calculate_band_difference)
 export(calculate_band_ratio)
 export(calculate_lambdaremp)
+export(calculate_ndi)
 export(calculate_raba)
 export(calculate_rabd)
 export(calculate_rmean)

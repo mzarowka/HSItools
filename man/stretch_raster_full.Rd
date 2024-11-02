@@ -4,7 +4,7 @@
 \alias{stretch_raster_full}
 \title{Stretch and optionally save full RGB preview of SpatRaster}
 \usage{
-stretch_raster_full(raster, extension = NULL, write = TRUE)
+stretch_raster_full(raster, type = "RGB", extension = NULL, write = TRUE)
 }
 \arguments{
 \item{raster}{a SpatRaster, preferably reflectance file.}

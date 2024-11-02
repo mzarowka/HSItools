@@ -4,7 +4,13 @@
 \alias{normalization}
 \title{Raster normalization: calculation}
 \usage{
-normalization(capture = capture, whiteref = whiteref, darkref = darkref)
+normalization(
+  capture = capture,
+  whiteref = whiteref,
+  darkref = darkref,
+  tintw = tintw,
+  tints = tints
+)
 }
 \arguments{
 \item{capture}{a terra SpatRaster of captured data.}
@@ -12,6 +18,10 @@ normalization(capture = capture, whiteref = whiteref, darkref = darkref)
 \item{whiteref}{a terra SpatRaster of the white reference matching capture extent.}
 
 \item{darkref}{a terra SpatRaster of the dark reference matching capture extent.}
+
+\item{tintw}{integration time of the white reference.}
+
+\item{tints}{integration time of the captured data (sample).}
 }
 \value{
 a normalized terra SpatRaster of the capture.

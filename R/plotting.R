@@ -8,6 +8,7 @@
 #' @export
 stretch_raster_full <- function(
     raster,
+    type = "RGB",
     extension = NULL,
     write = TRUE) {
 
@@ -27,19 +28,57 @@ stretch_raster_full <- function(
     fs::path_file() |>
     fs::path_ext_remove()
 
+  if (type == "RGB") {
+
   filename <- paste0(raster_src, "/RGB_", raster_name, ".", extension)
 
   # Check if there are values close to RGB, within the 25 nm.
-  if (all(any(purrr::list_c(purrr::map(c(450, 550, 650), \(i) dplyr::near(i, as.numeric(names(raster)), tol = 25))))) == TRUE) {
+  if (all(any(purrr::list_c(purrr::map(c(640, 545, 460), \(i) dplyr::near(i, as.numeric(names(raster)), tol = 25))))) == TRUE) {
     spectra <- c(650, 550, 450)
   } else {
-    rlang::warn("No layers matching the RGB. Using the first, middle and last available layers.")
+    rlang::warn("No layers matching RGB. Using the first, middle and last available layers.")
     spectra <- c(
       min(1:terra::nlyr(raster)),
       terra::median(1:terra::nlyr(raster)),
       max(terra::nlyr(raster))) |>
       (\(i) as.numeric(names(1:terra::subset(raster, i))))()
   }
+
+  } else if (type == "CIR") {
+
+    filename <- paste0(raster_src, "/CIR_", raster_name, ".", extension)
+
+    # Check if there are values close to CIR, within the 25 nm.
+    if (all(any(purrr::list_c(purrr::map(c(860, 650, 555), \(i) dplyr::near(i, as.numeric(names(raster)), tol = 25))))) == TRUE) {
+      spectra <- c(860, 650, 555)
+    } else {
+      rlang::abort("No layers matching CIR.")
+    }
+
+  } else if (type == "NIR") {
+
+    filename <- paste0(raster_src, "/NIR_", raster_name, ".", extension)
+
+    # Check if there are values close to NIR, within the 25 nm.
+    if (all(any(purrr::list_c(purrr::map(c(900, 800, 700), \(i) dplyr::near(i, as.numeric(names(raster)), tol = 25))))) == TRUE) {
+      spectra <- c(900, 800, 700)
+    } else {
+      rlang::abort("No layers matching NIR.")
+    }
+
+  }
+
+  # # Check if there are values close to RGB, within the 25 nm.
+  # if (all(any(purrr::list_c(purrr::map(c(450, 550, 650), \(i) dplyr::near(i, as.numeric(names(raster)), tol = 25))))) == TRUE) {
+  #   spectra <- c(650, 550, 450)
+  # } else {
+  #   rlang::warn("No layers matching the RGB. Using the first, middle and last available layers.")
+  #   spectra <- c(
+  #     min(1:terra::nlyr(raster)),
+  #     terra::median(1:terra::nlyr(raster)),
+  #     max(terra::nlyr(raster))) |>
+  #     (\(i) as.numeric(names(1:terra::subset(raster, i))))()
+  # }
 
   # Check if raster is written to file
   if (write == FALSE) {

@@ -7,7 +7,7 @@
 calculate_derivative(
   raster,
   derivative_name,
-  edges,
+  band,
   extent = NULL,
   ext = NULL,
   filename = NULL
@@ -18,7 +18,7 @@ calculate_derivative(
 
 \item{derivative_name}{a character, lower case name of calculated difference.}
 
-\item{edges}{numeric vector of two for the difference.}
+\item{band}{numeric vector of one, to find derivative.}
 
 \item{extent}{an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.}
 
@@ -37,6 +37,7 @@ Other Spectral calculations:
 \code{\link{calculate_band_difference}()},
 \code{\link{calculate_band_ratio}()},
 \code{\link{calculate_lambdaremp}()},
+\code{\link{calculate_ndi}()},
 \code{\link{calculate_raba}()},
 \code{\link{calculate_rabd}()},
 \code{\link{calculate_rmean}()}

@@ -2,7 +2,7 @@
 % Please edit documentation in R/workflow.R
 \name{prepare_core}
 \alias{prepare_core}
-\title{Prepare core based on shiny output}
+\title{Get the reflectance}
 \usage{
 prepare_core(
   core = NULL,
@@ -10,7 +10,9 @@ prepare_core(
   layers = NULL,
   extent = NULL,
   normalize = TRUE,
-  integration = NULL
+  integration = NULL,
+  tintw = 1,
+  tints = 1
 )
 }
 \arguments{
@@ -24,11 +26,15 @@ prepare_core(
 
 \item{normalize}{logical, should data be normalized.}
 
-\item{integration}{logical, whether references were scanned with different settings.}
+\item{integration}{logical, whether white reference was scanned with different settings.}
+
+\item{tintw}{integration time of the white reference.}
+
+\item{tintd}{integration time of the captured data (sample).}
 }
 \value{
 reflectance SpatRaster.
 }
 \description{
-Prepare core based on shiny output
+Get the reflectance
 }
