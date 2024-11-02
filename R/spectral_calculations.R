@@ -270,6 +270,8 @@ calculate_raba <- function(
   # Set layer name based on the raba_name argument
   names(template) <- raba_name
 
+  # Calculate RABD for every band in the range
+
   # Write new raster to file based on paths stored in the environment
   terra::writeRaster(
     template,
