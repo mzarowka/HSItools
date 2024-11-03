@@ -9,6 +9,8 @@ stretch_raster_full(raster, type = "RGB", extension = NULL, write = TRUE)
 \arguments{
 \item{raster}{a SpatRaster, preferably reflectance file.}
 
+\item{type}{one of RGB, CIR or NIR.}
+
 \item{extension}{character, a graphic format extension, defaults to "tif".}
 
 \item{write}{logical, should resulting SpatRaster be written to file.}

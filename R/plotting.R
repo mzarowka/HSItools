@@ -3,6 +3,7 @@
 #' @family Plotting
 #' @param raster a SpatRaster, preferably reflectance file.
 #' @param extension character, a graphic format extension, defaults to "tif".
+#' @param type one of RGB, CIR or NIR.
 #' @param write logical, should resulting SpatRaster be written to file.
 #'
 #' @export
@@ -294,8 +295,8 @@ plot_raster_rgb <- function(
   filename <- paste0(raster_src, "/RGB_GG_", raster_name, ".", extension)
 
   # Check if there are values close to RGB, within the 25 nm.
-  if (all(any(purrr::list_c(purrr::map(c(450, 550, 650), \(i) dplyr::near(i, as.numeric(names(raster)), tol = 25))))) == TRUE) {
-    spectra <- c(450, 550, 650)
+  if (all(any(purrr::list_c(purrr::map(c(640, 545, 460), \(i) dplyr::near(i, as.numeric(names(raster)), tol = 25))))) == TRUE) {
+    spectra <- c(640, 545, 460)
   } else {
     rlang::warn("No layers matching the RGB. Using the first, middle and last available layers.")
     spectra <- c(
