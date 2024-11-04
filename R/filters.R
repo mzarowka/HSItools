@@ -34,7 +34,7 @@ remove_continuum <- function(
 
   # Check type of filename
   if (is.null(filename) == TRUE) {
-    filename <- paste0(raster_src, "/", raster_name, "_continuum-removed.tif")
+    filename <- paste0(raster_src, "/", raster_name, "_CONTINUUM-REMOVED.tif")
   } else {
     filename <- fs::path(filename, ext = ext)
   }
@@ -139,7 +139,7 @@ filter_median <- function(
 
   # Check type of filename
   if (is.null(filename) == TRUE) {
-    filename <- paste0(raster_src, "/", raster_name, "_median.tif")
+    filename <- paste0(raster_src, "/", raster_name, "_MEDIAN.tif")
   } else {
     filename <- fs::path(filename, ext = ext)
   }
@@ -209,7 +209,7 @@ filter_savgol <- function(raster, p = 3, n = p + 13 - p %% 2, m = 0, ts = 1, ext
 
   # Check type of filename
   if (is.null(filename) == TRUE) {
-    filename <- paste0(raster_src, "/", raster_name, "_savitzky-golay.tif")
+    filename <- paste0(raster_src, "/", raster_name, "_SAVITZKY-GOLAY.tif")
   } else {
     filename <- fs::path(filename, ext = ext)
   }

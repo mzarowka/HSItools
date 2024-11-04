@@ -1305,16 +1305,6 @@ run_core <- function(autoSave = TRUE){
           allParams$analysisRegions <<- roi_to_vect(analysisRegions$DT)
           allParams$distances <<- distances
           allParams$analysisOptions <<- analysisOptions
-          if (autoSave==TRUE){
-            saveLoc <- normalizePath(paste0(user_dir(),"/HSItools_core.rds"))
-            saveRDS(allParams, saveLoc)
-            cat("\n")
-            cat(paste0("Output saved: ", saveLoc))
-            cat("\n")
-            cat(paste0("Load the rds to use new data (eg. core1A <- readRDS('", saveLoc, "'))"))
-            cat("\n")
-            cat("\n")
-          }
 
           if (length(user_dir()) != 0){
             allParams$directory <<- basename(user_dir())
@@ -1326,6 +1316,19 @@ run_core <- function(autoSave = TRUE){
             allParams$directory <<- dirname(user_file()$datapath)
             #shinyalert::shinyalert(title = "No Data", text = "Please return to the 'Select Data' tab and choose data to analyze.")
           }
+
+          if (autoSave==TRUE){
+            saveLoc <- normalizePath(paste0(user_dir(),"/HSItools_core.rds"))
+            saveRDS(allParams, saveLoc)
+            cat("\n")
+            cat(paste0("Output saved: ", saveLoc))
+            cat("\n")
+            cat(paste0("Load the rds to use new data (eg. core1A <- readRDS('", saveLoc, "'))"))
+            cat("\n")
+            cat("\n")
+          }
+
+
 
           stopApp(invisible(allParams))
         })

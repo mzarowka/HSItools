@@ -62,7 +62,7 @@ calculate_rabd <- function(
 
     # Check type of filename
     if (is.null(filename) == TRUE) {
-      filename <- paste0(raster_src, "/", rabd_name, "_max_", raster_name, ".tif")
+      filename <- paste0(raster_src, "/", toupper(rabd_name), "_max_", raster_name, ".tif")
     } else {
       filename <- fs::path(filename, ext = ext)
     }
@@ -89,7 +89,7 @@ calculate_rabd <- function(
 
       # Check type of filename
       if (is.null(filename) == TRUE) {
-      filename <- paste0(raster_src, "/", rabd_name, "_mid_", raster_name, ".tif")
+      filename <- paste0(raster_src, "/", toupper(rabd_name), "_mid_", raster_name, ".tif")
       } else {
       filename <- fs::path(filename, ext = ext)
     }
@@ -127,7 +127,7 @@ calculate_rabd <- function(
 
     # Check type of filename
     if (is.null(filename) == TRUE) {
-      filename <- paste0(raster_src, "/", rabd_name, "_strict_", raster_name, ".tif")
+      filename <- paste0(raster_src, "/", toupper(rabd_name), "_strict_", raster_name, ".tif")
     } else {
       filename <- fs::path(filename, ext = ext)
     }
@@ -257,7 +257,7 @@ calculate_raba <- function(
 
   # Check type of filename
   if (is.null(filename) == TRUE) {
-    filename <- paste0(raster_src, "/", raba_name, "_", raster_name, ".tif")
+    filename <- paste0(raster_src, "/", toupper(raba_name), "_", raster_name, ".tif")
   } else {
     filename <- fs::path(filename, ext = ext)
   }
@@ -335,7 +335,7 @@ calculate_band_ratio <- function(
 
   # Check type of filename
   if (is.null(filename) == TRUE) {
-    filename <- paste0(raster_src, "/", ratio_name, "_", raster_name, ".tif")
+    filename <- paste0(raster_src, "/", toupper(ratio_name), "_", raster_name, ".tif")
   } else {
     filename <- fs::path(filename, ext = ext)
   }
@@ -414,7 +414,7 @@ calculate_band_difference <- function(
 
   # Check type of filename
   if (is.null(filename) == TRUE) {
-    filename <- paste0(raster_src, "/", difference_name, "_", raster_name, ".tif")
+    filename <- paste0(raster_src, "/", toupper(difference_name), "_", raster_name, ".tif")
   } else {
     filename <- fs::path(filename, ext = ext)
   }
@@ -564,7 +564,7 @@ calculate_lambdaremp <- function(
 
   # Check type of filename
   if (is.null(filename) == TRUE) {
-    filename <- paste0(raster_src, "/", "lambdaREMP_", raster_name, ".tif")
+    filename <- paste0(raster_src, "/", "REMP_", raster_name, ".tif")
   } else {
     filename <- fs::path(filename, ext = ext)
   }
@@ -585,7 +585,7 @@ calculate_lambdaremp <- function(
   terra::values(template) <- remp
 
   # Set layer name
-  names(template) <- "lambdaREMP"
+  names(template) <- "REMP"
 
   # Write new raster to file based on paths stored in the environment
   terra::writeRaster(
@@ -650,7 +650,7 @@ calculate_derivative <- function(
 
   # Check type of filename
   if (is.null(filename) == TRUE) {
-    filename <- paste0(raster_src, "/", derivative_name, "_", raster_name, ".tif")
+    filename <- paste0(raster_src, "/", toupper(derivative_name), "_", raster_name, ".tif")
   } else {
     filename <- fs::path(filename, ext = ext)
   }
@@ -730,7 +730,7 @@ calculate_ndi <- function(
 
   # Check type of filename
   if (is.null(filename) == TRUE) {
-    filename <- paste0(raster_src, "/", ndi_name, "_", raster_name, ".tif")
+    filename <- paste0(raster_src, "/", toupper(ndi_name), "_", raster_name, ".tif")
   } else {
     filename <- fs::path(filename, ext = ext)
   }
