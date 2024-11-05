@@ -19,8 +19,7 @@ Suggests:
     patchwork,
     knitr,
     rmarkdown,
-    scales,
-    prospectr
+    scales
 Config/testthat/edition: 3
 URL: https://github.com/mzarowka/HSItools
 BugReports: https://github.com/mzarowka/HSItools/issues
@@ -44,7 +43,9 @@ Imports:
     readr,
     fs,
     sf,
-    here
+    here,
+    prospectr,
+    raster
 Depends: 
     R (>= 4.1.0)
 LazyData: true
