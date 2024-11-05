@@ -69,18 +69,6 @@ stretch_raster_full <- function(
 
   }
 
-  # # Check if there are values close to RGB, within the 25 nm.
-  # if (all(any(purrr::list_c(purrr::map(c(450, 550, 650), \(i) dplyr::near(i, as.numeric(names(raster)), tol = 25))))) == TRUE) {
-  #   spectra <- c(650, 550, 450)
-  # } else {
-  #   rlang::warn("No layers matching the RGB. Using the first, middle and last available layers.")
-  #   spectra <- c(
-  #     min(1:terra::nlyr(raster)),
-  #     terra::median(1:terra::nlyr(raster)),
-  #     max(terra::nlyr(raster))) |>
-  #     (\(i) as.numeric(names(1:terra::subset(raster, i))))()
-  # }
-
   # Check if raster is written to file
   if (write == FALSE) {
     # Subset and write to RGB
