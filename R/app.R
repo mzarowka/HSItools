@@ -424,7 +424,7 @@ run_core <- function(autoSave = TRUE){
                                actionButton("done", "Accept distance calibration and Exit", style = "margin-right: 10px; margin-top:10px;"),
                              ),
                              shiny::br(),
-                             shiny::plotOutput(outputId = "core_plot2",width = "100%", click="plot_click"),
+                             shinycssloaders::withSpinner(shiny::plotOutput(outputId = "core_plot2",width = "100%", click="plot_click")),
                              shiny::br(),
                     )
         )
@@ -721,7 +721,7 @@ run_core <- function(autoSave = TRUE){
         plot1 <- reactive({
           #terra::plotRGB(x = coreImage(), r = RGBlayers()[1], g = RGBlayers()[2], b = RGBlayers()[3], stretch = "hist")
           #raster::plotRGB(coreRGB())
-          raster::plotRGB(coreRGB(), stretch="linear")
+          terra::plotRGB(x = coreImage(), r = RGBlayers()[1], g = RGBlayers()[2], b = RGBlayers()[3], stretch = "hist")
         })
 
         #render plot
