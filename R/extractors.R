@@ -56,7 +56,9 @@ extract_spectral_series <- function(raster, index = NULL, calibration = NULL, ex
         depth.mm = calibration$distance - (.data$y * calibration$pixel_ratio),
         tube.mm = .data$depth.mm - calibration$point_zero) |>
       # Drop x and y
-      dplyr::select(-c(.data$x, .data$y))
+      dplyr::select(-c(.data$x, .data$y)) |>
+      # Keep only non-negative depths
+      dplyr::filter(depth.mm >= 0)
   }
 
   # Reset window
