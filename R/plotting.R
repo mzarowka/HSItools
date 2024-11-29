@@ -2,8 +2,9 @@
 #'
 #' @family Plotting
 #' @param raster a SpatRaster, preferably reflectance file.
-#' @param extension character, a graphic format extension, defaults to "tif".
 #' @param type one of RGB, CIR or NIR.
+#' @param histeq logical. If TRUE histogram equalization is used instead of linear stretch.
+#' @param extension character, a graphic format extension, defaults to "tif".
 #' @param write logical, should resulting SpatRaster be written to file.
 #'
 #' @export
