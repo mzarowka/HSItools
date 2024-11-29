@@ -10,6 +10,7 @@
 stretch_raster_full <- function(
     raster,
     type = "RGB",
+    histeq = FALSE,
     extension = NULL,
     write = TRUE) {
 
@@ -94,6 +95,7 @@ stretch_raster_full <- function(
       ) |>
       terra::stretch(
         filename = filename,
+        histeq = histeq,
         overwrite = TRUE
       )
   }
