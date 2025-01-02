@@ -1,3 +1,109 @@
+#' Remove continuum from spectrum v2
+#'
+#' @param raster terra SpatRaster of normalized capture data.
+#' @param extent an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
+#' @param ext character, a graphic format extension.
+#' @param filename NULL (default) to write automatically into products, provide full path and ext to override.
+#' @param ... additional arguments.
+#'
+#' @importFrom rlang .data
+#'
+#' @return one layer terra SpatRaster with continuum removed.
+#' @export
+remove_continuum_2 <- function(
+  raster,
+  extent = NULL,
+  ext = NULL,
+  filename = NULL,
+  ...) {
+# Check if correct class is supplied.
+if (!inherits(raster, what = "SpatRaster")) {
+  rlang::abort(message = "Supplied data is not a terra SpatRaster.")
+}
+
+# Raster source directory
+raster_src <- raster |>
+  terra::sources() |>
+  fs::path_dir()
+
+# Raster source name
+raster_name <- raster |>
+  terra::sources() |>
+  fs::path_file() |>
+  fs::path_ext_remove()
+
+# Check type of filename
+if (is.null(filename) == TRUE) {
+  filename <- paste0(raster_src, "/", raster_name, "_CONTINUUM-REMOVED.tif")
+} else {
+  filename <- fs::path(filename, ext = ext)
+}
+
+# Check extent type
+if (is.null(extent)) {
+  # Set window of interest
+  terra::window(raster) <- terra::ext(raster)
+} else {
+  # Set window of interest
+  terra::window(raster) <- terra::ext(extent)
+}
+
+# Named list with write options
+wopts <- list(steps = terra::ncell(raster) * terra::nlyr(raster))
+
+# Extract names
+band_names <- names(raster)
+
+# Remove continuum in a single pixel
+remove_continuum_px <- function(raster) {
+  # Spectrum to numeric vector
+  spectrum <- terra::values(raster)
+
+  # Wavelengths
+  wavelengths <- as.numeric(names(raster))
+
+  # Calculate and approximate convex hull
+  hull <- grDevices::chull(wavelengths, spectrum)
+  # Sort
+  hull <- hull[order(wavelengths[hull])]
+
+  # Interpolate the continuum line using the convex hull points
+  continuum <- approx(wavelengths[hull], spectrum[hull], xout = wavelengths)$y
+  
+  # Ensure the continuum line is always greater than or equal to the spectrum
+  continuum <- pmax(continuum, spectrum)
+   
+  # Calculate continuum-removed reflectance
+  continuum_removed <- spectrum / continuum
+   
+  # Ensure the result is between 0 and 1
+  continuum_removed <- pmin(pmax(continuum_removed, 0), 1)
+  
+  # Return values
+  # return(continuum_removed)
+}
+
+# Apply function over entire SpatRaster
+raster <- terra::app(
+  raster,
+  fun = \(x) remove_continuum_px(x),
+  filename = filename,
+  overwrite = TRUE,
+  wopt = wopts
+)
+
+# Set names
+names(raster) <- as.character(band_names)
+
+# Update names on disk
+terra::update(raster, names = TRUE)
+# Reset window
+terra::window(raster) <- NULL
+
+# Return raster to the environment
+return(raster)
+}
+
 #' Remove continuum from spectrum
 #'
 #' @param raster terra SpatRaster of normalized capture data.
