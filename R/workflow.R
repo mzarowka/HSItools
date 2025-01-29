@@ -8,10 +8,11 @@
 #' @param integration logical, whether white reference was scanned with different settings.
 #' @param tintw integration time of the white reference.
 #' @param tintd integration time of the captured data (sample).
+#' @param verbose logica, should additional informatiob be printed to the console. Defaults to FALSE
 #'
 #' @return reflectance SpatRaster.
 #' @export
-prepare_core <- function(core = NULL, path = NULL, layers = NULL, extent = NULL, normalize = TRUE, integration = NULL, tintw = 1, tints = 1) {
+prepare_core <- function(core = NULL, path = NULL, layers = NULL, extent = NULL, normalize = TRUE, integration = NULL, tintw = 1, tints = 1, verbose = FALSE) {
   if (!is.null(core) == TRUE) {
     # Get path
     path <- fs::path(getwd(), core$directory)
@@ -45,6 +46,8 @@ prepare_core <- function(core = NULL, path = NULL, layers = NULL, extent = NULL,
       whiteref = fs::path_filter(files, regexp = "WHITE")
     )
   }
+
+  if (verbose == TRUE) {cli::cli_alert_info("{Sys.Date()} Creating products directory")}
 
   # Create products directory and store path
   # If no rois are selected create only products
@@ -84,6 +87,8 @@ prepare_core <- function(core = NULL, path = NULL, layers = NULL, extent = NULL,
         raster = x,
         spectra_tbl = band_position))
 
+    if (verbose == TRUE) {cli::cli_alert_info("{Sys.Date()} Cropping rasters")}
+
     # Crop
     rasters_cropped <- purrr::map2(
       rasters_subset,
@@ -92,6 +97,8 @@ prepare_core <- function(core = NULL, path = NULL, layers = NULL, extent = NULL,
         raster = x,
         type = y,
         roi = big_roi))
+
+    if (verbose == TRUE) {cli::cli_alert_info("{Sys.Date()} Resampling references")}
 
     # Prepare reference SpatRasters
     rasters_references <- purrr::map2(
@@ -103,6 +110,12 @@ prepare_core <- function(core = NULL, path = NULL, layers = NULL, extent = NULL,
         roi = big_roi,
         path = path))
 
+    # Remove temporary files
+    fs::dir_ls(products, regexp = "DARKREF.*cropped|WHITEREF.*cropped") |>
+      fs::file_delete()
+
+    if (verbose == TRUE) {cli::cli_alert_info("{Sys.Date()} Calculating reflectance")}
+
     # Normalize data
     reflectance <- HSItools::create_normalized_raster(
       capture = rasters_cropped[["capture"]],
@@ -112,6 +125,8 @@ prepare_core <- function(core = NULL, path = NULL, layers = NULL, extent = NULL,
       tints = tints,
       fun = normalization,
       path = path)
+
+    if (verbose == TRUE) {cli::cli_alert_info("{Sys.Date()} Cleaning up")}
 
     # Remove temporary files
     fs::dir_ls(products, regexp = "resampled|cropped") |>
