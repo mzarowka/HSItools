@@ -21,7 +21,6 @@ raster_crop <- function(raster, type, dir = NULL, roi) {
 
   # If cropping entire capture SpatRaster use entire large ROI
   if (type == "capture") {
-
     # Raster source directory
     raster_src <- raster |>
       terra::sources() |>
@@ -38,7 +37,7 @@ raster_crop <- function(raster, type, dir = NULL, roi) {
 
     # Copy
     raster <- fs::file_copy(raster, filename)
-    
+
     # Crop
     # raster <- terra::crop(
     #   raster,
@@ -50,7 +49,6 @@ raster_crop <- function(raster, type, dir = NULL, roi) {
     # If cropping reference SpatRaster use only xmin and xmax from large ROI
     # White reference SpatRaster
   } else if (type == "whiteref") {
-
     # Raster source directory
     raster_src <- raster |>
       terra::sources() |>
@@ -63,22 +61,29 @@ raster_crop <- function(raster, type, dir = NULL, roi) {
       fs::path_file() |>
       fs::path_ext_remove()
 
-    filename <- paste0(raster_src, "/products/WHITEREFF_", raster_name, "_cropped.tif")
+    filename <- paste0(
+      raster_src,
+      "/products/WHITEREFF_",
+      raster_name,
+      "_cropped.tif"
+    )
 
     # Crop
     raster <- terra::crop(
       raster,
-      c(terra::xmin(roi),
+      c(
+        terra::xmin(roi),
         terra::xmax(roi),
         terra::ymin(raster),
-        terra::ymax(raster)),
+        terra::ymax(raster)
+      ),
       filename = filename,
       overwrite = TRUE,
-      steps = terra::blocks(raster)$n)
+      steps = terra::blocks(raster)$n
+    )
 
     # Dark reference SpatRaster
   } else if (type == "darkref") {
-
     # Raster source directory
     raster_src <- raster |>
       terra::sources() |>
@@ -91,23 +96,32 @@ raster_crop <- function(raster, type, dir = NULL, roi) {
       fs::path_file() |>
       fs::path_ext_remove()
 
-    filename <- paste0(raster_src, "/products/DARKREF_", raster_name, "_cropped.tif")
+    filename <- paste0(
+      raster_src,
+      "/products/DARKREF_",
+      raster_name,
+      "_cropped.tif"
+    )
 
     # Crop
     raster <- terra::crop(
       raster,
-      c(terra::xmin(roi),
+      c(
+        terra::xmin(roi),
         terra::xmax(roi),
         terra::ymin(raster),
-        terra::ymax(raster)),
+        terra::ymax(raster)
+      ),
       filename = filename,
       overwrite = TRUE,
-      steps = terra::blocks(raster)$n)
+      steps = terra::blocks(raster)$n
+    )
   }
 
   # Return raster
   return(raster)
 }
+
 
 #' Create reference SpatRaster
 #'
@@ -135,24 +149,32 @@ create_reference_raster <- function(raster, roi, ref_type, ...) {
 
   if (ref_type == "whiteref") {
     name <- "WHITEREF"
-
   } else {
     name <- "DARKREF"
   }
 
   # Create 1 row template
-  template_row <- terra::rast(terra::ext(c(terra::xmin(roi), terra::xmax(roi), 0, 1)), resolution = c(1, 1))
+  template_row <- terra::rast(
+    terra::ext(c(terra::xmin(roi), terra::xmax(roi), 0, 1)),
+    resolution = c(1, 1)
+  )
 
   # Create full core template
-  template_core <- terra::rast(terra::ext(roi), resolution = c(1, 1), nlyrs = terra::nlyr(raster))
+  template_core <- terra::rast(
+    terra::ext(roi),
+    resolution = c(1, 1),
+    nlyrs = terra::nlyr(raster)
+  )
 
   # Aggregate data into one row SpatRaster, divide by number of rows
   raster <- terra::aggregate(
     raster,
     fact = c(terra::nrow(raster), 1),
-    fun = "mean") |>
+    fun = "mean"
+  ) |>
     terra::resample(
-      template_row)
+      template_row
+    )
 
   # Set new extent to match extent of capture SpatRaster
   terra::ext(raster) <- roi
@@ -162,12 +184,21 @@ create_reference_raster <- function(raster, roi, ref_type, ...) {
     terra::rescale(fx = 1, fy = terra::nrow(template_core) * 2) |>
     terra::resample(
       template_core,
-      filename = paste0(params$path, "/products/", name, "_", basename(params$path), "_resampled.tif"),
-      overwrite = TRUE)
+      filename = paste0(
+        params$path,
+        "/products/",
+        name,
+        "_",
+        basename(params$path),
+        "_resampled.tif"
+      ),
+      overwrite = TRUE
+    )
 
   # Return raster
   return(raster)
 }
+
 
 #' Raster normalization: calculation
 #'
@@ -183,7 +214,13 @@ create_reference_raster <- function(raster, roi, ref_type, ...) {
 #'
 #' @description normalize captured hyperspectral data with white and dark reference according to equation from Butz et al. 2016.
 #'
-normalization <- function(capture = capture, whiteref = whiteref, darkref = darkref, tintw = tintw, tints = tints) {
+normalization <- function(
+  capture = capture,
+  whiteref = whiteref,
+  darkref = darkref,
+  tintw = tintw,
+  tints = tints
+) {
   # Calculate numerator
   numerator <- capture - darkref
 
@@ -208,6 +245,7 @@ normalization <- function(capture = capture, whiteref = whiteref, darkref = dark
   # Return raster
   return(raster)
 }
+
 
 #' Raster normalization
 #'
@@ -274,3 +312,4 @@ create_normalized_raster <- function(
     overwrite = TRUE,
     wopt = wopts)
 }
+
