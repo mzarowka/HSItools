@@ -35,16 +35,16 @@ raster_crop <- function(raster, type, dir = NULL, roi) {
 
     filename <- paste0(raster_src, "/products/", raster_name, "_cropped.tif")
 
-    # Copy
-    raster <- fs::file_copy(raster, filename)
+    # # Copy
+    # raster <- fs::file_copy(raster, filename)
 
     # Crop
-    # raster <- terra::crop(
-    #   raster,
-    #   roi,
-    #   filename = filename,
-    #   overwrite = TRUE,
-    #   steps = terra::ncell(raster) * terra::nlyr(raster))
+    raster <- terra::crop(
+      raster,
+      roi,
+      filename = filename,
+      overwrite = TRUE,
+      steps = terra::ncell(raster) * terra::nlyr(raster))
 
     # If cropping reference SpatRaster use only xmin and xmax from large ROI
     # White reference SpatRaster
