@@ -314,7 +314,7 @@ create_normalized_raster <- function(
     # Append the counter to the base file name
     file_path <- paste0(
       params$path,
-      "/products/REFLECTANCE_f_",
+      "/products/REFLECTANCE_rev_",
       basename(params$path),
       "_ROI_",
       0 + counter,

@@ -166,7 +166,7 @@ prepare_core <- function(
     }
 
     # Remove temporary files
-    fs::dir_ls(products, regexp = "resampled") |>
+    fs::dir_ls(products, regexp = "resampled|cropped") |>
       fs::file_delete()
 
     if (verbose == TRUE) {
@@ -179,8 +179,9 @@ prepare_core <- function(
         \(i)
           terra::flip(
             x = i,
+            direction = "vertical",
             filename = gsub(
-              pattern = "REFLECTANCE_f",
+              pattern = "REFLECTANCE_rev",
               replacement = "REFLECTANCE_",
               x = terra::sources(i)
             ),
@@ -193,7 +194,7 @@ prepare_core <- function(
     }
 
     # Remove temporary files
-    fs::dir_ls(products, regexp = "_f") |>
+    fs::dir_ls(products, regexp = "_rev") |>
       fs::file_delete()
   } else {
     reflectance <- fs::path_filter(files, regexp = "REFLECTANCE")
