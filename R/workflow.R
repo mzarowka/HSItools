@@ -161,7 +161,7 @@ prepare_core <- function(
       path = path
     ) |>
       # Flip because of terra handling of unprojected rasters
-      {\(i) terra::flip(x = i, filename = terra::sources(i), overwrite = TRUE)}{}
+      {\(i) terra::flip(x = i, filename = terra::sources(i), overwrite = TRUE)}()
 
     if (verbose == TRUE) {
       cli::cli_alert_info("{format(Sys.time())} Cleaning up")
