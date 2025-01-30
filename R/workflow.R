@@ -159,16 +159,41 @@ prepare_core <- function(
       tints = tints,
       fun = normalization,
       path = path
-    ) |>
-      # Flip because of terra handling of unprojected rasters
-      {\(i) terra::flip(x = i, filename = gsub(pattern = "REFLECTANCE_f", replacement = "REFLECTANCE_", x = terra::sources(i)), overwrite = TRUE)}()
+    )
 
     if (verbose == TRUE) {
       cli::cli_alert_info("{format(Sys.time())} Cleaning up")
     }
 
     # Remove temporary files
-    fs::dir_ls(products, regexp = "resampled|cropped|_f") |>
+    fs::dir_ls(products, regexp = "resampled") |>
+      fs::file_delete()
+
+    if (verbose == TRUE) {
+      cli::cli_alert_info("{format(Sys.time())} Flipping reflectance")
+    }
+
+    # Finally flip because of terra handling of unprojected rasters
+    reflectance <- reflectance |>
+      {
+        \(i)
+          terra::flip(
+            x = i,
+            filename = gsub(
+              pattern = "REFLECTANCE_f",
+              replacement = "REFLECTANCE_",
+              x = terra::sources(i)
+            ),
+            overwrite = TRUE
+          )
+      }()
+
+    if (verbose == TRUE) {
+      cli::cli_alert_info("{format(Sys.time())} Cleaning up")
+    }
+
+    # Remove temporary files
+    fs::dir_ls(products, regexp = "_f") |>
       fs::file_delete()
   } else {
     reflectance <- fs::path_filter(files, regexp = "REFLECTANCE")
@@ -176,4 +201,8 @@ prepare_core <- function(
 
   # Return reflectance
   return(reflectance)
+
+  if (verbose == TRUE) {
+    cli::cli_alert_success("{format(Sys.time())} Finished")
+  }
 }
