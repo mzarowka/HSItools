@@ -161,14 +161,14 @@ prepare_core <- function(
       path = path
     ) |>
       # Flip because of terra handling of unprojected rasters
-      {\(i) terra::flip(x = i, filename = terra::sources(i), overwrite = TRUE)}()
+      {\(i) terra::flip(x = i, filename = gsub(pattern = "REFLECTANCE_f", replacement = "REFLECTANCE_", x = terra::sources(i)), overwrite = TRUE)}()
 
     if (verbose == TRUE) {
       cli::cli_alert_info("{format(Sys.time())} Cleaning up")
     }
 
     # Remove temporary files
-    fs::dir_ls(products, regexp = "resampled|cropped") |>
+    fs::dir_ls(products, regexp = "resampled|cropped|_f") |>
       fs::file_delete()
   } else {
     reflectance <- fs::path_filter(files, regexp = "REFLECTANCE")

@@ -48,7 +48,7 @@ raster_crop <- function(raster, type, dir = NULL, roi) {
       roi,
       filename = filename,
       overwrite = TRUE,
-      steps = terra::ncell(raster) * terra::nlyr(raster)
+      steps = terra::blocks(raster)$n
     )
 
     # If cropping reference SpatRaster use only xmin and xmax from large ROI
@@ -314,7 +314,7 @@ create_normalized_raster <- function(
     # Append the counter to the base file name
     file_path <- paste0(
       params$path,
-      "/products/REFLECTANCE_",
+      "/products/REFLECTANCE_f_",
       basename(params$path),
       "_ROI_",
       0 + counter,
