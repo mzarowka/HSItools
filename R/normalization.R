@@ -19,6 +19,10 @@ raster_crop <- function(raster, type, dir = NULL, roi) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
   }
 
+  if (!inherits(roi, what = "SpatExtent")) {
+    rlang::abort("The `roi` must be a terra SpatExtent object.")
+  }
+
   # If cropping entire capture SpatRaster use entire large ROI
   if (type == "capture") {
     # Raster source directory
@@ -44,7 +48,8 @@ raster_crop <- function(raster, type, dir = NULL, roi) {
       roi,
       filename = filename,
       overwrite = TRUE,
-      steps = terra::ncell(raster) * terra::nlyr(raster))
+      steps = terra::ncell(raster) * terra::nlyr(raster)
+    )
 
     # If cropping reference SpatRaster use only xmin and xmax from large ROI
     # White reference SpatRaster
@@ -122,7 +127,6 @@ raster_crop <- function(raster, type, dir = NULL, roi) {
   return(raster)
 }
 
-
 #' Create reference SpatRaster
 #'
 #' @family Normalization
@@ -145,6 +149,10 @@ create_reference_raster <- function(raster, roi, ref_type, ...) {
   # Check if correct class is supplied.
   if (!inherits(raster, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
+  }
+
+  if (!inherits(roi, what = "SpatExtent")) {
+    rlang::abort("The `roi` must be a terra SpatExtent object.")
   }
 
   if (ref_type == "whiteref") {
@@ -199,7 +207,6 @@ create_reference_raster <- function(raster, roi, ref_type, ...) {
   return(raster)
 }
 
-
 #' Raster normalization: calculation
 #'
 #' @family Normalization
@@ -246,7 +253,6 @@ normalization <- function(
   return(raster)
 }
 
-
 #' Raster normalization
 #'
 #' @family Normalization
@@ -264,14 +270,14 @@ normalization <- function(
 #'
 #' @description apply normalization function over the combination of capture and reference SpatRasters using terra spatial dataset.
 create_normalized_raster <- function(
-    capture = capture,
-    whiteref = whiteref,
-    darkref = darkref,
-    tintw = tintw,
-    tints = tints,
-    fun = normalization,
-    ...) {
-
+  capture = capture,
+  whiteref = whiteref,
+  darkref = darkref,
+  tintw = tintw,
+  tints = tints,
+  fun = normalization,
+  ...
+) {
   # Store additional parameters
   params <- rlang::list2(...)
 
@@ -288,7 +294,14 @@ create_normalized_raster <- function(
   counter <- 1
 
   # Do the while loop for file naming
-  filename <- paste0(params$path, "/products/REFLECTANCE_", basename(params$path), "_ROI_", 0 + counter, ".tif")
+  filename <- paste0(
+    params$path,
+    "/products/REFLECTANCE_",
+    basename(params$path),
+    "_ROI_",
+    0 + counter,
+    ".tif"
+  )
 
   # Generate the full file path
   file_path <- filename
@@ -298,8 +311,15 @@ create_normalized_raster <- function(
     # Increment the counter
     counter <- counter + 1
 
-      # Append the counter to the base file name
-      file_path <- paste0(params$path, "/products/REFLECTANCE_", basename(params$path), "_ROI_", 0 + counter, ".tif")
+    # Append the counter to the base file name
+    file_path <- paste0(
+      params$path,
+      "/products/REFLECTANCE_",
+      basename(params$path),
+      "_ROI_",
+      0 + counter,
+      ".tif"
+    )
   }
 
   # Apply function over the dataset and write to file
@@ -310,6 +330,6 @@ create_normalized_raster <- function(
     tints = tints,
     tintw = tintw,
     overwrite = TRUE,
-    wopt = wopts)
+    wopt = wopts
+  )
 }
-
