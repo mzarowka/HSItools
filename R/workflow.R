@@ -25,7 +25,7 @@ prepare_core <- function(
   flip = TRUE,
   verbose = FALSE
 ) {
-  if (!is.null(core) == TRUE) {
+  if (!is.null(core)) {
     # Get path
     path <- fs::path(getwd(), core$directory)
 
@@ -112,7 +112,7 @@ prepare_core <- function(
     }
 
     # Crop
-    rasters_cropped <- purrr::walk2(
+    rasters_cropped <- purrr::map2(
       rasters_subset,
       types,
       \(x, y)
@@ -128,7 +128,7 @@ prepare_core <- function(
     }
 
     # Prepare reference SpatRasters
-    rasters_references <- purrr::walk2(
+    rasters_references <- purrr::map2(
       rasters_cropped[c("darkref", "whiteref")],
       types[c("darkref", "whiteref")],
       \(x, y)
@@ -213,6 +213,7 @@ prepare_core <- function(
     # Remove temporary files
     fs::dir_ls(products, regexp = "_rev") |>
       fs::file_delete()
+    
   } else {
     reflectance <- fs::path_filter(files, regexp = "REFLECTANCE")
   }

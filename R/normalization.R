@@ -231,11 +231,11 @@ normalization <- function(
   # Calculate numerator
   numerator <- capture - darkref
 
-  # Coerce NA to 0
-  numerator[is.na(numerator)] <- 0
+  # Coerce NA and negative to 0
+  numerator[is.na(numerator) | numerator < 0] <- 0
 
-  # Coerce negative values to 0
-  numerator[numerator < 0] <- 0
+  # # Coerce negative values to 0
+  # numerator[numerator < 0] <- 0
 
   # Calculate denominator
   denominator <- whiteref - darkref
@@ -244,10 +244,10 @@ normalization <- function(
   f_tint <- tintw / tints
 
   # Normalize
-  raster <- numerator / denominator
+  raster <- (numerator / denominator) * f_tint
 
   # Correct with tint
-  raster <- raster * f_tint
+  # raster <- raster * f_tint
 
   # Return raster
   return(raster)
@@ -282,7 +282,7 @@ create_normalized_raster <- function(
   params <- rlang::list2(...)
 
   # Named list with write options
-  wopts <- list(steps = terra::blocks(capture)$n)
+  wopts <- list(steps = terra::blocks(capture)$n*100)
 
   # Create terra spatial dataset combining SpatRasters
   # Create list
