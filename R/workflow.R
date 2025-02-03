@@ -110,7 +110,7 @@ prepare_core <- function(
     }
 
     # Crop
-    rasters_cropped <- purrr::map2(
+    rasters_cropped <- purrr::walk2(
       rasters_subset,
       types,
       \(x, y)
@@ -126,7 +126,7 @@ prepare_core <- function(
     }
 
     # Prepare reference SpatRasters
-    rasters_references <- purrr::map2(
+    rasters_references <- purrr::walk2(
       rasters_cropped[c("darkref", "whiteref")],
       types[c("darkref", "whiteref")],
       \(x, y)
@@ -201,7 +201,7 @@ prepare_core <- function(
   }
 
   # Return reflectance
-  return(reflectance)
+  # return(reflectance)
 
   if (verbose == TRUE) {
     cli::cli_alert_success("{format(Sys.time())} Finished")

@@ -68,7 +68,7 @@ raster_crop <- function(raster, type, dir = NULL, roi) {
 
     filename <- paste0(
       raster_src,
-      "/products/WHITEREFF_",
+      "/products/",
       raster_name,
       "_cropped.tif"
     )
@@ -103,7 +103,7 @@ raster_crop <- function(raster, type, dir = NULL, roi) {
 
     filename <- paste0(
       raster_src,
-      "/products/DARKREF_",
+      "/products/",
       raster_name,
       "_cropped.tif"
     )
@@ -124,7 +124,7 @@ raster_crop <- function(raster, type, dir = NULL, roi) {
   }
 
   # Return raster
-  return(raster)
+  # return(raster)
 }
 
 #' Create reference SpatRaster
@@ -204,7 +204,7 @@ create_reference_raster <- function(raster, roi, ref_type, ...) {
     )
 
   # Return raster
-  return(raster)
+  # return(raster)
 }
 
 #' Raster normalization: calculation
