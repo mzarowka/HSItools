@@ -7,8 +7,9 @@
 #' @param normalize logical, should data be normalized.
 #' @param integration logical, whether white reference was scanned with different settings.
 #' @param tintw integration time of the white reference.
-#' @param tintd integration time of the captured data (sample).
-#' @param verbose logica, should additional informatiob be printed to the console. Defaults to FALSE
+#' @param tints integration time of the captured data (sample).
+#' @param flip logical, wheter output should be flipped. terra flips unprojected rasters (or rather, unprojected rasters are flipped from the beginning). Defaults to TRUE.
+#' @param verbose logica, should additional informatiob be printed to the console. Defaults to FALSE.
 #'
 #' @return reflectance SpatRaster.
 #' @export
@@ -21,6 +22,7 @@ prepare_core <- function(
   integration = NULL,
   tintw = 1,
   tints = 1,
+  flip = TRUE,
   verbose = FALSE
 ) {
   if (!is.null(core) == TRUE) {
@@ -174,20 +176,35 @@ prepare_core <- function(
     }
 
     # Finally flip because of terra handling of unprojected rasters
-    reflectance <- reflectance |>
+    if (flip == TRUE) {
+    reflectance_flip <- reflectance |>
       {
         \(i)
           terra::flip(
             x = i,
             direction = "vertical",
             filename = gsub(
-              pattern = "REFLECTANCE_rev",
-              replacement = "REFLECTANCE_",
+              pattern = "REFLECTANCE_",
+              replacement = "REFLECTANCE_flip",
               x = terra::sources(i)
             ),
             overwrite = TRUE
           )
       }()
+
+      # Delete REFLECTANCE
+      fs::file_delete(terra::sources(reflectance))
+
+      # Rename REFLECTANCE flipped
+      new_path <- fs::file_move(terra::sources(reflectance_flip), sub(pattern = "REFLECTANCE_flip", replacement = "REFLECTANCE_", x = terra::sources(reflectance_flip)))
+
+      # Get REFLECTANCE back
+      reflectance <- terra::rast(new_path)
+
+
+    } else {
+      reflectance <- reflectance
+    }
 
     if (verbose == TRUE) {
       cli::cli_alert_info("{format(Sys.time())} Cleaning up")
