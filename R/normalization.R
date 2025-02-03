@@ -48,7 +48,7 @@ raster_crop <- function(raster, type, dir = NULL, roi) {
       roi,
       filename = filename,
       overwrite = TRUE,
-      steps = terra::blocks(raster)$n
+      steps = terra::blocks(raster)$n*100
     )
 
     # If cropping reference SpatRaster use only xmin and xmax from large ROI
@@ -84,7 +84,7 @@ raster_crop <- function(raster, type, dir = NULL, roi) {
       ),
       filename = filename,
       overwrite = TRUE,
-      steps = terra::blocks(raster)$n
+      steps = terra::blocks(raster)$n*100
     )
 
     # Dark reference SpatRaster
@@ -119,7 +119,7 @@ raster_crop <- function(raster, type, dir = NULL, roi) {
       ),
       filename = filename,
       overwrite = TRUE,
-      steps = terra::blocks(raster)$n
+      steps = terra::blocks(raster)$n*100
     )
   }
 
