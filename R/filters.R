@@ -439,8 +439,7 @@ filter_savgol <- function(
 
   # Write options
   wopts <- list(
-    steps = terra::ncell(raster) * terra::nlyr(raster),
-    overwrite = TRUE
+    steps = terra::ncell(raster) * terra::nlyr(raster)
   )
 
   # Extract names
@@ -451,6 +450,7 @@ filter_savgol <- function(
     raster,
     fun = \(raster) signal::sgolayfilt(raster, p = p, n = n, m = m, ts = ts),
     filename = filename,
+    overwrite = TRUE,
     wopt = wopts
   )
 
@@ -458,7 +458,7 @@ filter_savgol <- function(
   names(raster) <- as.character(band_names)
 
   # Update names on disk
-  terra::update(raster, names = TRUE)
+  #terra::update(raster, names = TRUE)
 
   # Reset window
   terra::window(raster) <- NULL
