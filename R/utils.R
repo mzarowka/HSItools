@@ -282,3 +282,64 @@ get_and_move <- function(fun, name, ...) {
   fs::file_move(object_source, object_destination)
 
 }
+
+#' Get available memory
+#'
+#' @family Utilities
+#'
+#' @return memory available immediately before writing the raster.
+get_available_memory <- function() {
+  # Check the OS type
+  os <- Sys.info()["sysname"]
+  
+  # Linux
+  if (os == "Linux") {
+    available_memory <- as.numeric(
+      system("awk '/MemAvailable/ {print $2}' /proc/meminfo", intern = TRUE)
+    ) *
+      1024
+    # Windows
+  } else if (os == "Windows") {
+    available_memory <- as.numeric(
+      system("wmic OS get FreePhysicalMemory", intern = TRUE)[2]
+    ) *
+      1024
+    # Mac OS
+  } else if (os == "Darwin") {
+    # macOS
+    available_memory <- as.numeric(
+      system("vm_stat | grep 'Pages free' | awk '{print $3}'", intern = TRUE)
+    ) *
+      4096
+  } else {
+    rlang::abort("Unsupported operating system")
+  }
+
+  # Return
+  return(available_memory)
+}
+
+#' Update the calculate_optimal_steps function
+#'
+#' @family utilities
+#'
+#' @return optimal number of steps for writeRaster
+calculate_optimal_steps <- function(raster, safety_factor = 0.5) {
+  # Estimate raster size based on the original one
+  raster_size <- terra::size(raster)
+
+  # Get available memory
+  # available_memory <- HSItools::get_available_memory()
+
+  # Calculate usable memory
+  usable_memory <- HSItools::get_available_memory() * safety_factor
+
+  optimal_steps <- ceiling(raster_size / usable_memory) |>
+    # Make it at least one step
+    {\(memory) max(c(memory, 1))}()
+
+  #optimal_steps <- max(optimal_steps, 1)
+
+  # Return
+  return(optimal_steps)
+}
