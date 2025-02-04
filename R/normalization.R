@@ -23,6 +23,11 @@ raster_crop <- function(raster, type, dir = NULL, roi) {
     rlang::abort("The `roi` must be a terra SpatExtent object.")
   }
 
+  # Validate type
+  if (!type %in% c("capture", "whiteref", "darkref")) {
+    rlang::abort("Invalid `type`. Must be one of: 'capture', 'whiteref', 'darkref'.")
+  }
+
   # If cropping entire capture SpatRaster use entire large ROI
   if (type == "capture") {
     # Raster source directory
