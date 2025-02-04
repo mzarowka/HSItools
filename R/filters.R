@@ -108,8 +108,8 @@ return(raster)
 #'
 #' @param raster terra SpatRaster of normalized capture data.
 #' @param extent an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
-#' @param ext character, a graphic format extension.
 #' @param filename NULL (default) to write automatically into products, provide full path and ext to override.
+#' @param extension character, a graphic format extension.
 #' @param ... additional arguments.
 #'
 #' @importFrom rlang .data
@@ -117,45 +117,81 @@ return(raster)
 #' @return one layer terra SpatRaster with continuum removed.
 #' @export
 remove_continuum <- function(
-    raster,
-    extent = NULL,
-    ext = NULL,
-    filename = NULL,
-    ...) {
+  raster,
+  extent = NULL,
+  filename = NULL,
+  extension = NULL,
+  ...
+) {
   # Check if correct class is supplied.
   if (!inherits(raster, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
   }
 
-  # Raster source directory
-  raster_src <- raster |>
-    terra::sources() |>
-    fs::path_dir()
-
-  # Raster source name
-  raster_name <- raster |>
-    terra::sources() |>
-    fs::path_file() |>
-    fs::path_ext_remove()
-
-  # Check type of filename
-  if (is.null(filename) == TRUE) {
-    filename <- paste0(raster_src, "/", raster_name, "_CONTINUUM-REMOVED.tif")
-  } else {
-    filename <- fs::path(filename, ext = ext)
+  # Validate required packages
+  if (!requireNamespace("prospectr", quietly = TRUE)) {
+    rlang::abort("Package 'prospectr' is required for continuum removal.")
   }
 
-  # Check extent type
-  if (is.null(extent)) {
-    # Set window of interest
-    terra::window(raster) <- terra::ext(raster)
+  # Filename handling
+  if (is.null(filename)) {
+    # Extract source information
+    raster_src <- dirname(terra::sources(raster))
+
+    # Extract file name
+    raster_name <- tools::file_path_sans_ext(basename(terra::sources(raster)))
+
+    # Construct default filename
+    filename <- fs::path(
+      raster_src,
+      paste0(raster_name, "_CONTINUUM-REMOVED.tif")
+    )
   } else {
+    # Ensure proper file extension is applied
+    filename <- fs::path(filename, extension = extension %||% "tif")
+  }
+
+  # Extent handling
+  if (!is.null(extent)) {
     # Set window of interest
     terra::window(raster) <- terra::ext(extent)
+  } else {
+    # Set window of interest
+    terra::window(raster) <- terra::ext(raster)
   }
 
+  # # Raster source directory
+  # raster_src <- raster |>
+  #   terra::sources() |>
+  #   fs::path_dir()
+
+  # # Raster source name
+  # raster_name <- raster |>
+  #   terra::sources() |>
+  #   fs::path_file() |>
+  #   fs::path_ext_remove()
+
+  # # Check type of filename
+  # if (is.null(filename) == TRUE) {
+  #   filename <- paste0(raster_src, "/", raster_name, "_CONTINUUM-REMOVED.tif")
+  # } else {
+  #   filename <- fs::path(filename, ext = ext)
+  # }
+
+  # # Check extent type
+  # if (is.null(extent)) {
+  #   # Set window of interest
+  #   terra::window(raster) <- terra::ext(raster)
+  # } else {
+  #   # Set window of interest
+  #   terra::window(raster) <- terra::ext(extent)
+  # }
+
   # Named list with write options
-  wopts <- list(steps = terra::ncell(raster) * terra::nlyr(raster))
+  wopts <- list(
+    steps = terra::ncell(raster) * terra::nlyr(raster),
+    overwrite = TRUE
+  )
 
   # Extract names
   band_names <- names(raster)
@@ -167,7 +203,8 @@ remove_continuum <- function(
       # Coerce to data frame
       as.data.frame() |>
       # Pivot == transpose
-      tidyr::pivot_longer(dplyr::everything(),
+      tidyr::pivot_longer(
+        dplyr::everything(),
         names_to = "band",
         values_to = "reflectance",
         names_transform = as.numeric
@@ -193,7 +230,6 @@ remove_continuum <- function(
     raster,
     fun = \(x) remove_continuum_fun(x),
     filename = filename,
-    overwrite = TRUE,
     wopt = wopts
   )
 
@@ -214,53 +250,89 @@ remove_continuum <- function(
 #' @param raster a terra SpatRaster to smooth.
 #' @param window focal window size, default is 3.
 #' @param extent an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
-#' @param ext character, a graphic format extension.
 #' @param filename NULL (default) to write automatically into products, provide full path and ext to override.
+#' @param extension character, a graphic format extension.
 #'
 #' @importFrom stats median
 #'
 #' @return smoothed SpatRaster
 #' @export
 filter_median <- function(
-    raster = raster,
-    window = 3,
-    extent = NULL,
-    ext = NULL,
-    filename = NULL) {
+  raster = raster,
+  window = 3,
+  extent = NULL,
+  filename = NULL,
+  extension = NULL
+) {
   # Check if correct class is supplied.
   if (!inherits(raster, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
   }
 
-  # Raster source directory
-  raster_src <- raster |>
-    terra::sources() |>
-    fs::path_dir()
-
-  # Raster source name
-  raster_name <- raster |>
-    terra::sources() |>
-    fs::path_file() |>
-    fs::path_ext_remove()
-
-  # Check type of filename
-  if (is.null(filename) == TRUE) {
-    filename <- paste0(raster_src, "/", raster_name, "_MEDIAN.tif")
-  } else {
-    filename <- fs::path(filename, ext = ext)
+  # Validate window terra::size (must be odd)
+  if (window %% 2 == 0) {
+    rlang::abort("Window size must be an odd number.")
   }
 
-  # Check extent type
-  if (is.null(extent)) {
-    # Set window of interest
-    terra::window(raster) <- terra::ext(raster)
+  # Filename handling
+  if (is.null(filename)) {
+    # Extract source information
+    raster_src <- dirname(terra::sources(raster))
+
+    # Extract file name
+    raster_name <- tools::file_path_sans_ext(basename(terra::sources(raster)))
+
+    # Construct default filename
+    filename <- fs::path(
+      raster_src,
+      paste0(raster_name, "_MEDIAN.tif")
+    )
   } else {
+    # Ensure proper file extension is applied
+    filename <- fs::path(filename, extension = extension %||% "tif")
+  }
+
+  # Extent handling
+  if (!is.null(extent)) {
     # Set window of interest
     terra::window(raster) <- terra::ext(extent)
+  } else {
+    # Set window of interest
+    terra::window(raster) <- terra::ext(raster)
   }
 
+  # # Raster source directory
+  # raster_src <- raster |>
+  #   terra::sources() |>
+  #   fs::path_dir()
+
+  # # Raster source name
+  # raster_name <- raster |>
+  #   terra::sources() |>
+  #   fs::path_file() |>
+  #   fs::path_ext_remove()
+
+  # # Check type of filename
+  # if (is.null(filename) == TRUE) {
+  #   filename <- paste0(raster_src, "/", raster_name, "_MEDIAN.tif")
+  # } else {
+  #   filename <- fs::path(filename, ext = ext)
+  # }
+
+  # # Check extent type
+  # if (is.null(extent)) {
+  #   # Set window of interest
+  #   terra::window(raster) <- terra::ext(raster)
+  # } else {
+  #   # Set window of interest
+  #   terra::window(raster) <- terra::ext(extent)
+  # }
+
   # Named list with write options
-  wopts <- list(steps = terra::ncell(raster) * terra::nlyr(raster))
+  wopts <- list(
+    steps = terra::ncell(raster) * terra::nlyr(raster),
+    overwrite = TRUE
+  )
 
   # Apply terra focal statistic with 3 x 3 window
   raster <- terra::focal(
@@ -268,7 +340,6 @@ filter_median <- function(
     w = window,
     fun = \(x) stats::median(x),
     filename = filename,
-    overwrite = TRUE,
     wopt = wopts
   )
 
@@ -278,6 +349,7 @@ filter_median <- function(
   # Return
   return(raster)
 }
+
 
 #' Apply a Savitzky-Golay smoothing filter
 #'
@@ -320,7 +392,7 @@ filter_savgol <- function(
     raster_name <- tools::file_path_sans_ext(basename(terra::sources(raster)))
 
     # Construct default filename
-    filename <- file.path(
+    filename <- fs::path(
       raster_src,
       paste0(raster_name, "_SAVITZKY-GOLAY.tif")
     )
@@ -391,6 +463,6 @@ filter_savgol <- function(
   # Reset window
   terra::window(raster) <- NULL
 
-  # Return raster to the environment
+  # Return raster
   return(raster)
 }
