@@ -96,7 +96,7 @@ raster <- terra::app(
 names(raster) <- as.character(band_names)
 
 # Update names on disk
-terra::update(raster, names = TRUE)
+# terra::update(raster, names = TRUE)
 # Reset window
 terra::window(raster) <- NULL
 
@@ -189,8 +189,7 @@ remove_continuum <- function(
 
   # Named list with write options
   wopts <- list(
-    steps = terra::ncell(raster) * terra::nlyr(raster),
-    overwrite = TRUE
+    steps = terra::ncell(raster) * terra::nlyr(raster)
   )
 
   # Extract names
@@ -230,6 +229,7 @@ remove_continuum <- function(
     raster,
     fun = \(x) remove_continuum_fun(x),
     filename = filename,
+    overwrite = TRUE,
     wopt = wopts
   )
 
@@ -237,11 +237,11 @@ remove_continuum <- function(
   names(raster) <- as.character(band_names)
 
   # Update names on disk
-  terra::update(raster, names = TRUE)
+  # terra::update(raster, names = TRUE)
   # Reset window
   terra::window(raster) <- NULL
 
-  # Return raster to the environment
+  # Return raster
   return(raster)
 }
 
