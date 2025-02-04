@@ -25,6 +25,7 @@ prepare_core <- function(
   flip = TRUE,
   verbose = FALSE
 ) {
+  
   if (!is.null(core)) {
     # Get path
     path <- fs::path(getwd(), core$directory)
@@ -112,6 +113,29 @@ prepare_core <- function(
     }
 
     # Crop
+    if (extent == "capture") {
+      rasters_cropped <- purrr::map2(rasters_subset, {\(raster) 
+        # Raster source directory
+    raster_src <- raster |>
+      terra::sources() |>
+      fs::path_dir() |>
+      fs::path_dir()
+
+    # Raster source name
+    raster_name <- raster |>
+      terra::sources() |>
+      fs::path_file() |>
+      fs::path_ext_remove()
+
+    filename <- paste0(
+      raster_src,
+      "/products/",
+      raster_name,
+      "_cropped.tif"
+    )
+        
+        terra::writeRaster(raster, filename = filename, wopt= list(steps = terra::nlyr(raster) * terra::ncell(raster)))})
+    } else {
     rasters_cropped <- purrr::map2(
       rasters_subset,
       types,
@@ -122,6 +146,7 @@ prepare_core <- function(
           roi = big_roi
         )
     )
+    }
 
     if (verbose == TRUE) {
       cli::cli_alert_info("{format(Sys.time())} Resampling references")
