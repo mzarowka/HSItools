@@ -48,7 +48,7 @@ raster_crop <- function(raster, type, dir = NULL, roi) {
       roi,
       filename = filename,
       overwrite = TRUE,
-      steps = terra::blocks(raster)$n*100
+      steps = terra::nlyr(raster) * terra::ncell(raster)
     )
 
     # If cropping reference SpatRaster use only xmin and xmax from large ROI
@@ -84,7 +84,7 @@ raster_crop <- function(raster, type, dir = NULL, roi) {
       ),
       filename = filename,
       overwrite = TRUE,
-      steps = terra::blocks(raster)$n*100
+      steps = terra::nlyr(raster) * terra::ncell(raster)
     )
 
     # Dark reference SpatRaster
@@ -119,7 +119,7 @@ raster_crop <- function(raster, type, dir = NULL, roi) {
       ),
       filename = filename,
       overwrite = TRUE,
-      steps = terra::blocks(raster)$n*100
+      steps = terra::nlyr(raster) * terra::ncell(raster)
     )
   }
 
@@ -282,7 +282,7 @@ create_normalized_raster <- function(
   params <- rlang::list2(...)
 
   # Named list with write options
-  wopts <- list(steps = terra::blocks(capture)$n*100)
+  wopts <- list(steps = terra::nlyr(capture) * terra::ncell(capture))
 
   # Create terra spatial dataset combining SpatRasters
   # Create list
