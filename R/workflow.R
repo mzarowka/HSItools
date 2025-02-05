@@ -81,18 +81,34 @@ prepare_core <- function(
       whiteref = "whiteref"
     )
 
-    if (is.character(extent) == TRUE) {
-      if (extent == "capture") {
-        extent <- terra::rast(files[["capture"]]) |>
-          terra::ext()
+    # Handle extent
+    if (is.null(extent)) {
+      # If no extent is provided, use core$cropImage if available
+      ext <- if (!is.null(core)) core$cropImage %||% NULL
+    } else {
+      # Check if extent is a character string
+      if (length(extent) == 1 && is.character(extent)) {
+        if (extent == "capture") {
+          # Use entire extent of captured data
+          ext <- terra::rast(files[["capture"]]) |>
+            terra::ext()
+        } else {
+          rlang::abort(
+            "Invalid character extent specification. Use 'capture' or NULL."
+          )
+        }
+      } else if (inherits(extent, "SpatExtent")) {
+        # If a SpatExtent object is provided, use it directly
+        ext <- terra::ext(extent)
+      } else {
+        # Unexpected outputs
+        rlang::abort(
+          "Invalid extent specification. Must be NULL, 'capture', or a SpatExtent object."
+        )
       }
-    } else if (is.null(extent) == TRUE) {
-      extent <- core$cropImage
-    } else if (inherits(extent, what = "SpatExtent") == TRUE) {
-      extent <- terra::ext(extent)
     }
-
-    big_roi <- terra::ext(extent)
+    # Get big roi = extent of the entire core
+    big_roi <- terra::ext(ext)
 
     # Read SpatRasters
     rasters <- files |>
@@ -117,79 +133,38 @@ prepare_core <- function(
     }
 
     # Crop
-    if (extent == terra::ext(rasters[["capture"]])) {
-      if (terra::nlyr(rasters[["capture"]]) == terra::nlyr(rasters_subset[["capture"]])) {
-        rasters_cropped <- files |>
-          # Load SpatRasters
-          purrr::map(\(x) terra::rast(x))
-      #   # Copy files
-      #   rasters_cropped <- purrr::map(rasters, \(raster) {
-      #     # Raster source directory
-      #     raster_src <- raster |>
-      #       terra::sources() |>
-      #       fs::path_dir() |>
-      #       fs::path_dir()
-
-      #   # Raster source name
-      #   raster_name <- raster |>
-      #     terra::sources() |>
-      #     fs::path_file() |>
-      #     fs::path_ext_remove()
-
-      #   filename <- paste0(
-      #     raster_src,
-      #     "/products/",
-      #     raster_name,
-      #     "_cropped.tif"
-      #   )
-
-      #   fs::file_copy(terra::sources(raster), filename, overwrite = TRUE)
-
-      #   # Get raster back
-      #   raster <- terra::rast(filename)
-      # })
+    if (ext == terra::ext(rasters[["capture"]])) {
+      if (
+        terra::nlyr(rasters[["capture"]]) ==
+          terra::nlyr(rasters_subset[["capture"]])
+      ) {
+        rasters_cropped <- rasters
       } else {
-      rasters_cropped <- purrr::map(rasters_subset, \(raster) {
-        # Extract source information
-    raster_src <- dirname(terra::sources(raster))
+        rasters_cropped <- purrr::map(rasters_subset, \(raster) {
+          # Extract source information
+          raster_src <- dirname(terra::sources(raster))
 
-    # Extract file name
-    raster_name <- tools::file_path_sans_ext(basename(terra::sources(raster)))
+          # Extract file name
+          raster_name <- tools::file_path_sans_ext(
+            basename(terra::sources(raster))
+          )
 
-    # Construct default filename
-    filename <- fs::path(
-      raster_src,
-      "/products/",
-      paste0(raster_name, "_cropped.tif")
-    )  
-        
-        # # Raster source directory
-        #   raster_src <- raster |>
-        #     terra::sources() |>
-        #     fs::path_dir() |>
-        #     fs::path_dir()
-
-        # # Raster source name
-        # raster_name <- raster |>
-        #   terra::sources() |>
-        #   fs::path_file() |>
-        #   fs::path_ext_remove()
-
-        # filename <- paste0(
-        #   raster_src,
-        #   "/products/",
-        #   raster_name,
-        #   "_cropped.tif"
-        # )
-
-        terra::writeRaster(
-          raster,
-          filename = filename,
-          wopt = list(steps = terra::nlyr(raster) * terra::ncell(raster),
-          overwrite = TRUE)
-        )
-      })
-    }
+          # Construct default filename
+          filename <- fs::path(
+            raster_src,
+            "/products/",
+            paste0(raster_name, "_cropped.tif")
+          )
+          terra::writeRaster(
+            raster,
+            filename = filename,
+            wopt = list(
+              steps = terra::nlyr(raster) * terra::ncell(raster),
+              overwrite = TRUE
+            )
+          )
+        })
+      }
     } else {
       # Crop if needed
       rasters_cropped <- purrr::map2(
@@ -258,31 +233,36 @@ prepare_core <- function(
 
     # Finally flip because of terra handling of unprojected rasters
     if (flip == TRUE) {
-    reflectance_flip <- reflectance |>
-      {
-        \(i)
-          terra::flip(
-            x = i,
-            direction = "vertical",
-            filename = gsub(
-              pattern = "REFLECTANCE_",
-              replacement = "REFLECTANCE_flip",
-              x = terra::sources(i)
-            ),
-            overwrite = TRUE
-          )
-      }()
+      reflectance_flip <- reflectance |>
+        {
+          \(i)
+            terra::flip(
+              x = i,
+              direction = "vertical",
+              filename = gsub(
+                pattern = "REFLECTANCE_",
+                replacement = "REFLECTANCE_flip",
+                x = terra::sources(i)
+              ),
+              overwrite = TRUE
+            )
+        }()
 
       # Delete REFLECTANCE
       fs::file_delete(terra::sources(reflectance))
 
       # Rename REFLECTANCE flipped
-      new_path <- fs::file_move(terra::sources(reflectance_flip), sub(pattern = "REFLECTANCE_flip", replacement = "REFLECTANCE_", x = terra::sources(reflectance_flip)))
+      new_path <- fs::file_move(
+        terra::sources(reflectance_flip),
+        sub(
+          pattern = "REFLECTANCE_flip",
+          replacement = "REFLECTANCE_",
+          x = terra::sources(reflectance_flip)
+        )
+      )
 
       # Get REFLECTANCE back
       reflectance <- terra::rast(new_path)
-
-
     } else {
       reflectance <- reflectance
     }
@@ -294,7 +274,6 @@ prepare_core <- function(
     # Remove temporary files
     fs::dir_ls(products, regexp = "_rev") |>
       fs::file_delete()
-    
   } else {
     reflectance <- fs::path_filter(files, regexp = "REFLECTANCE")
   }
