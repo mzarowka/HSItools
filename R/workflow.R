@@ -120,7 +120,7 @@ prepare_core <- function(
     if (extent == terra::ext(rasters[["capture"]])) {
       # if (terra::nlyr(rasters[["capture"]] == terra::nlyr(rasters_subset[["capture"]]))) {
       #   # Copy files
-      #   rasters_cropped <- purrr::map(rasters_subset, \(raster) {
+      #   rasters_cropped <- purrr::map(rasters, \(raster) {
       #     # Raster source directory
       #     raster_src <- raster |>
       #       terra::sources() |>
