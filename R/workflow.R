@@ -58,7 +58,7 @@ prepare_core <- function(
 
     # Get layers, if nothing provided use all
     layers <- layers %||%
-      as.numeric(names(terra::rast(files[["capture"]]))) |>
+      as.numeric(terra::names(terra::rast(files[["capture"]]))) |>
       {
         \(raster) c(min(raster):max(raster))
       }()
@@ -118,7 +118,10 @@ prepare_core <- function(
 
     # Crop
     if (extent == terra::ext(rasters[["capture"]])) {
-      # if (terra::nlyr(rasters[["capture"]] == terra::nlyr(rasters_subset[["capture"]]))) {
+      if (terra::nlyr(rasters[["capture"]]) == terra::nlyr(rasters_subset[["capture"]])) {
+        rasters_cropped <- files |>
+          # Load SpatRasters
+          purrr::map(\(x) terra::rast(x))
       #   # Copy files
       #   rasters_cropped <- purrr::map(rasters, \(raster) {
       #     # Raster source directory
@@ -145,26 +148,39 @@ prepare_core <- function(
       #   # Get raster back
       #   raster <- terra::rast(filename)
       # })
-      # } else {
+      } else {
       rasters_cropped <- purrr::map(rasters_subset, \(raster) {
-          # Raster source directory
-          raster_src <- raster |>
-            terra::sources() |>
-            fs::path_dir() |>
-            fs::path_dir()
+        # Extract source information
+    raster_src <- dirname(terra::sources(raster))
 
-        # Raster source name
-        raster_name <- raster |>
-          terra::sources() |>
-          fs::path_file() |>
-          fs::path_ext_remove()
+    # Extract file name
+    raster_name <- tools::file_path_sans_ext(basename(terra::sources(raster)))
 
-        filename <- paste0(
-          raster_src,
-          "/products/",
-          raster_name,
-          "_cropped.tif"
-        )
+    # Construct default filename
+    filename <- fs::path(
+      raster_src,
+      "/products/",
+      paste0(raster_name, "_cropped.tif")
+    )  
+        
+        # # Raster source directory
+        #   raster_src <- raster |>
+        #     terra::sources() |>
+        #     fs::path_dir() |>
+        #     fs::path_dir()
+
+        # # Raster source name
+        # raster_name <- raster |>
+        #   terra::sources() |>
+        #   fs::path_file() |>
+        #   fs::path_ext_remove()
+
+        # filename <- paste0(
+        #   raster_src,
+        #   "/products/",
+        #   raster_name,
+        #   "_cropped.tif"
+        # )
 
         terra::writeRaster(
           raster,
@@ -173,7 +189,7 @@ prepare_core <- function(
           overwrite = TRUE)
         )
       })
-    # }
+    }
     } else {
       # Crop if needed
       rasters_cropped <- purrr::map2(
