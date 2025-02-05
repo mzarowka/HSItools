@@ -116,41 +116,77 @@ prepare_core <- function(
       cli::cli_alert_info("{format(Sys.time())} Cropping rasters")
     }
 
-    # # Crop
-    # if (extent == "capture") {
-    #   rasters_cropped <- purrr::map2(rasters_subset, {\(raster) 
-    #     # Raster source directory
-    # raster_src <- raster |>
-    #   terra::sources() |>
-    #   fs::path_dir() |>
-    #   fs::path_dir()
+    # Crop
+    if (extent == terra::ext(rasters[["capture"]])) {
+      # if (terra::nlyr(rasters[["capture"]] == terra::nlyr(rasters_subset[["capture"]]))) {
+      #   # Copy files
+      #   rasters_cropped <- purrr::map(rasters_subset, \(raster) {
+      #     # Raster source directory
+      #     raster_src <- raster |>
+      #       terra::sources() |>
+      #       fs::path_dir() |>
+      #       fs::path_dir()
 
-    # # Raster source name
-    # raster_name <- raster |>
-    #   terra::sources() |>
-    #   fs::path_file() |>
-    #   fs::path_ext_remove()
+      #   # Raster source name
+      #   raster_name <- raster |>
+      #     terra::sources() |>
+      #     fs::path_file() |>
+      #     fs::path_ext_remove()
 
-    # filename <- paste0(
-    #   raster_src,
-    #   "/products/",
-    #   raster_name,
-    #   "_cropped.tif"
-    # )
-        
-    #     terra::writeRaster(raster, filename = filename, wopt= list(steps = terra::nlyr(raster) * terra::ncell(raster)))})
-    # } else {
-    rasters_cropped <- purrr::map2(
-      rasters_subset,
-      types,
-      \(x, y)
-        HSItools::raster_crop(
-          raster = x,
-          type = y,
-          roi = big_roi
+      #   filename <- paste0(
+      #     raster_src,
+      #     "/products/",
+      #     raster_name,
+      #     "_cropped.tif"
+      #   )
+
+      #   fs::file_copy(terra::sources(raster), filename, overwrite = TRUE)
+
+      #   # Get raster back
+      #   raster <- terra::rast(filename)
+      # })
+      # } else {
+      rasters_cropped <- purrr::map(rasters_subset, \(raster) {
+          # Raster source directory
+          raster_src <- raster |>
+            terra::sources() |>
+            fs::path_dir() |>
+            fs::path_dir()
+
+        # Raster source name
+        raster_name <- raster |>
+          terra::sources() |>
+          fs::path_file() |>
+          fs::path_ext_remove()
+
+        filename <- paste0(
+          raster_src,
+          "/products/",
+          raster_name,
+          "_cropped.tif"
         )
-    )
+
+        terra::writeRaster(
+          raster,
+          filename = filename,
+          wopt = list(steps = terra::nlyr(raster) * terra::ncell(raster),
+          overwrite = TRUE)
+        )
+      })
     # }
+    } else {
+      # Crop if needed
+      rasters_cropped <- purrr::map2(
+        rasters_subset,
+        types,
+        \(x, y)
+          HSItools::raster_crop(
+            raster = x,
+            type = y,
+            roi = big_roi
+          )
+      )
+    }
 
     if (verbose == TRUE) {
       cli::cli_alert_info("{format(Sys.time())} Resampling references")
@@ -247,10 +283,10 @@ prepare_core <- function(
     reflectance <- fs::path_filter(files, regexp = "REFLECTANCE")
   }
 
-  # Return reflectance
-  return(reflectance)
-
   if (verbose == TRUE) {
     cli::cli_alert_success("{format(Sys.time())} Finished")
+
+  # Return reflectance
+  return(reflectance)
   }
 }
