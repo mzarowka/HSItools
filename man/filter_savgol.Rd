@@ -11,8 +11,8 @@ filter_savgol(
   m = 0,
   ts = 1,
   extent = NULL,
-  ext = NULL,
-  filename = NULL
+  filename = NULL,
+  extension = NULL
 )
 }
 \arguments{
@@ -28,9 +28,9 @@ filter_savgol(
 
 \item{extent}{an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.}
 
-\item{ext}{character, a graphic format extension.}
-
 \item{filename}{NULL (default) to write automatically into products, provide full path and ext to override.}
+
+\item{extension}{character, a graphic format extension.}
 }
 \value{
 A filtered terra SpatRaster.

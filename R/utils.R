@@ -11,22 +11,27 @@
 #' Match for the lowest difference between integer band and actual SpatRaster band.
 #' This will produce duplicates with multiple bands. Drop.
 spectra_position <- function(
-    raster,
-    spectra) {
+  raster,
+  spectra
+) {
   # Check if correct class is supplied.
   if (!inherits(raster, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
   }
 
   # Find index (position) of selected spectra by comparing choice and names
-  spectraIndex <- purrr::map(spectra, \(x) which.min(abs(x - as.numeric(names(raster))))) |>
+  spectraIndex <- purrr::map(
+    spectra,
+    \(x) terra::which.min(abs(x - as.numeric(terra::names(raster))))
+  ) |>
     # Get positions
     purrr::as_vector()
 
   # Create tibble with spectra of choice and respective position
   spectraIndex <- dplyr::tibble(
     spectra = spectra,
-    position = spectraIndex) |>
+    position = spectraIndex
+  ) |>
     # Keep second observation if duplicates are present
     # From experience closer to desired product
     dplyr::slice_tail(by = .data$position)
@@ -34,6 +39,7 @@ spectra_position <- function(
   # Return values
   return(spectraIndex)
 }
+
 
 #' Subset SpatRaster by spectra
 #'
@@ -63,7 +69,7 @@ spectra_sub <- function(
   raster <- terra::subset(raster, position)
 
   # Set raster names to match spectra
-  names(raster) <- as.character(spectra)
+  # names(raster) <- as.character(spectra)
 
   # Return raster
   return(raster)
@@ -228,6 +234,7 @@ pixel_to_distance <- function(
 }
 
 
+
 #' Adjust paths from Shiny output
 #'
 #' @family Utilities
@@ -252,7 +259,7 @@ change_output_dir = function(
     message("Current path is consistent with with Shiny output!")
   } else {
     #Set the paths in the core output to mesh with the user's current root
-    newDir <- choose.dir(caption = paste0("Find the directory with the name: ", basename(run_core_output$directory)))
+    newDir <- utils::choose.dir(caption = paste0("Find the directory with the name: ", basename(run_core_output$directory)))
     if (basename(run_core_output$directory) != basename(newDir)){
       rlang::abort("The directory names must match!")
     } else {
@@ -266,22 +273,6 @@ change_output_dir = function(
   return(run_core_output)
 }
 
-# Function to run other function and then move output, useful for mapping over rois
-get_and_move <- function(fun, name, ...) {
-  parameters <- list(...)
-
-  if (fun == prepare_core()) {
-    object <- prepare_core(core = parameters$core, path = parameters$path, layers = parameters$layers, extent = parameters$extent, normalize = parameters$normalize, integration = integration)
-  }
-
-  object_source <- terra::sources(object)
-
-  object_destination <- sub(pattern = "products/", replacement = paste0("products/", name)) |>
-    sub(pattern = ".tif", replacement = paste0("_", name, ".tif"))
-
-  fs::file_move(object_source, object_destination)
-
-}
 
 #' Get available memory
 #'

@@ -9,7 +9,7 @@ stretch_raster_full(
   type = "RGB",
   histeq = FALSE,
   extension = NULL,
-  write = TRUE
+  filename = NULL
 )
 }
 \arguments{

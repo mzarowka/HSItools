@@ -2,14 +2,14 @@
 #'
 #' @param core shiny output.
 #' @param path path to the directory with captured data. Defaults to NULL and shiny output.
-#' @param layers numeric vector, selection of layers (wavelengths) to use. Defaults to NULL and shiny output.
+#' @param layers numeric vector, selection of layers (wavelengths) to use. Defaults to NULL and shiny output or NULL and all layers.
 #' @param extent extent of the captured data. Defaults to NULL and shiny output. If "capture" then uses entire extent of captured data.
 #' @param normalize logical, should data be normalized.
 #' @param integration logical, whether white reference was scanned with different settings.
 #' @param tintw integration time of the white reference.
 #' @param tints integration time of the captured data (sample).
-#' @param flip logical, wheter output should be flipped. terra flips unprojected rasters (or rather, unprojected rasters are flipped from the beginning). Defaults to TRUE.
-#' @param verbose logica, should additional informatiob be printed to the console. Defaults to FALSE.
+#' @param flip logical, wheter output should be flipped. \link[terra] flips unprojected rasters (or rather, unprojected rasters are flipped from the beginning). Defaults to TRUE.
+#' @param verbose logical, should additional information be printed to the console. Defaults to FALSE.
 #'
 #' @return reflectance SpatRaster.
 #' @export
@@ -45,9 +45,6 @@ prepare_core <- function(
     # Get path
     path <- path
 
-    # Get layers
-    layers <- layers
-
     # Get files
     files <- fs::dir_ls(paste0(path, "/capture")) |>
       fs::path_filter(regexp = ".raw|.tif")
@@ -58,6 +55,13 @@ prepare_core <- function(
       darkref = fs::path_filter(files, regexp = "DARK"),
       whiteref = fs::path_filter(files, regexp = "WHITE")
     )
+
+    # Get layers, if nothing provided use all
+    layers <- layers %||%
+      as.numeric(names(terra::rast(files[["capture"]]))) |>
+      {
+        \(raster) c(min(raster):max(raster))
+      }()
   }
 
   if (verbose == TRUE) {
@@ -112,30 +116,30 @@ prepare_core <- function(
       cli::cli_alert_info("{format(Sys.time())} Cropping rasters")
     }
 
-    # Crop
-    if (extent == "capture") {
-      rasters_cropped <- purrr::map2(rasters_subset, {\(raster) 
-        # Raster source directory
-    raster_src <- raster |>
-      terra::sources() |>
-      fs::path_dir() |>
-      fs::path_dir()
+    # # Crop
+    # if (extent == "capture") {
+    #   rasters_cropped <- purrr::map2(rasters_subset, {\(raster) 
+    #     # Raster source directory
+    # raster_src <- raster |>
+    #   terra::sources() |>
+    #   fs::path_dir() |>
+    #   fs::path_dir()
 
-    # Raster source name
-    raster_name <- raster |>
-      terra::sources() |>
-      fs::path_file() |>
-      fs::path_ext_remove()
+    # # Raster source name
+    # raster_name <- raster |>
+    #   terra::sources() |>
+    #   fs::path_file() |>
+    #   fs::path_ext_remove()
 
-    filename <- paste0(
-      raster_src,
-      "/products/",
-      raster_name,
-      "_cropped.tif"
-    )
+    # filename <- paste0(
+    #   raster_src,
+    #   "/products/",
+    #   raster_name,
+    #   "_cropped.tif"
+    # )
         
-        terra::writeRaster(raster, filename = filename, wopt= list(steps = terra::nlyr(raster) * terra::ncell(raster)))})
-    } else {
+    #     terra::writeRaster(raster, filename = filename, wopt= list(steps = terra::nlyr(raster) * terra::ncell(raster)))})
+    # } else {
     rasters_cropped <- purrr::map2(
       rasters_subset,
       types,
@@ -146,7 +150,7 @@ prepare_core <- function(
           roi = big_roi
         )
     )
-    }
+    # }
 
     if (verbose == TRUE) {
       cli::cli_alert_info("{format(Sys.time())} Resampling references")
@@ -244,7 +248,7 @@ prepare_core <- function(
   }
 
   # Return reflectance
-  # return(reflectance)
+  return(reflectance)
 
   if (verbose == TRUE) {
     cli::cli_alert_success("{format(Sys.time())} Finished")

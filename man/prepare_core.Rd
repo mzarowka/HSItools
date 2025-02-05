@@ -12,7 +12,9 @@ prepare_core(
   normalize = TRUE,
   integration = NULL,
   tintw = 1,
-  tints = 1
+  tints = 1,
+  flip = TRUE,
+  verbose = FALSE
 )
 }
 \arguments{
@@ -20,7 +22,7 @@ prepare_core(
 
 \item{path}{path to the directory with captured data. Defaults to NULL and shiny output.}
 
-\item{layers}{numeric vector, selection of layers (wavelengths) to use. Defaults to NULL and shiny output.}
+\item{layers}{numeric vector, selection of layers (wavelengths) to use. Defaults to NULL and shiny output or NULL and all layers.}
 
 \item{extent}{extent of the captured data. Defaults to NULL and shiny output. If "capture" then uses entire extent of captured data.}
 
@@ -30,7 +32,11 @@ prepare_core(
 
 \item{tintw}{integration time of the white reference.}
 
-\item{tintd}{integration time of the captured data (sample).}
+\item{tints}{integration time of the captured data (sample).}
+
+\item{flip}{logical, wheter output should be flipped. \link\link{terra} flips unprojected rasters (or rather, unprojected rasters are flipped from the beginning). Defaults to TRUE.}
+
+\item{verbose}{logical, should additional information be printed to the console. Defaults to FALSE.}
 }
 \value{
 reflectance SpatRaster.
