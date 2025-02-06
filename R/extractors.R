@@ -4,13 +4,19 @@
 #' @param index character indicating hyperspectral index layer to plot.
 #' @param calibration result of pixel_to_distance or actual call to pixel_to_distance with appropriate input.
 #' @param extent an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
-#' @param ext character, a graphic format extension.
-#' @param filename empty = in memory, TRUE = guess name and attempt write, or user specified path to glue with ext.
+#' @param filename empty = in memory, TRUE = guess name and attempt write, or user specified path to glue with extension.
+#' @param extension character, a graphic format extension.
 #'
 #' @return tibble frame with XY coordinates and averaged proxy values.
 #' @export
-extract_spectral_series <- function(raster, index = NULL, calibration = NULL, extent = NULL, ext = NULL, filename = NULL) {
-
+extract_spectral_series <- function(
+  raster,
+  index = NULL,
+  calibration = NULL,
+  extent = NULL,
+  filename = NULL,
+  extension = NULL
+) {
   # Check if correct class is supplied.
   if (!inherits(raster, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
@@ -31,22 +37,23 @@ extract_spectral_series <- function(raster, index = NULL, calibration = NULL, ex
       terra::subset(index)
   }
   if (is.null(calibration) == TRUE) {
-  spectral_series <- raster |>
-    terra::aggregate(
-      fact = c(1, terra::ncol(raster)),
-      fun = "mean",
-      na.rm = TRUE) |>
-    # Coerce do data frame with coordinates
-    terra::as.data.frame(xy = TRUE) |>
-    # To tibble
-    dplyr::tibble()
-
+    spectral_series <- raster |>
+      terra::aggregate(
+        fact = c(1, terra::ncol(raster)),
+        fun = "mean",
+        na.rm = TRUE
+      ) |>
+      # Coerce do data frame with coordinates
+      terra::as.data.frame(xy = TRUE) |>
+      # To tibble
+      dplyr::tibble()
   } else {
     spectral_series <- raster |>
       terra::aggregate(
         fact = c(1, terra::ncol(raster)),
         fun = "mean",
-        na.rm = TRUE) |>
+        na.rm = TRUE
+      ) |>
       # Coerce do data frame with coordinates
       terra::as.data.frame(xy = TRUE) |>
       # To tibble
@@ -54,7 +61,8 @@ extract_spectral_series <- function(raster, index = NULL, calibration = NULL, ex
       # Calculate metric depths
       dplyr::mutate(
         depth.mm = calibration$distance - (.data$y * calibration$pixel_ratio),
-        tube.mm = .data$depth.mm - calibration$point_zero) |>
+        tube.mm = .data$depth.mm - calibration$point_zero
+      ) |>
       # Drop x and y
       dplyr::select(-c(.data$x, .data$y)) |>
       # Keep only non-negative depths
@@ -75,9 +83,8 @@ extract_spectral_series <- function(raster, index = NULL, calibration = NULL, ex
 
       readr::write_csv(spectral_series, file = filename)
 
-      print(filename)
+      raster::print(filename)
     } else {
-
       # Raster source directory
       raster_src <- raster |>
         terra::sources() |>
@@ -93,11 +100,11 @@ extract_spectral_series <- function(raster, index = NULL, calibration = NULL, ex
 
       readr::write_csv(spectral_series, file = filename)
     }
-    } else {
-      filename <- fs::path(filename, ext = ext)
+  } else {
+    filename <- fs::path(filename, ext = extension)
 
-      readr::write_csv(spectral_series, file = filename)
-    }
+    readr::write_csv(spectral_series, file = filename)
+  }
 
   # Return object
   return(spectral_series)
@@ -112,7 +119,6 @@ extract_spectral_series <- function(raster, index = NULL, calibration = NULL, ex
 #' @return a tibble with averaged spectral profile.
 #' @export
 extract_spectral_profile <- function(raster, extent = NULL, write = FALSE) {
-
   # Check if correct class is supplied.
   if (!inherits(raster, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
@@ -130,7 +136,8 @@ extract_spectral_profile <- function(raster, extent = NULL, write = FALSE) {
   spectral_profile <- terra::aggregate(
     raster,
     fact = c(terra::nrow(raster), terra::ncol(raster)),
-    fun = "mean") |>
+    fun = "mean"
+  ) |>
     # Coerce do data frame with coordinates
     terra::as.data.frame(xy = TRUE) |>
     # To tibble
@@ -153,31 +160,37 @@ extract_spectral_profile <- function(raster, extent = NULL, write = FALSE) {
 #' Extract spectral indices
 #'
 #' @param raster a terra SpatRaster of normalized capture data.
-#' @param .hsi_index character indicating hyperspectral index layer to plot.
-#' @param .extent an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
-#' @param .write optional, should output be written to csv file.
+#' @param hsi_index character indicating hyperspectral index layer to plot.
+#' @param extent an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
+#' @param write optional, should output be written to csv file.
 #'
 #' @return a tibble with averaged value or multiple values of spectral indices.
 #' @export
-extract_spectral_indices <- function(raster, .hsi_index = NULL, .extent = NULL, .write = FALSE) {
+extract_spectral_indices <- function(
+  raster,
+  hsi_index = NULL,
+  extent = NULL,
+  write = FALSE
+) {
   # Check if correct class is supplied.
   if (!inherits(raster, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
   }
 
-  if (is.null(.extent)) {
+  if (is.null(extent)) {
     # Set window of interest
     terra::window(raster) <- terra::ext(raster)
   } else {
     # Set window of interest
-    terra::window(raster) <- terra::ext(.extent)
+    terra::window(raster) <- terra::ext(extent)
   }
 
   # Aggregate SpatRaster into one data point
   spectral_indices <- terra::aggregate(
     raster,
     fact = c(terra::nrow(raster), terra::ncol(raster)),
-    fun = "mean") |>
+    fun = "mean"
+  ) |>
     # Coerce do data frame with coordinates
     terra::as.data.frame(xy = TRUE) |>
     # To tibble
@@ -187,7 +200,7 @@ extract_spectral_indices <- function(raster, .hsi_index = NULL, .extent = NULL, 
   terra::window(raster) <- NULL
 
   # Write to file
-  if (.write == TRUE) {
+  if (write == TRUE) {
     readr::write_csv(spectral_indices, file = paste0())
   }
 

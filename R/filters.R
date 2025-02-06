@@ -15,93 +15,94 @@ remove_continuum_2 <- function(
   extent = NULL,
   ext = NULL,
   filename = NULL,
-  ...) {
-# Check if correct class is supplied.
-if (!inherits(raster, what = "SpatRaster")) {
-  rlang::abort(message = "Supplied data is not a terra SpatRaster.")
-}
+  ...
+) {
+  # Check if correct class is supplied.
+  if (!inherits(raster, what = "SpatRaster")) {
+    rlang::abort(message = "Supplied data is not a terra SpatRaster.")
+  }
 
-# Raster source directory
-raster_src <- raster |>
-  terra::sources() |>
-  fs::path_dir()
+  # Raster source directory
+  raster_src <- raster |>
+    terra::sources() |>
+    fs::path_dir()
 
-# Raster source name
-raster_name <- raster |>
-  terra::sources() |>
-  fs::path_file() |>
-  fs::path_ext_remove()
+  # Raster source name
+  raster_name <- raster |>
+    terra::sources() |>
+    fs::path_file() |>
+    fs::path_ext_remove()
 
-# Check type of filename
-if (is.null(filename) == TRUE) {
-  filename <- paste0(raster_src, "/", raster_name, "_CONTINUUM-REMOVED.tif")
-} else {
-  filename <- fs::path(filename, ext = ext)
-}
+  # Check type of filename
+  if (is.null(filename) == TRUE) {
+    filename <- paste0(raster_src, "/", raster_name, "_CONTINUUM-REMOVED.tif")
+  } else {
+    filename <- fs::path(filename, ext = ext)
+  }
 
-# Check extent type
-if (is.null(extent)) {
-  # Set window of interest
-  terra::window(raster) <- terra::ext(raster)
-} else {
-  # Set window of interest
-  terra::window(raster) <- terra::ext(extent)
-}
+  # Check extent type
+  if (is.null(extent)) {
+    # Set window of interest
+    terra::window(raster) <- terra::ext(raster)
+  } else {
+    # Set window of interest
+    terra::window(raster) <- terra::ext(extent)
+  }
 
-# Named list with write options
-wopts <- list(steps = terra::ncell(raster) * terra::nlyr(raster))
+  # Named list with write options
+  wopts <- list(steps = terra::ncell(raster) * terra::nlyr(raster))
 
-# Extract names
-band_names <- names(raster)
+  # Extract names
+  band_names <- names(raster)
 
-# Remove continuum in a single pixel
-remove_continuum_px <- function(raster) {
-  # Spectrum to numeric vector
-  spectrum <- terra::values(raster)
+  # Remove continuum in a single pixel
+  remove_continuum_px <- function(raster) {
+    # Spectrum to numeric vector
+    spectrum <- terra::values(raster)
 
-  # Wavelengths
-  wavelengths <- as.numeric(names(raster))
+    # Wavelengths
+    wavelengths <- as.numeric(names(raster))
 
-  # Calculate and approximate convex hull
-  hull <- grDevices::chull(wavelengths, spectrum)
-  # Sort
-  hull <- hull[order(wavelengths[hull])]
+    # Calculate and approximate convex hull
+    hull <- grDevices::chull(wavelengths, spectrum)
+    # Sort
+    hull <- hull[order(wavelengths[hull])]
 
-  # Interpolate the continuum line using the convex hull points
-  continuum <- approx(wavelengths[hull], spectrum[hull], xout = wavelengths)$y
-  
-  # Ensure the continuum line is always greater than or equal to the spectrum
-  continuum <- pmax(continuum, spectrum)
-   
-  # Calculate continuum-removed reflectance
-  continuum_removed <- spectrum / continuum
-   
-  # Ensure the result is between 0 and 1
-  continuum_removed <- pmin(pmax(continuum_removed, 0), 1)
-  
-  # Return values
-  # return(continuum_removed)
-}
+    # Interpolate the continuum line using the convex hull points
+    continuum <- approx(wavelengths[hull], spectrum[hull], xout = wavelengths)$y
 
-# Apply function over entire SpatRaster
-raster <- terra::app(
-  raster,
-  fun = \(x) remove_continuum_px(x),
-  filename = filename,
-  overwrite = TRUE,
-  wopt = wopts
-)
+    # Ensure the continuum line is always greater than or equal to the spectrum
+    continuum <- pmax(continuum, spectrum)
 
-# Set names
-names(raster) <- as.character(band_names)
+    # Calculate continuum-removed reflectance
+    continuum_removed <- spectrum / continuum
 
-# Update names on disk
-# terra::update(raster, names = TRUE)
-# Reset window
-terra::window(raster) <- NULL
+    # Ensure the result is between 0 and 1
+    continuum_removed <- pmin(pmax(continuum_removed, 0), 1)
 
-# Return raster to the environment
-return(raster)
+    # Return values
+    # return(continuum_removed)
+  }
+
+  # Apply function over entire SpatRaster
+  raster <- terra::app(
+    raster,
+    fun = \(x) remove_continuum_px(x),
+    filename = filename,
+    overwrite = TRUE,
+    wopt = wopts
+  )
+
+  # Set names
+  names(raster) <- as.character(band_names)
+
+  # Update names on disk
+  # terra::update(raster, names = TRUE)
+  # Reset window
+  terra::window(raster) <- NULL
+
+  # Return raster to the environment
+  return(raster)
 }
 
 #' Remove continuum from spectrum
@@ -193,14 +194,14 @@ remove_continuum <- function(
   )
 
   # Extract names
-  band_names <- names(raster)
+  band_names <- terra::names(raster)
 
   # Remove continuum in a single pixel pixel
   remove_continuum_fun <- function(raster) {
     # Get new values
     new_values <- raster |>
       # Coerce to data frame
-      as.data.frame() |>
+      terra::as.data.frame() |>
       # Pivot == transpose
       tidyr::pivot_longer(
         dplyr::everything(),
@@ -209,7 +210,7 @@ remove_continuum <- function(
         names_transform = as.numeric
       ) |>
       # Coerce to matrix
-      as.matrix() |>
+      terra::as.matrix() |>
       # Remove continuum
       (\(x) prospectr::continuumRemoval(x[, 2], x[, 1]))() |>
       # Coerce to tibble
@@ -234,7 +235,7 @@ remove_continuum <- function(
   )
 
   # Set names
-  names(raster) <- as.character(band_names)
+  terra::names(raster) <- as.character(band_names)
 
   # Update names on disk
   # terra::update(raster, names = TRUE)
@@ -244,6 +245,7 @@ remove_continuum <- function(
   # Return raster
   return(raster)
 }
+
 
 #' Smooth raster with focal median
 #'
@@ -443,7 +445,7 @@ filter_savgol <- function(
   )
 
   # Extract names
-  band_names <- names(raster)
+  band_names <- terra::names(raster)
 
   # Apply Savitzky-Golay filter
   raster <- terra::app(
@@ -455,7 +457,7 @@ filter_savgol <- function(
   )
 
   # Set names
-  names(raster) <- as.character(band_names)
+  terra::names(raster) <- as.character(band_names)
 
   # Update names on disk
   #terra::update(raster, names = TRUE)
@@ -466,3 +468,4 @@ filter_savgol <- function(
   # Return raster
   return(raster)
 }
+

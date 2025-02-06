@@ -9,8 +9,8 @@ extract_spectral_series(
   index = NULL,
   calibration = NULL,
   extent = NULL,
-  ext = NULL,
-  filename = NULL
+  filename = NULL,
+  extension = NULL
 )
 }
 \arguments{
@@ -22,9 +22,9 @@ extract_spectral_series(
 
 \item{extent}{an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.}
 
-\item{ext}{character, a graphic format extension.}
+\item{filename}{empty = in memory, TRUE = guess name and attempt write, or user specified path to glue with extension.}
 
-\item{filename}{empty = in memory, TRUE = guess name and attempt write, or user specified path to glue with ext.}
+\item{extension}{character, a graphic format extension.}
 }
 \value{
 tibble frame with XY coordinates and averaged proxy values.

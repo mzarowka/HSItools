@@ -8,7 +8,7 @@
 #' @param integration logical, whether white reference was scanned with different settings.
 #' @param tintw integration time of the white reference.
 #' @param tints integration time of the captured data (sample).
-#' @param flip logical, wheter output should be flipped. \link[terra] flips unprojected rasters (or rather, unprojected rasters are flipped from the beginning). Defaults to TRUE.
+#' @param flip logical, wheter output should be flipped. terra flips unprojected rasters (or rather, unprojected rasters are flipped from the beginning). Defaults to TRUE.
 #' @param verbose logical, should additional information be printed to the console. Defaults to FALSE.
 #'
 #' @return reflectance SpatRaster.
@@ -25,7 +25,6 @@ prepare_core <- function(
   flip = TRUE,
   verbose = FALSE
 ) {
-  
   if (!is.null(core)) {
     # Get path
     path <- fs::path(getwd(), core$directory)
@@ -85,6 +84,9 @@ prepare_core <- function(
     if (is.null(extent)) {
       # If no extent is provided, use core$cropImage if available
       ext <- if (!is.null(core)) core$cropImage %||% NULL
+
+      # Crop type
+      crop <- "shiny"
     } else {
       # Check if extent is a character string
       if (length(extent) == 1 && is.character(extent)) {
@@ -92,6 +94,9 @@ prepare_core <- function(
           # Use entire extent of captured data
           ext <- terra::rast(files[["capture"]]) |>
             terra::ext()
+
+          # Crop type
+          crop <- "capture"
         } else {
           rlang::abort(
             "Invalid character extent specification. Use 'capture' or NULL."
@@ -100,6 +105,9 @@ prepare_core <- function(
       } else if (inherits(extent, "SpatExtent")) {
         # If a SpatExtent object is provided, use it directly
         ext <- terra::ext(extent)
+
+        # Crop type
+        crop <- "extent"
       } else {
         # Unexpected outputs
         rlang::abort(
@@ -133,12 +141,15 @@ prepare_core <- function(
     }
 
     # Crop
-    if (ext == terra::ext(rasters[["capture"]])) {
+    # If expected REFLECTANCE has the same extent as captured data
+    if (terra::ext(ext) == terra::ext(rasters[["capture"]])) {
+      # If no layer subsetting
       if (
         terra::nlyr(rasters[["capture"]]) ==
           terra::nlyr(rasters_subset[["capture"]])
       ) {
         rasters_cropped <- rasters
+        # If subsetting layers
       } else {
         rasters_cropped <- purrr::map(rasters_subset, \(raster) {
           # Extract source information
@@ -165,8 +176,8 @@ prepare_core <- function(
           )
         })
       }
+      # If crop is needed
     } else {
-      # Crop if needed
       rasters_cropped <- purrr::map2(
         rasters_subset,
         types,
@@ -281,7 +292,7 @@ prepare_core <- function(
   if (verbose == TRUE) {
     cli::cli_alert_success("{format(Sys.time())} Finished")
 
-  # Return reflectance
-  return(reflectance)
+    # Return reflectance
+    return(reflectance)
   }
 }
