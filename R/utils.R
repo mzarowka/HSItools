@@ -334,3 +334,18 @@ calculate_optimal_steps <- function(raster, safety_factor = 0.5) {
   # Return
   return(optimal_steps)
 }
+
+#' Create empty geopackage with preset CRS
+#'
+#' @family Utilities
+#' @param path path to write the file.
+#' @param crs CRS to use. Defaults to EPSG:4326 (WGS 84).
+#'
+#' @return an empty gopackage.
+#' @export
+create_empty_geopackage <- function(path, crs = 4326) {
+  # Create empty geopackage
+  gpkg <- sf::st_sf(sf::st_sfc(), crs = 4326) |>
+    # Write to file
+    sf::st_write(dsn = path, driver = "GPKG")
+}
