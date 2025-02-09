@@ -6,7 +6,7 @@
 \usage{
 plot_raster_proxy(
   raster,
-  hsi_index,
+  index,
   calibration = NULL,
   palette = c("viridis", "magma", "plasma", "inferno", "civids", "mako", "rocket",
     "turbo"),
@@ -19,7 +19,7 @@ plot_raster_proxy(
 \arguments{
 \item{raster}{a SpatRaster with calculated hyperspectral indices and RGB layers.}
 
-\item{hsi_index}{a character indicating hyperspectral index layer to plot.}
+\item{index}{a character indicating hyperspectral index layer to plot.}
 
 \item{calibration}{result of pixel_to_distance or actual call to pixel_to_distance with appropriate input.}
 

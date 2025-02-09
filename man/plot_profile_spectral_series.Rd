@@ -6,7 +6,7 @@
 \usage{
 plot_profile_spectral_series(
   raster,
-  hsi_index,
+  index,
   calibration = NULL,
   extent = NULL,
   extension = NULL,
@@ -16,7 +16,7 @@ plot_profile_spectral_series(
 \arguments{
 \item{raster}{a SpatRaster with calculated hyperspectral indices and RGB layers.}
 
-\item{hsi_index}{a character indicating hyperspectral index layer to plot.}
+\item{index}{a character indicating hyperspectral index layer to plot.}
 
 \item{calibration}{result of pixel_to_distance or actual call to pixel_to_distance with appropriate input.}
 

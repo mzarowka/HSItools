@@ -6,7 +6,7 @@
 \usage{
 plot_raster_overlay(
   raster,
-  hsi_index,
+  index,
   palette =
     c("viridis”, “magma”, “plasma”, “inferno”, “civids”, “mako”, “rocket”, “turbo"),
   alpha = 0.5,
@@ -18,7 +18,7 @@ plot_raster_overlay(
 \arguments{
 \item{raster}{raster a SpatRaster with calculated hyperspectral indices and RGB layers.}
 
-\item{hsi_index}{a character indicating hyperspectral index layer to plot.}
+\item{index}{a character indicating hyperspectral index layer to plot.}
 
 \item{palette}{a character indicating one of \pkg{viridis} palettes of choice: "viridis”, “magma”, “plasma”, “inferno”, “civids”, “mako”, “rocket” and “turbo”.}
 

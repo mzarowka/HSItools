@@ -8,7 +8,7 @@
 #' @param integration logical, whether white reference was scanned with different settings.
 #' @param tintw integration time of the white reference.
 #' @param tints integration time of the captured data (sample).
-#' @param flip logical, wheter output should be flipped. terra flips unprojected rasters (or rather, unprojected rasters are flipped from the beginning). Defaults to TRUE.
+#' @param flip logical, wheter output should be flipped. \pkg{terra} flips unprojected rasters (or rather, unprojected rasters are flipped from the beginning). Defaults to TRUE.
 #' @param verbose logical, should additional information be printed to the console. Defaults to FALSE.
 #'
 #' @return reflectance SpatRaster.

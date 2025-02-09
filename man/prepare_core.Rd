@@ -34,7 +34,7 @@ prepare_core(
 
 \item{tints}{integration time of the captured data (sample).}
 
-\item{flip}{logical, wheter output should be flipped. terra flips unprojected rasters (or rather, unprojected rasters are flipped from the beginning). Defaults to TRUE.}
+\item{flip}{logical, wheter output should be flipped. \pkg{terra} flips unprojected rasters (or rather, unprojected rasters are flipped from the beginning). Defaults to TRUE.}
 
 \item{verbose}{logical, should additional information be printed to the console. Defaults to FALSE.}
 }

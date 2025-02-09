@@ -194,7 +194,7 @@ stretch_raster_full <- function(
 #' @family Plotting
 #' @param raster a SpatRaster with calculated hyperspectral indices and RGB layers.
 #' @param calibration result of pixel_to_distance or actual call to pixel_to_distance with appropriate input.
-#' @param hsi_index a character indicating hyperspectral index layer to plot.
+#' @param index a character indicating hyperspectral index layer to plot.
 #' @param palette a character indicating one of \pkg{viridis} palettes of choice: "viridis", "magma", "plasma", "inferno", "civids", "mako", "rocket" and "turbo”.
 #' @param extent an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
 #' @param extension character, a graphic format extension.
@@ -206,7 +206,7 @@ stretch_raster_full <- function(
 #' @export
 plot_raster_proxy <- function(
   raster,
-  hsi_index,
+  index,
   calibration = NULL,
   palette = c(
     "viridis",
@@ -228,7 +228,7 @@ plot_raster_proxy <- function(
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
   }
 
-  if (!inherits(hsi_index, what = "character")) {
+  if (!inherits(index, what = "character")) {
     rlang::abort(message = "Supplied index name is not a character.")
   }
 
@@ -246,7 +246,7 @@ plot_raster_proxy <- function(
   filename <- paste0(
     raster_src,
     "/",
-    hsi_index,
+    index,
     "_",
     raster_name,
     ".",
@@ -255,7 +255,7 @@ plot_raster_proxy <- function(
 
   # Subset SpatRaster
   hsi_layer <- raster |>
-    terra::subset(hsi_index)
+    terra::subset(index)
 
   if (is.null(extent)) {
     # Set window of interest
@@ -275,7 +275,7 @@ plot_raster_proxy <- function(
         option = palette,
         guide = ggplot2::guide_colorbar(
           theme = ggplot2::theme(
-            title = ggplot2::element_text(hsi_index),
+            title = ggplot2::element_text(index),
             legend.position = "bottom",
             legend.text.position = "bottom",
             legend.ticks = ggplot2::element_blank()
@@ -293,7 +293,7 @@ plot_raster_proxy <- function(
         legend.position = "bottom"
       ) +
       ggplot2::labs(
-        x = hsi_index,
+        x = index,
         y = "Depth (px)",
         fill = "Value"
       )
@@ -307,7 +307,7 @@ plot_raster_proxy <- function(
         option = palette,
         guide = ggplot2::guide_colorbar(
           theme = ggplot2::theme(
-            title = ggplot2::element_text(hsi_index),
+            title = ggplot2::element_text(index),
             legend.position = "bottom",
             legend.text.position = "bottom",
             legend.ticks = ggplot2::element_blank()
@@ -339,7 +339,7 @@ plot_raster_proxy <- function(
         legend.position = "bottom"
       ) +
       ggplot2::labs(
-        x = hsi_index,
+        x = index,
         y = "Depth (mm)",
         fill = "Value"
       )
@@ -349,7 +349,7 @@ plot_raster_proxy <- function(
   terra::window(raster) <- NULL
 
   if (write == TRUE) {
-    cli::cli_alert("Writing {hsi_index} SpatRaster to {filename}")
+    cli::cli_alert("Writing {index} SpatRaster to {filename}")
 
     ggplot2::ggsave(
       plot = plot,
@@ -531,7 +531,7 @@ plot_raster_rgb <- function(
 #'
 #' @family Plotting
 #' @param raster raster a SpatRaster with calculated hyperspectral indices and RGB layers.
-#' @param hsi_index a character indicating hyperspectral index layer to plot.
+#' @param index a character indicating hyperspectral index layer to plot.
 #' @param palette a character indicating one of \pkg{viridis} palettes of choice: "viridis”, “magma”, “plasma”, “inferno”, “civids”, “mako”, “rocket” and “turbo”.
 #' @param alpha a number in (0, 1) controlling transparency.
 #' @param extent an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
@@ -542,7 +542,7 @@ plot_raster_rgb <- function(
 #' @export
 plot_raster_overlay <- function(
   raster,
-  hsi_index,
+  index,
   palette = c(
     "viridis”, “magma”, “plasma”, “inferno”, “civids”, “mako”, “rocket”, “turbo"
   ),
@@ -556,7 +556,7 @@ plot_raster_overlay <- function(
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
   }
 
-  if (!inherits(hsi_index, what = "character")) {
+  if (!inherits(index, what = "character")) {
     rlang::abort(message = "Supplied index name is not a character.")
   }
 
@@ -574,7 +574,7 @@ plot_raster_overlay <- function(
   filename <- paste0(
     raster_src,
     "/OVERLAY_",
-    hsi_index,
+    index,
     "_",
     raster_name,
     ".",
@@ -583,7 +583,7 @@ plot_raster_overlay <- function(
 
   # Subset SpatRaster
   hsi_layer <- raster |>
-    terra::subset(hsi_index)
+    terra::subset(index)
 
   raster <- HSItools::spectra_position(
     raster,
@@ -625,7 +625,7 @@ plot_raster_overlay <- function(
       alpha = alpha,
       option = palette,
       guide = ggplot2::guide_colorbar(
-        title = hsi_index,
+        title = index,
         title.position = "bottom",
         ticks = FALSE
       )
@@ -650,7 +650,7 @@ plot_raster_overlay <- function(
 
   if (write == TRUE) {
     cli::cli_alert(
-      "Writing {hsi_index} overlay on RGB SpatRaster to {filename}"
+      "Writing {index} overlay on RGB SpatRaster to {filename}"
     )
 
     ggplot2::ggsave(
@@ -728,7 +728,7 @@ plot_composite <- function(raster, plots, extension = NULL, write = FALSE) {
 #'
 #' @family Plotting
 #' @param raster a SpatRaster with calculated hyperspectral indices and RGB layers.
-#' @param hsi_index a character indicating hyperspectral index layer to plot.
+#' @param index a character indicating hyperspectral index layer to plot.
 #' @param calibration result of pixel_to_distance or actual call to pixel_to_distance with appropriate input.
 #' @param extent a terra extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
 #' @param extension character, a graphic format extension.
@@ -740,7 +740,7 @@ plot_composite <- function(raster, plots, extension = NULL, write = FALSE) {
 #' @export
 plot_profile_spectral_series <- function(
   raster,
-  hsi_index,
+  index,
   calibration = NULL,
   extent = NULL,
   extension = NULL,
@@ -751,13 +751,13 @@ plot_profile_spectral_series <- function(
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
   }
 
-  if (!inherits(hsi_index, what = "character")) {
+  if (!inherits(index, what = "character")) {
     rlang::abort(message = "Supplied index name is not a character.")
   }
 
   # Subset SpatRaster
   hsi_layer <- raster |>
-    terra::subset(hsi_index)
+    terra::subset(index)
 
   if (is.null(extent)) {
     # Set window of interest
@@ -772,15 +772,15 @@ plot_profile_spectral_series <- function(
     HSItools::extract_spectral_series() |>
     dplyr::select(
       .data$y,
-      {{ hsi_index }}
+      {{ index }}
     ) |>
     dplyr::rename(
       y = .data$y,
-      proxy = {{ hsi_index }}
+      proxy = {{ index }}
     )
 
   # Proxy name
-  proxy_name <- rlang::as_label(rlang::enquo(hsi_index))
+  proxy_name <- rlang::as_label(rlang::enquo(index))
 
   if (is.null(calibration)) {
     # Create a plot
@@ -870,14 +870,14 @@ plot_profile_spectral_series <- function(
     filename <- paste0(
       raster_src,
       "/",
-      hsi_index,
+      index,
       "_line_",
       raster_name,
       ".",
       extension
     )
 
-    cli::cli_alert("Writing {hsi_index} plot to {filename}")
+    cli::cli_alert("Writing {index} plot to {filename}")
 
     ggplot2::ggsave(
       plot = plot,
@@ -887,7 +887,7 @@ plot_profile_spectral_series <- function(
   } else if (is.character(filename) & !is.null(filename)) {
     filename <- paste0(filename, ".", extension)
 
-    cli::cli_alert("Writing {hsi_index} plot to {filename}")
+    cli::cli_alert("Writing {index} plot to {filename}")
 
     ggplot2::ggsave(
       plot = plot,
