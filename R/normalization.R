@@ -25,7 +25,9 @@ raster_crop <- function(raster, type, dir = NULL, roi) {
 
   # Validate type
   if (!type %in% c("capture", "whiteref", "darkref")) {
-    rlang::abort("Invalid `type`. Must be one of: 'capture', 'whiteref', 'darkref'.")
+    rlang::abort(
+      "Invalid `type`. Must be one of: 'capture', 'whiteref', 'darkref'."
+    )
   }
 
   # If cropping entire capture SpatRaster use entire large ROI
@@ -186,7 +188,8 @@ create_reference_raster <- function(raster, roi, ref_type, ...) {
     fun = "mean"
   ) |>
     terra::resample(
-      template_row
+      template_row,
+      threads = TRUE,
     )
 
   # Set new extent to match extent of capture SpatRaster
@@ -194,9 +197,12 @@ create_reference_raster <- function(raster, roi, ref_type, ...) {
 
   # Scale and resample data over entire extent to match capture SpatRaster extent, multiply by ymax
   raster <- raster |>
-    terra::rescale(fx = 1, fy = terra::nrow(template_core) * 2) |>
+    # terra::rescale(fx = 1, fy = terra::nrow(template_core) * 2) |>
     terra::resample(
       template_core,
+      # Use nearest neighbor as data is simply replicated
+      method = "near",
+      thread = TRUE,
       filename = paste0(
         params$path,
         "/products/",
