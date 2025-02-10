@@ -13,7 +13,7 @@ prepare_core(
   integration = NULL,
   tintw = 1,
   tints = 1,
-  flip = TRUE,
+  flip = FALSE,
   gpkg = TRUE,
   verbose = FALSE
 )

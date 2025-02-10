@@ -23,7 +23,7 @@ prepare_core <- function(
   integration = NULL,
   tintw = 1,
   tints = 1,
-  flip = TRUE,
+  flip = FALSE,
   gpkg = TRUE,
   verbose = FALSE
 ) {
@@ -240,12 +240,11 @@ prepare_core <- function(
     fs::dir_ls(products, regexp = "resampled|cropped") |>
       fs::file_delete()
 
-    if (verbose == TRUE) {
-      cli::cli_alert_info("{format(Sys.time())} Flipping reflectance")
-    }
-
     # Finally flip because of terra handling of unprojected rasters
     if (flip == TRUE) {
+      if (verbose == TRUE) {
+        cli::cli_alert_info("{format(Sys.time())} Flipping reflectance")
+      }
       reflectance_flip <- reflectance |>
         {
           \(i)
@@ -275,8 +274,8 @@ prepare_core <- function(
       )
 
       # Get REFLECTANCE back
-      reflectance <- terra::rast(new_path, noflip = TRUE)
-    } else {
+      reflectance <- terra::rast(new_path)
+    } else if (verbose == FALSE) {
       reflectance <- reflectance
     }
 

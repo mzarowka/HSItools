@@ -432,7 +432,7 @@ run_core <- function(autoSave = TRUE){
 
       server = function(input, output, session) {
 
-        aaa <- terra::rast(system.file("extdata/CORE_XYZ/CORE_XYZ.tif",package = "HSItools"))
+        aaa <- terra::rast(system.file("extdata/CORE_XYZ/CORE_XYZ.tif", package = "HSItools"), noflip = TRUE)
 
         session$onSessionEnded(function() {
           stopApp()
@@ -624,10 +624,10 @@ run_core <- function(autoSave = TRUE){
           if (length(rasters()) == 0 & length(user_datapath()) == 0){
             NULL
           } else if (length(user_dir()) != 0){
-            return(terra::rast(files1()$capture))
+            return(terra::rast(files1()$capture, noflip = TRUE))
           } else if (length(user_datapath()) != 0) {
 
-            return(terra::rast(user_file()$datapath))
+            return(terra::rast(user_file()$datapath, noflip = TRUE))
           } else {
             return(NULL)
           }
