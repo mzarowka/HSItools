@@ -35,7 +35,7 @@ prepare_core(
 
 \item{tints}{integration time of the captured data (sample).}
 
-\item{flip}{logical, wheter output should be flipped. \pkg{terra} flips unprojected rasters (or rather, unprojected rasters are flipped from the beginning). Defaults to TRUE.}
+\item{flip}{logical, wheter output should be flipped. Defaults to FALSE.}
 
 \item{gpkg}{should empty geopackage be created. Defaults to TRUE.}
 
