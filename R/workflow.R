@@ -8,7 +8,7 @@
 #' @param integration logical, whether white reference was scanned with different settings.
 #' @param tintw integration time of the white reference.
 #' @param tints integration time of the captured data (sample).
-#' @param flip logical, wheter output should be flipped. \pkg{terra} flips unprojected rasters (or rather, unprojected rasters are flipped from the beginning). Defaults to TRUE.
+#' @param flip logical, wheter output should be flipped. Defaults to FALSE.
 #' @param gpkg should empty geopackage be created. Defaults to TRUE.
 #' @param verbose logical, should additional information be printed to the console. Defaults to FALSE.
 #'
@@ -123,7 +123,7 @@ prepare_core <- function(
     # Read SpatRasters
     rasters <- files |>
       # Load SpatRasters
-      purrr::map(\(x) terra::rast(x))
+      purrr::map(\(x) terra::rast(x, noflip = TRUE))
 
     # Get band positions - the same for all three SpatRasters
     band_position <- HSItools::spectra_position(rasters[["capture"]], layers)
@@ -275,7 +275,7 @@ prepare_core <- function(
       )
 
       # Get REFLECTANCE back
-      reflectance <- terra::rast(new_path)
+      reflectance <- terra::rast(new_path, noflip = TRUE)
     } else {
       reflectance <- reflectance
     }
