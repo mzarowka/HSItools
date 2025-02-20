@@ -57,12 +57,12 @@ prepare_core <- function(
       whiteref = fs::path_filter(files, regexp = "WHITE")
     )
 
-    # Get layers, if nothing provided use all
-    layers <- layers %||%
-      as.numeric(terra::names(terra::rast(files[["capture"]]))) |>
-      {
-        \(raster) c(min(raster):max(raster))
-      }()
+    # # Get layers, if nothing provided use all
+    # layers <- layers %||%
+    #   as.numeric(terra::names(terra::rast(files[["capture"]]))) |>
+    #   {
+    #     \(raster) c(min(raster):max(raster))
+    #   }()
   }
 
   if (verbose == TRUE) {
@@ -120,23 +120,38 @@ prepare_core <- function(
     # Get big roi = extent of the entire core
     big_roi <- terra::ext(ext)
 
-    # Read SpatRasters
-    rasters <- files |>
-      # Load SpatRasters
-      purrr::map(\(x) terra::rast(x, noflip = TRUE))
+    if (is.null(layers)) {
+      # Keep layers NULL to signal we want all layers
+      rasters <- files |>
+        purrr::map(\(x) terra::rast(x, noflip = TRUE))
 
-    # Get band positions - the same for all three SpatRasters
-    band_position <- HSItools::spectra_position(rasters[["capture"]], layers)
+      # Use rasters directly without subsetting
+      rasters_subset <- rasters
+    } else {
+      # If specific layers are requested, either from parameters or shiny input
+      layers <- layers %||%
+        as.numeric(terra::names(terra::rast(files[["capture"]]))) |>
+        {
+          \(raster) c(min(raster):max(raster))
+        }()
 
-    # Subset bands in the SpatRasters
-    rasters_subset <- rasters |>
-      purrr::map(
-        \(x)
-          HSItools::spectra_sub(
-            raster = x,
-            spectra_tbl = band_position
-          )
-      )
+      # Read SpatRasters
+      rasters <- files |>
+        purrr::map(\(x) terra::rast(x, noflip = TRUE))
+
+      # Get band positions and subset
+      band_position <- HSItools::spectra_position(rasters[["capture"]], layers)
+
+      # Subset bands in the SpatRasters
+      rasters_subset <- rasters |>
+        purrr::map(
+          \(x)
+            HSItools::spectra_sub(
+              raster = x,
+              spectra_tbl = band_position
+            )
+        )
+    }
 
     if (verbose == TRUE) {
       cli::cli_alert_info("{format(Sys.time())} Cropping rasters")
@@ -145,6 +160,18 @@ prepare_core <- function(
     # Crop
     # If expected REFLECTANCE has the same extent as captured data
     if (terra::ext(ext) == terra::ext(rasters[["capture"]])) {
+      if (verbose) {
+        cli::cli_alert_info(
+          "Original raster layers: {terra::nlyr(rasters[['capture']])}"
+        )
+        cli::cli_alert_info(
+          "Subset raster layers: {terra::nlyr(rasters_subset[['capture']])}"
+        )
+        cli::cli_alert_info(
+          "Are layer counts equal? {terra::nlyr(rasters[['capture']]) == terra::nlyr(rasters_subset[['capture']])}"
+        )
+      }
+
       # If no layer subsetting
       if (
         terra::nlyr(rasters[["capture"]]) ==
@@ -155,19 +182,30 @@ prepare_core <- function(
       } else {
         rasters_cropped <- purrr::map(rasters_subset, \(raster) {
           # Extract source information
-          raster_src <- dirname(terra::sources(raster))
+          raster_src <- dirname(dirname(terra::sources(raster)))
 
           # Extract file name
           raster_name <- tools::file_path_sans_ext(
             basename(terra::sources(raster))
           )
 
-          # Construct default filename
+          # Create products directory if it doesn't exist
+          products_dir <- fs::path(raster_src, "products")
+          if (!dir.exists(products_dir)) {
+            dir.create(products_dir, recursive = TRUE)
+          }
+
+          # Construct default filename (without leading/trailing slashes)
           filename <- fs::path(
             raster_src,
-            "/products/",
+            "products", # Remove slashes
             paste0(raster_name, "_cropped.tif")
           )
+
+          if (verbose) {
+            cli::cli_alert_info("Writing raster to: {filename}")
+          }
+
           terra::writeRaster(
             raster,
             filename = filename,
