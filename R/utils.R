@@ -69,7 +69,7 @@ spectra_sub <- function(
   raster <- terra::subset(raster, position)
 
   # Set raster names to match spectra
-  # names(raster) <- as.character(spectra)
+  # terra::names(raster) <- as.character(spectra)
 
   # Return raster
   return(raster)
@@ -102,7 +102,7 @@ roi_to_vect <- function(data) {
   data <- data |>
     # Add grouping variable
     dplyr::mutate(
-      roi.id = paste0("ROI_", 1:nrow(data)),
+      roi.id = paste0("ROI_", 1:terra::nrow(data)),
       .before = 1
     ) |>
     # Group by
@@ -110,7 +110,7 @@ roi_to_vect <- function(data) {
     # Split
     dplyr::group_split() |>
     # Set names
-    purrr::set_names(nm = paste0("ROI_", 1:nrow(data))) |>
+    purrr::set_names(nm = paste0("ROI_", 1:terra::nrow(data))) |>
     # Drop id
     purrr::map(\(i) dplyr::select(i, -.data$roi.id)) |>
     # Pivot X
@@ -135,7 +135,7 @@ roi_to_vect <- function(data) {
     # Select only x and y
     purrr::map(\(i) dplyr::select(i, .data$v1, .data$v2)) |>
     # To matrix for polygon
-    purrr::map(\(i) as.matrix(i)) |>
+    purrr::map(\(i) terra::as.matrix(i)) |>
     # Create polygon
     purrr::map(\(i) sf::st_polygon(list(i))) |>
     # Polygon is intersecting, get bounding box
@@ -145,7 +145,7 @@ roi_to_vect <- function(data) {
     # Coerce to sf
     purrr::map(\(i) sf::st_as_sf(i)) |>
     # Set names
-    purrr::set_names(nm = paste0("ROI_", 1:nrow(data))) |>
+    purrr::set_names(nm = paste0("ROI_", 1:terra::nrow(data))) |>
     # Bind by row
     purrr::list_rbind(names_to = "roi.id") |>
     # Rename
@@ -245,7 +245,7 @@ pixel_to_distance <- function(
 #'
 #' @examples
 #' if (interactive() == TRUE) {
-#' a1 <- readRDS(file.path(system.file(package = "HSItools"),"extdata/HSItools_core.rds"))
+#' a1 <- terra::readRDS(file.path(system.file(package = "HSItools"),"extdata/HSItools_core.rds"))
 #' change_output_dir(a1)
 #' }
 #'
@@ -271,81 +271,4 @@ change_output_dir = function(
     }
   }
   return(run_core_output)
-}
-
-
-#' Get available memory
-#'
-#' @family Utilities
-#'
-#' @return memory available immediately before writing the raster.
-get_available_memory <- function() {
-  # Check the OS type
-  os <- Sys.info()["sysname"]
-  
-  # Linux
-  if (os == "Linux") {
-    available_memory <- as.numeric(
-      system("awk '/MemAvailable/ {print $2}' /proc/meminfo", intern = TRUE)
-    ) *
-      1024
-    # Windows
-  } else if (os == "Windows") {
-    available_memory <- as.numeric(
-      system("wmic OS get FreePhysicalMemory", intern = TRUE)[2]
-    ) *
-      1024
-    # Mac OS
-  } else if (os == "Darwin") {
-    # macOS
-    available_memory <- as.numeric(
-      system("vm_stat | grep 'Pages free' | awk '{print $3}'", intern = TRUE)
-    ) *
-      4096
-  } else {
-    rlang::abort("Unsupported operating system")
-  }
-
-  # Return
-  return(available_memory)
-}
-
-#' Update the calculate_optimal_steps function
-#'
-#' @family utilities
-#'
-#' @return optimal number of steps for writeRaster
-calculate_optimal_steps <- function(raster, safety_factor = 0.5) {
-  # Estimate raster size based on the original one
-  raster_size <- terra::size(raster)
-
-  # Get available memory
-  # available_memory <- HSItools::get_available_memory()
-
-  # Calculate usable memory
-  usable_memory <- HSItools::get_available_memory() * safety_factor
-
-  optimal_steps <- ceiling(raster_size / usable_memory) |>
-    # Make it at least one step
-    {\(memory) max(c(memory, 1))}()
-
-  #optimal_steps <- max(optimal_steps, 1)
-
-  # Return
-  return(optimal_steps)
-}
-
-#' Create empty geopackage with preset CRS
-#'
-#' @family Utilities
-#' @param path path to write the file.
-#' @param crs CRS to use. Defaults to EPSG:4326 (WGS 84).
-#'
-#' @return an empty gopackage.
-#' @export
-create_empty_geopackage <- function(path, crs = 4326) {
-  # Create empty geopackage
-  gpkg <- sf::st_sf(sf::st_sfc(), crs = 4326) |>
-    # Write to file
-    sf::st_write(dsn = path, driver = "GPKG")
 }

@@ -59,7 +59,7 @@ stretch_raster_full <- function(
           purrr::list_c(
             purrr::map(
               c(640, 545, 460),
-              \(i) dplyr::near(i, as.numeric(names(raster)), tol = 25)
+              \(i) dplyr::near(i, as.numeric(terra::names(raster)), tol = 25)
             )
           )
         )
@@ -76,7 +76,7 @@ stretch_raster_full <- function(
         terra::median(1:terra::nlyr(raster)),
         max(terra::nlyr(raster))
       ) |>
-        (\(i) as.numeric(names(1:terra::subset(raster, i))))()
+        (\(i) as.numeric(terra::names(1:terra::subset(raster, i))))()
     }
   } else if (type == "CIR") {
     # Filename handling
@@ -105,7 +105,7 @@ stretch_raster_full <- function(
           purrr::list_c(
             purrr::map(
               c(860, 650, 555),
-              \(i) dplyr::near(i, as.numeric(names(raster)), tol = 25)
+              \(i) dplyr::near(i, as.numeric(terra::names(raster)), tol = 25)
             )
           )
         )
@@ -143,7 +143,7 @@ stretch_raster_full <- function(
           purrr::list_c(
             purrr::map(
               c(900, 800, 700),
-              \(i) dplyr::near(i, as.numeric(names(raster)), tol = 25)
+              \(i) dplyr::near(i, as.numeric(terra::names(raster)), tol = 25)
             )
           )
         )
@@ -320,7 +320,7 @@ plot_raster_proxy <- function(
       ggplot2::scale_y_continuous(
         labels = \(i)
           format(
-            round(
+            terra::round(
               -1 *
                 i *
                 calibration$pixel_ratio +
@@ -798,7 +798,7 @@ plot_profile_spectral_series <- function(
       ggplot2::theme(
         panel.background = ggplot2::element_blank(),
         axis.line = ggplot2::element_line(color = "black"),
-        panel.border = element_rect(color = "black", fill = NA),
+        panel.border = ggplot2::element_rect(color = "black", fill = NA),
         legend.text.position = "bottom"
       ) +
       # Add labels
@@ -822,7 +822,7 @@ plot_profile_spectral_series <- function(
       ggplot2::scale_y_continuous(
         labels = \(i)
           format(
-            round(
+            terra::round(
               -1 *
                 i *
                 calibration$pixel_ratio +
@@ -836,7 +836,7 @@ plot_profile_spectral_series <- function(
       ggplot2::theme(
         panel.background = ggplot2::element_blank(),
         axis.line = ggplot2::element_line(color = "black"),
-        panel.border = element_rect(color = "black", fill = NA),
+        panel.border = ggplot2::element_rect(color = "black", fill = NA),
         legend.text.position = "bottom"
       ) +
       # Add labels

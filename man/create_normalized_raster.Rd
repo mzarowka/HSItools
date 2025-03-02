@@ -23,7 +23,7 @@ create_normalized_raster(
 
 \item{tintw}{integration time of the white reference.}
 
-\item{tints}{integration time of the captured data (sample).}
+\item{tints}{integration time of the captured utils::data (sample).}
 
 \item{fun}{function to apply: normalization.}
 

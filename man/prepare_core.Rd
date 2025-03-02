@@ -14,7 +14,6 @@ prepare_core(
   tintw = 1,
   tints = 1,
   flip = FALSE,
-  gpkg = TRUE,
   verbose = FALSE
 )
 }
@@ -36,8 +35,6 @@ prepare_core(
 \item{tints}{integration time of the captured data (sample).}
 
 \item{flip}{logical, wheter output should be flipped. Defaults to FALSE.}
-
-\item{gpkg}{should empty geopackage be created. Defaults to TRUE.}
 
 \item{verbose}{logical, should additional information be printed to the console. Defaults to FALSE.}
 }

@@ -53,7 +53,7 @@ remove_continuum_2 <- function(
   wopts <- list(steps = terra::ncell(raster) * terra::nlyr(raster))
 
   # Extract names
-  band_names <- names(raster)
+  band_names <- terra::names(raster)
 
   # Remove continuum in a single pixel
   remove_continuum_px <- function(raster) {
@@ -61,7 +61,7 @@ remove_continuum_2 <- function(
     spectrum <- terra::values(raster)
 
     # Wavelengths
-    wavelengths <- as.numeric(names(raster))
+    wavelengths <- as.numeric(terra::names(raster))
 
     # Calculate and approximate convex hull
     hull <- grDevices::chull(wavelengths, spectrum)
@@ -69,7 +69,7 @@ remove_continuum_2 <- function(
     hull <- hull[order(wavelengths[hull])]
 
     # Interpolate the continuum line using the convex hull points
-    continuum <- approx(wavelengths[hull], spectrum[hull], xout = wavelengths)$y
+    continuum <- stats::approx(wavelengths[hull], spectrum[hull], xout = wavelengths)$y
 
     # Ensure the continuum line is always greater than or equal to the spectrum
     continuum <- pmax(continuum, spectrum)
@@ -94,7 +94,7 @@ remove_continuum_2 <- function(
   )
 
   # Set names
-  names(raster) <- as.character(band_names)
+  terra::names(raster) <- as.character(band_names)
 
   # Update names on disk
   # terra::update(raster, names = TRUE)
