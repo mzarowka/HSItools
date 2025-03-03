@@ -194,7 +194,7 @@ remove_continuum <- function(
   )
 
   # Extract names
-  band_names <- terra::names(raster)
+  band_names <- names(raster)
 
   # Remove continuum in a single pixel pixel
   remove_continuum_fun <- function(raster) {
@@ -235,7 +235,7 @@ remove_continuum <- function(
   )
 
   # Set names
-  terra::names(raster) <- as.character(band_names)
+  names(raster) <- as.character(band_names)
 
   # Update names on disk
   # terra::update(raster, names = TRUE)
@@ -445,7 +445,7 @@ filter_savgol <- function(
   )
 
   # Extract names
-  band_names <- terra::names(raster)
+  band_names <- names(raster)
 
   # Apply Savitzky-Golay filter
   raster <- terra::app(
@@ -457,7 +457,7 @@ filter_savgol <- function(
   )
 
   # Set names
-  terra::names(raster) <- as.character(band_names)
+  names(raster) <- as.character(band_names)
 
   # Update names on disk
   #terra::update(raster, names = TRUE)
