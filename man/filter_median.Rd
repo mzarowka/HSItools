@@ -5,7 +5,7 @@
 \title{Smooth raster with focal median}
 \usage{
 filter_median(
-  raster = raster,
+  raster,
   window = 3,
   extent = NULL,
   filename = NULL,
