@@ -22,8 +22,6 @@ This will produce duplicates with multiple bands. Drop.
 \seealso{
 Other Utilities: 
 \code{\link{change_output_dir}()},
-\code{\link{create_empty_geopackage}()},
-\code{\link{get_available_memory}()},
 \code{\link{pixel_to_distance}()},
 \code{\link{roi_to_vect}()},
 \code{\link{spectra_sub}()}

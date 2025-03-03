@@ -9,7 +9,6 @@
 #' @param tintw integration time of the white reference.
 #' @param tints integration time of the captured data (sample).
 #' @param flip logical, wheter output should be flipped. Defaults to FALSE.
-#' @param gpkg should empty geopackage be created. Defaults to TRUE.
 #' @param verbose logical, should additional information be printed to the console. Defaults to FALSE.
 #'
 #' @return reflectance SpatRaster.
@@ -24,7 +23,6 @@ prepare_core <- function(
   tintw = 1,
   tints = 1,
   flip = FALSE,
-  gpkg = TRUE,
   verbose = FALSE
 ) {
   if (!is.null(core)) {
@@ -330,16 +328,6 @@ prepare_core <- function(
 
   if (verbose == TRUE) {
     cli::cli_alert_success("{format(Sys.time())} Finished")
-
-    if (gpkg == TRUE)
-      # Create empty geopackage
-      create_empty_geopackage(
-        path = sub(
-          x = terra::sources(reflectance),
-          pattern = "tif",
-          replacement = "gpkg"
-        )
-      )
 
     # Return reflectance
     return(reflectance)

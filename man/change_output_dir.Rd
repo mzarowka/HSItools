@@ -17,15 +17,13 @@ Adjust paths from Shiny output
 }
 \examples{
 if (interactive() == TRUE) {
-a1 <- readRDS(file.path(system.file(package = "HSItools"),"extdata/HSItools_core.rds"))
+a1 <- terra::readRDS(file.path(system.file(package = "HSItools"),"extdata/HSItools_core.rds"))
 change_output_dir(a1)
 }
 
 }
 \seealso{
 Other Utilities: 
-\code{\link{create_empty_geopackage}()},
-\code{\link{get_available_memory}()},
 \code{\link{pixel_to_distance}()},
 \code{\link{roi_to_vect}()},
 \code{\link{spectra_position}()},

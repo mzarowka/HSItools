@@ -68,7 +68,7 @@ calculate_rabd <- function(
     }
 
       # Set layer name based on the rabd_name argument
-    names(template) <- paste0(rabd_name, "_max")
+    terra::names(template) <- paste0(rabd_name, "_max")
 
     # Find trough position
     trough_position <- spectra_position(
@@ -104,7 +104,7 @@ calculate_rabd <- function(
     }
 
     # Set layer name based on the rabd_name argument
-    names(template) <- paste0(rabd_name, "_mid")
+    terra::names(template) <- paste0(rabd_name, "_mid")
 
     # Find trough position
     trough <- stats::median(trough)
@@ -142,7 +142,7 @@ calculate_rabd <- function(
     }
 
     # Set layer name based on the rabd_name argument
-    names(template) <- paste0(rabd_name, "_strict")
+    terra::names(template) <- paste0(rabd_name, "_strict")
 
     # Find trough position
     trough_position <- spectra_position(raster = raster, spectra = trough) |>
@@ -268,7 +268,7 @@ calculate_raba <- function(
     resolution = terra::res(raster))
 
   # Set layer name based on the raba_name argument
-  names(template) <- raba_name
+  terra::names(template) <- raba_name
 
   # Calculate RABD for every band in the range
 
@@ -349,7 +349,7 @@ calculate_band_ratio <- function(
   template <- terra::subset(raster, edge_positions[1]) / terra::subset(raster, edge_positions[2])
 
   # Set layer name
-  names(template) <- ratio_name
+  terra::names(template) <- ratio_name
 
   # Write new raster to file based on paths stored in the environment
   terra::writeRaster(
@@ -428,7 +428,7 @@ calculate_band_difference <- function(
   template <- terra::subset(raster, edge_positions[1]) - terra::subset(raster, edge_positions[2])
 
   # Set layer name
-  names(template) <- difference_name
+  terra::names(template) <- difference_name
 
   # Write new raster to file based on paths stored in the environment
   terra::writeRaster(
@@ -499,7 +499,7 @@ calculate_rmean <- function(
   template <- terra::app(raster, fun = "mean")
 
   # Set layer name
-  names(template) <- "rmean"
+  terra::names(template) <- "rmean"
 
   # Write new raster to file based on paths stored in the environment
   terra::writeRaster(
@@ -585,7 +585,7 @@ calculate_lambdaremp <- function(
   terra::values(template) <- remp
 
   # Set layer name
-  names(template) <- "REMP"
+  terra::names(template) <- "REMP"
 
   # Write new raster to file based on paths stored in the environment
   terra::writeRaster(
@@ -664,7 +664,7 @@ calculate_derivative <- function(
   # derivative
 
   # Set layer name
-  names(template) <- derivative_name
+  terra::names(template) <- derivative_name
 
   # Write new raster to file based on paths stored in the environment
   terra::writeRaster(
@@ -744,7 +744,7 @@ calculate_ndi <- function(
   template <- (terra::subset(raster, edge_positions[1]) - terra::subset(raster, edge_positions[2])) / (terra::subset(raster, edge_positions[1]) + terra::subset(raster, edge_positions[2]))
 
   # Set layer name
-  names(template) <- ndi_name
+  terra::names(template) <- ndi_name
 
   # Write new raster to file based on paths stored in the environment
   terra::writeRaster(
