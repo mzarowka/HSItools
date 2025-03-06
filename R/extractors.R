@@ -68,7 +68,7 @@ extract_spectral_series <- function(
           tube.mm = .data$depth.mm - calibration$point_zero
         ) |>
         # Drop x and y
-        dplyr::select(-c(.data$x, .data$y)) |>
+        dplyr::select(.data$y) |>
         # Keep only non-negative depths
         dplyr::filter(tube.mm >= 0)
     }
