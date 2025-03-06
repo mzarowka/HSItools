@@ -2,6 +2,7 @@
 #'
 #' @param raster terra SpatRaster with one layer with calculated values.
 #' @param index character indicating hyperspectral index layer to plot.
+#' @param categorical is SpatRaster categorical. Defaults to FALSE. If categorical, then most abundant class is retained.
 #' @param calibration result of pixel_to_distance or actual call to pixel_to_distance with appropriate input.
 #' @param extent an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
 #' @param filename empty = in memory, TRUE = guess name and attempt write, or user specified path to glue with extension.
@@ -12,6 +13,7 @@
 extract_spectral_series <- function(
   raster,
   index = NULL,
+  categorical = FALSE,
   calibration = NULL,
   extent = NULL,
   filename = NULL,
@@ -38,7 +40,7 @@ extract_spectral_series <- function(
   }
 
   # Check if it is categorical
-  if (all(is.factor(raster))){
+  if (categorical == TRUE) {
     # Check calibration
     if (is.null(calibration) == TRUE) {
       spectral_series <- raster |>

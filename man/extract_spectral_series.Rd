@@ -7,6 +7,7 @@
 extract_spectral_series(
   raster,
   index = NULL,
+  categorical = FALSE,
   calibration = NULL,
   extent = NULL,
   filename = NULL,
@@ -17,6 +18,8 @@ extract_spectral_series(
 \item{raster}{terra SpatRaster with one layer with calculated values.}
 
 \item{index}{character indicating hyperspectral index layer to plot.}
+
+\item{categorical}{is SpatRaster categorical. Defaults to FALSE. If categorical, then most abundant class is retained.}
 
 \item{calibration}{result of pixel_to_distance or actual call to pixel_to_distance with appropriate input.}
 
