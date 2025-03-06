@@ -36,6 +36,42 @@ extract_spectral_series <- function(
     raster <- raster |>
       terra::subset(index)
   }
+
+  # Check if it is categorical
+  if (all(is.factor(raster))){
+    # Check calibration
+    if (is.null(calibration) == TRUE) {
+      spectral_series <- raster |>
+        # Coerce do data frame with coordinates
+        terra::as.data.frame(xy = TRUE) |>
+        # To tibble
+        dplyr::tibble()
+    } else {
+      spectral_series <- raster |>
+        # Coerce do data frame with coordinates
+        terra::as.data.frame(xy = TRUE) |>
+        # To tibble
+        dplyr::tibble() |>
+        # Gropb by y
+        dplyr::group_by(y) |>
+        # Count occurences
+        dplyr::count(layer) |>
+        # Keep max
+        dplyr::slice_max(order_by = n, n = 1) |>
+        # Ungroup
+        dplyr::ungroup() |>
+        # Calculate metric depths
+        dplyr::mutate(
+          depth.mm = calibration$distance - (.data$y * calibration$pixel_ratio),
+          tube.mm = .data$depth.mm - calibration$point_zero
+        ) |>
+        # Drop x and y
+        dplyr::select(-c(.data$x, .data$y)) |>
+        # Keep only non-negative depths
+        dplyr::filter(tube.mm >= 0)
+    }
+  } else {
+
   if (is.null(calibration) == TRUE) {
     spectral_series <- raster |>
       terra::aggregate(
@@ -67,7 +103,7 @@ extract_spectral_series <- function(
       dplyr::select(-c(.data$x, .data$y)) |>
       # Keep only non-negative depths
       dplyr::filter(tube.mm >= 0)
-  }
+  }}
 
   # Reset window
   terra::window(raster) <- NULL
