@@ -174,11 +174,23 @@ create_reference_raster <- function(raster, roi, ref_type, ...) {
     resolution = c(1, 1)
   )
 
+  # Make sure origin matches original data
+  terra::origin(template_row) <- c(
+    terra::origin(raster)[1],
+    terra::origin(raster)[2]
+  )
+
   # Create full core template
   template_core <- terra::rast(
     terra::ext(roi),
     resolution = c(1, 1),
     nlyrs = terra::nlyr(raster)
+  )
+
+  # Make sure origin matches original data
+  terra::origin(template_core) <- c(
+    terra::origin(raster)[1],
+    terra::origin(raster)[2]
   )
 
   # Aggregate data into one row SpatRaster, divide by number of rows
