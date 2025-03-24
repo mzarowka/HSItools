@@ -44,6 +44,7 @@ This is useful for segmenting hyperspectral core data into regions with similar 
 }
 \seealso{
 Other Spectral classifications: 
+\code{\link{calculate_kmeans_multiple}()},
 \code{\link{find_optimal_clusters}()}
 }
 \concept{Spectral classifications}

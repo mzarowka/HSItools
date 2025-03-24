@@ -861,3 +861,271 @@ find_optimal_clusters <- function(
 
   return(results)
 }
+
+#' Perform k-means clustering on multiple SpatRasters
+#'
+#' @family Spectral classifications
+#'
+#' @param raster_list a list of terra SpatRasters to cluster.
+#' @param n_clusters number of clusters to create.
+#' @param iter.max maximum number of iterations for k-means algorithm.
+#' @param nstart number of random starting configurations.
+#' @param sample_size number of sample pixels to use for initial clustering.
+#' @param use_sampling logical, whether to use sampling (TRUE) or analyze entire extent (FALSE).
+#' @param consistent_centroids logical, whether to force exactly the same centroids across all rasters.
+#' @param variables vector of specific band/variable names to use, or NULL to use all.
+#' @param extent an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
+#' @param filename_prefix prefix for output filenames, or NULL for no file output.
+#' @param extension character, a graphic format extension.
+#'
+#' @return A list containing the clustered SpatRasters and k-means model information.
+#' @export
+#'
+#' @description
+#' Performs k-means clustering on multiple SpatRasters that may have different extents.
+#' When consistent_centroids=TRUE, exactly the same cluster centroids are used for all rasters.
+#' When consistent_centroids=FALSE, initial centroids are derived from samples of all rasters,
+#' but the final centroids may vary slightly.
+#'
+calculate_kmeans_multiple <- function(
+  raster_list,
+  n_clusters = 5,
+  iter.max = 100,
+  nstart = 25,
+  sample_size = 10000,
+  use_sampling = TRUE,
+  consistent_centroids = TRUE,
+  variables = NULL,
+  extent = NULL,
+  filename_prefix = NULL,
+  extension = "tif"
+) {
+  # Check input
+  if (!is.list(raster_list) || length(raster_list) == 0) {
+    rlang::abort("raster_list must be a non-empty list of SpatRasters")
+  }
+
+  if (!all(sapply(raster_list, function(r) inherits(r, "SpatRaster")))) {
+    rlang::abort("All elements in raster_list must be terra SpatRasters")
+  }
+
+  # Set random seed for reproducibility
+  set.seed(42)
+
+  # Filter variables if specified
+  if (!is.null(variables)) {
+    raster_list <- purrr::map(raster_list, function(r) {
+      if (all(variables %in% names(r))) {
+        return(terra::subset(r, variables))
+      } else {
+        available_vars <- variables[variables %in% names(r)]
+        if (length(available_vars) == 0) {
+          rlang::abort(paste(
+            "None of the specified variables found in raster:",
+            names(r)
+          ))
+        }
+        cli::cli_alert_warning(paste(
+          "Only using variables:",
+          paste(available_vars, collapse = ", ")
+        ))
+        return(terra::subset(r, available_vars))
+      }
+    })
+  }
+
+  # Apply extent if specified
+  if (!is.null(extent)) {
+    raster_list <- purrr::map(raster_list, function(r) {
+      terra::crop(r, extent)
+    })
+  }
+
+  # Sample data from all rasters for initial clustering
+  if (use_sampling) {
+    cli::cli_alert_info(
+      "Sampling {sample_size} pixels across all rasters for initial clustering"
+    )
+
+    # Calculate how many samples to take from each raster
+    samples_per_raster <- ceiling(sample_size / length(raster_list))
+
+    # Sample from each raster
+    sampled_values <- purrr::map(raster_list, function(r) {
+      terra::spatSample(
+        r,
+        size = samples_per_raster,
+        method = "random",
+        na.rm = TRUE
+      )
+    })
+
+    # Combine all samples
+    combined_samples <- do.call(rbind, sampled_values)
+
+    # Perform k-means on the combined sample
+    cli::cli_alert_info("Performing initial k-means clustering on sampled data")
+    kmeans_initial <- stats::kmeans(
+      combined_samples,
+      centers = n_clusters,
+      iter.max = iter.max,
+      nstart = nstart
+    )
+
+    initial_centers <- kmeans_initial$centers
+  } else {
+    initial_centers <- NULL
+  }
+
+  # Process each raster based on the strategy
+  if (consistent_centroids && !is.null(initial_centers)) {
+    # Force consistent centroids across all rasters
+    cli::cli_alert_info("Using consistent centroids across all rasters")
+
+    cluster_results <- purrr::map(seq_along(raster_list), function(i) {
+      r <- raster_list[[i]]
+
+      # Find closest centroid for each pixel
+      cli::cli_alert_info("Processing raster {i}/{length(raster_list)}")
+
+      # Create cluster raster using app() for memory efficiency
+      cluster_raster <- terra::app(r, function(vals) {
+        if (any(is.na(vals))) return(NA)
+
+        # Calculate distance to each centroid
+        dists <- apply(initial_centers, 1, function(cent) {
+          sqrt(sum((vals - cent)^2))
+        })
+
+        # Return the index of the closest centroid
+        return(which.min(dists))
+      })
+
+      # Set name
+      names(cluster_raster) <- "cluster"
+
+      # Write to file if specified
+      if (!is.null(filename_prefix)) {
+        outfile <- paste0(filename_prefix, "raster_", i, ".", extension)
+        cli::cli_alert_info("Writing cluster raster to {outfile}")
+        terra::writeRaster(cluster_raster, outfile, overwrite = TRUE)
+      }
+
+      # Store and return
+      return(cluster_raster)
+    })
+
+    # Return with final centroids
+    return(list(
+      cluster_rasters = cluster_results,
+      centers = initial_centers,
+      centers_df = as.data.frame(initial_centers)
+    ))
+  } else {
+    # Use terra's built-in kmeans with initial centers if available
+    cli::cli_alert_info(
+      "Using terra's kmeans with potentially varying centroids"
+    )
+
+    cluster_results <- purrr::map(seq_along(raster_list), function(i) {
+      r <- raster_list[[i]]
+
+      cli::cli_alert_info("Processing raster {i}/{length(raster_list)}")
+
+      # Use initial centers if available, otherwise let terra pick them
+      if (!is.null(initial_centers)) {
+        cluster_raster <- terra::kmeans(r, centers = initial_centers)
+      } else {
+        cluster_raster <- terra::kmeans(r, centers = n_clusters)
+      }
+
+      # Write to file if specified
+      if (!is.null(filename_prefix)) {
+        outfile <- paste0(filename_prefix, "raster_", i, ".", extension)
+        cli::cli_alert_info("Writing cluster raster to {outfile}")
+        terra::writeRaster(cluster_raster, outfile, overwrite = TRUE)
+      }
+
+      return(cluster_raster)
+    })
+
+    # Extract centroids from the last clustering
+    last_kmeans_attr <- attributes(cluster_results[[length(cluster_results)]])
+    final_centers <- last_kmeans_attr$centers
+
+    # Return results
+    return(list(
+      cluster_rasters = cluster_results,
+      centers = final_centers,
+      centers_df = as.data.frame(final_centers)
+    ))
+  }
+}
+
+#' Analyze cluster centroids to understand what each cluster represents
+#'
+#' @param centers_df data frame of cluster centroids
+#' @param variable_names optional vector of variable names
+#'
+#' @return A tibble in long format with cluster centroids by variable
+#' @export
+analyze_cluster_centroids <- function(centers_df, variable_names = NULL) {
+  # Add cluster ID if not present
+  if (!"cluster" %in% names(centers_df)) {
+    centers_df$cluster <- 1:nrow(centers_df)
+  }
+
+  # Rename columns if variable_names provided
+  if (
+    !is.null(variable_names) && length(variable_names) == ncol(centers_df) - 1
+  ) {
+    colnames(centers_df)[1:(ncol(centers_df) - 1)] <- variable_names
+  }
+
+  # Convert to long format for analysis
+  centroids_long <- centers_df %>%
+    tidyr::pivot_longer(
+      cols = -cluster,
+      names_to = "variable",
+      values_to = "value"
+    )
+
+  return(centroids_long)
+}
+
+#' Find the most important variables for differentiating clusters
+#'
+#' @param centers_df data frame of cluster centroids
+#' @param variable_names optional vector of variable names
+#'
+#' @return A tibble ranking variables by their importance in separating clusters
+#' @export
+rank_cluster_variables <- function(centers_df, variable_names = NULL) {
+  # Apply variable names if provided
+  if (
+    !is.null(variable_names) && length(variable_names) == ncol(centers_df) - 1
+  ) {
+    colnames(centers_df)[1:(ncol(centers_df) - 1)] <- variable_names
+  }
+
+  # Get columns excluding the cluster ID
+  data_cols <- setdiff(colnames(centers_df), "cluster")
+
+  # Calculate variance of each variable across centroids
+  var_importance <- tibble::tibble(
+    variable = data_cols,
+    variance = sapply(data_cols, function(col) var(centers_df[[col]])),
+    relative_importance = NA_real_
+  )
+
+  # Calculate relative importance
+  total_var <- sum(var_importance$variance)
+  var_importance$relative_importance <- (var_importance$variance / total_var) *
+    100
+
+  # Sort by importance
+  var_importance <- var_importance %>%
+    dplyr::arrange(desc(relative_importance))
+
+  return(var_importance)
+}

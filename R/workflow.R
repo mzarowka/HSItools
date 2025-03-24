@@ -13,7 +13,7 @@
 #'
 #' @return reflectance SpatRaster.
 #' @export
-prepare_core <- function(
+get_reflectance <- function(
   core = NULL,
   path = NULL,
   layers = NULL,
