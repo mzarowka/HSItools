@@ -3,6 +3,7 @@
 export(analyze_cluster_centroids)
 export(calculate_band_difference)
 export(calculate_band_ratio)
+export(calculate_derivative)
 export(calculate_kmeans)
 export(calculate_kmeans_multiple)
 export(calculate_lambdaremp)
