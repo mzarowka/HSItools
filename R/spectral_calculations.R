@@ -519,86 +519,157 @@ calculate_rmean <- function(
 #'
 #' @family Spectral calculations
 #'
-#' @param raster a terra SpatRaster of normalized capture data.
-#' @param trough character vector of wavelength to look for trough.
-#' @param extent an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
-#' @param ext character, a graphic format extension.
-#' @param filename NULL (default) to write automatically into products, provide full path and ext to override.
+#' @param raster A terra SpatRaster of normalized capture data.
+#' @param trough_range Numeric vector defining the wavelength range to search for trough (default: c(660, 680)).
+#' @param extent An extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
+#' @param extension Character, a graphic format extension.
+#' @param filename NULL (default) to write automatically into products folder, provide full path and extension to override.
 #'
-#' @return one layer terra SpatRaster with calculated lambdaREMP values.
+#' @return One layer terra SpatRaster with calculated lambdaREMP values.
 #'
-#' @description Calculate lambdaREMP. A wavelength number between 660 and 680 nm, where first derivative equals zero. After Ghanbari, H., Zilkey, D.R., Gregory-Eaves, I., Antoniades, D., 2023. A new index for the rapid generation of chlorophyll time series from hyperspectral imaging of sediment cores. Limnology and Oceanography: Methods 21, 703–717. https://doi.org/10.1002/lom3.10576.
+#' @description Calculate lambdaREMP (wavelength of the red-edge minimum point). 
+#' This is the wavelength between 660 and 680 nm where the first derivative of 
+#' reflectance equals zero, indicating the maximum absorption of light by chlorophyll.
+#' Based on Ghanbari, H., Zilkey, D.R., Gregory-Eaves, I., Antoniades, D., 2023. 
+#' A new index for the rapid generation of chlorophyll time series from hyperspectral imaging of sediment cores.
+#' Limnology and Oceanography: Methods 21, 703–717. https://doi.org/10.1002/lom3.10576
 #'
 #' @export
 calculate_lambdaremp <- function(
-    raster,
-    trough = c(660, 680),
-    extent = NULL,
-    ext = NULL,
-    filename = NULL) {
+  raster,
+  trough_range = c(660, 680),
+  extent = NULL,
+  extension = NULL,
+  filename = NULL) {
 
-  # Check if correct class is supplied.
-  if (!inherits(raster, what = "SpatRaster")) {
-    rlang::abort(message = "Supplied data is not a terra SpatRaster.")
-  }
+# Check if correct class is supplied
+if (!inherits(raster, what = "SpatRaster")) {
+  rlang::abort(message = "Supplied data is not a terra SpatRaster.")
+}
 
-  # Raster source directory
-  raster_src <- raster |>
-    terra::sources() |>
-    fs::path_dir()
-
-  # Raster source name
-  raster_name <- raster |>
-    terra::sources() |>
-    fs::path_file() |>
-    fs::path_ext_remove()
-
-  # Check extent type
-  if (is.null(extent) == TRUE) {
-    # Set window of interest
-    raster <- raster
-  } else {
-    # Set window of interest
-    terra::window(raster) <- terra::ext(extent)
-  }
-
-  # Check type of filename
-  if (is.null(filename) == TRUE) {
-    filename <- paste0(raster_src, "/", "REMP_", raster_name, ".tif")
-  } else {
-    filename <- fs::path(filename, ext = ext)
-  }
-
-  # Create empty SpatRaster template from original cropped raster
-  template <- terra::rast(
-    terra::ext(raster),
-    resolution = terra::res(raster))
-
-  # Find trough position
-  remp <- spectra_position(raster = raster, spectra = trough) |>
-    # Pull vector with positions
-    dplyr::pull(var = 2) |>
-    # Subset normalized raster to match trough
-    (\(x) terra::subset(raster, x))()
-  # Calculate derivative
-
-  terra::values(template) <- remp
-
-  # Set layer name
-  names(template) <- "REMP"
-
-  # Write new raster to file based on paths stored in the environment
-  terra::writeRaster(
-    template,
-    filename = filename,
-    overwrite = TRUE
+# Filename handling
+if (is.null(filename)) {
+  # Extract source information
+  raster_src <- dirname(terra::sources(raster))
+  
+  # Extract file name
+  raster_name <- tools::file_path_sans_ext(basename(terra::sources(raster)))
+  
+  # Construct default filename
+  filename <- fs::path(
+    raster_src,
+    paste0("REMP_", raster_name, ".tif")
   )
+} else {
+  # Ensure proper file extension is applied
+  filename <- fs::path(filename, extension = extension %||% "tif")
+}
 
-  # Reset window
-  terra::window(raster) <- NULL
+# Extent handling
+if (!is.null(extent)) {
+  # Set window of interest
+  terra::window(raster) <- terra::ext(extent)
+}
 
-  # Return raster
-  return(template)
+# Get wavelength values from band names
+wavelengths <- as.numeric(names(raster))
+
+# In case names can't be converted to numeric, create a sequence
+if (all(is.na(wavelengths))) {
+  cli::cli_alert_warning("Band names couldn't be converted to wavelengths. Using band indices instead.")
+  wavelengths <- seq_len(terra::nlyr(raster))
+}
+
+# Find which bands fall within our trough range
+trough_indices <- which(wavelengths >= trough_range[1] & wavelengths <= trough_range[2])
+
+if (length(trough_indices) < 3) {
+  rlang::abort(
+    message = paste0(
+      "Not enough bands found in the trough range (", 
+      trough_range[1], "-", trough_range[2], " nm) to calculate derivatives. ",
+      "Found only ", length(trough_indices), " bands. Need at least 3."
+    )
+  )
+}
+
+# Function to calculate λREMP using first derivative approach
+find_remp_derivative <- function(pixel_values) {
+  # Check for NA values
+  if (any(is.na(pixel_values[trough_indices]))) {
+    return(NA_real_)
+  }
+  
+  # Extract values within trough range
+  trough_values <- pixel_values[trough_indices]
+  trough_waves <- wavelengths[trough_indices]
+  
+  # Calculate first derivatives between adjacent bands using purrr
+  idx_pairs <- 1:(length(trough_indices) - 1)
+  
+  derivatives <- purrr::map_dbl(idx_pairs, \(i) {
+    delta_refl <- trough_values[i + 1] - trough_values[i]
+    delta_wave <- trough_waves[i + 1] - trough_waves[i]
+    delta_refl / delta_wave
+  })
+  
+  # Look for zero crossing (where derivative changes from negative to positive)
+  idx_pairs_for_crossing <- 1:(length(derivatives) - 1)
+  
+  zero_cross <- purrr::map_lgl(idx_pairs_for_crossing, \(i) {
+    # Check if derivative crosses zero from negative to positive
+    derivatives[i] <= 0 && derivatives[i + 1] > 0
+  }) |> 
+    which()
+  
+  # If a zero crossing is found
+  if (length(zero_cross) > 0) {
+    # If multiple zero crossings, take the one with steepest positive slope
+    if (length(zero_cross) > 1) {
+      # Find crossing with largest positive derivative change
+      slope_changes <- derivatives[zero_cross + 1] - derivatives[zero_cross]
+      max_change_idx <- zero_cross[which.max(slope_changes)]
+    } else {
+      max_change_idx <- zero_cross[1]
+    }
+    
+    # Linear interpolation to find exact wavelength where derivative = 0
+    x1 <- trough_waves[max_change_idx]
+    x2 <- trough_waves[max_change_idx + 1]
+    y1 <- derivatives[max_change_idx]
+    y2 <- derivatives[max_change_idx + 1]
+    
+    # Calculate wavelength where derivative = 0
+    lambda_remp <- x1 + (0 - y1) * (x2 - x1) / (y2 - y1)
+    
+    # Make sure result is within the specified range
+    lambda_remp <- max(min(lambda_remp, trough_range[2]), trough_range[1])
+    
+    return(lambda_remp)
+  } else {
+    # If no zero crossing is found, find the wavelength at minimum reflectance
+    # This is a fallback method when the derivative approach doesn't find a solution
+    min_idx <- which.min(trough_values)
+    return(trough_waves[min_idx])
+  }
+}
+
+# Apply the function to each pixel
+remp_values <- terra::app(
+  raster, 
+  fun = find_remp_derivative,
+  filename = filename,
+  overwrite = TRUE
+)
+
+# Set the layer name
+names(remp_values) <- "REMP"
+
+# Reset window
+terra::window(raster) <- NULL
+
+# Return the result
+return(remp_values)
 }
 
 #' Calculate derivative
