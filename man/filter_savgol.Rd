@@ -38,3 +38,9 @@ A filtered terra SpatRaster.
 \description{
 Smooth data with a Savitzky-Golay smoothing filter using \code{\link[signal]{sgolayfilt}}.
 }
+\seealso{
+Other Filters: 
+\code{\link{filter_median}()},
+\code{\link{remove_continuum}()}
+}
+\concept{Filters}

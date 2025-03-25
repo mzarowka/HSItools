@@ -1,5 +1,6 @@
 #' Remove continuum from spectrum
 #'
+#' @family Filters
 #' @param raster terra SpatRaster of normalized capture data.
 #' @param extent an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
 #' @param filename NULL (default) to write automatically into products, provide full path and ext to override.
@@ -95,9 +96,6 @@ remove_continuum <- function(
     wopt = wopts
   )
 
-  # Set names
-  # names(cr_raster) <- band_names
-
   # Reset window
   terra::window(raster) <- NULL
 
@@ -107,6 +105,7 @@ remove_continuum <- function(
 
 #' Smooth raster with focal median
 #'
+#' @family Filters
 #' @param raster a terra SpatRaster to smooth.
 #' @param window focal window size, default is 3.
 #' @param extent an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
@@ -174,7 +173,7 @@ filter_median <- function(
   raster <- terra::focal(
     raster,
     w = window,
-    fun = \(x) stats::median(x),
+    fun = \(x) stats::median(x, na.rm = TRUE),
     filename = filename,
     overwrite = TRUE,
     wopt = wopts
@@ -193,6 +192,7 @@ filter_median <- function(
 #' @description
 #' Smooth data with a Savitzky-Golay smoothing filter using \code{\link[signal]{sgolayfilt}}.
 #'
+#' @family Filters
 #' @param raster a terra SpatRaster of normalized data
 #' @param p filter order.
 #' @param n filter length (must be odd).
@@ -264,9 +264,6 @@ filter_savgol <- function(
     overwrite = TRUE,
     wopt = wopts
   )
-
-  # Set names
-  # names(raster) <- as.character(band_names)
 
   # Reset window
   terra::window(raster) <- NULL

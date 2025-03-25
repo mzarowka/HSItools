@@ -29,3 +29,9 @@ smoothed SpatRaster
 \description{
 Smooth raster with focal median
 }
+\seealso{
+Other Filters: 
+\code{\link{filter_savgol}()},
+\code{\link{remove_continuum}()}
+}
+\concept{Filters}

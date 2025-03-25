@@ -23,3 +23,9 @@ one layer terra SpatRaster with continuum removed.
 \description{
 Remove continuum from spectrum
 }
+\seealso{
+Other Filters: 
+\code{\link{filter_median}()},
+\code{\link{filter_savgol}()}
+}
+\concept{Filters}
