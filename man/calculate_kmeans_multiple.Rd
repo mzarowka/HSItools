@@ -53,6 +53,7 @@ but the final centroids may vary slightly.
 \seealso{
 Other Spectral classifications: 
 \code{\link{calculate_kmeans}()},
+\code{\link{extract_kendmembers}()},
 \code{\link{find_optimal_clusters}()}
 }
 \concept{Spectral classifications}

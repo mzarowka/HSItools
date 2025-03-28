@@ -7,10 +7,6 @@
 calculate_kmeans(
   raster,
   n_clusters = 5,
-  iter.max = 100,
-  nstart = 25,
-  sample_size = 10000,
-  use_sampling = TRUE,
   extent = NULL,
   ext = NULL,
   filename = NULL
@@ -20,14 +16,6 @@ calculate_kmeans(
 \item{raster}{terra SpatRaster to cluster, often PCA-transformed data.}
 
 \item{n_clusters}{number of clusters to create.}
-
-\item{iter.max}{maximum number of iterations for k-means algorithm.}
-
-\item{nstart}{number of random starting configurations.}
-
-\item{sample_size}{number of sample pixels to use for initial clustering.}
-
-\item{use_sampling}{logical, whether to use sampling (TRUE) or analyze entire extent (FALSE).}
 
 \item{extent}{an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.}
 
@@ -45,6 +33,7 @@ This is useful for segmenting hyperspectral core data into regions with similar 
 \seealso{
 Other Spectral classifications: 
 \code{\link{calculate_kmeans_multiple}()},
+\code{\link{extract_kendmembers}()},
 \code{\link{find_optimal_clusters}()}
 }
 \concept{Spectral classifications}

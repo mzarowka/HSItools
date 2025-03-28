@@ -4,10 +4,6 @@
 #'
 #' @param raster terra SpatRaster to cluster, often PCA-transformed data.
 #' @param n_clusters number of clusters to create.
-#' @param iter.max maximum number of iterations for k-means algorithm.
-#' @param nstart number of random starting configurations.
-#' @param sample_size number of sample pixels to use for initial clustering.
-#' @param use_sampling logical, whether to use sampling (TRUE) or analyze entire extent (FALSE).
 #' @param extent an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
 #' @param ext character, a graphic format extension.
 #' @param filename NULL (default) to write automatically into products folder, provide full path and ext to override.
@@ -22,10 +18,6 @@
 calculate_kmeans <- function(
   raster,
   n_clusters = 5,
-  iter.max = 100,
-  nstart = 25,
-  sample_size = 10000,
-  use_sampling = TRUE,
   extent = NULL,
   ext = NULL,
   filename = NULL
@@ -72,144 +64,131 @@ calculate_kmeans <- function(
   # Named list with write options
   wopts <- list(steps = terra::ncell(raster) * terra::nlyr(raster))
 
-  # Store original band names for reference
-  orig_names <- names(raster)
+  # Get number of layers (components)
+  num_bands <- terra::nlyr(raster)
+  cli::cli_alert_info("Input raster has {num_bands} bands/components")
 
-  # Store a raster with sanitized names to avoid warnings
-  sanitized_names <- make.names(names(raster), unique = TRUE)
-  raster_clean <- raster
-  names(raster_clean) <- sanitized_names
-
-  # Decide whether to use sampling or analyze entire extent
-  if (use_sampling && terra::ncell(raster_clean) > sample_size) {
-    cli::cli_alert_info(
-      "Sampling {sample_size} pixels for initial k-means clustering"
-    )
-
-    # Extract a sample of values
-    sample_cells <- sample(
-      1:terra::ncell(raster_clean),
-      min(sample_size, terra::ncell(raster_clean))
-    )
-    sample_values <- terra::extract(raster_clean, sample_cells)
-
-    # Remove rows with NA values
-    sample_values <- sample_values[complete.cases(sample_values), ]
-
-    # Drop ID column for clustering
-    sample_matrix <- as.matrix(sample_values[, -1])
-  } else {
-    # Extract all values in the current window/extent
-    cli::cli_alert_info(
-      "Using all pixels within the extent for k-means clustering"
-    )
-
-    # Extract all values and drop cells with NAs
-    all_values <- terra::values(raster_clean)
-    complete_rows <- complete.cases(all_values)
-    sample_matrix <- all_values[complete_rows, ]
-  }
-
-  # Check if we have enough data for clustering
-  if (nrow(sample_matrix) < n_clusters) {
-    rlang::abort(paste0(
-      "Not enough complete data points (",
-      nrow(sample_matrix),
-      ") for ",
-      n_clusters,
-      " clusters. Try a smaller n_clusters value."
-    ))
-  }
-
-  # Perform k-means clustering
+  # Perform k-means clustering using terra's kmeans function
   cli::cli_alert_info(
     "Performing k-means clustering with {n_clusters} clusters"
   )
-  kmeans_model <- stats::kmeans(
-    sample_matrix,
-    centers = n_clusters,
-    iter.max = iter.max,
-    nstart = nstart
+
+  # Handle potential errors
+  cluster_result <- tryCatch(
+    {
+      # Use terra's kmeans implementation
+      terra::k_means(
+        raster,
+        centers = n_clusters,
+        filename = filename,
+        overwrite = TRUE,
+        wopt = wopts
+      )
+    },
+    error = function(e) {
+      rlang::abort(paste("K-means clustering failed:", e$message))
+    }
   )
 
-  # Create a function to apply the clustering to each pixel
-  kmeans_fun <- function(x) {
-    if (any(is.na(x))) return(NA)
+  # Get attributes of the kmeans result
+  kmeans_attributes <- attributes(cluster_result)
 
-    # Calculate distances to each cluster center
-    dists <- apply(kmeans_model$centers, 1, function(center) {
-      sqrt(sum((x - center)^2))
-    })
+  # Debug what's available in kmeans_attributes
+  available_attrs <- names(kmeans_attributes)
+  cli::cli_alert_info(
+    "Available attributes: {paste(available_attrs, collapse=', ')}"
+  )
 
-    # Return cluster with minimum distance
-    which.min(dists)
+  # Extract the centers more carefully
+  if ("centers" %in% available_attrs) {
+    centers_matrix <- kmeans_attributes$centers
+  } else {
+    # If centers attribute not available, extract manually by getting mean values for each cluster
+    cli::cli_alert_warning(
+      "Centers attribute not found. Calculating centers manually."
+    )
+
+    # Create a function to calculate center for each cluster
+    calculate_center <- function(cluster_id) {
+      # Create mask for this cluster
+      mask <- terra::ifel(cluster_result == cluster_id, 1, NA)
+
+      # Apply mask to original raster to get pixels in this cluster
+      masked <- raster * mask
+
+      # Calculate mean of each band
+      mean_values <- terra::global(masked, "mean", na.rm = TRUE)
+
+      # Return as vector
+      as.numeric(mean_values[1, ])
+    }
+
+    # Calculate centers for each cluster
+    centers_list <- purrr::map(1:n_clusters, calculate_center)
+    centers_matrix <- do.call(rbind, centers_list)
   }
 
-  # Apply clustering function to the raster with cleaned names
-  cli::cli_alert_info("Applying clustering to full raster")
-  clustered_raster <- terra::app(
-    raster_clean,
-    fun = kmeans_fun,
-    filename = filename,
-    overwrite = TRUE,
-    wopt = wopts
+  # Get the cluster sizes
+  cluster_counts <- tibble::tibble(
+    cluster = 1:n_clusters,
+    count = purrr::map_int(
+      1:n_clusters,
+      ~ sum(terra::values(cluster_result) == .x, na.rm = TRUE)
+    )
   )
 
-  # Set layer name
-  names(clustered_raster) <- "cluster"
+  # Calculate proportions
+  total_pixels <- sum(cluster_counts$count)
+  cluster_stats <- cluster_counts |>
+    dplyr::mutate(proportion = count / total_pixels * 100)
+
+  # Convert centers to a tibble
+  centers_df <- dplyr::tibble(centers_matrix)
+
+  # Get original band names
+  band_names <- names(raster)
+
+  # Set column names for centers dataframe
+  if (ncol(centers_df) == length(band_names)) {
+    colnames(centers_df) <- band_names
+  } else {
+    # Use generic names when lengths don't match
+    colnames(centers_df) <- paste0("Band_", 1:ncol(centers_df))
+  }
+
+  # Calculate the importance of each band for differentiating clusters
+  if (!is.null(centers_matrix) && ncol(centers_matrix) > 0) {
+    # Create a sequence for column indices
+    col_indices <- seq_len(ncol(centers_matrix))
+
+    # Calculate variance for each band
+    band_importance <- tibble::tibble(
+      band = colnames(centers_df),
+      variance = purrr::map_dbl(col_indices, ~ stats::var(centers_matrix[, .x]))
+    ) |>
+      dplyr::mutate(
+        relative_importance = variance / sum(variance) * 100
+      ) |>
+      dplyr::arrange(dplyr::desc(variance))
+  } else {
+    # Create empty data frame if centers not available
+    band_importance <- tibble::tibble(
+      band = character(),
+      variance = numeric(),
+      relative_importance = numeric()
+    )
+  }
 
   # Reset window
   terra::window(raster) <- NULL
 
-  # Calculate cluster statistics
-  cluster_sizes <- kmeans_model$size
-  cluster_props <- cluster_sizes / sum(cluster_sizes) * 100
-
-  # Create a data frame with cluster centers mapped back to original names
-  centers_df <- as.data.frame(kmeans_model$centers)
-  colnames(centers_df) <- sanitized_names
-
-  # Create name mapping for reference
-  name_mapping <- data.frame(
-    original_name = orig_names,
-    sanitized_name = sanitized_names,
-    stringsAsFactors = FALSE
-  )
-
-  # Calculate the importance of each band for differentiating clusters
-  # by measuring variance of cluster centers for each band
-  band_importance <- tibble::tibble(
-    SanitizedBand = sanitized_names,
-    Variance = apply(kmeans_model$centers, 2, var),
-    RelativeImportance = apply(kmeans_model$centers, 2, var) /
-      sum(apply(kmeans_model$centers, 2, var)) *
-      100
-  ) |>
-    dplyr::arrange(desc(Variance)) |>
-    dplyr::mutate(
-      OriginalBand = purrr::map_chr(SanitizedBand, function(sb) {
-        ob <- name_mapping$original_name[name_mapping$sanitized_name == sb]
-        if (length(ob) == 0) return(sb)
-        return(ob)
-      })
-    )
-
-  # Prepare cluster statistics
-  cluster_stats <- tibble::tibble(
-    Cluster = 1:n_clusters,
-    Size = cluster_sizes,
-    Proportion = cluster_props
-  )
-
   # Return results
   return(list(
-    cluster_raster = clustered_raster,
-    centers = kmeans_model$centers,
+    cluster_raster = cluster_result,
+    centers = centers_matrix,
     centers_df = centers_df,
     cluster_stats = cluster_stats,
-    band_importance = band_importance,
-    name_mapping = name_mapping,
-    model = kmeans_model
+    band_importance = band_importance
   ))
 }
 
@@ -1034,9 +1013,9 @@ calculate_kmeans_multiple <- function(
 
       # Use initial centers if available, otherwise let terra pick them
       if (!is.null(initial_centers)) {
-        cluster_raster <- terra::kmeans(r, centers = initial_centers)
+        cluster_raster <- terra::k_means(r, centers = initial_centers)
       } else {
-        cluster_raster <- terra::kmeans(r, centers = n_clusters)
+        cluster_raster <- terra::k_means(r, centers = n_clusters)
       }
 
       # Write to file if specified
@@ -1060,37 +1039,6 @@ calculate_kmeans_multiple <- function(
       centers_df = as.data.frame(final_centers)
     ))
   }
-}
-
-#' Analyze cluster centroids to understand what each cluster represents
-#'
-#' @param centers_df data frame of cluster centroids
-#' @param variable_names optional vector of variable names
-#'
-#' @return A tibble in long format with cluster centroids by variable
-#' @export
-analyze_cluster_centroids <- function(centers_df, variable_names = NULL) {
-  # Add cluster ID if not present
-  if (!"cluster" %in% names(centers_df)) {
-    centers_df$cluster <- 1:nrow(centers_df)
-  }
-
-  # Rename columns if variable_names provided
-  if (
-    !is.null(variable_names) && length(variable_names) == ncol(centers_df) - 1
-  ) {
-    colnames(centers_df)[1:(ncol(centers_df) - 1)] <- variable_names
-  }
-
-  # Convert to long format for analysis
-  centroids_long <- centers_df %>%
-    tidyr::pivot_longer(
-      cols = -cluster,
-      names_to = "variable",
-      values_to = "value"
-    )
-
-  return(centroids_long)
 }
 
 #' Find the most important variables for differentiating clusters
@@ -1128,4 +1076,215 @@ rank_cluster_variables <- function(centers_df, variable_names = NULL) {
     dplyr::arrange(desc(relative_importance))
 
   return(var_importance)
+}
+
+#' Extract spectral profiles directly from a raster using cluster assignments
+#'
+#' @family Spectral classifications
+#'
+#' @param cluster_raster SpatRaster with cluster assignments (integers).
+#' @param original_raster Original hyperspectral SpatRaster.
+#' @param n_samples Maximum number of samples per cluster (default 1000).
+#' @param plot Logical, whether to create plots (default TRUE).
+#'
+#' @return A list containing spectral profiles and plots.
+#' @export
+#'
+#' @description
+#' Extracts spectral profiles directly from the original raster using cluster assignments.
+#' Uses a more direct approach than other functions by sampling pixels and calculating means directly.
+#'
+extract_kendmembers <- function(
+  cluster_raster,
+  original_raster,
+  n_samples = 1000,
+  plot = TRUE
+) {
+  # Validate inputs
+  if (!inherits(cluster_raster, what = "SpatRaster")) {
+    rlang::abort("cluster_raster must be a terra SpatRaster")
+  }
+
+  if (!inherits(original_raster, what = "SpatRaster")) {
+    rlang::abort("original_raster must be a terra SpatRaster")
+  }
+
+  # Check dimensions match
+  if (
+    !terra::compareGeom(cluster_raster, original_raster, stopOnError = FALSE)
+  ) {
+    rlang::abort(
+      "cluster_raster and original_raster must have the same dimensions"
+    )
+  }
+
+  # Get unique cluster IDs
+  cluster_values <- terra::unique(cluster_raster)
+  cluster_values <- cluster_values[!is.na(cluster_values)]
+  n_clusters <- length(cluster_values)
+
+  cli::cli_alert_info("Found {n_clusters} clusters")
+
+  # Get band names
+  band_names <- names(original_raster)
+  n_bands <- length(band_names)
+
+  cli::cli_alert_info("Original raster has {n_bands} bands")
+
+  # Create result data structure
+  result <- list(
+    profiles = tibble::tibble(cluster = paste0("Cluster_", cluster_values)),
+    n_clusters = n_clusters,
+    band_names = band_names
+  )
+
+  # Convert to data frames for easier handling
+  cluster_df <- terra::as.data.frame(cluster_raster, xy = TRUE)
+  names(cluster_df)[3] <- "cluster"
+
+  # Extract spectral data for each cluster
+  for (i in seq_along(cluster_values)) {
+    cluster_id <- cluster_values[i]
+    cli::cli_alert_info("Processing cluster {cluster_id}")
+
+    # Find points in this cluster
+    cluster_points <- cluster_df |>
+      dplyr::filter(cluster == cluster_id)
+
+    n_points <- nrow(cluster_points)
+    cli::cli_alert_info("Found {n_points} points in cluster {cluster_id}")
+
+    if (n_points == 0) {
+      cli::cli_alert_warning("No points in cluster {cluster_id}")
+      next
+    }
+
+    # Sample if too many points
+    if (n_points > n_samples) {
+      sampled_points <- cluster_points |>
+        dplyr::sample_n(n_samples)
+    } else {
+      sampled_points <- cluster_points
+    }
+
+    # Extract coordinates
+    coords <- sampled_points |>
+      dplyr::select(x, y)
+
+    # Extract spectral data at these coordinates
+    spectral_data <- terra::extract(original_raster, coords)
+
+    # Check extraction success
+    if (is.null(spectral_data) || nrow(spectral_data) == 0) {
+      cli::cli_alert_warning(
+        "Failed to extract spectral data for cluster {cluster_id}"
+      )
+      next
+    }
+
+    # Remove ID column
+    if (ncol(spectral_data) > 1) {
+      spectral_data <- spectral_data[, -1, drop = FALSE]
+    } else {
+      cli::cli_alert_warning(
+        "Failed to extract spectral data for cluster {cluster_id}"
+      )
+      next
+    }
+
+    # Calculate mean for each band
+    means <- colMeans(spectral_data, na.rm = TRUE)
+
+    # Check for NA means
+    if (all(is.na(means))) {
+      cli::cli_alert_warning("All means are NA for cluster {cluster_id}")
+      next
+    }
+
+    # Add to results
+    for (j in seq_along(band_names)) {
+      band <- band_names[j]
+      if (is.null(result$profiles[[band]])) {
+        result$profiles[[band]] <- rep(NA_real_, n_clusters)
+      }
+      result$profiles[[band]][i] <- means[j]
+    }
+  }
+
+  # Convert to long format for plotting
+  profiles_long <- result$profiles |>
+    tidyr::pivot_longer(
+      cols = -cluster,
+      names_to = "wavelength",
+      values_to = "reflectance"
+    ) |>
+    dplyr::mutate(
+      wavelength_num = as.numeric(wavelength)
+    ) |>
+    dplyr::filter(!is.na(reflectance)) |>
+    dplyr::arrange(cluster, wavelength_num)
+
+  result$profiles_long <- profiles_long
+
+  # Create plots if requested
+  if (plot) {
+    # Combined plot
+    p_combined <- ggplot2::ggplot(
+      profiles_long,
+      ggplot2::aes(
+        x = wavelength_num,
+        y = reflectance,
+        color = cluster
+      )
+    ) +
+      ggplot2::geom_line() +
+      ggplot2::labs(
+        title = "Spectral Profiles by Cluster",
+        x = "Wavelength (nm)",
+        y = "Reflectance",
+        color = "Cluster"
+      ) +
+      ggplot2::theme_minimal()
+
+    result$plots <- list(combined = p_combined)
+
+    # Individual plots
+    ind_plots <- profiles_long |>
+      dplyr::group_by(cluster) |>
+      dplyr::group_split() |>
+      purrr::map(function(cluster_data) {
+        if (nrow(cluster_data) < 2) return(NULL)
+
+        cluster_name <- unique(cluster_data$cluster)
+
+        ggplot2::ggplot(
+          cluster_data,
+          ggplot2::aes(x = wavelength_num, y = reflectance)
+        ) +
+          ggplot2::geom_line(color = "blue") +
+          ggplot2::labs(
+            title = paste("Cluster:", cluster_name),
+            x = "Wavelength (nm)",
+            y = "Reflectance"
+          ) +
+          ggplot2::theme_minimal()
+      })
+
+    # Remove NULL plots
+    ind_plots <- purrr::compact(ind_plots)
+
+    # Add to result
+    if (length(ind_plots) > 0) {
+      # Name the plots
+      names(ind_plots) <- paste0("cluster_", 1:length(ind_plots))
+
+      # Add to result
+      result$plots$individual <- ind_plots
+
+      # Create grid plot
+      result$plots$grid <- patchwork::wrap_plots(ind_plots, ncol = 2)
+    }
+  }
+
+  return(result)
 }

@@ -90,13 +90,13 @@ if (use_sampling && terra::ncell(temp_raster) > sample_size) {
   
   # Sample the data for PCA
   sample_cells <- sample(1:terra::ncell(temp_raster), sample_size)
-  sample_data <- terra::extract(temp_raster, sample_cells, cells = TRUE)
+  sample_data <- terra::extract(temp_raster, sample_cells)
   
   # Remove NA values
-  sample_data <- sample_data[complete.cases(sample_data[, -c(1, 2)]), ]
+  sample_data <- sample_data[complete.cases(sample_data[, -1]), ]
   
   # Perform PCA on the sample
-  pca_model <- terra::prcomp(sample_data[, -c(1, 2)], scale = scale, center = center)
+  pca_model <- terra::prcomp(sample_data[, -1], scale = scale, center = center)
   
 } else {
   # Perform PCA on the full raster extent with clean names
@@ -215,7 +215,7 @@ dplyr::mutate(
 
 # Create summary of explained variance
 importance <- summary(pca_model)$importance
-variance_summary <- dplyr::tibble(
+variance_summary <- tibble::tibble(
   Component = paste0("PC", 1:ncol(importance)),
   StandardDeviation = importance[1, ],
   ProportionOfVariance = importance[2, ],

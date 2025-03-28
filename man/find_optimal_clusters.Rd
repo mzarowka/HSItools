@@ -58,6 +58,7 @@ Determines the optimal number of clusters for k-means clustering using multiple 
 \seealso{
 Other Spectral classifications: 
 \code{\link{calculate_kmeans}()},
-\code{\link{calculate_kmeans_multiple}()}
+\code{\link{calculate_kmeans_multiple}()},
+\code{\link{extract_kendmembers}()}
 }
 \concept{Spectral classifications}
