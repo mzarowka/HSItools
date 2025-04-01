@@ -1288,3 +1288,161 @@ extract_kendmembers <- function(
 
   return(result)
 }
+
+#' Estimate Signal-to-Noise Ratio
+#'
+#' @family Spectral classifications
+#'
+#' @param raster terra SpatRaster containing hyperspectral data
+#' @param extent Optional terra SpatExtent to analyze specific area (default: NULL uses full raster)
+#' @param sample_size Number of pixels to sample for analysis (default: 10000)
+#' @param plot Logical, whether to create a plot (default: TRUE)
+#' @param verbose print info.
+#'
+#' @return A list containing cutoff wavelengths and the SNR analysis results
+#' @export
+#'
+#' @description
+#' Analyzes hyperspectral data using the Signal-to-Noise Ratio (SNR) method.
+#' Best applied on continuum removed data so there is no reflectance slope effects.
+#'
+estimate_spectral_snr <- function(
+  raster,
+  extent = NULL,
+  sample_size = 10000,
+  plot = TRUE,
+  verbose = FALSE
+) {
+  # Check if correct class is supplied
+  if (!inherits(raster, what = "SpatRaster")) {
+    cli::cli_abort("Supplied data is not a terra SpatRaster.")
+  }
+
+  # Extract wavelengths from band names
+  wavelengths <- as.numeric(terra::names(raster))
+
+  # Handle non-numeric wavelengths
+  if (all(is.na(wavelengths))) {
+    cli::cli_alert_warning(
+      "Band names are not wavelengths. Using band indices instead."
+    )
+    wavelengths <- seq_len(terra::nlyr(raster))
+  }
+
+  # Use extent if provided
+  if (!is.null(extent)) {
+    cli::cli_alert_info("Using specified extent for analysis")
+    terra::window(raster) <- terra::ext(extent)
+  }
+
+  # Initialize results storage
+  results <- list()
+
+  # Analyze with Signal-to-Noise Ratio method
+  cli::cli_alert_info("Analyzing with Signal-to-Noise Ratio method")
+
+  # Decide on data sampling
+  if (terra::ncell(raster) > sample_size) {
+    raster <- terra::spatSample(
+      raster,
+      size = sample_size,
+      method = "random",
+      na.rm = TRUE,
+      as.raster = TRUE
+    )
+  } else {
+    raster
+  }
+
+  # Results tibble
+  b.results <- tibble::tibble(
+    b.names = wavelengths,
+    b.means = terra::global(raster, fun = "mean")$mean,
+    b.std_dev = terra::global(raster, fun = "sd")$sd,
+    b.snr = b.means / b.std_dev
+  )
+
+  #TODO plot an verbosity
+
+  # Return results
+  return(b.results)
+}
+
+#' Estimate Coefficeint of Variation
+#'
+#' @family Spectral classifications
+#'
+#' @param raster terra SpatRaster containing hyperspectral data
+#' @param extent Optional terra SpatExtent to analyze specific area (default: NULL uses full raster)
+#' @param sample_size Number of pixels to sample for analysis (default: 10000)
+#' @param plot Logical, whether to create a plot (default: TRUE)
+#' @param verbose print info.
+#'
+#' @return A list containing cutoff wavelengths and the SNR analysis results
+#' @export
+#'
+#' @description
+#' Analyzes hyperspectral data using the Coefficeint of Variation (CV) method.
+#' Best applied on continuum removed data so there is no reflectance slope effects.
+#'
+estimate_spectral_cv <- function(
+  raster,
+  extent = NULL,
+  sample_size = 10000,
+  plot = TRUE,
+  verbose = FALSE
+) {
+  # Check if correct class is supplied
+  if (!inherits(raster, what = "SpatRaster")) {
+    cli::cli_abort("Supplied data is not a terra SpatRaster.")
+  }
+
+  # Extract wavelengths from band names
+  wavelengths <- as.numeric(terra::names(raster))
+
+  # Handle non-numeric wavelengths
+  if (all(is.na(wavelengths))) {
+    cli::cli_alert_warning(
+      "Band names are not wavelengths. Using band indices instead."
+    )
+    wavelengths <- seq_len(terra::nlyr(raster))
+  }
+
+  # Use extent if provided
+  if (!is.null(extent)) {
+    cli::cli_alert_info("Using specified extent for analysis")
+    terra::window(raster) <- terra::ext(extent)
+  }
+
+  # Initialize results storage
+  results <- list()
+
+  # Analyze with Signal-to-Noise Ratio method
+  cli::cli_alert_info("Analyzing with Coefficient of variation method")
+
+  # Decide on data sampling
+  if (terra::ncell(raster) > sample_size) {
+    raster <- terra::spatSample(
+      raster,
+      size = sample_size,
+      method = "random",
+      na.rm = TRUE,
+      as.raster = TRUE
+    )
+  } else {
+    raster
+  }
+
+  # Results tibble
+  b.results <- tibble::tibble(
+    b.names = wavelengths,
+    b.means = terra::global(raster, fun = "mean")$mean,
+    b.std_dev = terra::global(raster, fun = "sd")$sd,
+    b.cv = (b.std_dev / b.means) * 100
+  )
+
+  #TODO plot an verbosity
+
+  # Return results
+  return(b.results)
+}
