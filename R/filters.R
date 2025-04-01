@@ -173,7 +173,8 @@ filter_median <- function(
   raster <- terra::focal(
     raster,
     w = window,
-    fun = \(x) stats::median(x, na.rm = TRUE),
+    fun = median,
+    na.rm = TRUE,
     filename = filename,
     overwrite = TRUE,
     wopt = wopts
