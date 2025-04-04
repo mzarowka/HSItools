@@ -127,11 +127,6 @@ get_reflectance <- function(
       rasters_subset <- rasters
     } else {
       # If specific layers are requested, either from parameters or shiny input
-      layers <- layers %||%
-        as.numeric(terra::names(terra::rast(files[["capture"]]))) |>
-        {
-          \(raster) c(min(raster):max(raster))
-        }()
 
       # Read SpatRasters
       rasters <- files |>
