@@ -2,9 +2,6 @@
 <url><loc>/404.html</loc></url>
 <url><loc>/LICENSE-text.html</loc></url>
 <url><loc>/LICENSE.html</loc></url>
-<url><loc>/articles/index.html</loc></url>
-<url><loc>/articles/shiny_gui.html</loc></url>
-<url><loc>/articles/workflow.html</loc></url>
 <url><loc>/authors.html</loc></url>
 <url><loc>/index.html</loc></url>
 <url><loc>/news/index.html</loc></url>
@@ -12,6 +9,7 @@
 <url><loc>/reference/calculate_band_ratio.html</loc></url>
 <url><loc>/reference/calculate_derivative.html</loc></url>
 <url><loc>/reference/calculate_lambdaremp.html</loc></url>
+<url><loc>/reference/calculate_ndi.html</loc></url>
 <url><loc>/reference/calculate_raba.html</loc></url>
 <url><loc>/reference/calculate_rabd.html</loc></url>
 <url><loc>/reference/calculate_rmean.html</loc></url>
@@ -24,6 +22,7 @@
 <url><loc>/reference/extract_spectral_series.html</loc></url>
 <url><loc>/reference/filter_median.html</loc></url>
 <url><loc>/reference/filter_savgol.html</loc></url>
+<url><loc>/reference/get_reflectance.html</loc></url>
 <url><loc>/reference/index.html</loc></url>
 <url><loc>/reference/normalization.html</loc></url>
 <url><loc>/reference/pixel_to_distance.html</loc></url>
@@ -33,7 +32,6 @@
 <url><loc>/reference/plot_raster_overlay.html</loc></url>
 <url><loc>/reference/plot_raster_proxy.html</loc></url>
 <url><loc>/reference/plot_raster_rgb.html</loc></url>
-<url><loc>/reference/prepare_core.html</loc></url>
 <url><loc>/reference/proxies.html</loc></url>
 <url><loc>/reference/raster_crop.html</loc></url>
 <url><loc>/reference/remove_continuum.html</loc></url>
