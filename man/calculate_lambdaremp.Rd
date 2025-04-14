@@ -6,28 +6,33 @@
 \usage{
 calculate_lambdaremp(
   raster,
-  trough = c(660, 680),
+  trough_range = c(660, 680),
   extent = NULL,
-  ext = NULL,
+  extension = NULL,
   filename = NULL
 )
 }
 \arguments{
-\item{raster}{a terra SpatRaster of normalized capture data.}
+\item{raster}{A terra SpatRaster of normalized capture data.}
 
-\item{trough}{character vector of wavelength to look for trough.}
+\item{trough_range}{Numeric vector defining the wavelength range to search for trough (default: c(660, 680)).}
 
-\item{extent}{an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.}
+\item{extent}{An extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.}
 
-\item{ext}{character, a graphic format extension.}
+\item{extension}{Character, a graphic format extension.}
 
-\item{filename}{NULL (default) to write automatically into products, provide full path and ext to override.}
+\item{filename}{NULL (default) to write automatically into products folder, provide full path and extension to override.}
 }
 \value{
-one layer terra SpatRaster with calculated lambdaREMP values.
+One layer terra SpatRaster with calculated lambdaREMP values.
 }
 \description{
-Calculate lambdaREMP. A wavelength number between 660 and 680 nm, where first derivative equals zero. After Ghanbari, H., Zilkey, D.R., Gregory-Eaves, I., Antoniades, D., 2023. A new index for the rapid generation of chlorophyll time series from hyperspectral imaging of sediment cores. Limnology and Oceanography: Methods 21, 703–717. https://doi.org/10.1002/lom3.10576.
+Calculate lambdaREMP (wavelength of the red-edge minimum point).
+This is the wavelength between 660 and 680 nm where the first derivative of
+reflectance equals zero, indicating the maximum absorption of light by chlorophyll.
+Based on Ghanbari, H., Zilkey, D.R., Gregory-Eaves, I., Antoniades, D., 2023.
+A new index for the rapid generation of chlorophyll time series from hyperspectral imaging of sediment cores.
+Limnology and Oceanography: Methods 21, 703–717. https://doi.org/10.1002/lom3.10576
 }
 \seealso{
 Other Spectral calculations: 

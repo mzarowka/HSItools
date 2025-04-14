@@ -95,7 +95,7 @@ run_core <- function(autoSave = TRUE){
                                ),
                                shiny::column(
                                  4,
-                                 shiny::selectInput("choice_proxies", "Choose proxies to calculate", choices = names(proxies), multiple = TRUE)
+                                 shiny::selectInput("choice_proxies", "Choose proxies to calculate", choices = terra::names(proxies), multiple = TRUE)
                                )
                              ),
                              shiny::fluidRow(
@@ -122,7 +122,7 @@ run_core <- function(autoSave = TRUE){
                     tabPanel("Crop Image",
                              align="center",
                              shiny::br(),
-                             headerPanel("Crop viable region of image (or skip to use full image)"),
+                             headerPanel("Crop viable region of terra::image (or skip to use full image)"),
                              br(),
                              br(),
                              br(),
@@ -357,15 +357,15 @@ run_core <- function(autoSave = TRUE){
                                shiny::column(
                                  1,
                                  style = "margin-top: 10px;",
-                                 "start scale (x,y)",
+                                 "start terra::scale (x,y)",
                                  shiny::verbatimTextOutput("distCoordA"),
-                                 "end scale (x,y)",
+                                 "end terra::scale (x,y)",
                                  shiny::verbatimTextOutput("distCoordB")
                                ),
                                # shiny::column(
                                #   1,
                                #   style = "margin-top: 10px;",
-                               #   "end scale (x,y)",
+                               #   "end terra::scale (x,y)",
                                #   shiny::verbatimTextOutput("distCoordB")
                                # ),
 
@@ -432,7 +432,7 @@ run_core <- function(autoSave = TRUE){
 
       server = function(input, output, session) {
 
-        aaa <- terra::rast(system.file("extdata/CORE_XYZ/CORE_XYZ.tif",package = "HSItools"))
+        aaa <- terra::rast(system.file("extdata/CORE_XYZ/CORE_XYZ.tif", package = "HSItools"), noflip = TRUE)
 
         session$onSessionEnded(function() {
           stopApp()
@@ -447,7 +447,7 @@ run_core <- function(autoSave = TRUE){
         useExample <- reactiveVal(FALSE)
 
         observeEvent(input$layerTable1_rows_selected,ignoreNULL = FALSE, {
-          wavesA <- paste0(names(coreImage())[input$layerTable1_rows_selected],collapse = ", ")
+          wavesA <- paste0(terra::names(coreImage())[input$layerTable1_rows_selected],collapse = ", ")
           textA <- paste0("Wavelengths selected: ", wavesA)
           output$currentSelection <- renderText(textA)
         })
@@ -459,11 +459,11 @@ run_core <- function(autoSave = TRUE){
 
         observeEvent(input$dt_sel, {
           custTableIndex(NULL)
-          if (isTRUE(input$dt_sel) & isTRUE(input$halfRows)) {
+          if (terra::isTRUE(input$dt_sel) & terra::isTRUE(input$halfRows)) {
             DT::selectRows(dt_proxy, seq(min(input$layerTable1_rows_all),max(input$layerTable1_rows_all),2))
-          } else if (isTRUE(input$dt_sel) & isFALSE(input$halfRows)) {
+          } else if (terra::isTRUE(input$dt_sel) & terra::isFALSE(input$halfRows)) {
             DT::selectRows(dt_proxy, input$layerTable1_rows_all)
-          } else if (isFALSE(input$dt_sel) & isTRUE(input$halfRows)){
+          } else if (terra::isFALSE(input$dt_sel) & terra::isTRUE(input$halfRows)){
             DT::selectRows(dt_proxy, seq(min(input$layerTable1_rows_all),max(input$layerTable1_rows_all),2))
           } else {
             DT::selectRows(dt_proxy, NULL)
@@ -472,11 +472,11 @@ run_core <- function(autoSave = TRUE){
         #checkbox to select every other row
         observeEvent(input$halfRows, {
           custTableIndex(NULL)
-          if (isTRUE(input$dt_sel) & isTRUE(input$halfRows)) {
+          if (terra::isTRUE(input$dt_sel) & terra::isTRUE(input$halfRows)) {
             DT::selectRows(dt_proxy, seq(min(input$layerTable1_rows_all),max(input$layerTable1_rows_all),2))
-          } else if (isTRUE(input$dt_sel) & isFALSE(input$halfRows)) {
+          } else if (terra::isTRUE(input$dt_sel) & terra::isFALSE(input$halfRows)) {
             DT::selectRows(dt_proxy, input$layerTable1_rows_all)
-          } else if (isFALSE(input$dt_sel) & isTRUE(input$halfRows)){
+          } else if (terra::isFALSE(input$dt_sel) & terra::isTRUE(input$halfRows)){
             DT::selectRows(dt_proxy, seq(min(input$layerTable1_rows_all),max(input$layerTable1_rows_all),2))
           } else {
             DT::selectRows(dt_proxy, NULL)
@@ -503,16 +503,16 @@ run_core <- function(autoSave = TRUE){
           user_dir(shinyFiles::parseDirPath(volumes, selection = input$file_dir))
         })
         #   dir1 <- shinyFiles::parseDirPath(volumes, selection = input$file_dir)
-        #   print(dir1)
+        #   raster::print(dir1)
         #   user_dir(dir1)
-        #   print(user_dir(dir1))
+        #   raster::print(user_dir(dir1))
         #   files1 <- user_dir() |>
         #     fs::dir_ls(type = "file", regexp = ".raw", recurse = TRUE)
-        #   print(files1)
+        #   raster::print(files1)
         #   rasters(files1)
-        #   print(rasters(files1))
+        #   raster::print(rasters(files1))
         #   coreImage(terra::rast(rasters(files1)))
-        #   # coreInfo(c(paste0("width: ", ncol(coreImage()), " pixels"), paste0("height: ", nrow(coreImage()), " pixels"), paste0("layers: ", length(names(coreImage())))))
+        #   # coreInfo(c(paste0("width: ", terra::ncol(coreImage()), " pixels"), paste0("height: ", terra::nrow(coreImage()), " pixels"), paste0("layers: ", length(terra::names(coreImage())))))
         # })
 
 
@@ -520,7 +520,7 @@ run_core <- function(autoSave = TRUE){
         observeEvent(input$file_dir_example, {
           useExample(TRUE)
           path1 <- file.path(system.file(package = "HSItools"), "extdata/CORE_XYZ")
-          print(path1)
+          raster::print(path1)
           user_dir(path1)
           # rasters(user_dir() |>
           #           fs::dir_ls(type = "file", regexp = ".tif", recurse = TRUE))
@@ -531,8 +531,8 @@ run_core <- function(autoSave = TRUE){
         # user_dir <- eventReactive({input$file_dir
         #   input$file_dir_example
         #   }, {
-        #   print(paste0("selected: ", input$file_dir))
-        #   print(paste0("example: ", input$file_dir_example))
+        #   raster::print(paste0("selected: ", input$file_dir))
+        #   raster::print(paste0("example: ", input$file_dir_example))
         #   if (!is.null(input$file_dir)){
         #     return(shinyFiles::parseDirPath(volumes, selection = input$file_dir))
         #   } else{
@@ -542,13 +542,13 @@ run_core <- function(autoSave = TRUE){
         # })
 
         observeEvent(input$proceed_with_data, {
-          #print(input$layerTable1_rows_all)
+          #raster::print(input$layerTable1_rows_all)
 
           if (length(input$layerTable1_rows_selected) < 1){
             shinyalert::shinyalert(title = "No Layers", text = "Please choose at least 1 layer to proceed!")
           } else {
 
-            allParams$layers <<- as.numeric(names(coreImage())[input$layerTable1_rows_selected])
+            allParams$layers <<- as.numeric(terra::names(coreImage())[input$layerTable1_rows_selected])
 
             updateTabsetPanel(session=session,
                               "tabset1",
@@ -565,7 +565,7 @@ run_core <- function(autoSave = TRUE){
 
         #print directory
         output$core_dir_show <- renderPrint({
-          #print(paste0("user_dir(): ", user_dir()))
+          #raster::print(paste0("user_dir(): ", user_dir()))
           #if (length(user_dir()) != 0){
           user_dir()
           #}
@@ -624,10 +624,10 @@ run_core <- function(autoSave = TRUE){
           if (length(rasters()) == 0 & length(user_datapath()) == 0){
             NULL
           } else if (length(user_dir()) != 0){
-            return(terra::rast(files1()$capture))
+            return(terra::rast(files1()$capture, noflip = TRUE))
           } else if (length(user_datapath()) != 0) {
 
-            return(terra::rast(user_file()$datapath))
+            return(terra::rast(user_file()$datapath, noflip = TRUE))
           } else {
             return(NULL)
           }
@@ -645,7 +645,7 @@ run_core <- function(autoSave = TRUE){
 
         coreInfo <- reactive({
           if (!is.null(coreImage())){
-            c(paste0("width: ", ncol(coreImage()), " pixels"), paste0("height: ", nrow(coreImage()), " pixels"), paste0("layers: ", length(names(coreImage()))))
+            c(paste0("width: ", terra::ncol(coreImage()), " pixels"), paste0("height: ", terra::nrow(coreImage()), " pixels"), paste0("layers: ", length(terra::names(coreImage()))))
           } else {
             NULL
           }
@@ -653,7 +653,7 @@ run_core <- function(autoSave = TRUE){
 
         layersTable <- reactive({
           if (!is.null(coreImage())){
-            data.table::data.table(index=1:length(names(coreImage())), wavelength=as.numeric(names(coreImage())))
+            data.table::data.table(index=1:length(terra::names(coreImage())), wavelength=as.numeric(terra::names(coreImage())))
           } else {
             data.table::data.table()
           }
@@ -664,14 +664,14 @@ run_core <- function(autoSave = TRUE){
 
         colorSelection <- reactive({
           if (!is.null(coreImage())){
-            all <- defineRGB(names(coreImage()))
+            all <- defineRGB(terra::names(coreImage()))
             colorNames <- c("red", "green", "blue")
             if (sum(all$flags)>0){
-              flags <- c(paste0("Warning, false color image due to lack of ", colorNames[as.logical(all$flags)], " layers."), paste0("Using: ", names(coreImage())[all$layers[as.logical(all$flags)]], " nm"))
+              flags <- c(paste0("Warning, false color image due to lack of ", colorNames[as.logical(all$flags)], " layers."), paste0("Using: ", terra::names(coreImage())[all$layers[as.logical(all$flags)]], " nm"))
             } else {
               flags <- "Using: "
               for (ii in 1:3){
-                flags <- paste(flags, paste0(names(coreImage())[all$layers[ii]], " nm for ", colorNames[ii]), sep="\n")
+                flags <- paste(flags, paste0(terra::names(coreImage())[all$layers[ii]], " nm for ", colorNames[ii]), sep="\n")
               }
             }
             flags
@@ -679,25 +679,25 @@ run_core <- function(autoSave = TRUE){
         })
 
         RGBlayers <- reactive({
-          defineRGB(names(coreImage()))$layers
+          defineRGB(terra::names(coreImage()))$layers
         })
 
         output$color_warning <- renderText(colorSelection())
 
         imgH <- reactive({
-          nrow(coreImage()) * 10^(input$scaleOrigImg)
+          terra::nrow(coreImage()) * 10^(input$scaleOrigImg)
         })
 
         imgW <- reactive({
-          ncol(coreImage()) * 10^(input$scaleOrigImg)
+          terra::ncol(coreImage()) * 10^(input$scaleOrigImg)
         })
 
         imgDistH <- reactive({
-          nrow(coreImage()) * 10^(input$scaleDistImg)
+          terra::nrow(coreImage()) * 10^(input$scaleDistImg)
         })
 
         imgDistW <- reactive({
-          ncol(coreImage()) * 10^(input$scaleDistImg)
+          terra::ncol(coreImage()) * 10^(input$scaleDistImg)
         })
 
         renderFN <- function(fullPath){
@@ -739,15 +739,15 @@ run_core <- function(autoSave = TRUE){
           clickCounter$count <- clickCounter$count + 1
           if (input$sampleOrScale == "Scale"){
             if (ceiling(clickCounter$count/2) == clickCounter$count/2){
-              source_coords$xy[2,] <- c(round(input$plot_click$x), round(input$plot_click$y))
+              source_coords$xy[2,] <- c(terra::round(input$plot_click$x), terra::round(input$plot_click$y))
             }else{
-              source_coords$xy[1,] <- c(round(input$plot_click$x), round(input$plot_click$y))
+              source_coords$xy[1,] <- c(terra::round(input$plot_click$x), terra::round(input$plot_click$y))
             }
           } else {
             if (ceiling(clickCounter$count/2) == clickCounter$count/2){
-              sample_coords$xy[2,] <- c(round(input$plot_click$x), round(input$plot_click$y))
+              sample_coords$xy[2,] <- c(terra::round(input$plot_click$x), terra::round(input$plot_click$y))
             }else{
-              sample_coords$xy[1,] <- c(round(input$plot_click$x), round(input$plot_click$y))
+              sample_coords$xy[1,] <- c(terra::round(input$plot_click$x), terra::round(input$plot_click$y))
             }
           }
 
@@ -755,11 +755,11 @@ run_core <- function(autoSave = TRUE){
 
         #measure scale bar
         distTot <- reactive({
-          round(sum(abs(source_coords$xy[1,]-source_coords$xy[2,])))
+          terra::round(sum(abs(source_coords$xy[1,]-source_coords$xy[2,])))
         })
 
         distY <- reactive({
-          round(abs(source_coords$xy[1,2]-source_coords$xy[2,2]))
+          terra::round(abs(source_coords$xy[1,2]-source_coords$xy[2,2]))
         })
 
         pointA <- reactive({
@@ -770,8 +770,8 @@ run_core <- function(autoSave = TRUE){
           which(min(source_coords$xy[,2]) == source_coords$xy[,2])
         })
 
-        output$distCoordA <- renderText(paste0("(", round(unlist(source_coords$xy[pointA(),])[1]), ", ", round(nrow(coreImage()[[1]]) - unlist(source_coords$xy[pointA(),])[2]), ")"))
-        output$distCoordB <- renderText(paste0("(", round(unlist(source_coords$xy[pointB(),])[1]), ", ", round(nrow(coreImage()[[1]]) - unlist(source_coords$xy[pointB(),])[2]), ")"))
+        output$distCoordA <- renderText(paste0("(", terra::round(unlist(source_coords$xy[pointA(),])[1]), ", ", terra::round(terra::nrow(coreImage()[[1]]) - unlist(source_coords$xy[pointA(),])[2]), ")"))
+        output$distCoordB <- renderText(paste0("(", terra::round(unlist(source_coords$xy[pointB(),])[1]), ", ", terra::round(terra::nrow(coreImage()[[1]]) - unlist(source_coords$xy[pointB(),])[2]), ")"))
 
         output$coreDist <- renderText(distY())
 
@@ -788,20 +788,20 @@ run_core <- function(autoSave = TRUE){
           which(min(sample_coords$xy[,2]) == sample_coords$xy[,2])
         })
 
-        output$distSamplePointA <- renderText(paste0("(", round(unlist(sample_coords$xy[pointA(),])[1]), ", ", round(nrow(coreImage()[[1]]) - unlist(sample_coords$xy[pointA(),])[2]), ")"))
-        output$distSamplePointB <- renderText(paste0("(", round(unlist(sample_coords$xy[pointB(),])[1]), ", ", round(nrow(coreImage()[[1]]) - unlist(sample_coords$xy[pointB(),])[2]), ")"))
+        output$distSamplePointA <- renderText(paste0("(", terra::round(unlist(sample_coords$xy[pointA(),])[1]), ", ", terra::round(terra::nrow(coreImage()[[1]]) - unlist(sample_coords$xy[pointA(),])[2]), ")"))
+        output$distSamplePointB <- renderText(paste0("(", terra::round(unlist(sample_coords$xy[pointB(),])[1]), ", ", terra::round(terra::nrow(coreImage()[[1]]) - unlist(sample_coords$xy[pointB(),])[2]), ")"))
 
 
         #plot box selection
 
         x_range <- function(e) {
           if(is.null(e)) return(c(0,0))
-          c(round(e$xmin, 0), round(e$xmax, 0))
+          c(terra::round(e$xmin, 0), terra::round(e$xmax, 0))
         }
 
         y_range <- function(e) {
           if(is.null(e)) return(c(0,0))
-          c(round(e$ymin, 0), round(e$ymax, 0))
+          c(terra::round(e$ymin, 0), terra::round(e$ymax, 0))
         }
 
         #output$xmin <- reactive({x_range(input$plot_brush)[1]})
@@ -881,11 +881,11 @@ run_core <- function(autoSave = TRUE){
             a1 <- terra::crop(x=coreRGB(),y=terra::ext(allParams$cropImage))
             suppressWarnings(terra::plotRGB(x = a1, stretch = "hist"))
 
-            if (sum(complete.cases(analysisRegions$DT))>0){
-              for (i in 1:nrow(analysisRegions$DT)){
-                polygon(x=c(analysisRegions$DT[i,1], analysisRegions$DT[i,2], analysisRegions$DT[i,2], analysisRegions$DT[i,1]),
+            if (sum(stats::complete.cases(analysisRegions$DT))>0){
+              for (i in 1:terra::nrow(analysisRegions$DT)){
+                graphics::polygon(x=c(analysisRegions$DT[i,1], analysisRegions$DT[i,2], analysisRegions$DT[i,2], analysisRegions$DT[i,1]),
                         y=c(analysisRegions$DT[i,4], analysisRegions$DT[i,4], analysisRegions$DT[i,3], analysisRegions$DT[i,3]),
-                        col = rgb(red = 0.5, green = 0.5, blue = 0.5, alpha = 0.5), lwd=3)
+                        col = grDevices::rgb(red = 0.5, green = 0.5, blue = 0.5, alpha = 0.5), lwd=3)
               }
             }
           },
@@ -977,13 +977,13 @@ run_core <- function(autoSave = TRUE){
         #   output$core_plot2 <- renderPlot({
         #     terra::plotRGB(x = coreImage(), r = RGBlayers()[1], g = RGBlayers()[2], b = RGBlayers()[3], stretch = "hist")
         #     #add start/end scale points
-        #     points(y=source_coords$xy[,2], x=source_coords$xy[,1], cex=input$scalermarkerPointSize, pch=19)
-        #     points(y=source_coords$xy[,2], x=source_coords$xy[,1], cex=input$scalermarkerPointSize/3, pch=19, col="white")
+        #     terra::points(y=source_coords$xy[,2], x=source_coords$xy[,1], cex=input$scalermarkerPointSize, pch=19)
+        #     terra::points(y=source_coords$xy[,2], x=source_coords$xy[,1], cex=input$scalermarkerPointSize/3, pch=19, col="white")
         #
-        #     points(y=sample_coords$xy[,2], x=sample_coords$xy[,1], cex=input$scalermarkerPointSize, pch=19, col="white")
-        #     points(y=sample_coords$xy[,2], x=sample_coords$xy[,1], cex=input$scalermarkerPointSize/3, pch=19)
-        #     #points( source_coords$xy[1,1], source_coords$xy[1,2], cex=3, pch=intToUtf8(8962))
-        #     #text(source_coords$xy[2,1], source_coords$xy[2,2], paste0("Distance=", dist1), cex=3)
+        #     terra::points(y=sample_coords$xy[,2], x=sample_coords$xy[,1], cex=input$scalermarkerPointSize, pch=19, col="white")
+        #     terra::points(y=sample_coords$xy[,2], x=sample_coords$xy[,1], cex=input$scalermarkerPointSize/3, pch=19)
+        #     #terra::points( source_coords$xy[1,1], source_coords$xy[1,2], cex=3, pch=intToUtf8(8962))
+        #     #terra::text(source_coords$xy[2,1], source_coords$xy[2,2], paste0("Distance=", dist1), cex=3)
         #   },
         #   height = imgDistH,
         #   width = imgDistW
@@ -1164,23 +1164,23 @@ run_core <- function(autoSave = TRUE){
 
         observeEvent(input$begin, {
           #distances <- list()
-          #distances$pointA <- round(unlist(source_coords$xy[pointA(),]))
-          #distances$pointB <- round(unlist(source_coords$xy[pointB(),]))
+          #distances$pointA <- terra::round(unlist(source_coords$xy[pointA(),]))
+          #distances$pointB <- terra::round(unlist(source_coords$xy[pointB(),]))
           #distances$coreDist <- distY()
           #distances$scaleDist <- distTot()
           #distances$scaleDistmm <- input$scaleLength
           #distances$pixelRatio <- input$scaleLength/distTot()
-          #print("2 executing ok")
+          #raster::print("2 executing ok")
           analysisOptions <- list()
-          #print("3 executing ok")
+          #raster::print("3 executing ok")
           analysisOptions$normalize <- as.logical(input$choice_normalize)
-          #print("4 executing ok")
+          #raster::print("4 executing ok")
           analysisOptions$integration <- as.logical(input$choice_integration)
-          #print("5 executing ok")
+          #raster::print("5 executing ok")
           analysisOptions$proxies <- input$choice_proxies
-          #print("6 executing ok")
+          #raster::print("6 executing ok")
           allParams$analysisOptions <<- analysisOptions
-          #print("7 executing ok")
+          #raster::print("7 executing ok")
           if (analysisOptions$normalize){
             output$file_select <- renderUI({
               # shiny::fluidRow(
@@ -1221,7 +1221,7 @@ run_core <- function(autoSave = TRUE){
           updateTabsetPanel(session=session,
                             "tabset1",
                             selected = "Select Data")
-          #print("8 executing ok")
+          #raster::print("8 executing ok")
         })
 
         custTableIndex <- reactiveVal()
@@ -1242,12 +1242,12 @@ run_core <- function(autoSave = TRUE){
             runIt <- TRUE
           }
           if (runIt) {
-            spectraIndex <- purrr::map(rows, \(x) which.min(abs(x - as.numeric(names(coreImage()))))) |>
+            spectraIndex <- purrr::map(rows, \(x) terra::which.min(abs(x - as.numeric(terra::names(coreImage()))))) |>
               purrr::as_vector()
 
-            # warn1 <- paste0("Requested ", length(rows), " unique layers, but only found ", length(unique(spectraIndex)))
+            # warn1 <- paste0("Requested ", length(rows), " unique layers, but only found ", length(terra::unique(spectraIndex)))
             #
-            # if (length(rows) > length(unique(spectraIndex))) {
+            # if (length(rows) > length(terra::unique(spectraIndex))) {
             #   shinyalert::shinyalert(warn1)
             # }
 
@@ -1266,14 +1266,14 @@ run_core <- function(autoSave = TRUE){
           if (input$minWave > input$maxWave){
             shinyalert::shinyalert(title = "Min/Max Error",text = "Max value must be greater than Min")
           } else {
-            waves <- as.numeric(names(coreImage()))
-            waves <- waves + runif(length(waves),min = 0,max = .001)
+            waves <- as.numeric(terra::names(coreImage()))
+            waves <- waves + stats::runif(length(waves),min = 0,max = .001)
 
             minDiffs <- unlist(lapply(c(waves - input$minWave), function(x) if(x<0){x*-1 + 500}else{x}))
             maxDiffs <- unlist(lapply(c(input$maxWave - waves), function(x) if(x<0){x*-1 + 500}else{x}))
 
-            spectraIndex1 <- which.min(minDiffs)
-            spectraIndex2 <- which.min(maxDiffs)
+            spectraIndex1 <- terra::which.min(minDiffs)
+            spectraIndex2 <- terra::which.min(maxDiffs)
 
             spectraIndex3 <- c(custTableIndex(),spectraIndex1:spectraIndex2)
 
@@ -1285,10 +1285,10 @@ run_core <- function(autoSave = TRUE){
 
         observeEvent(input$done, {
           distances <- list()
-          distances$startCore <- round(unlist(sample_coords$xy[samplePointA(),]))
-          distances$endCore <- round(unlist(sample_coords$xy[samplePointB(),]))
-          distances$startScale <- round(unlist(source_coords$xy[pointA(),]))
-          distances$endScale <- round(unlist(source_coords$xy[pointB(),]))
+          distances$startCore <- terra::round(unlist(sample_coords$xy[samplePointA(),]))
+          distances$endCore <- terra::round(unlist(sample_coords$xy[samplePointB(),]))
+          distances$startScale <- terra::round(unlist(source_coords$xy[pointA(),]))
+          distances$endScale <- terra::round(unlist(source_coords$xy[pointB(),]))
           distances$coreDist <- distY()
           distances$scaleDist <- distTot()
           distances$scaleDistmm <- input$scaleLength
@@ -1319,11 +1319,11 @@ run_core <- function(autoSave = TRUE){
 
           if (autoSave==TRUE){
             saveLoc <- normalizePath(paste0(user_dir(),"/HSItools_core.rds"))
-            saveRDS(allParams, saveLoc)
+            terra::saveRDS(allParams, saveLoc)
             cat("\n")
             cat(paste0("Output saved: ", saveLoc))
             cat("\n")
-            cat(paste0("Load the rds to use new data (eg. core1A <- readRDS('", saveLoc, "'))"))
+            cat(paste0("Load the rds to use new utils::data (eg. core1A <- terra::readRDS('", saveLoc, "'))"))
             cat("\n")
             cat("\n")
           }
@@ -1336,13 +1336,13 @@ run_core <- function(autoSave = TRUE){
         observeEvent(input$acceptAnalysisRegions, {
           output$core_plot2 <- renderPlot({
             terra::plotRGB(x = coreImage(), r = RGBlayers()[1], g = RGBlayers()[2], b = RGBlayers()[3], stretch = "hist")
-            points(y=source_coords$xy[,2], x=source_coords$xy[,1], cex=input$scalermarkerPointSize, pch=19)
-            points(y=source_coords$xy[,2], x=source_coords$xy[,1], cex=input$scalermarkerPointSize/3, pch=19, col="white")
+            terra::points(y=source_coords$xy[,2], x=source_coords$xy[,1], cex=input$scalermarkerPointSize, pch=19)
+            terra::points(y=source_coords$xy[,2], x=source_coords$xy[,1], cex=input$scalermarkerPointSize/3, pch=19, col="white")
 
-            points(y=sample_coords$xy[,2], x=sample_coords$xy[,1], cex=input$scalermarkerPointSize, pch=19, col="white")
-            points(y=sample_coords$xy[,2], x=sample_coords$xy[,1], cex=input$scalermarkerPointSize/3, pch=19)
-            #points( source_coords$xy[1,1], source_coords$xy[1,2], cex=3, pch=intToUtf8(8962))
-            #text(source_coords$xy[2,1], source_coords$xy[2,2], paste0("Distance=", dist1), cex=3)
+            terra::points(y=sample_coords$xy[,2], x=sample_coords$xy[,1], cex=input$scalermarkerPointSize, pch=19, col="white")
+            terra::points(y=sample_coords$xy[,2], x=sample_coords$xy[,1], cex=input$scalermarkerPointSize/3, pch=19)
+            #terra::points( source_coords$xy[1,1], source_coords$xy[1,2], cex=3, pch=intToUtf8(8962))
+            #terra::text(source_coords$xy[2,1], source_coords$xy[2,2], paste0("Distance=", dist1), cex=3)
           },
           height = imgDistH,
           width = imgDistW

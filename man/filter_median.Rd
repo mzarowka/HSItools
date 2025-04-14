@@ -5,11 +5,11 @@
 \title{Smooth raster with focal median}
 \usage{
 filter_median(
-  raster = raster,
+  raster,
   window = 3,
   extent = NULL,
-  ext = NULL,
-  filename = NULL
+  filename = NULL,
+  extension = NULL
 )
 }
 \arguments{
@@ -19,9 +19,9 @@ filter_median(
 
 \item{extent}{an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.}
 
-\item{ext}{character, a graphic format extension.}
-
 \item{filename}{NULL (default) to write automatically into products, provide full path and ext to override.}
+
+\item{extension}{character, a graphic format extension.}
 }
 \value{
 smoothed SpatRaster
@@ -29,3 +29,9 @@ smoothed SpatRaster
 \description{
 Smooth raster with focal median
 }
+\seealso{
+Other Filters: 
+\code{\link{filter_savgol}()},
+\code{\link{remove_continuum}()}
+}
+\concept{Filters}

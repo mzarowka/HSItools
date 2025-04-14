@@ -6,19 +6,19 @@
 \usage{
 extract_spectral_indices(
   raster,
-  .hsi_index = NULL,
-  .extent = NULL,
-  .write = FALSE
+  hsi_index = NULL,
+  extent = NULL,
+  write = FALSE
 )
 }
 \arguments{
 \item{raster}{a terra SpatRaster of normalized capture data.}
 
-\item{.hsi_index}{character indicating hyperspectral index layer to plot.}
+\item{hsi_index}{character indicating hyperspectral index layer to plot.}
 
-\item{.extent}{an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.}
+\item{extent}{an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.}
 
-\item{.write}{optional, should output be written to csv file.}
+\item{write}{optional, should output be written to csv file.}
 }
 \value{
 a tibble with averaged value or multiple values of spectral indices.

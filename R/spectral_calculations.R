@@ -14,15 +14,15 @@
 #' @return one layer terra SpatRaster with calculated RABD values
 #' @export
 calculate_rabd <- function(
-    raster,
-    rabd_name,
-    rabd_type = "max",
-    edges,
-    trough,
-    extent = NULL,
-    ext = NULL,
-    filename = NULL) {
-
+  raster,
+  rabd_name,
+  rabd_type = "max",
+  edges,
+  trough,
+  extent = NULL,
+  ext = NULL,
+  filename = NULL
+) {
   # Check if correct class is supplied.
   if (!inherits(raster, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
@@ -59,21 +59,28 @@ calculate_rabd <- function(
 
   # If RABD is defined as range and "max" is selected flexibly find the position of the absolute minimum within the range.
   if (rabd_type == "max") {
-
     # Check type of filename
     if (is.null(filename) == TRUE) {
-      filename <- paste0(raster_src, "/", toupper(rabd_name), "_max_", raster_name, ".tif")
+      filename <- paste0(
+        raster_src,
+        "/",
+        toupper(rabd_name),
+        "_max_",
+        raster_name,
+        ".tif"
+      )
     } else {
       filename <- fs::path(filename, ext = ext)
     }
 
-      # Set layer name based on the rabd_name argument
+    # Set layer name based on the rabd_name argument
     names(template) <- paste0(rabd_name, "_max")
 
     # Find trough position
     trough_position <- spectra_position(
       raster = raster,
-      spectra = trough) |>
+      spectra = trough
+    ) |>
       # Pull vector with positions
       dplyr::pull(var = 2) |>
       # Subset normalized raster to match trough
@@ -84,13 +91,18 @@ calculate_rabd <- function(
       (\(x) terra::which.lyr(raster == x))() |>
       # Coerce to integer
       (\(x) as.integer(x[1]))()
-
-    } else if (rabd_type == "mid") {
-
-      # Check type of filename
-      if (is.null(filename) == TRUE) {
-      filename <- paste0(raster_src, "/", toupper(rabd_name), "_mid_", raster_name, ".tif")
-      } else {
+  } else if (rabd_type == "mid") {
+    # Check type of filename
+    if (is.null(filename) == TRUE) {
+      filename <- paste0(
+        raster_src,
+        "/",
+        toupper(rabd_name),
+        "_mid_",
+        raster_name,
+        ".tif"
+      )
+    } else {
       filename <- fs::path(filename, ext = ext)
     }
 
@@ -124,10 +136,16 @@ calculate_rabd <- function(
 
     # If RABD is defined as a specific wavelength.
   } else if (rabd_type == "strict") {
-
     # Check type of filename
     if (is.null(filename) == TRUE) {
-      filename <- paste0(raster_src, "/", toupper(rabd_name), "_strict_", raster_name, ".tif")
+      filename <- paste0(
+        raster_src,
+        "/",
+        toupper(rabd_name),
+        "_strict_",
+        raster_name,
+        ".tif"
+      )
     } else {
       filename <- fs::path(filename, ext = ext)
     }
@@ -159,7 +177,7 @@ calculate_rabd <- function(
   }
 
   # Find minimum reflectance value in the trough (denominator)
-  trough_reflectance <- raster[, , trough_position] |>
+  trough_reflectance <- raster[,, trough_position] |>
     # Coerce to numeric
     as.numeric()
 
@@ -169,10 +187,10 @@ calculate_rabd <- function(
     dplyr::pull(var = 2)
 
   # Find reflectance value of the left edge (lower wavelength)
-  ledge_reflectance <- raster[, , edge_positions[1]]
+  ledge_reflectance <- raster[,, edge_positions[1]]
 
   # Find reflectance value of the right edge (higher wavelength)
-  redge_reflectance <- raster[, , edge_positions[2]]
+  redge_reflectance <- raster[,, edge_positions[2]]
 
   # Find number of the bands between through minimum and left edge (lower wavelength, Y)
   ledge_width <- abs(trough_position - edge_positions[1])
@@ -181,7 +199,9 @@ calculate_rabd <- function(
   redge_width <- abs(trough_position - edge_positions[2])
 
   # Calculate equation numerator
-  numerator <- (redge_width * ledge_reflectance + ledge_width * redge_reflectance) /
+  numerator <- (redge_width *
+    ledge_reflectance +
+    ledge_width * redge_reflectance) /
     (redge_width + ledge_width)
 
   # Calculate RABD
@@ -198,7 +218,8 @@ calculate_rabd <- function(
     template,
     filename = filename,
     overwrite = TRUE,
-    wopt = wopts)
+    wopt = wopts
+  )
 
   # Reset the window
   terra::window(raster) <- NULL
@@ -222,14 +243,14 @@ calculate_rabd <- function(
 #' @return one layer terra SpatRaster with calculated RABA values.
 #' @export
 calculate_raba <- function(
-    raster,
-    raba_name,
-    edges,
-    trough,
-    extent = NULL,
-    ext = NULL,
-    filename = NULL) {
-
+  raster,
+  raba_name,
+  edges,
+  trough,
+  extent = NULL,
+  ext = NULL,
+  filename = NULL
+) {
   # Check if correct class is supplied.
   if (!inherits(raster, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
@@ -257,7 +278,14 @@ calculate_raba <- function(
 
   # Check type of filename
   if (is.null(filename) == TRUE) {
-    filename <- paste0(raster_src, "/", toupper(raba_name), "_", raster_name, ".tif")
+    filename <- paste0(
+      raster_src,
+      "/",
+      toupper(raba_name),
+      "_",
+      raster_name,
+      ".tif"
+    )
   } else {
     filename <- fs::path(filename, ext = ext)
   }
@@ -265,7 +293,8 @@ calculate_raba <- function(
   # Create empty SpatRaster template from original cropped raster
   template <- terra::rast(
     terra::ext(raster),
-    resolution = terra::res(raster))
+    resolution = terra::res(raster)
+  )
 
   # Set layer name based on the raba_name argument
   names(template) <- raba_name
@@ -276,7 +305,8 @@ calculate_raba <- function(
   terra::writeRaster(
     template,
     filename = filename,
-    overwrite = TRUE)
+    overwrite = TRUE
+  )
 
   # Reset window
   terra::window(raster) <- NULL
@@ -301,13 +331,13 @@ calculate_raba <- function(
 #'
 #' @description calculate band ratio of selected wavelengths.
 calculate_band_ratio <- function(
-    raster,
-    ratio_name,
-    edges,
-    extent = NULL,
-    ext = NULL,
-    filename = NULL) {
-
+  raster,
+  ratio_name,
+  edges,
+  extent = NULL,
+  ext = NULL,
+  filename = NULL
+) {
   # Check if correct class is supplied.
   if (!inherits(raster, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
@@ -335,7 +365,14 @@ calculate_band_ratio <- function(
 
   # Check type of filename
   if (is.null(filename) == TRUE) {
-    filename <- paste0(raster_src, "/", toupper(ratio_name), "_", raster_name, ".tif")
+    filename <- paste0(
+      raster_src,
+      "/",
+      toupper(ratio_name),
+      "_",
+      raster_name,
+      ".tif"
+    )
   } else {
     filename <- fs::path(filename, ext = ext)
   }
@@ -346,7 +383,8 @@ calculate_band_ratio <- function(
     dplyr::pull(var = 2)
 
   # Divide
-  template <- terra::subset(raster, edge_positions[1]) / terra::subset(raster, edge_positions[2])
+  template <- terra::subset(raster, edge_positions[1]) /
+    terra::subset(raster, edge_positions[2])
 
   # Set layer name
   names(template) <- ratio_name
@@ -355,7 +393,8 @@ calculate_band_ratio <- function(
   terra::writeRaster(
     template,
     filename = filename,
-    overwrite = TRUE)
+    overwrite = TRUE
+  )
 
   # Reset window
   terra::window(raster) <- NULL
@@ -380,13 +419,13 @@ calculate_band_ratio <- function(
 #'
 #' @description calculate band difference of selected wavelengths.
 calculate_band_difference <- function(
-    raster,
-    difference_name,
-    edges,
-    extent = NULL,
-    ext = NULL,
-    filename = NULL) {
-
+  raster,
+  difference_name,
+  edges,
+  extent = NULL,
+  ext = NULL,
+  filename = NULL
+) {
   # Check if correct class is supplied.
   if (!inherits(raster, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
@@ -414,7 +453,14 @@ calculate_band_difference <- function(
 
   # Check type of filename
   if (is.null(filename) == TRUE) {
-    filename <- paste0(raster_src, "/", toupper(difference_name), "_", raster_name, ".tif")
+    filename <- paste0(
+      raster_src,
+      "/",
+      toupper(difference_name),
+      "_",
+      raster_name,
+      ".tif"
+    )
   } else {
     filename <- fs::path(filename, ext = ext)
   }
@@ -425,7 +471,8 @@ calculate_band_difference <- function(
     dplyr::pull(var = 2)
 
   # Subtract
-  template <- terra::subset(raster, edge_positions[1]) - terra::subset(raster, edge_positions[2])
+  template <- terra::subset(raster, edge_positions[1]) -
+    terra::subset(raster, edge_positions[2])
 
   # Set layer name
   names(template) <- difference_name
@@ -434,7 +481,8 @@ calculate_band_difference <- function(
   terra::writeRaster(
     template,
     filename = filename,
-    overwrite = TRUE)
+    overwrite = TRUE
+  )
 
   # Reset window
   terra::window(raster) <- NULL
@@ -458,11 +506,11 @@ calculate_band_difference <- function(
 #' @description calculate mean reflectance from all layers for given pixel.
 #'
 calculate_rmean <- function(
-    raster,
-    extent = NULL,
-    ext = NULL,
-    filename = NULL) {
-
+  raster,
+  extent = NULL,
+  ext = NULL,
+  filename = NULL
+) {
   # Check if correct class is supplied.
   if (!inherits(raster, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
@@ -519,165 +567,344 @@ calculate_rmean <- function(
 #'
 #' @family Spectral calculations
 #'
-#' @param raster a terra SpatRaster of normalized capture data.
-#' @param trough character vector of wavelength to look for trough.
-#' @param extent an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
-#' @param ext character, a graphic format extension.
-#' @param filename NULL (default) to write automatically into products, provide full path and ext to override.
+#' @param raster A terra SpatRaster of normalized capture data.
+#' @param trough_range Numeric vector defining the wavelength range to search for trough (default: c(660, 680)).
+#' @param extent An extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
+#' @param extension Character, a graphic format extension.
+#' @param filename NULL (default) to write automatically into products folder, provide full path and extension to override.
 #'
-#' @return one layer terra SpatRaster with calculated lambdaREMP values.
+#' @return One layer terra SpatRaster with calculated lambdaREMP values.
 #'
-#' @description Calculate lambdaREMP. A wavelength number between 660 and 680 nm, where first derivative equals zero. After Ghanbari, H., Zilkey, D.R., Gregory-Eaves, I., Antoniades, D., 2023. A new index for the rapid generation of chlorophyll time series from hyperspectral imaging of sediment cores. Limnology and Oceanography: Methods 21, 703–717. https://doi.org/10.1002/lom3.10576.
+#' @description Calculate lambdaREMP (wavelength of the red-edge minimum point).
+#' This is the wavelength between 660 and 680 nm where the first derivative of
+#' reflectance equals zero, indicating the maximum absorption of light by chlorophyll.
+#' Based on Ghanbari, H., Zilkey, D.R., Gregory-Eaves, I., Antoniades, D., 2023.
+#' A new index for the rapid generation of chlorophyll time series from hyperspectral imaging of sediment cores.
+#' Limnology and Oceanography: Methods 21, 703–717. https://doi.org/10.1002/lom3.10576
 #'
 #' @export
 calculate_lambdaremp <- function(
-    raster,
-    trough = c(660, 680),
-    extent = NULL,
-    ext = NULL,
-    filename = NULL) {
-
-  # Check if correct class is supplied.
+  raster,
+  trough_range = c(660, 680),
+  extent = NULL,
+  extension = NULL,
+  filename = NULL
+) {
+  # Check if correct class is supplied
   if (!inherits(raster, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
   }
 
-  # Raster source directory
-  raster_src <- raster |>
-    terra::sources() |>
-    fs::path_dir()
+  # Filename handling
+  if (is.null(filename)) {
+    # Extract source information
+    raster_src <- dirname(terra::sources(raster))
 
-  # Raster source name
-  raster_name <- raster |>
-    terra::sources() |>
-    fs::path_file() |>
-    fs::path_ext_remove()
+    # Extract file name
+    raster_name <- tools::file_path_sans_ext(basename(terra::sources(raster)))
 
-  # Check extent type
-  if (is.null(extent) == TRUE) {
-    # Set window of interest
-    raster <- raster
+    # Construct default filename
+    filename <- fs::path(
+      raster_src,
+      paste0("REMP_", raster_name, ".tif")
+    )
   } else {
+    # Ensure proper file extension is applied
+    filename <- fs::path(filename, extension = extension %||% "tif")
+  }
+
+  # Extent handling
+  if (!is.null(extent)) {
     # Set window of interest
     terra::window(raster) <- terra::ext(extent)
   }
 
-  # Check type of filename
-  if (is.null(filename) == TRUE) {
-    filename <- paste0(raster_src, "/", "REMP_", raster_name, ".tif")
-  } else {
-    filename <- fs::path(filename, ext = ext)
+  # Get wavelength values from band names
+  wavelengths <- as.numeric(names(raster))
+
+  # In case names can't be converted to numeric, create a sequence
+  if (all(is.na(wavelengths))) {
+    cli::cli_alert_warning(
+      "Band names couldn't be converted to wavelengths. Using band indices instead."
+    )
+    wavelengths <- seq_len(terra::nlyr(raster))
   }
 
-  # Create empty SpatRaster template from original cropped raster
-  template <- terra::rast(
-    terra::ext(raster),
-    resolution = terra::res(raster))
+  # Find which bands fall within our trough range
+  trough_indices <- which(
+    wavelengths >= trough_range[1] & wavelengths <= trough_range[2]
+  )
 
-  # Find trough position
-  remp <- spectra_position(raster = raster, spectra = trough) |>
-    # Pull vector with positions
-    dplyr::pull(var = 2) |>
-    # Subset normalized raster to match trough
-    (\(x) terra::subset(raster, x))()
-  # Calculate derivative
+  if (length(trough_indices) < 3) {
+    rlang::abort(
+      message = paste0(
+        "Not enough bands found in the trough range (",
+        trough_range[1],
+        "-",
+        trough_range[2],
+        " nm) to calculate derivatives. ",
+        "Found only ",
+        length(trough_indices),
+        " bands. Need at least 3."
+      )
+    )
+  }
 
-  terra::values(template) <- remp
+  # Function to calculate λREMP using first derivative approach
+  find_remp_derivative <- function(pixel_values) {
+    # Check for NA values
+    if (any(is.na(pixel_values[trough_indices]))) {
+      return(NA_real_)
+    }
 
-  # Set layer name
-  names(template) <- "REMP"
+    # Extract values within trough range
+    trough_values <- pixel_values[trough_indices]
+    trough_waves <- wavelengths[trough_indices]
 
-  # Write new raster to file based on paths stored in the environment
-  terra::writeRaster(
-    template,
+    # Calculate first derivatives between adjacent bands using purrr
+    idx_pairs <- 1:(length(trough_indices) - 1)
+
+    derivatives <- purrr::map_dbl(idx_pairs, \(i) {
+      delta_refl <- trough_values[i + 1] - trough_values[i]
+      delta_wave <- trough_waves[i + 1] - trough_waves[i]
+      delta_refl / delta_wave
+    })
+
+    # Look for zero crossing (where derivative changes from negative to positive)
+    idx_pairs_for_crossing <- 1:(length(derivatives) - 1)
+
+    zero_cross <- purrr::map_lgl(idx_pairs_for_crossing, \(i) {
+      # Check if derivative crosses zero from negative to positive
+      derivatives[i] <= 0 && derivatives[i + 1] > 0
+    }) |>
+      which()
+
+    # If a zero crossing is found
+    if (length(zero_cross) > 0) {
+      # If multiple zero crossings, take the one with steepest positive slope
+      if (length(zero_cross) > 1) {
+        # Find crossing with largest positive derivative change
+        slope_changes <- derivatives[zero_cross + 1] - derivatives[zero_cross]
+        max_change_idx <- zero_cross[which.max(slope_changes)]
+      } else {
+        max_change_idx <- zero_cross[1]
+      }
+
+      # Linear interpolation to find exact wavelength where derivative = 0
+      x1 <- trough_waves[max_change_idx]
+      x2 <- trough_waves[max_change_idx + 1]
+      y1 <- derivatives[max_change_idx]
+      y2 <- derivatives[max_change_idx + 1]
+
+      # Calculate wavelength where derivative = 0
+      lambda_remp <- x1 + (0 - y1) * (x2 - x1) / (y2 - y1)
+
+      # Make sure result is within the specified range
+      lambda_remp <- max(min(lambda_remp, trough_range[2]), trough_range[1])
+
+      return(lambda_remp)
+    } else {
+      # If no zero crossing is found, find the wavelength at minimum reflectance
+      # This is a fallback method when the derivative approach doesn't find a solution
+      min_idx <- which.min(trough_values)
+      return(trough_waves[min_idx])
+    }
+  }
+
+  # Apply the function to each pixel
+  remp_values <- terra::app(
+    raster,
+    fun = find_remp_derivative,
     filename = filename,
     overwrite = TRUE
   )
 
+  # Set the layer name
+  names(remp_values) <- "REMP"
+
   # Reset window
   terra::window(raster) <- NULL
 
-  # Return raster
-  return(template)
+  # Return the result
+  return(remp_values)
 }
 
-#' Calculate derivative
+#' Calculate spectral derivative
 #'
 #' @family Spectral calculations
 #'
 #' @param raster terra SpatRaster of normalized capture data.
-#' @param derivative_name a character, lower case name of calculated difference.
-#' @param band numeric vector of one, to find derivative.
+#' @param derivative_name a character, lower case name of calculated derivative.
+#' @param band numeric, wavelength at which to calculate the derivative.
+#' @param method character, method to use for derivative calculation. One of "central" (default), "forward", or "backward".
 #' @param extent an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
-#' @param ext character, a graphic format extension.
-#' @param filename NULL (default) to write automatically into products, provide full path and ext to override.
+#' @param extension character, a graphic format extension.
+#' @param filename NULL (default) to write automatically into products, provide full path and extension to override.
 #'
 #' @return one layer terra SpatRaster with calculated derivative values.
+#' @export
 #'
-#' @description calculate derivative.
+#' @description
+#' Calculates the spectral derivative at a specific wavelength using one of three methods:
+#' - "central": Central difference method, f'(x) ≈ [f(x+h1) - f(x-h2)]/(h1+h2)
+#' - "forward": Forward difference method, f'(x) ≈ [f(x+h) - f(x)]/h
+#' - "backward": Backward difference method, f'(x) ≈ [f(x) - f(x-h)]/h
+#'
+#' Where h, h1, and h2 are wavelength differences between bands.
+#' The derivative provides information about the rate of change in reflectance,
+#' which can be useful for identifying absorption features and inflection points.
 calculate_derivative <- function(
-    raster,
-    derivative_name,
-    band,
-    extent = NULL,
-    ext = NULL,
-    filename = NULL) {
-
-  # Check if correct class is supplied.
+  raster,
+  derivative_name,
+  band,
+  method = "central",
+  extent = NULL,
+  extension = NULL,
+  filename = NULL
+) {
+  # Check if correct class is supplied
   if (!inherits(raster, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
   }
-
-  # Raster source directory
-  raster_src <- raster |>
-    terra::sources() |>
-    fs::path_dir()
-
-  # Raster source name
-  raster_name <- raster |>
-    terra::sources() |>
-    fs::path_file() |>
-    fs::path_ext_remove()
-
-  # Check extent type
-  if (is.null(extent) == TRUE) {
-    # Set window of interest
-    raster <- raster
+  
+  # Validate method
+  method <- match.arg(method, c("central", "forward", "backward"))
+  
+  # Filename handling
+  if (is.null(filename)) {
+    # Extract source information
+    raster_src <- raster |>
+      terra::sources() |>
+      dirname()
+    
+    # Extract file name
+    raster_name <- raster |>
+      terra::sources() |>
+      basename() |>
+      tools::file_path_sans_ext()
+    
+    # Construct default filename
+    filename <- fs::path(
+      raster_src, 
+      paste0(toupper(derivative_name), "_", raster_name, ".tif")
+    )
   } else {
+    # Ensure proper file extension is applied
+    filename <- fs::path(filename, extension = extension %||% "tif")
+  }
+  
+  # Extent handling
+  if (!is.null(extent)) {
     # Set window of interest
     terra::window(raster) <- terra::ext(extent)
   }
-
-  # Check type of filename
-  if (is.null(filename) == TRUE) {
-    filename <- paste0(raster_src, "/", toupper(derivative_name), "_", raster_name, ".tif")
-  } else {
-    filename <- fs::path(filename, ext = ext)
+  
+  # Get wavelengths from band names
+  wavelengths <- raster |> 
+    terra::names() |>
+    as.numeric()
+  
+  # If wavelengths couldn't be converted, create a sequence
+  if (all(is.na(wavelengths))) {
+    cli::cli_alert_warning(
+      "Band names couldn't be converted to wavelengths. Using band indices instead."
+    )
+    wavelengths <- seq_len(terra::nlyr(raster))
   }
-
-  # Find edge positions
-  edge_positions <- spectra_position(raster = raster, spectra = edges) |>
-    # Pull vector with positions
+  
+  # Find position of the requested band
+  band_position <- raster |>
+    spectra_position(spectra = band) |>
     dplyr::pull(var = 2)
-
-  # Find derivative value
-  # derivative
-
+  
+  # Validate band position is within range
+  if (band_position < 1 || band_position > terra::nlyr(raster)) {
+    rlang::abort(
+      message = paste0(
+        "Requested band (", band, ") is outside the available range of ",
+        "your raster (", min(wavelengths), "-", max(wavelengths), ")."
+      )
+    )
+  }
+  
+  # Calculate derivative based on method
+  if (method == "central") {
+    if (band_position <= 1 || band_position >= terra::nlyr(raster)) {
+      rlang::abort(
+        message = paste0(
+          "Cannot use 'central' method for band at position ", band_position, 
+          ". Need bands before and after for central difference. ",
+          "Try using 'forward' or 'backward' methods instead."
+        )
+      )
+    }
+    
+    # Calculate using central difference
+    derivative_values <- raster |>
+      (\(r) {
+        # Extract bands and calculate difference
+        band_minus <- terra::subset(r, band_position - 1)
+        band_plus <- terra::subset(r, band_position + 1)
+        wave_diff <- wavelengths[band_position + 1] - wavelengths[band_position - 1]
+        (band_plus - band_minus) / wave_diff
+      })()
+    
+  } else if (method == "forward") {
+    if (band_position >= terra::nlyr(raster)) {
+      rlang::abort(
+        message = paste0(
+          "Cannot use 'forward' method for the last band at position ", 
+          band_position, ". Try using 'backward' method instead."
+        )
+      )
+    }
+    
+    # Calculate using forward difference
+    derivative_values <- raster |>
+      (\(r) {
+        # Extract bands and calculate difference
+        band_current <- terra::subset(r, band_position)
+        band_plus <- terra::subset(r, band_position + 1)
+        wave_diff <- wavelengths[band_position + 1] - wavelengths[band_position]
+        (band_plus - band_current) / wave_diff
+      })()
+    
+  } else if (method == "backward") {
+    if (band_position <= 1) {
+      rlang::abort(
+        message = paste0(
+          "Cannot use 'backward' method for the first band at position ", 
+          band_position, ". Try using 'forward' method instead."
+        )
+      )
+    }
+    
+    # Calculate using backward difference
+    derivative_values <- raster |>
+      (\(r) {
+        # Extract bands and calculate difference
+        band_current <- terra::subset(r, band_position)
+        band_minus <- terra::subset(r, band_position - 1)
+        wave_diff <- wavelengths[band_position] - wavelengths[band_position - 1]
+        (band_current - band_minus) / wave_diff
+      })()
+  }
+  
   # Set layer name
-  names(template) <- derivative_name
-
-  # Write new raster to file based on paths stored in the environment
-  terra::writeRaster(
-    template,
-    filename = filename,
-    overwrite = TRUE
-  )
-
+  names(derivative_values) <- derivative_name
+  
+  # Write to file
+  derivative_values |>
+    terra::writeRaster(
+      filename = filename,
+      overwrite = TRUE
+    )
+  
   # Reset window
   terra::window(raster) <- NULL
-
+  
   # Return raster
-  return(template)
+  return(derivative_values)
 }
 
 #' Calculate normalized difference index (NDI)
@@ -696,13 +923,13 @@ calculate_derivative <- function(
 #'
 #' @description calculate band difference of selected wavelengths.
 calculate_ndi <- function(
-    raster,
-    ndi_name,
-    edges,
-    extent = NULL,
-    ext = NULL,
-    filename = NULL) {
-
+  raster,
+  ndi_name,
+  edges,
+  extent = NULL,
+  ext = NULL,
+  filename = NULL
+) {
   # Check if correct class is supplied.
   if (!inherits(raster, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
@@ -730,7 +957,14 @@ calculate_ndi <- function(
 
   # Check type of filename
   if (is.null(filename) == TRUE) {
-    filename <- paste0(raster_src, "/", toupper(ndi_name), "_", raster_name, ".tif")
+    filename <- paste0(
+      raster_src,
+      "/",
+      toupper(ndi_name),
+      "_",
+      raster_name,
+      ".tif"
+    )
   } else {
     filename <- fs::path(filename, ext = ext)
   }
@@ -741,7 +975,10 @@ calculate_ndi <- function(
     dplyr::pull(var = 2)
 
   # Subtract
-  template <- (terra::subset(raster, edge_positions[1]) - terra::subset(raster, edge_positions[2])) / (terra::subset(raster, edge_positions[1]) + terra::subset(raster, edge_positions[2]))
+  template <- (terra::subset(raster, edge_positions[1]) -
+    terra::subset(raster, edge_positions[2])) /
+    (terra::subset(raster, edge_positions[1]) +
+      terra::subset(raster, edge_positions[2]))
 
   # Set layer name
   names(template) <- ndi_name
@@ -750,7 +987,8 @@ calculate_ndi <- function(
   terra::writeRaster(
     template,
     filename = filename,
-    overwrite = TRUE)
+    overwrite = TRUE
+  )
 
   # Reset window
   terra::window(raster) <- NULL

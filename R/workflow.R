@@ -2,17 +2,30 @@
 #'
 #' @param core shiny output.
 #' @param path path to the directory with captured data. Defaults to NULL and shiny output.
-#' @param layers numeric vector, selection of layers (wavelengths) to use. Defaults to NULL and shiny output.
+#' @param layers numeric vector, selection of layers (wavelengths) to use. Defaults to NULL and shiny output or NULL and all layers.
 #' @param extent extent of the captured data. Defaults to NULL and shiny output. If "capture" then uses entire extent of captured data.
 #' @param normalize logical, should data be normalized.
 #' @param integration logical, whether white reference was scanned with different settings.
 #' @param tintw integration time of the white reference.
-#' @param tintd integration time of the captured data (sample).
+#' @param tints integration time of the captured data (sample).
+#' @param flip logical, wheter output should be flipped. Defaults to FALSE.
+#' @param verbose logical, should additional information be printed to the console. Defaults to FALSE.
 #'
 #' @return reflectance SpatRaster.
 #' @export
-prepare_core <- function(core = NULL, path = NULL, layers = NULL, extent = NULL, normalize = TRUE, integration = NULL, tintw = 1, tints = 1) {
-  if (!is.null(core) == TRUE) {
+get_reflectance <- function(
+  core = NULL,
+  path = NULL,
+  layers = NULL,
+  extent = NULL,
+  normalize = TRUE,
+  integration = NULL,
+  tintw = 1,
+  tints = 1,
+  flip = FALSE,
+  verbose = FALSE
+) {
+  if (!is.null(core)) {
     # Get path
     path <- fs::path(getwd(), core$directory)
 
@@ -20,19 +33,16 @@ prepare_core <- function(core = NULL, path = NULL, layers = NULL, extent = NULL,
     layers <- core$layers
 
     # Get files
-    files <-  core$rasterPaths
+    files <- core$rasterPaths
 
     files <- list(
       capture = fs::path(path, files[["capture"]]),
       darkref = fs::path(path, files[["darkref"]]),
-      whiteref = fs::path(path, files[["whiteref"]]))
-
+      whiteref = fs::path(path, files[["whiteref"]])
+    )
   } else {
     # Get path
     path <- path
-
-    # Get layers
-    layers <- layers
 
     # Get files
     files <- fs::dir_ls(paste0(path, "/capture")) |>
@@ -44,6 +54,17 @@ prepare_core <- function(core = NULL, path = NULL, layers = NULL, extent = NULL,
       darkref = fs::path_filter(files, regexp = "DARK"),
       whiteref = fs::path_filter(files, regexp = "WHITE")
     )
+
+    # # Get layers, if nothing provided use all
+    # layers <- layers %||%
+    #   as.numeric(terra::names(terra::rast(files[["capture"]]))) |>
+    #   {
+    #     \(raster) c(min(raster):max(raster))
+    #   }()
+  }
+
+  if (verbose == TRUE) {
+    cli::cli_alert_info("{format(Sys.time())} Creating products directory")
   }
 
   # Create products directory and store path
@@ -52,56 +73,184 @@ prepare_core <- function(core = NULL, path = NULL, layers = NULL, extent = NULL,
 
   # Check if file needs to be normalized from .raw
   if (normalize == TRUE) {
-
     # SpatRaster types
-    types <- list(capture = "capture", darkref = "darkref", whiteref = "whiteref")
+    types <- list(
+      capture = "capture",
+      darkref = "darkref",
+      whiteref = "whiteref"
+    )
 
-    if (is.character(extent) == TRUE) {
-      if (extent == "capture"){
-        extent <- terra::rast(files[["capture"]]) |>
-          terra::ext()
+    # Handle extent
+    if (is.null(extent)) {
+      # If no extent is provided, use core$cropImage if available
+      ext <- if (!is.null(core)) core$cropImage %||% NULL
+
+      # Crop type
+      crop <- "shiny"
+    } else {
+      # Check if extent is a character string
+      if (length(extent) == 1 && is.character(extent)) {
+        if (extent == "capture") {
+          # Use entire extent of captured data
+          ext <- terra::rast(files[["capture"]]) |>
+            terra::ext()
+
+          # Crop type
+          crop <- "capture"
+        } else {
+          rlang::abort(
+            "Invalid character extent specification. Use 'capture' or NULL."
+          )
+        }
+      } else if (inherits(extent, "SpatExtent")) {
+        # If a SpatExtent object is provided, use it directly
+        ext <- terra::ext(extent)
+
+        # Crop type
+        crop <- "extent"
+      } else {
+        # Unexpected outputs
+        rlang::abort(
+          "Invalid extent specification. Must be NULL, 'capture', or a SpatExtent object."
+        )
       }
-    } else if (is.null(extent) == TRUE) {
-      extent <- core$cropImage
+    }
+    # Get big roi = extent of the entire core
+    big_roi <- terra::ext(ext)
 
-    } else if (inherits(extent, what = "SpatExtent") == TRUE) {
-      extent <- terra::ext(extent)
+    if (is.null(layers)) {
+      # Keep layers NULL to signal we want all layers
+      rasters <- files |>
+        purrr::map(\(x) terra::rast(x, noflip = TRUE))
+
+      # Use rasters directly without subsetting
+      rasters_subset <- rasters
+    } else {
+      # If specific layers are requested, either from parameters or shiny input
+
+      # Read SpatRasters
+      rasters <- files |>
+        purrr::map(\(x) terra::rast(x, noflip = TRUE))
+
+      # Get band positions and subset
+      band_position <- HSItools::spectra_position(rasters[["capture"]], layers)
+
+      # Subset bands in the SpatRasters
+      rasters_subset <- rasters |>
+        purrr::map(
+          \(x)
+            HSItools::spectra_sub(
+              raster = x,
+              spectra_tbl = band_position
+            )
+        )
     }
 
-    big_roi <- terra::ext(extent)
-
-    # Read SpatRasters
-    rasters <- files |>
-      # Load SpatRasters
-      purrr::map(\(x) terra::rast(x))
-
-    # Get band positions - the same for all three SpatRasters
-    band_position <- HSItools::spectra_position(rasters[["capture"]], layers)
-
-    # Subset bands in the SpatRasters
-    rasters_subset <- rasters |>
-      purrr::map(\(x) HSItools::spectra_sub(
-        raster = x,
-        spectra_tbl = band_position))
+    if (verbose == TRUE) {
+      cli::cli_alert_info("{format(Sys.time())} Cropping rasters")
+    }
 
     # Crop
-    rasters_cropped <- purrr::map2(
-      rasters_subset,
-      types,
-      \(x, y) HSItools::raster_crop(
-        raster = x,
-        type = y,
-        roi = big_roi))
+    # If expected REFLECTANCE has the same extent as captured data
+    if (terra::ext(ext) == terra::ext(rasters[["capture"]])) {
+      if (verbose) {
+        cli::cli_alert_info(
+          "Original raster layers: {terra::nlyr(rasters[['capture']])}"
+        )
+        cli::cli_alert_info(
+          "Subset raster layers: {terra::nlyr(rasters_subset[['capture']])}"
+        )
+        cli::cli_alert_info(
+          "Are layer counts equal? {terra::nlyr(rasters[['capture']]) == terra::nlyr(rasters_subset[['capture']])}"
+        )
+      }
+
+      # If no layer subsetting
+      if (
+        terra::nlyr(rasters[["capture"]]) ==
+          terra::nlyr(rasters_subset[["capture"]])
+      ) {
+        rasters_cropped <- rasters
+        # If subsetting layers
+      } else {
+        rasters_cropped <- purrr::map(rasters_subset, \(raster) {
+          # Extract source information
+          raster_src <- dirname(dirname(terra::sources(raster)))
+
+          # Extract file name
+          raster_name <- tools::file_path_sans_ext(
+            basename(terra::sources(raster))
+          )
+
+          # Create products directory if it doesn't exist
+          products_dir <- fs::path(raster_src, "products")
+          if (!dir.exists(products_dir)) {
+            dir.create(products_dir, recursive = TRUE)
+          }
+
+          # Construct default filename (without leading/trailing slashes)
+          filename <- fs::path(
+            raster_src,
+            "products", # Remove slashes
+            paste0(raster_name, "_cropped.tif")
+          )
+
+          if (verbose) {
+            cli::cli_alert_info("Writing raster to: {filename}")
+          }
+
+          terra::writeRaster(
+            raster,
+            filename = filename,
+            wopt = list(
+              steps = terra::nlyr(raster) * terra::ncell(raster),
+              overwrite = TRUE
+            )
+          )
+        })
+      }
+      # If crop is needed
+    } else {
+      rasters_cropped <- purrr::map2(
+        rasters_subset,
+        types,
+        \(x, y)
+          HSItools::raster_crop(
+            raster = x,
+            type = y,
+            roi = big_roi
+          )
+      )
+    }
+
+    if (verbose == TRUE) {
+      cli::cli_alert_info("{format(Sys.time())} Resampling references")
+    }
 
     # Prepare reference SpatRasters
     rasters_references <- purrr::map2(
       rasters_cropped[c("darkref", "whiteref")],
       types[c("darkref", "whiteref")],
-      \(x, y) HSItools::create_reference_raster(
-        raster = x,
-        ref_type = y,
-        roi = big_roi,
-        path = path))
+      \(x, y)
+        HSItools::create_reference_raster(
+          raster = x,
+          ref_type = y,
+          roi = big_roi,
+          path = path
+        )
+    )
+
+    if (verbose == TRUE) {
+      cli::cli_alert_info("{format(Sys.time())} Cleaning up cropped references")
+    }
+
+    # Remove temporary files
+    fs::dir_ls(products, regexp = "DARKREF.*cropped|WHITEREF.*cropped") |>
+      fs::file_delete()
+
+    if (verbose == TRUE) {
+      cli::cli_alert_info("{format(Sys.time())} Calculating reflectance")
+    }
 
     # Normalize data
     reflectance <- HSItools::create_normalized_raster(
@@ -111,16 +260,71 @@ prepare_core <- function(core = NULL, path = NULL, layers = NULL, extent = NULL,
       tintw = tintw,
       tints = tints,
       fun = normalization,
-      path = path)
+      path = path
+    )
+
+    if (verbose == TRUE) {
+      cli::cli_alert_info("{format(Sys.time())} Cleaning up")
+    }
 
     # Remove temporary files
     fs::dir_ls(products, regexp = "resampled|cropped") |>
       fs::file_delete()
 
+    # Finally flip because of terra handling of unprojected rasters
+    if (flip == TRUE) {
+      if (verbose == TRUE) {
+        cli::cli_alert_info("{format(Sys.time())} Flipping reflectance")
+      }
+      reflectance_flip <- reflectance |>
+        {
+          \(i)
+            terra::flip(
+              x = i,
+              direction = "vertical",
+              filename = gsub(
+                pattern = "REFLECTANCE_",
+                replacement = "REFLECTANCE_flip",
+                x = terra::sources(i)
+              ),
+              overwrite = TRUE
+            )
+        }()
+
+      # Delete REFLECTANCE
+      fs::file_delete(terra::sources(reflectance))
+
+      # Rename REFLECTANCE flipped
+      new_path <- fs::file_move(
+        terra::sources(reflectance_flip),
+        sub(
+          pattern = "REFLECTANCE_flip",
+          replacement = "REFLECTANCE_",
+          x = terra::sources(reflectance_flip)
+        )
+      )
+
+      # Get REFLECTANCE back
+      reflectance <- terra::rast(new_path)
+    } else if (verbose == FALSE) {
+      reflectance <- reflectance
+    }
+
+    if (verbose == TRUE) {
+      cli::cli_alert_info("{format(Sys.time())} Cleaning up")
+    }
+
+    # Remove temporary files
+    fs::dir_ls(products, regexp = "_rev") |>
+      fs::file_delete()
   } else {
     reflectance <- fs::path_filter(files, regexp = "REFLECTANCE")
   }
 
-  # Return reflectance
-  return(reflectance)
+  if (verbose == TRUE) {
+    cli::cli_alert_success("{format(Sys.time())} Finished")
+
+    # Return reflectance
+    return(reflectance)
+  }
 }

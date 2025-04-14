@@ -4,16 +4,16 @@
 \alias{remove_continuum}
 \title{Remove continuum from spectrum}
 \usage{
-remove_continuum(raster, extent = NULL, ext = NULL, filename = NULL, ...)
+remove_continuum(raster, extent = NULL, filename = NULL, extension = NULL, ...)
 }
 \arguments{
 \item{raster}{terra SpatRaster of normalized capture data.}
 
 \item{extent}{an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.}
 
-\item{ext}{character, a graphic format extension.}
-
 \item{filename}{NULL (default) to write automatically into products, provide full path and ext to override.}
+
+\item{extension}{character, a graphic format extension.}
 
 \item{...}{additional arguments.}
 }
@@ -23,3 +23,9 @@ one layer terra SpatRaster with continuum removed.
 \description{
 Remove continuum from spectrum
 }
+\seealso{
+Other Filters: 
+\code{\link{filter_median}()},
+\code{\link{filter_savgol}()}
+}
+\concept{Filters}
