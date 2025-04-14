@@ -56,7 +56,7 @@ remove_continuum <- function(
   }
 
   # Extract names
-  band_names <- names(raster)
+  band_names <- terra::names(raster)
 
   # Named list with write options
   wopts <- list(
@@ -108,64 +108,36 @@ remove_continuum <- function(
 #' @family Filters
 #' @param raster a terra SpatRaster to smooth.
 #' @param window focal window size, default is 3.
-#' @param extent an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
-#' @param filename NULL (default) to write automatically into products, provide full path and ext to override.
-#' @param extension character, a graphic format extension.
-#'
-#' @importFrom stats median
+#' @param filename full path to the output file.
+#' @param ... optional parameters.
 #'
 #' @return smoothed SpatRaster
 #' @export
 filter_median <- function(
   raster,
   window = 3,
-  extent = NULL,
-  filename = NULL,
-  extension = NULL
+  filename = tempfile(fileext = ".tif"),
+  ...
 ) {
+  # Store parameters in a list
+  params <- list(...)
+
   # Check if correct class is supplied.
   if (!inherits(raster, what = "SpatRaster")) {
-    rlang::abort(message = "Supplied data is not a terra SpatRaster.")
+    cli::abort(message = "Supplied data is not a terra SpatRaster.")
   }
 
   # Validate window terra::size (must be odd)
   if (window %% 2 == 0) {
-    rlang::abort("Window size must be an odd number.")
-  }
-
-  # Filename handling
-  if (is.null(filename)) {
-    # Extract source information
-    raster_src <- dirname(terra::sources(raster))
-
-    # Extract file name
-    raster_name <- tools::file_path_sans_ext(basename(terra::sources(raster)))
-
-    # Construct default filename
-    filename <- fs::path(
-      raster_src,
-      paste0(raster_name, "_MEDIAN.tif")
-    )
-  } else {
-    # Ensure proper file extension is applied
-    filename <- fs::path(filename, extension = extension %||% "tif")
-  }
-
-  # Extent handling
-  if (!is.null(extent)) {
-    # Set window of interest
-    terra::window(raster) <- terra::ext(extent)
-  } else {
-    # Set window of interest
-    terra::window(raster) <- terra::ext(raster)
+    cli::abort("Window size must be an odd number.")
   }
 
   # Extract names
   band_names <- names(raster)
 
   # Named list with write options
+  # Restore names
   wopts <- list(
-    steps = terra::ncell(raster) * terra::nlyr(raster),
     names = band_names
   )
 
@@ -179,9 +151,6 @@ filter_median <- function(
     overwrite = TRUE,
     wopt = wopts
   )
-
-  # Reset window
-  terra::window(raster) <- NULL
 
   # Return
   return(raster)
