@@ -187,11 +187,6 @@ pixel_to_distance <- function(
 
   # Using run_core output
   if (is.null(core) == FALSE) {
-    # Here check if optional core is shiny output-like, S3 class
-    # if (!inherits(core, what = "CLASS-HERE")) {
-    #   rlang::abort(message = "Supplied \"core\" name is not a valid output of run_core().")
-    # }
-
     # Set core to run_core output
     core <- core
 
