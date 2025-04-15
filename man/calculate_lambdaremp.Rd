@@ -32,7 +32,7 @@ This is the wavelength between 660 and 680 nm where the first derivative of
 reflectance equals zero, indicating the maximum absorption of light by chlorophyll.
 Based on Ghanbari, H., Zilkey, D.R., Gregory-Eaves, I., Antoniades, D., 2023.
 A new index for the rapid generation of chlorophyll time series from hyperspectral imaging of sediment cores.
-Limnology and Oceanography: Methods 21, 703–717. https://doi.org/10.1002/lom3.10576
+Limnology and Oceanography: Methods 21, 703-717 https://doi.org/10.1002/lom3.10576
 }
 \seealso{
 Other Spectral calculations: 

@@ -75,14 +75,6 @@ spectra_sub <- function(
   return(raster)
 }
 
-# Split job by ROIs
-split_by_roi <- function(core, roi){
-  # Check if correct class is supplied.
-  if (!inherits(raster, what = "SpatRaster")) {
-    rlang::abort(message = "Supplied data is not a terra SpatRaster.")
-  }
-}
-
 #' Create SpatVector from Shiny ROIs
 #'
 #' @family Utilities
@@ -227,43 +219,72 @@ pixel_to_distance <- function(
     point_zero = point_zero,
     pixel_ratio = pixel_ratio))
 }
-
-
-
-#' Adjust paths from Shiny output
+#' Merge SpatRasters in a stratigraphic order
 #'
 #' @family Utilities
-#' @param run_core_output
+#' @param raster_1 a terra SpatRaster. First in the sequence.
+#' @param raster_2 a terra SpatRaster. Second in the sequence.
+#' @param filename a path to save file (with extension). Defaultys to NULL and processing in memory.
 #'
-#' @return run_core_output
+#' @return a terra SpatRaster. Merged inputs.
 #' @export
-#'
-#' @examples
-#' if (interactive() == TRUE) {
-#' a1 <- terra::readRDS(file.path(system.file(package = "HSItools"),"extdata/HSItools_core.rds"))
-#' change_output_dir(a1)
-#' }
-#'
-change_output_dir = function(
-    run_core_output){
-
-  #currentRoot <- rprojroot::find_root(rprojroot::criteria$is_rstudio_project)
-  currentRoot <- getwd()
-  shinyRoot <- run_core_output$directory
-  if (currentRoot == shinyRoot){
-    message("Current path is consistent with with Shiny output!")
-  } else {
-    #Set the paths in the core output to mesh with the user's current root
-    newDir <- utils::choose.dir(caption = paste0("Find the directory with the name: ", basename(run_core_output$directory)))
-    if (basename(run_core_output$directory) != basename(newDir)){
-      rlang::abort("The directory names must match!")
-    } else {
-      run_core_output$directory <- newDir
-      regex1 <- paste0(".*", basename(newDir))
-      fileNames <- gsub(regex1,"", run_core_output$rasterPaths)
-      fullPaths <- file.path(newDir, fileNames)
-      run_core_output$rasterPaths <- fullPaths
-    }
+merge_rasters <- function(raster_1, raster_2, filename = NULL){
+  # Check if correct class is supplied.
+  if (!inherits(raster_1, what = "SpatRaster")) {
+    rlang::abort(message = "Supplied data is not a terra SpatRaster.")
   }
-  return(run_core_output)
+
+  # Check if correct class is supplied.
+  if (!inherits(raster_2, what = "SpatRaster")) {
+    rlang::abort(message = "Supplied data is not a terra SpatRaster.")
+  }
+
+  # Get extent of the first SpatRaster
+  extent_1 <- terra::ext(raster_1)
+
+  # Get extent of the second SpatRaster
+  extent_2 <- terra::ext(raster_2)
+
+  # Shift second extent
+  # xmin and xmax stay the same
+  extent_2 <- terra::ext(extent_2[1], extent_2[2], extent_1[3] - (extent_2[4] - extent_2[3]), extent_1[3])
+
+  # Update extent of second SpatRaster
+  terra::ext(raster_2) <- extent_2
+
+  # Get merged SpatRaster
+  raster <- terra::merge(raster_1, raster_2, filename = filename)
+
+  # Return
+  raster
+}
+
+#' Find a fixed-width extent in the middle of a larger one
+#'
+#' @family Utilities
+#' @param extent a terra SpatExtent in which to look, created with terra::ext()
+#' @param width number of pixels of a new SpatExtent.
+#'
+#' @return a terra SpatExtent centered within the original SpatExtent and of a given width.
+#' @export
+find_fixed_extent <- function(extent, width){
+    # Check if correct class is supplied.
+    if (!inherits(extent, what = "SpatExtent")) {
+      rlang::abort(message = "Supplied data is not a terra SpatExtent.")
+    }
+
+  # Get mid point
+  middle_point <- round((terra::xmax(extent) - terra::xmin(extent)) / 2)
+
+  # New xmin
+  ext.xmin <- terra::xmin(extent) + middle_point - (width / 2)
+
+  # New xmax
+  ext.xmax <- terra::xmin(extent) + middle_point + (width / 2)
+
+  # Update extent
+  extent <- terra::ext(ext.xmin, ext.xmax, extent[3], extent[4])
+
+  # Return
+  extent
 }

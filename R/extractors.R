@@ -55,11 +55,11 @@ extract_spectral_series <- function(
         # To tibble
         dplyr::tibble() |>
         # Gropb by y
-        dplyr::group_by(y) |>
+        dplyr::group_by(.data$y) |>
         # Count occurences
-        dplyr::count(layer) |>
+        dplyr::count(.data$layer) |>
         # Keep max
-        dplyr::slice_max(order_by = n, n = 1) |>
+        dplyr::slice_max(order_by = .data$n, n = 1) |>
         # Ungroup
         dplyr::ungroup() |>
         # Calculate metric depths
@@ -70,7 +70,7 @@ extract_spectral_series <- function(
         # Drop x and y
         dplyr::select(-.data$y) |>
         # Keep only non-negative depths
-        dplyr::filter(tube.mm >= 0)
+        dplyr::filter(.data$tube.mm >= 0)
     }
   } else {
 
@@ -104,7 +104,7 @@ extract_spectral_series <- function(
       # Drop x and y
       dplyr::select(-c(.data$x, .data$y)) |>
       # Keep only non-negative depths
-      dplyr::filter(tube.mm >= 0)
+      dplyr::filter(.data$tube.mm >= 0)
   }}
 
   # Reset window

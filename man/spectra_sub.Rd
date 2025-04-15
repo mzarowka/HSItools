@@ -19,7 +19,8 @@ subset SpatRaster with spectra (bands) positions.
 }
 \seealso{
 Other Utilities: 
-\code{\link{change_output_dir}()},
+\code{\link{find_fixed_extent}()},
+\code{\link{merge_rasters}()},
 \code{\link{pixel_to_distance}()},
 \code{\link{roi_to_vect}()},
 \code{\link{spectra_position}()}

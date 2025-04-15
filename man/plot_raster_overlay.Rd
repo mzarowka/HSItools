@@ -7,8 +7,8 @@
 plot_raster_overlay(
   raster,
   index,
-  palette =
-    c("viridis”, “magma”, “plasma”, “inferno”, “civids”, “mako”, “rocket”, “turbo"),
+  palette = c("viridis", "magma", "plasma", "inferno", "civids", "mako", "rocket",
+    "turbo"),
   alpha = 0.5,
   extent = NULL,
   extension = NULL,
@@ -20,7 +20,7 @@ plot_raster_overlay(
 
 \item{index}{a character indicating hyperspectral index layer to plot.}
 
-\item{palette}{a character indicating one of \pkg{viridis} palettes of choice: "viridis”, “magma”, “plasma”, “inferno”, “civids”, “mako”, “rocket” and “turbo”.}
+\item{palette}{a character indicating one of \pkg{viridis} palettes of choice: "viridis", "magma", "plasma", "inferno", "civids", "mako", "rocket" and "turbo".}
 
 \item{alpha}{a number in (0, 1) controlling transparency.}
 

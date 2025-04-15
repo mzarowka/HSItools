@@ -195,7 +195,7 @@ stretch_raster_full <- function(
 #' @param raster a SpatRaster with calculated hyperspectral indices and RGB layers.
 #' @param calibration result of pixel_to_distance or actual call to pixel_to_distance with appropriate input.
 #' @param index a character indicating hyperspectral index layer to plot.
-#' @param palette a character indicating one of \pkg{viridis} palettes of choice: "viridis", "magma", "plasma", "inferno", "civids", "mako", "rocket" and "turbo”.
+#' @param palette a character indicating one of \pkg{viridis} palettes of choice: "viridis", "magma", "plasma", "inferno", "civids", "mako", "rocket" and "turbo".
 #' @param extent an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
 #' @param extension character, a graphic format extension.
 #' @param write logical, should resulting SpatRaster be written to file.
@@ -532,7 +532,7 @@ plot_raster_rgb <- function(
 #' @family Plotting
 #' @param raster raster a SpatRaster with calculated hyperspectral indices and RGB layers.
 #' @param index a character indicating hyperspectral index layer to plot.
-#' @param palette a character indicating one of \pkg{viridis} palettes of choice: "viridis”, “magma”, “plasma”, “inferno”, “civids”, “mako”, “rocket” and “turbo”.
+#' @param palette a character indicating one of \pkg{viridis} palettes of choice: "viridis", "magma", "plasma", "inferno", "civids", "mako", "rocket" and "turbo".
 #' @param alpha a number in (0, 1) controlling transparency.
 #' @param extent an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
 #' @param extension character, a graphic format extension.
@@ -544,7 +544,7 @@ plot_raster_overlay <- function(
   raster,
   index,
   palette = c(
-    "viridis”, “magma”, “plasma”, “inferno”, “civids”, “mako”, “rocket”, “turbo"
+    "viridis", "magma", "plasma", "inferno", "civids", "mako", "rocket", "turbo"
   ),
   alpha = 0.5,
   extent = NULL,

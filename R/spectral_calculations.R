@@ -580,7 +580,7 @@ calculate_rmean <- function(
 #' reflectance equals zero, indicating the maximum absorption of light by chlorophyll.
 #' Based on Ghanbari, H., Zilkey, D.R., Gregory-Eaves, I., Antoniades, D., 2023.
 #' A new index for the rapid generation of chlorophyll time series from hyperspectral imaging of sediment cores.
-#' Limnology and Oceanography: Methods 21, 703–717. https://doi.org/10.1002/lom3.10576
+#' Limnology and Oceanography: Methods 21, 703-717 https://doi.org/10.1002/lom3.10576
 #'
 #' @export
 calculate_lambdaremp <- function(
@@ -650,7 +650,7 @@ calculate_lambdaremp <- function(
     )
   }
 
-  # Function to calculate λREMP using first derivative approach
+  # Function to calculate lambdaREMP using first derivative approach
   find_remp_derivative <- function(pixel_values) {
     # Check for NA values
     if (any(is.na(pixel_values[trough_indices]))) {
@@ -746,9 +746,9 @@ calculate_lambdaremp <- function(
 #'
 #' @description
 #' Calculates the spectral derivative at a specific wavelength using one of three methods:
-#' - "central": Central difference method, f'(x) ≈ [f(x+h1) - f(x-h2)]/(h1+h2)
-#' - "forward": Forward difference method, f'(x) ≈ [f(x+h) - f(x)]/h
-#' - "backward": Backward difference method, f'(x) ≈ [f(x) - f(x-h)]/h
+#' - "central": Central difference method, [f(x+h1) - f(x-h2)]/(h1+h2)
+#' - "forward": Forward difference method, [f(x+h) - f(x)]/h
+#' - "backward": Backward difference method, [f(x) - f(x-h)]/h
 #'
 #' Where h, h1, and h2 are wavelength differences between bands.
 #' The derivative provides information about the rate of change in reflectance,

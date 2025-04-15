@@ -17,7 +17,8 @@ Create SpatVector from Shiny ROIs
 }
 \seealso{
 Other Utilities: 
-\code{\link{change_output_dir}()},
+\code{\link{find_fixed_extent}()},
+\code{\link{merge_rasters}()},
 \code{\link{pixel_to_distance}()},
 \code{\link{spectra_position}()},
 \code{\link{spectra_sub}()}

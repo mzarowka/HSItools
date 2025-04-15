@@ -35,9 +35,9 @@ one layer terra SpatRaster with calculated derivative values.
 \description{
 Calculates the spectral derivative at a specific wavelength using one of three methods:
 \itemize{
-\item "central": Central difference method, f'(x) ≈ \link{f(x+h1) - f(x-h2)}/(h1+h2)
-\item "forward": Forward difference method, f'(x) ≈ \link{f(x+h) - f(x)}/h
-\item "backward": Backward difference method, f'(x) ≈ \link{f(x) - f(x-h)}/h
+\item "central": Central difference method, \link{f(x+h1) - f(x-h2)}/(h1+h2)
+\item "forward": Forward difference method, \link{f(x+h) - f(x)}/h
+\item "backward": Backward difference method, \link{f(x) - f(x-h)}/h
 }
 
 Where h, h1, and h2 are wavelength differences between bands.
