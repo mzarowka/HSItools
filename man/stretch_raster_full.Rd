@@ -4,13 +4,7 @@
 \alias{stretch_raster_full}
 \title{Stretch and optionally save full RGB preview of SpatRaster}
 \usage{
-stretch_raster_full(
-  raster,
-  type = "RGB",
-  histeq = FALSE,
-  extension = NULL,
-  filename = NULL
-)
+stretch_raster_full(raster, type = "RGB", histeq = FALSE, filename = NULL, ...)
 }
 \arguments{
 \item{raster}{a SpatRaster, preferably reflectance file.}
@@ -19,9 +13,9 @@ stretch_raster_full(
 
 \item{histeq}{logical. If TRUE histogram equalization is used instead of linear stretch.}
 
-\item{extension}{character, a graphic format extension, defaults to "tif".}
+\item{filename}{a path to save file (with extension). Defaultys to NULL and processing in memory.}
 
-\item{write}{logical, should resulting SpatRaster be written to file.}
+\item{...}{additional arguments.}
 }
 \description{
 Stretch and optionally save full RGB preview of SpatRaster

@@ -8,9 +8,8 @@ plot_profile_spectral_series(
   raster,
   index,
   calibration = NULL,
-  extent = NULL,
-  extension = NULL,
-  filename = FALSE
+  filename = NULL,
+  ...
 )
 }
 \arguments{
@@ -20,11 +19,9 @@ plot_profile_spectral_series(
 
 \item{calibration}{result of pixel_to_distance or actual call to pixel_to_distance with appropriate input.}
 
-\item{extent}{a terra extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.}
+\item{filename}{a path to save file (with extension). Defaultys to NULL and processing in memory.}
 
-\item{extension}{character, a graphic format extension.}
-
-\item{filename}{empty = in memory, TRUE = guess name and attempt write, or user specified path to glue with extension.}
+\item{...}{additional arguments.}
 }
 \value{
 line plot with of selected hyperspectral index.

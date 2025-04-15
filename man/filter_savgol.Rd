@@ -10,9 +10,8 @@ filter_savgol(
   n = p + 13 - p\%\%2,
   m = 0,
   ts = 1,
-  extent = NULL,
   filename = NULL,
-  extension = NULL
+  ...
 )
 }
 \arguments{
@@ -26,11 +25,9 @@ filter_savgol(
 
 \item{ts}{time scaling factor.}
 
-\item{extent}{an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.}
+\item{filename}{a path to save file (with extension). Defaultys to NULL and processing in memory.}
 
-\item{filename}{NULL (default) to write automatically into products, provide full path and ext to override.}
-
-\item{extension}{character, a graphic format extension.}
+\item{...}{additional arguments.}
 }
 \value{
 A filtered terra SpatRaster.

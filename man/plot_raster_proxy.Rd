@@ -4,17 +4,7 @@
 \alias{plot_raster_proxy}
 \title{Plot spatial map plots of calculated proxies, and optionally save to file}
 \usage{
-plot_raster_proxy(
-  raster,
-  index,
-  calibration = NULL,
-  palette = c("viridis", "magma", "plasma", "inferno", "civids", "mako", "rocket",
-    "turbo"),
-  extent = NULL,
-  extension = NULL,
-  write = FALSE,
-  ...
-)
+plot_raster_proxy(raster, index, calibration = NULL, ...)
 }
 \arguments{
 \item{raster}{a SpatRaster with calculated hyperspectral indices and RGB layers.}
@@ -23,13 +13,9 @@ plot_raster_proxy(
 
 \item{calibration}{result of pixel_to_distance or actual call to pixel_to_distance with appropriate input.}
 
-\item{palette}{a character indicating one of \pkg{viridis} palettes of choice: "viridis", "magma", "plasma", "inferno", "civids", "mako", "rocket" and "turbo".}
+\item{...}{additional arguments.}
 
-\item{extent}{an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.}
-
-\item{extension}{character, a graphic format extension.}
-
-\item{write}{logical, should resulting SpatRaster be written to file.}
+\item{filename}{a path to save file (with extension). Defaultys to NULL and processing in memory.}
 }
 \value{
 a plot with color map of selected hyperspectral index.

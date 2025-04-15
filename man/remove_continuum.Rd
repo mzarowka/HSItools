@@ -4,16 +4,12 @@
 \alias{remove_continuum}
 \title{Remove continuum from spectrum}
 \usage{
-remove_continuum(raster, extent = NULL, filename = NULL, extension = NULL, ...)
+remove_continuum(raster, filename = NULL, ...)
 }
 \arguments{
 \item{raster}{terra SpatRaster of normalized capture data.}
 
-\item{extent}{an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.}
-
-\item{filename}{NULL (default) to write automatically into products, provide full path and ext to override.}
-
-\item{extension}{character, a graphic format extension.}
+\item{filename}{a path to save file (with extension). Defaultys to NULL and processing in memory.}
 
 \item{...}{additional arguments.}
 }

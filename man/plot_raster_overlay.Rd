@@ -4,31 +4,20 @@
 \alias{plot_raster_overlay}
 \title{Overlay color plot of proxy on RGB}
 \usage{
-plot_raster_overlay(
-  raster,
-  index,
-  palette = c("viridis", "magma", "plasma", "inferno", "civids", "mako", "rocket",
-    "turbo"),
-  alpha = 0.5,
-  extent = NULL,
-  extension = NULL,
-  write = FALSE
-)
+plot_raster_overlay(raster, index, alpha = 0.5, filename = NULL, ...)
 }
 \arguments{
 \item{raster}{raster a SpatRaster with calculated hyperspectral indices and RGB layers.}
 
 \item{index}{a character indicating hyperspectral index layer to plot.}
 
-\item{palette}{a character indicating one of \pkg{viridis} palettes of choice: "viridis", "magma", "plasma", "inferno", "civids", "mako", "rocket" and "turbo".}
-
 \item{alpha}{a number in (0, 1) controlling transparency.}
 
-\item{extent}{an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.}
+\item{filename}{a path to save file (with extension). Defaultys to NULL and processing in memory.}
 
-\item{extension}{character, a graphic format extension.}
+\item{...}{additional arguments.}
 
-\item{write}{logical, should resulting SpatRaster be written to file.}
+\item{palette}{a character indicating one of \pkg{viridis} palettes of choice: "viridis", "magma", "plasma", "inferno", "civids", "mako", "rocket" and "turbo".}
 }
 \value{
 a plot with color map of selected hyperspectral index overlain on RGB image.

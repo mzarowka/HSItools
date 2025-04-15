@@ -4,24 +4,16 @@
 \alias{plot_raster_rgb}
 \title{Spatial map plots of RGB image}
 \usage{
-plot_raster_rgb(
-  raster,
-  calibration = NULL,
-  extent = NULL,
-  extension = NULL,
-  write = FALSE
-)
+plot_raster_rgb(raster, calibration = NULL, filename = NULL, ...)
 }
 \arguments{
 \item{raster}{a SpatRaster with calculated hyperspectral indices and RGB layers or just RGB layers.}
 
 \item{calibration}{result of pixel_to_distance or actual call to pixel_to_distance with appropriate input.}
 
-\item{extent}{an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.}
+\item{filename}{a path to save file (with extension). Defaultys to NULL and processing in memory.}
 
-\item{extension}{character, a graphic format extension.}
-
-\item{write}{logical, should resulting SpatRaster be written to file.}
+\item{...}{additional arguments.}
 }
 \value{
 a plot with color map of selected hyperspectral index.

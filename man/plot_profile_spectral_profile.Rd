@@ -13,12 +13,6 @@ plot_profile_spectral_profile(
 }
 \arguments{
 \item{raster}{Reflectance SpatRaster.}
-
-\item{extent}{an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.}
-
-\item{extension}{character, a graphic format extension.}
-
-\item{write}{logical, should resulting SpatRaster be written to file.}
 }
 \value{
 line plot with of selected hyperspectral index.

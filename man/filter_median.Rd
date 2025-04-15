@@ -4,16 +4,16 @@
 \alias{filter_median}
 \title{Smooth raster with focal median}
 \usage{
-filter_median(raster, window = 3, filename = tempfile(fileext = ".tif"), ...)
+filter_median(raster, window = 3, filename = NULL, ...)
 }
 \arguments{
 \item{raster}{a terra SpatRaster to smooth.}
 
 \item{window}{focal window size, default is 3.}
 
-\item{filename}{full path to the output file.}
+\item{filename}{a path to save file (with extension). Defaultys to NULL and processing in memory.}
 
-\item{...}{optional parameters.}
+\item{...}{additional arguments.}
 }
 \value{
 smoothed SpatRaster
