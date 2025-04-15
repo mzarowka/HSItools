@@ -144,7 +144,8 @@ filter_savgol <- function(
   n = p + 13 - p %% 2,
   m = 0,
   ts = 1,
-  filename = NULL
+  filename = NULL,
+  ...
 ) {
   # Check if correct class is supplied.
   if (!inherits(raster, what = "SpatRaster")) {
