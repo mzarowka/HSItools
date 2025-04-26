@@ -646,7 +646,9 @@ plot_profile_spectral_series <- function(
 #'
 #' @family Plotting
 #' @param raster Reflectance SpatRaster.
-
+#' @param extent extent to work over.
+#' @param filename filename to write plot to.
+#' @param ... other arguments.
 #'
 #' @importFrom rlang .data
 #'
@@ -655,8 +657,8 @@ plot_profile_spectral_series <- function(
 plot_profile_spectral_profile <- function(
   raster,
   extent = NULL,
-  extension = NULL,
-  write = FALSE
+  filename = FALSE,
+  ...
 ) {
   # Check if correct class is supplied.
   if (!inherits(raster, what = "SpatRaster")) {
@@ -696,7 +698,7 @@ plot_profile_spectral_profile <- function(
       y = "Reflectance"
     )
 
-  if (write == TRUE) {
+  if (is.character(filename) == TRUE) {
     cli::cli_alert("Writing spectral profile plot to {filename}")
 
     ggplot2::ggsave(
