@@ -657,7 +657,7 @@ plot_profile_spectral_series <- function(
 plot_profile_spectral_profile <- function(
   raster,
   extent = NULL,
-  filename = FALSE,
+  filename = NULL,
   ...
 ) {
   # Check if correct class is supplied.
