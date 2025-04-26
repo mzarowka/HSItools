@@ -609,33 +609,13 @@ plot_profile_spectral_series <- function(
       )
   }
 
-  if (filename == TRUE) {
-    # Check source
-    if (terra::sources(raster) == "") {
-      rlang::abort(
-        message = "In memory object, can't guess the name. Please provide filename."
-      )
-    }
-
-    cli::cli_alert("Writing {index} plot to {filename}")
+  if (!is.null(filename) == TRUE) {
+    cli::cli_alert("Writing spectral profile plot to {filename}")
 
     ggplot2::ggsave(
       plot = plot,
-      filename = filename,
-      device = extension
+      filename = filename
     )
-  } else if (is.character(filename) & !is.null(filename)) {
-    filename <- paste0(filename, ".", extension)
-
-    cli::cli_alert("Writing {index} plot to {filename}")
-
-    ggplot2::ggsave(
-      plot = plot,
-      filename = filename,
-      device = extension
-    )
-  } else {
-    plot
   }
 
   # Return plot as an object
@@ -698,7 +678,7 @@ plot_profile_spectral_profile <- function(
       y = "Reflectance"
     )
 
-  if (is.character(filename) == TRUE) {
+  if (!is.null(filename) == TRUE) {
     cli::cli_alert("Writing spectral profile plot to {filename}")
 
     ggplot2::ggsave(
