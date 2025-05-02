@@ -27,7 +27,7 @@ get_reflectance <- function(
 ) {
   if (!is.null(core)) {
     # Get path
-    path <- fs::path(getwd(), core$directory)
+    path <- fs::path(core$directory)
 
     # Get layers
     layers <- core$layers
@@ -36,9 +36,9 @@ get_reflectance <- function(
     files <- core$rasterPaths
 
     files <- list(
-      capture = fs::path(path, files[["capture"]]),
-      darkref = fs::path(path, files[["darkref"]]),
-      whiteref = fs::path(path, files[["whiteref"]])
+      capture = fs::path(path,"capture", files[["capture"]]),
+      darkref = fs::path(path, "capture",files[["darkref"]]),
+      whiteref = fs::path(path,"capture",files[["whiteref"]])
     )
   } else {
     # Get path

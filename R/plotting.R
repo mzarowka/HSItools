@@ -20,6 +20,26 @@ stretch_raster_full <- function(
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
   }
 
+  # Filename handling
+  if (is.null(filename)) {
+    # Extract source information
+    raster_src <- dirname(terra::sources(raster))
+
+    # Extract file name
+    raster_name <- tools::file_path_sans_ext(basename(terra::sources(raster)))
+
+    # Construct default filename
+    filename <- fs::path(
+      raster_src,
+      paste0(raster_name, paste0("_",type,"."), extension = extension %||% "tif")
+    )
+  } else {
+    # Ensure proper file extension is applied
+    if(!fs::path_ext(filename) %in% c("tif","png")){
+      filename <- fs::path(fs::path_ext_set(path = filename, ext = extension %||% "tif"))
+    }
+  }
+
   # # Raster source directory
   # raster_src <- raster |>
   #   terra::sources() |>
@@ -32,26 +52,6 @@ stretch_raster_full <- function(
   #   fs::path_ext_remove()
 
   if (type == "RGB") {
-    # Filename handling
-    if (is.null(filename)) {
-      # Extract source information
-      raster_src <- dirname(terra::sources(raster))
-
-      # Extract file name
-      raster_name <- tools::file_path_sans_ext(basename(terra::sources(raster)))
-
-      # Construct default filename
-      filename <- fs::path(
-        raster_src,
-        paste0(raster_name, "_RGB.", extension = extension %||% "tif")
-      )
-    } else {
-      # Ensure proper file extension is applied
-      filename <- fs::path(filename, extension = extension %||% "tif")
-    }
-
-    # filename <- fs::path(raster_src, "/RGB_", raster_name, ".", extension)
-
     # Check if there are values close to RGB, within the 25 nm.
     if (
       all(
@@ -79,26 +79,7 @@ stretch_raster_full <- function(
         (\(i) as.numeric(terra::names(1:terra::subset(raster, i))))()
     }
   } else if (type == "CIR") {
-    # Filename handling
-    if (is.null(filename)) {
-      # Extract source information
-      raster_src <- dirname(terra::sources(raster))
-
-      # Extract file name
-      raster_name <- tools::file_path_sans_ext(basename(terra::sources(raster)))
-
-      # Construct default filename
-      filename <- fs::path(
-        raster_src,
-        paste0(raster_name, "_CIR.", extension = extension %||% "tif")
-      )
-    } else {
-      # Ensure proper file extension is applied
-      filename <- fs::path(filename, extension = extension %||% "tif")
-    }
-    # filename <- paste0(raster_src, "/CIR_", raster_name, ".", extension)
-
-    # Check if there are values close to CIR, within the 25 nm.
+      # Check if there are values close to CIR, within the 25 nm.
     if (
       all(
         any(
@@ -117,24 +98,6 @@ stretch_raster_full <- function(
       rlang::abort("No layers matching CIR.")
     }
   } else if (type == "NIR") {
-    # Filename handling
-    if (is.null(filename)) {
-      # Extract source information
-      raster_src <- dirname(terra::sources(raster))
-
-      # Extract file name
-      raster_name <- tools::file_path_sans_ext(basename(terra::sources(raster)))
-
-      # Construct default filename
-      filename <- fs::path(
-        raster_src,
-        paste0(raster_name, "_NIR.", extension = extension %||% "tif")
-      )
-    } else {
-      # Ensure proper file extension is applied
-      filename <- fs::path(filename, extension = extension %||% "tif")
-    }
-    # filename <- paste0(raster_src, "/NIR_", raster_name, ".", extension)
 
     # Check if there are values close to NIR, within the 25 nm.
     if (

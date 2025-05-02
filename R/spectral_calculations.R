@@ -20,7 +20,7 @@ calculate_rabd <- function(
   edges,
   trough,
   extent = NULL,
-  ext = NULL,
+  ext = "tif",
   filename = NULL
 ) {
   # Check if correct class is supplied.
@@ -61,14 +61,7 @@ calculate_rabd <- function(
   if (rabd_type == "max") {
     # Check type of filename
     if (is.null(filename) == TRUE) {
-      filename <- paste0(
-        raster_src,
-        "/",
-        toupper(rabd_name),
-        "_max_",
-        raster_name,
-        ".tif"
-      )
+      filename <- file.path(raster_src,paste0(toupper(rabd_name),"_max_",raster_name,".tif"))
     } else {
       filename <- fs::path(filename, ext = ext)
     }
@@ -766,44 +759,44 @@ calculate_derivative <- function(
   if (!inherits(raster, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
   }
-  
+
   # Validate method
   method <- match.arg(method, c("central", "forward", "backward"))
-  
+
   # Filename handling
   if (is.null(filename)) {
     # Extract source information
     raster_src <- raster |>
       terra::sources() |>
       dirname()
-    
+
     # Extract file name
     raster_name <- raster |>
       terra::sources() |>
       basename() |>
       tools::file_path_sans_ext()
-    
+
     # Construct default filename
     filename <- fs::path(
-      raster_src, 
+      raster_src,
       paste0(toupper(derivative_name), "_", raster_name, ".tif")
     )
   } else {
     # Ensure proper file extension is applied
     filename <- fs::path(filename, extension = extension %||% "tif")
   }
-  
+
   # Extent handling
   if (!is.null(extent)) {
     # Set window of interest
     terra::window(raster) <- terra::ext(extent)
   }
-  
+
   # Get wavelengths from band names
-  wavelengths <- raster |> 
+  wavelengths <- raster |>
     terra::names() |>
     as.numeric()
-  
+
   # If wavelengths couldn't be converted, create a sequence
   if (all(is.na(wavelengths))) {
     cli::cli_alert_warning(
@@ -811,12 +804,12 @@ calculate_derivative <- function(
     )
     wavelengths <- seq_len(terra::nlyr(raster))
   }
-  
+
   # Find position of the requested band
   band_position <- raster |>
     spectra_position(spectra = band) |>
     dplyr::pull(var = 2)
-  
+
   # Validate band position is within range
   if (band_position < 1 || band_position > terra::nlyr(raster)) {
     rlang::abort(
@@ -826,19 +819,19 @@ calculate_derivative <- function(
       )
     )
   }
-  
+
   # Calculate derivative based on method
   if (method == "central") {
     if (band_position <= 1 || band_position >= terra::nlyr(raster)) {
       rlang::abort(
         message = paste0(
-          "Cannot use 'central' method for band at position ", band_position, 
+          "Cannot use 'central' method for band at position ", band_position,
           ". Need bands before and after for central difference. ",
           "Try using 'forward' or 'backward' methods instead."
         )
       )
     }
-    
+
     # Calculate using central difference
     derivative_values <- raster |>
       (\(r) {
@@ -848,17 +841,17 @@ calculate_derivative <- function(
         wave_diff <- wavelengths[band_position + 1] - wavelengths[band_position - 1]
         (band_plus - band_minus) / wave_diff
       })()
-    
+
   } else if (method == "forward") {
     if (band_position >= terra::nlyr(raster)) {
       rlang::abort(
         message = paste0(
-          "Cannot use 'forward' method for the last band at position ", 
+          "Cannot use 'forward' method for the last band at position ",
           band_position, ". Try using 'backward' method instead."
         )
       )
     }
-    
+
     # Calculate using forward difference
     derivative_values <- raster |>
       (\(r) {
@@ -868,17 +861,17 @@ calculate_derivative <- function(
         wave_diff <- wavelengths[band_position + 1] - wavelengths[band_position]
         (band_plus - band_current) / wave_diff
       })()
-    
+
   } else if (method == "backward") {
     if (band_position <= 1) {
       rlang::abort(
         message = paste0(
-          "Cannot use 'backward' method for the first band at position ", 
+          "Cannot use 'backward' method for the first band at position ",
           band_position, ". Try using 'forward' method instead."
         )
       )
     }
-    
+
     # Calculate using backward difference
     derivative_values <- raster |>
       (\(r) {
@@ -889,20 +882,20 @@ calculate_derivative <- function(
         (band_current - band_minus) / wave_diff
       })()
   }
-  
+
   # Set layer name
   names(derivative_values) <- derivative_name
-  
+
   # Write to file
   derivative_values |>
     terra::writeRaster(
       filename = filename,
       overwrite = TRUE
     )
-  
+
   # Reset window
   terra::window(raster) <- NULL
-  
+
   # Return raster
   return(derivative_values)
 }

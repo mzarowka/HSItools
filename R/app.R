@@ -432,7 +432,7 @@ run_core <- function(autoSave = TRUE){
 
       server = function(input, output, session) {
 
-        aaa <- terra::rast(system.file("extdata/CORE_XYZ/CORE_XYZ.tif", package = "HSItools"), noflip = TRUE)
+        aaa <- terra::rast(system.file("extdata/CORE_XYZ/capture/CORE_XYZ.tif", package = "HSItools"), noflip = TRUE)
 
         session$onSessionEnded(function() {
           stopApp()
@@ -519,7 +519,7 @@ run_core <- function(autoSave = TRUE){
 
         observeEvent(input$file_dir_example, {
           useExample(TRUE)
-          path1 <- file.path(system.file(package = "HSItools"), "extdata/CORE_XYZ")
+          path1 <- file.path(system.file(package = "HSItools"), "extdata/CORE_XYZ/capture")
           raster::print(path1)
           user_dir(path1)
           # rasters(user_dir() |>
@@ -1307,7 +1307,7 @@ run_core <- function(autoSave = TRUE){
           allParams$analysisOptions <<- analysisOptions
 
           if (length(user_dir()) != 0){
-            allParams$directory <<- basename(user_dir())
+            allParams$directory <<- user_dir()
           }
           # else if (length(user_dir2()) != 0){
           #   allParams$directory <<- user_dir2()
@@ -1317,8 +1317,16 @@ run_core <- function(autoSave = TRUE){
             #shinyalert::shinyalert(title = "No Data", text = "Please return to the 'Select Data' tab and choose data to analyze.")
           }
 
+
+          if(basename(allParams$directory) == "capture"){
+            allParams$directory <<- dirname(allParams$directory)
+          }
+
+
+
+
           if (autoSave==TRUE){
-            saveLoc <- normalizePath(paste0(user_dir(),"/HSItools_core.rds"))
+            saveLoc <- normalizePath(paste0(allParams$directory,"/HSItools_core.rds"))
             terra::saveRDS(allParams, saveLoc)
             cat("\n")
             cat(paste0("Output saved: ", saveLoc))
