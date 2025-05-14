@@ -1,5 +1,5 @@
-get_depths <- function(shiny_output,rast){
-  cal <- pixel_to_distance(shiny_output)
+get_depths <- function(core,rast){
+  cal <- pixel_to_distance(core)
 
   depths <- seq_len(nrow(rast)) * cal$pixel_ratio +
         cal$distance -
@@ -26,7 +26,7 @@ getColorsByIndex <- function(index){
   if("RABD660" == index){
     pall <- "BuGn"
   }
-  if("RABD660670" == index){
+  if("rabd660670_max" == index){
     pall <- "Greens"
   }
   if("RABD640655" == index){
@@ -149,12 +149,13 @@ plotVerticalIndex <- function(ind,
 #' @export
 #'
 #' @examples
-plotSpectralDashboard <- function(shiny_output,
+plotSpectralDashboard <- function(core,
                                   ind,
-                                  processed.image.dir = file.path(shiny_output$directory,"photos"),
+                                  processed.image.dir = file.path(core$directory,"photos"),
                                   roi_i  = 1,
-                                  index.name = "RABD660",
+                                  index.name = names(ind),
                                   depth.label = "Depth (cm)",
+                                  smooth.win = NA,
                                   core.width = 4,
                                   plot.width = 8,
                                   page.width = 10,
@@ -173,14 +174,11 @@ plotSpectralDashboard <- function(shiny_output,
   }
 
   #get the processed image path (want full png with scale so that ROI is in right spot)
-  fullPath <- list.files(path = processed.image.dir,pattern = "fullImage_RGB*",full.names = TRUE)
+  fullPath <- list.files(path = processed.image.dir,pattern = "fullImage_RGB*.png$",full.names = TRUE)
   img <- magick::image_read(fullPath[1])
 
-  shiny_output$cropImage
-  shiny_output
-
-  bigRoi <- raster::extent(shiny_output$cropImage)
-  roi <- raster::extent(shiny_output$analysisRegions[1,])
+  bigRoi <- raster::extent(core$cropImage)
+  roi <- raster::extent(core$analysisRegions[roi_i,])
 
   #decide how to crop it.
   xOffset <- min(bigRoi@xmin,roi@xmin)
@@ -190,26 +188,23 @@ plotSpectralDashboard <- function(shiny_output,
   width <- rightPos-xOffset
   height <- topPos-yOffset
 
-  #crop it based on the roi
-  wholeScan <- normalized$roi#roi relative to the whole scan
-
   #get roi boundaries in cm
-  cmRoi <- bigRoi
-  cmRoi@xmin <- max(bigRoi@xmin - xOffset + 1,1)*shiny_output$distances$pixelRatio/10
-  cmRoi@xmax <- min(bigRoi@xmax - xOffset + 1,rightPos)*shiny_output$distances$pixelRatio/10
-  cmRoi@ymin <- max(bigRoi@ymin - yOffset + 1,1)*shiny_output$distances$pixelRatio/10
-  cmRoi@ymax <- min(bigRoi@ymax - yOffset + 1,topPos)*shiny_output$distances$pixelRatio/10
+  cmRoi <- roi
+  cmRoi@xmin <- max(roi@xmin - xOffset + 1,1)*core$distances$pixelRatio/10
+  cmRoi@xmax <- min(roi@xmax - xOffset + 1,rightPos)*core$distances$pixelRatio/10
+  cmRoi@ymin <- max(roi@ymin - yOffset + 1,1)*core$distances$pixelRatio/10
+  cmRoi@ymax <- min(roi@ymax - yOffset + 1,topPos)*core$distances$pixelRatio/10
 
 
-  iroi <- magick::geometry_area(width = width,height = height, x_off = xOffset,y_off = yOffset)
+  # iroi <- magick::geometry_area(width = width,height = height, x_off = xOffset,y_off = yOffset)
+  # cimg <- magick::image_crop(img,geometry = iroi,gravity = "SouthWest")
 
-  cimg <- magick::image_crop(img,geometry = iroi,gravity = "SouthWest")
+  cimg <- img
 
+  cinfo <- magick::image_info(img)
 
-  cinfo <- magick::image_info(cimg)
-
-  c.height <- height*normalized$cmPerPixel
-  c.width <- width*normalized$cmPerPixel
+  c.height <- height*core$distances$pixelRatio/10
+  c.width <- width*core$distances$pixelRatio/10
 
   depth.ticks <- seq(0,c.height,by = y.tick.interval)
 
@@ -233,15 +228,34 @@ plotSpectralDashboard <- function(shiny_output,
               color = "red",
               fill = NA)
 
-
   plots <- vector(mode = "list",length = length(index.name)*2+1)
   plots[[1]] <- ggimg
   for(i in 1:length(index.name)){
+    depths <- get_depths(core,ind[[i]])
+
+    #calculate indices
+
     #get colors by index
     cols <- getColorsByIndex(index.name[i])
+
+    #get downcore data
+    # Extract the series
+    depth_index <- ind[[i]] |>
+      extract_spectral_series(
+        index = names(ind[[i]])) |>
+      mutate(depth = depths) |>
+      select(depth,!!names(ind[[i]])) |>
+      mutate(across(-depth, smoother::smth,window = smooth.win,.names = "smooth{.col}"))
+
+
     # make a line plot
     # line plot
-    plots[[2*i+1]] <- plotVerticalIndex(ind,index.name = index.name[i],line.color = cols$smooth,smooth.color = cols$smooth,smooth.width = 0)+scale_x_continuous(sec.axis = dup_axis())
+    plots[[2*i+1]] <- plotVerticalIndex(depth_index,
+                                        index.name = index.name[i],
+                                        line.color = cols$smooth,
+                                        smooth.color = cols$smooth,
+                                        smooth.width = 0)+
+      scale_x_continuous(sec.axis = dup_axis())
 
     if(i<length(index.name)){
       plots[[2*i+1]] <- plots[[2*i+1]] +   theme(axis.title.y=element_blank(),
@@ -254,8 +268,7 @@ plotSpectralDashboard <- function(shiny_output,
     }
 
     #make a heatmap
-    plots[[2*i]] <- makeHeatmap(normalized, index = index.name[i],tol = tol) %>%
-      plotHeatmap(depthScale = normalized$scaleY,cmPerPixel = normalized$cmPerPixel,palette = cols$palette) +
+    plots[[2*i]] <- plotHeatmap(ind[[i]],depthScale = depths, cmPerPixel = core$distances$pixelRatio, palette = cols$palette) +
       theme(axis.title.y=element_blank(),
             axis.text.y=element_blank(),
             axis.ticks.y=element_blank(),

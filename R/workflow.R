@@ -328,3 +328,102 @@ get_reflectance <- function(
     return(reflectance)
   }
 }
+
+
+
+standard_workflow <- function(core,
+                              verbose = TRUE,
+                              smooth.win = NA){
+
+  if(!dir.exists(core$directory)){
+    message("Cannot find the directory. Choose the HSItools_core.rds file associated with this core")
+    newdir <- dirname(file.choose())
+    core$directory <- newdir
+  }
+
+  if(all(is.na(smooth.win))){
+    smooth.win <- round(.2/core$distances$pixelRatio)
+  }
+
+  reflectance <- get_reflectance(core,verbose = verbose)
+
+  #find the normalized reflectance file we need
+  refl_file <- list.files(file.path(core$directory,"products"),pattern = "^REFLECTANCE.*[0-9]\\.*tif$",full.names = TRUE)
+
+  #load that back in.
+  refl <- terra::rast(refl_file[length(refl_file)])
+
+  # Save the images... ------------------------------------------------------
+
+  message("Creating images...")
+  if(!dir.exists(file.path(core$directory,"photos"))){
+    dir.create(file.path(core$directory,"photos"))
+  }
+  # create the RGB file
+  message("Creating RGB image...")
+  rgb <- refl |>
+    stretch_raster_full(
+      type = "RGB",
+      filename = file.path(core$directory,"photos","fullImage_RGB.png"))
+
+  #create the CIR file
+  message("Creating CIR image...")
+  CIR <- refl |>
+    stretch_raster_full(
+      type = "CIR",
+      filename = file.path(core$directory,"photos","fullImage_CIR.png"))
+
+
+  #create the NIR file
+  message("Creating NIR image...")
+  NIR <- refl |>
+    stretch_raster_full(
+      type = "NIR",
+      filename = file.path(core$directory,"photos","fullImage_NIR.png"))
+
+
+  #Process data through the ROIs
+  rois <- core$analysisRegions
+
+  for(r in 1:nrow(rois)){
+
+    roi <- terra::crop(refl,y = rois[r,])
+
+    if(!dir.exists(file.path(core$directory,"photos"))){
+      dir.create(file.path(core$directory,"photos"))
+    }
+
+    names(roi) <- names(refl)
+    rgb_roi <- roi |>
+      stretch_raster_full(type = "RGB",
+                          filename = file.path(core$directory,"photos",paste0("roi",r,"_rgb.png")))
+
+    rgb_cir <- roi |>
+      stretch_raster_full(type = "CIR",
+                          filename = file.path(core$directory,"photos",paste0("roi",r,"_cir.png")))
+
+    rgb_nir <- roi |>
+      stretch_raster_full(type = "NIR",
+                          filename = file.path(core$directory,"photos",paste0("roi",r,"_nir.png")))
+
+
+    # Calculate indices
+    rabd_max <- roi |>
+      calculate_rabd(
+        edges = c(590,730),
+        trough = c(660:670),
+        rabd_name = "rabd660670",
+        rabd_type = "max",
+        filename = file.path(core$directory,"products",paste0("rabd660670_roi",r)))
+
+    ind <- list(rabd_max)
+
+    names(ind) <- purrr::map_chr(ind,names)
+    plotSpectralDashboard(core,
+                          ind,
+                          roi_i = r,
+                          smooth.win = smooth.win,
+                          output.file.path = file.path(core$directory,"products",paste0("roi",r,"-dashboard.pdf")))
+
+  }
+}

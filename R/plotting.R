@@ -53,30 +53,19 @@ stretch_raster_full <- function(
 
   if (type == "RGB") {
     # Check if there are values close to RGB, within the 25 nm.
-    if (
-      all(
-        any(
-          purrr::list_c(
-            purrr::map(
-              c(640, 545, 460),
-              \(i) dplyr::near(i, as.numeric(terra::names(raster)), tol = 25)
-            )
-          )
-        )
-      ) ==
-        TRUE
-    ) {
-      spectra <- c(650, 550, 450)
+    if (any(purrr::list_c(purrr::map(c(640, 545, 460),
+              \(i) dplyr::near(i, as.numeric(terra::names(raster)), tol = 25)))) == TRUE &
+        nrow(spectra_position(raster,c(650, 550, 450))) == 3){
+          spectra <- c(650, 550, 450)
     } else {
       rlang::warn(
-        "No layers matching RGB. Using the first, middle and last available layers."
+        "Can't match layers to RGB. Using the first, middle and last available layers."
       )
-      spectra <- c(
-        min(1:terra::nlyr(raster)),
-        terra::median(1:terra::nlyr(raster)),
-        max(terra::nlyr(raster))
-      ) |>
-        (\(i) as.numeric(terra::names(1:terra::subset(raster, i))))()
+      spectra_index <- c(min(1:terra::nlyr(raster)),terra::median(1:terra::nlyr(raster)),max(terra::nlyr(raster))) |>
+        round()
+
+      spectra <- terra::names(raster)[spectra_index] |> as.numeric()
+
     }
   } else if (type == "CIR") {
       # Check if there are values close to CIR, within the 25 nm.
