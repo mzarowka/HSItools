@@ -45,7 +45,10 @@ Imports:
     sf,
     here,
     prospectr,
-    raster
+    raster,
+    magick,
+    smoother,
+    egg
 Depends: 
     R (>= 4.1.0)
 LazyData: true
