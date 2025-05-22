@@ -247,6 +247,10 @@ plotSpectralDashboard <- function(core,
       select(depth,!!names(ind[[i]])) |>
       mutate(across(-depth, smoother::smth,window = smooth.win,.names = "smooth{.col}"))
 
+    if(!is.na(output.file.path)){
+      thisCsvPath <- file.path(dirname(output.file.path),paste0(names(ind[[i]]),"-roi",i,".csv"))
+      readr::write_csv(depth_index,file = thisCsvPath)
+    }
 
     # make a line plot
     # line plot
