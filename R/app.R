@@ -432,7 +432,8 @@ run_core <- function(autoSave = TRUE){
 
       server = function(input, output, session) {
 
-        aaa <- terra::rast(system.file("extdata/CORE_XYZ/capture/CORE_XYZ.tif", package = "HSItools"), noflip = TRUE)
+
+        aaa <- try(terra::rast(system.file("extdata/CORE_XYZ/capture/CORE_XYZ.tif", package = "HSItools"), noflip = TRUE),silent = TRUE)
 
         session$onSessionEnded(function() {
           stopApp()
