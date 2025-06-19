@@ -1,36 +1,57 @@
-#' Remove continuum from spectrum
+#' Remove continuum from hyperspectral data
 #'
-#' @family Filters
-#' @param raster terra SpatRaster of normalized capture data.
-#' @param filename a path to save file (with extension). Defaultys to NULL and processing in memory.
-#' @param ... additional arguments.
+#' @family HSI Transformations
+#' @param x A terra SpatRaster with hyperspectral data
+#' @param filename Character. Output filename. Default "" keeps in memory
+#' @param overwrite Logical. Overwrite existing file (default: FALSE)
+#' @param ... Additional arguments for writing files. See Details
 #'
-#' @importFrom rlang .data
+#' @details
+#' Continuum removal normalizes reflectance spectra to highlight absorption
+#' features by removing the overall spectral shape. The continuum is the
+#' convex hull that connects local maxima in the spectrum.
 #'
-#' @return one layer terra SpatRaster with continuum removed.
+#' @return A terra SpatRaster with continuum-removed values
 #' @export
 hsi_continuum <- function(
-  raster,
-  filename = NULL,
+  x,
+  filename = "",
+  overwrite = FALSE,
   ...
 ) {
-  # Check if correct class is supplied.
-  if (!inherits(raster, what = "SpatRaster")) {
-    rlang::abort(message = "Supplied data is not a terra SpatRaster.")
+  # Validate input
+  if (!inherits(x, what = "SpatRaster")) {
+    cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
+  }
+
+  # Validate if it is possible to remove the continuum
+  if (terra::nlyr(x) < 3) {
+    cli::cli_abort(
+      "Input raster must have at least 3 bands for continuum removal."
+    )
   }
 
   # Validate required packages
   if (!requireNamespace("prospectr", quietly = TRUE)) {
-    rlang::abort("Package 'prospectr' is required for continuum removal.")
+    cli::cli_abort(
+      "Package {.pkg prospectr} is required for continuum removal.",
+      "i" = "Install with: {.code utils::install.packages('prospectr')}"
+    )
   }
 
-  # Extract names
-  band_names <- terra::names(raster)
+  # Store user input in a spliceable list
+  wopt_user <- rlang::list2(...)
+
+  # Extract band names
+  band_names <- terra::names(x)
 
   # Named list with write options
-  wopts <- list(
+  wopt_default <- list(
     names = band_names
   )
+
+  # Splice wopt defaults with user input if any
+  wopt <- purrr::list_modify(wopt_default, !!!wopt_user)
 
   # Get wavelengths
   wavelengths <- suppressWarnings(as.numeric(band_names))
@@ -43,7 +64,9 @@ hsi_continuum <- function(
   # Continuum removal function
   remove_continuum_fun <- function(x) {
     # Skip NA values
-    if (any(is.na(x))) return(rep(NA, length(x)))
+    if (anyNA(x)) {
+      return(rep(NA, length(x)))
+    }
 
     # For a single pixel, transpose the data structure
     X_matrix <- matrix(x, nrow = 1) # 1 sample (pixel) with multiple wavelengths as columns
@@ -56,14 +79,14 @@ hsi_continuum <- function(
   }
 
   # Apply function over entire SpatRaster
-  raster <- terra::app(
-    raster,
+  result <- terra::app(
+    x,
     fun = remove_continuum_fun,
     filename = filename,
-    overwrite = TRUE,
-    wopt = wopts
+    overwrite = overwrite,
+    wopt = wopt
   )
 
-  # Return raster
-  return(raster)
+  # Return SpatRaster
+  return(result)
 }
