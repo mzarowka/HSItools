@@ -4,15 +4,16 @@
 \alias{plot_profile_spectral_profile}
 \title{Line plot of spectral profile from the ROI}
 \usage{
-plot_profile_spectral_profile(
-  raster,
-  extent = NULL,
-  extension = NULL,
-  write = FALSE
-)
+plot_profile_spectral_profile(raster, extent = NULL, filename = NULL, ...)
 }
 \arguments{
 \item{raster}{Reflectance SpatRaster.}
+
+\item{extent}{extent to work over.}
+
+\item{filename}{filename to write plot to.}
+
+\item{...}{other arguments.}
 }
 \value{
 line plot with of selected hyperspectral index.
