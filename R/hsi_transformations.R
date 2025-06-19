@@ -490,7 +490,7 @@ hsi_difference <- function(
     terra::subset(x, edge_positions[2])
 
   # Set layer name
-  names(x) <- difference_name
+  names(result) <- difference_name
 
   # Write new raster to file based on user input
   if (filename != "") {
@@ -512,6 +512,7 @@ hsi_difference <- function(
 #'
 #' @param x A terra SpatRaster with hyperspectral data
 #' @param rmean_name Character. Name of calculated rmean.
+#' @param na.rm Logical. Remove NA values when calculating mean (default: TRUE)
 #' @param filename Character. Output filename. Default "" keeps in memory
 #' @param overwrite Logical. Overwrite existing file (default: FALSE)
 #' @param ... Additional arguments for writing files. See Details
@@ -521,9 +522,24 @@ hsi_difference <- function(
 #'
 #' @description calculate mean reflectance from all layers for given pixel.
 #'
+#' @examples
+#' \dontrun{
+#' # Load hyperspectral data
+#' hsi_data <- terra::rast("hyperspectral_image.tif")
+#'
+#' # Calculate mean reflectance
+#' rmean <- hsi_rmean(hsi_data, rmean_name = "mean_reflectance")
+#'
+#' # Save to file
+#' rmean <- hsi_rmean(hsi_data,
+#'                    rmean_name = "mean_reflectance",
+#'                    filename = "output_rmean.tif",
+#'                    overwrite = TRUE)
+#' }
 hsi_rmean <- function(
   x,
   rmean_name,
+  na.rm = TRUE,
   filename = "",
   overwrite = FALSE,
   ...
@@ -531,6 +547,13 @@ hsi_rmean <- function(
   # Validate input
   if (!inherits(x, what = "SpatRaster")) {
     cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
+  }
+
+  # Validate name handling
+  if (
+    missing(rmean_name) || !is.character(rmean_name) || length(rmean_name) != 1
+  ) {
+    cli::cli_abort("{.arg rmean_name} must be a single character string.")
   }
 
   # Store user input in a spliceable list
@@ -544,14 +567,8 @@ hsi_rmean <- function(
   # Splice wopt defaults with user input if any
   wopt <- purrr::list_modify(wopt_default, !!!wopt_user)
 
-  # Create empty SpatRaster template from original SpatRaster
-  result <- terra::rast(
-    terra::ext(x),
-    resolution = terra::res(x)
-  )
-
   # Apply mean function over entire SpatRaster
-  result <- terra::app(x, fun = "mean")
+  result <- terra::app(x, fun = "mean", na.rm = na.rm)
 
   # Set layer name
   names(result) <- rmean_name
@@ -562,7 +579,7 @@ hsi_rmean <- function(
       result,
       filename = filename,
       overwrite = overwrite,
-      wopt = wopt
+      ...
     )
   }
 
@@ -895,7 +912,7 @@ hsi_derivative <- function(
     }
 
     # Calculate using central difference
-    derivative_values <- x |>
+    result <- x |>
       (\(i) {
         # Extract bands and calculate difference
         band_minus <- terra::subset(i, band_position - 1)
@@ -916,7 +933,7 @@ hsi_derivative <- function(
     }
 
     # Calculate using forward difference
-    derivative_values <- x |>
+    result <- x |>
       (\(i) {
         # Extract bands and calculate difference
         band_current <- terra::subset(i, band_position)
@@ -936,7 +953,7 @@ hsi_derivative <- function(
     }
 
     # Calculate using backward difference
-    derivative_values <- x |>
+    result <- x |>
       (\(i) {
         # Extract bands and calculate difference
         band_current <- terra::subset(i, band_position)
@@ -947,7 +964,7 @@ hsi_derivative <- function(
   }
 
   # Set derivative values onto SpatRaster template
-  terra::values(result) <- derivative_values
+  # terra::values(result) <- derivative_values
 
   # Set layer name
   names(result) <- derivative_name
@@ -1005,30 +1022,16 @@ hsi_ndi <- function(
   # Splice wopt defaults with user input if any
   wopt <- purrr::list_modify(wopt_default, !!!wopt_user)
 
-  # Create empty SpatRaster template from original SpatRaster
-  result <- terra::rast(
-    terra::ext(x),
-    resolution = terra::res(x)
-  )
-
-  # Find edge positions
-  edge_positions <- spectra_position(raster = x, spectra = edges) |>
-    # Pull vector with positions
-    dplyr::pull(var = 2)
-
   # Find edge positions
   edge_positions <- spectra_position(raster = x, spectra = edges) |>
     # Pull vector with positions
     dplyr::pull(var = 2)
 
   # Subtract
-  ndi_values <- (terra::subset(x, edge_positions[1]) -
+  result <- (terra::subset(x, edge_positions[1]) -
     terra::subset(x, edge_positions[2])) /
     (terra::subset(x, edge_positions[1]) +
       terra::subset(x, edge_positions[2]))
-
-  # Set NDI values onto SpatRaster template
-  terra::values(result) <- ndi_values
 
   # Set layer name
   names(result) <- ndi_name
