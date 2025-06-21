@@ -30,7 +30,7 @@ hsi_savgol(
 
 \item{overwrite}{Logical. Overwrite existing file (default: FALSE)}
 
-\item{...}{Additional arguments for writing files. See Details
+\item{...}{Additional arguments passed to \code{\link[terra]{writeRaster}}
 
 #' @description
 Smooth data with a Savitzky-Golay smoothing filter using \code{\link[signal]{sgolayfilt}}.}
@@ -55,6 +55,7 @@ Other HSI Transformations:
 \code{\link{hsi_rabd}()},
 \code{\link{hsi_ratio}()},
 \code{\link{hsi_remp}()},
-\code{\link{hsi_rmean}()}
+\code{\link{hsi_rmean}()},
+\code{\link{hsi_stretch}()}
 }
 \concept{HSI Transformations}

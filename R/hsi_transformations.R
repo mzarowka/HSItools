@@ -5,7 +5,7 @@
 #' @param window focal window size, default is 3
 #' @param filename Character. Output filename. Default "" keeps in memory
 #' @param overwrite Logical. Overwrite existing file (default: FALSE)
-#' @param ... Additional arguments for writing files. See Details
+#' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
 #'
 #' @details
 #' Focal (spatial) median filter smoothes data by findig the median value within a given window and assiging its value to a pixel of interest.
@@ -68,7 +68,7 @@ hsi_median <- function(
 #' @param ts time scaling factor
 #' @param filename Character. Output filename. Default "" keeps in memory
 #' @param overwrite Logical. Overwrite existing file (default: FALSE)
-#' @param ... Additional arguments for writing files. See Details
+#' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
 #'
 #' #' @description
 #' Smooth data with a Savitzky-Golay smoothing filter using \code{\link[signal]{sgolayfilt}}.
@@ -126,7 +126,7 @@ hsi_savgol <- function(
 #' @param x A terra SpatRaster with hyperspectral data
 #' @param filename Character. Output filename. Default "" keeps in memory
 #' @param overwrite Logical. Overwrite existing file (default: FALSE)
-#' @param ... Additional arguments for writing files. See Details
+#' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
 #'
 #' @details
 #' Continuum removal normalizes reflectance spectra to highlight absorption
@@ -224,7 +224,7 @@ hsi_continuum <- function(
 #' @param trough Character. Vector of wavelength(s) to look for trough
 #' @param filename Character. Output filename. Default "" keeps in memory
 #' @param overwrite Logical. Overwrite existing file (default: FALSE)
-#' @param ... Additional arguments for writing files. See Details
+#' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
 #'
 #' @return A terra SpatRaster with RABD values
 #' @export
@@ -373,7 +373,7 @@ hsi_rabd <- function(
 #' @param edges Numeric. Vector of two for the numerator and denominator
 #' @param filename Character. Output filename. Default "" keeps in memory
 #' @param overwrite Logical. Overwrite existing file (default: FALSE)
-#' @param ... Additional arguments for writing files. See Details
+#' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
 #'
 #' @return A terra SpatRaster with ratio values
 #' @export
@@ -444,7 +444,7 @@ hsi_ratio <- function(
 #' @param edges Numeric. Vector of two for the numerator and denominator
 #' @param filename Character. Output filename. Default "" keeps in memory
 #' @param overwrite Logical. Overwrite existing file (default: FALSE)
-#' @param ... Additional arguments for writing files. See Details
+#' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
 #'
 #' @return A terra SpatRaster with ratio values
 #' @export
@@ -515,12 +515,13 @@ hsi_difference <- function(
 #' @param na.rm Logical. Remove NA values when calculating mean (default: TRUE)
 #' @param filename Character. Output filename. Default "" keeps in memory
 #' @param overwrite Logical. Overwrite existing file (default: FALSE)
-#' @param ... Additional arguments for writing files. See Details
+#' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
 #'
 #' @return A terra SpatRaster with mean reflectance values
 #' @export
 #'
-#' @description calculate mean reflectance from all layers for given pixel.
+#' @description Calculate mean reflectance across all spectral bands for each pixel
+#' in a hyperspectral image.
 #'
 #' @examples
 #' \dontrun{
@@ -596,7 +597,7 @@ hsi_rmean <- function(
 #' @param edges Numeric. Vector of two for the wide calculation window
 #' @param filename Character. Output filename. Default "" keeps in memory
 #' @param overwrite Logical. Overwrite existing file (default: FALSE)
-#' @param ... Additional arguments for writing files. See Details
+#' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
 #'
 #' @return A terra SpatRaster with RABA values
 #' @export
@@ -662,7 +663,7 @@ hsi_raba <- function(
 #' @param edges Numeric. Vector of two for the wide calculation window. Default c(660, 680)
 #' @param filename Character. Output filename. Default "" keeps in memory
 #' @param overwrite Logical. Overwrite existing file (default: FALSE)
-#' @param ... Additional arguments for writing files. See Details
+#' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
 #'
 #' @return A terra SpatRaster with lambdaREMP values
 #'
@@ -816,7 +817,7 @@ hsi_remp <- function(
 #' @param method Character. method to use for derivative calculation. One of "central" (default), "forward", or "backward".
 #' @param filename Character. Output filename. Default "" keeps in memory
 #' @param overwrite Logical. Overwrite existing file (default: FALSE)
-#' @param ... Additional arguments for writing files. See Details
+#' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
 #'
 #' @return A terra SpatRaster with ratio values
 #' @export
@@ -992,7 +993,7 @@ hsi_derivative <- function(
 #' @param edges Numeric. Vector of two for the numerator and denominator
 #' @param filename Character. Output filename. Default "" keeps in memory
 #' @param overwrite Logical. Overwrite existing file (default: FALSE)
-#' @param ... Additional arguments for writing files. See Details
+#' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
 #'
 #' @return A terra SpatRaster with ndi values
 #' @export
@@ -1047,5 +1048,172 @@ hsi_ndi <- function(
   }
 
   # Return
+  return(result)
+}
+
+#' Stretch and optionally save full RGB preview of SpatRaster
+#'
+#' @family HSI Transformations
+#'
+#' @param x A terra SpatRaster with hyperspectral data
+#' @param type Character. One of "RGB", "CIR", "NIR", "SWIR" or any choice of three bands
+#' @param tol Numeric. Tolerance for band selection in nm (default: 25)
+#' @param histeq logical. If TRUE histogram equalization is used instead of linear stretch
+#' @param filename Character. Output filename. Default "" keeps in memory
+#' @param overwrite Logical. Overwrite existing file (default: FALSE)
+#' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
+#'
+#' @export
+hsi_stretch <- function(
+  x,
+  type,
+  tol = 25,
+  histeq = FALSE,
+  filename = "",
+  overwrite = FALSE,
+  ...
+) {
+  # Validate input
+  if (!inherits(x, what = "SpatRaster")) {
+    cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
+  }
+
+  # Store user input in a spliceable list
+  wopt_user <- rlang::list2(...)
+
+  # Named list with write options
+  wopt_default <- list(
+    names = type
+  )
+
+  # Splice wopt defaults with user input if any
+  wopt <- purrr::list_modify(wopt_default, !!!wopt_user)
+
+  # New logic
+
+  if (type == "RGB") {
+    spectra <- c(650, 550, 450)
+  } else if (type == "NIR") {
+    spectra <- c(900, 800, 700)
+  } else if (type == "CIR") {
+    spectra <- c(860, 650, 555)
+  } else if (type == "SWIR") {
+    spectra <- c(2200, 1650, 1200)
+  } else {
+    spectra <- type
+  }
+
+  if (all(any(purrr::list_c(purrr::map(spectra,\(i) dplyr::near(i, as.numeric(terra::names(x)), tol = tol))))) == FALSE) {
+    cli::cli_abort("No layers matching {.arg type} within {.arg tol}.",
+    i = "Are you sure your SpatRaster have appropriate layers?")
+  }
+
+  # Old logic
+
+  if (type == "RGB") {
+    # Check if there are values close to RGB, within the tolerance
+    if (
+      all(
+        any(
+          purrr::list_c(
+            purrr::map(
+              c(650, 550, 450),
+              \(i) dplyr::near(i, as.numeric(terra::names(x)), tol = tol)
+            )
+          )
+        )
+      ) ==
+        TRUE
+    ) {
+      spectra <- c(650, 550, 450)
+    } else {
+      cli::cli_warn(
+        "No layers matching RGB. Using the first, middle and last available layers."
+      )
+      spectra <- c(
+        min(1:terra::nlyr(x)),
+        terra::median(1:terra::nlyr(x)),
+        max(terra::nlyr(x))
+      ) |>
+        (\(i) as.numeric(terra::names(1:terra::subset(x, i))))()
+    }
+  } else if (type == "CIR") {
+    # Check if there are values close to CIR, within the tolerance
+    if (
+      all(
+        any(
+          purrr::list_c(
+            purrr::map(
+              c(860, 650, 555),
+              \(i) dplyr::near(i, as.numeric(terra::names(x)), tol = tol)
+            )
+          )
+        )
+      ) ==
+        TRUE
+    ) {
+      spectra <- c(860, 650, 555)
+    } else {
+      cli::cli_abort("No layers matching CIR.")
+    }
+  } else if (type == "NIR") {
+    # Check if there are values close to NIR, within the tolerance
+    if (
+      all(
+        any(
+          purrr::list_c(
+            purrr::map(
+              c(900, 800, 700),
+              \(i) dplyr::near(i, as.numeric(terra::names(x)), tol = tol)
+            )
+          )
+        )
+      ) ==
+        TRUE
+    ) {
+      spectra <- c(900, 800, 700)
+    } else {
+      cli::cli_abort("No layers matching NIR.")
+    }
+  } else if (type == "SWIR") {
+    # Check if there are values close to SWIR, within the tolerance
+    if (
+      all(
+        any(
+          purrr::list_c(
+            purrr::map(
+              c(2200, 1650, 1200),
+              \(i) dplyr::near(i, as.numeric(terra::names(x)), tol = tol)
+            )
+          )
+        )
+      ) ==
+        TRUE
+    ) {
+      spectra <- c(2200, 1650, 1200)
+    } else {
+      cli::cli_abort("No layers matching SWIR.")
+    }
+  }
+
+  # Resume code
+
+  # Subset and stretch
+  result <- HSItools::spectra_position(
+    x,
+    spectra = spectra
+  ) |>
+    HSItools::spectra_sub(
+      raster = x,
+      spectra_tbl = _
+    ) |>
+    terra::stretch(
+      filename = filename,
+      histeq = histeq,
+      overwrite = overwrite,
+      wopt = wopt
+    )
+
+  # Return SpatRaster
   return(result)
 }

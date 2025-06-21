@@ -24,7 +24,7 @@ hsi_difference(
 
 \item{overwrite}{Logical. Overwrite existing file (default: FALSE)}
 
-\item{...}{Additional arguments for writing files. See Details}
+\item{...}{Additional arguments passed to \code{\link[terra]{writeRaster}}}
 }
 \value{
 A terra SpatRaster with ratio values
@@ -43,6 +43,7 @@ Other HSI Transformations:
 \code{\link{hsi_ratio}()},
 \code{\link{hsi_remp}()},
 \code{\link{hsi_rmean}()},
-\code{\link{hsi_savgol}()}
+\code{\link{hsi_savgol}()},
+\code{\link{hsi_stretch}()}
 }
 \concept{HSI Transformations}
