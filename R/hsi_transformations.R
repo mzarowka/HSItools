@@ -1053,15 +1053,37 @@ hsi_ndi <- function(
 
 #' Stretch and optionally save full RGB preview of SpatRaster
 #'
+#' Performs histogram stretching on selected bands from a hyperspectral SpatRaster.
+#' Supports both predefined band combinations and custom wavelength selection.
+#'
 #' @family HSI Transformations
 #'
-#' @param x A terra SpatRaster with hyperspectral data
-#' @param type Character. One of "RGB", "CIR", "NIR", "SWIR" or any choice of three bands
+#' @param x A terra SpatRaster with hyperspectral data. Band names must be 
+#'   numeric wavelengths in nm.
+#' @param type Character or numeric. Either a predefined band combination 
+#'   ("RGB", "CIR", "NIR", "SWIR") or a numeric vector of exactly 3 
+#'   wavelengths in nm (e.g., c(400, 500, 600))
 #' @param tol Numeric. Tolerance for band selection in nm (default: 25)
-#' @param histeq logical. If TRUE histogram equalization is used instead of linear stretch
+#' @param histeq Logical. If TRUE histogram equalization is used instead of 
+#'   linear stretch (default: FALSE)
 #' @param filename Character. Output filename. Default "" keeps in memory
 #' @param overwrite Logical. Overwrite existing file (default: FALSE)
 #' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
+#'
+#' @return A SpatRaster with 3 bands after stretching
+#'
+#' @examples
+#' \dontrun{
+#' # Using predefined band combination
+#' rgb_stretched <- hsi_stretch(hyperspectral_raster, type = "RGB")
+#' 
+#' # Using custom wavelengths
+#' custom_stretched <- hsi_stretch(hyperspectral_raster, type = c(400, 500, 600))
+#' 
+#' # Save to file with histogram equalization
+#' hsi_stretch(hyperspectral_raster, type = "CIR", histeq = TRUE, 
+#'             filename = "cir_stretched.tif", overwrite = TRUE)
+#' }
 #'
 #' @export
 hsi_stretch <- function(
@@ -1073,147 +1095,97 @@ hsi_stretch <- function(
   overwrite = FALSE,
   ...
 ) {
-  # Validate input
+  # Validate input raster
   if (!inherits(x, what = "SpatRaster")) {
     cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
   }
-
-  # Store user input in a spliceable list
-  wopt_user <- rlang::list2(...)
-
-  # Named list with write options
-  wopt_default <- list(
-    names = type
-  )
-
-  # Splice wopt defaults with user input if any
-  wopt <- purrr::list_modify(wopt_default, !!!wopt_user)
-
-  # New logic
-
-  if (type == "RGB") {
-    spectra <- c(650, 550, 450)
-  } else if (type == "NIR") {
-    spectra <- c(900, 800, 700)
-  } else if (type == "CIR") {
-    spectra <- c(860, 650, 555)
-  } else if (type == "SWIR") {
-    spectra <- c(2200, 1650, 1200)
-  } else {
-    spectra <- type
-  }
-
-  if (all(any(purrr::list_c(purrr::map(spectra,\(i) dplyr::near(i, as.numeric(terra::names(x)), tol = tol))))) == FALSE) {
-    cli::cli_abort("No layers matching {.arg type} within {.arg tol}.",
-    i = "Are you sure your SpatRaster have appropriate layers?")
-  }
-
-  # Old logic
-
-  if (type == "RGB") {
-    # Check if there are values close to RGB, within the tolerance
-    if (
-      all(
-        any(
-          purrr::list_c(
-            purrr::map(
-              c(650, 550, 450),
-              \(i) dplyr::near(i, as.numeric(terra::names(x)), tol = tol)
-            )
-          )
-        )
-      ) ==
-        TRUE
-    ) {
-      spectra <- c(650, 550, 450)
-    } else {
-      cli::cli_warn(
-        "No layers matching RGB. Using the first, middle and last available layers."
+  
+  # Validate and process the type argument
+  if (is.character(type) && length(type) == 1) {
+    # Predefined band combinations
+    spectra <- switch(
+      type,
+      RGB = c(650, 550, 450),
+      NIR = c(900, 800, 700),
+      CIR = c(860, 650, 555),
+      SWIR = c(2200, 1650, 1200),
+      cli::cli_abort(
+        "Unknown band type: {.val {type}}",
+        i = "Use one of: RGB, NIR, CIR, SWIR, or provide numeric wavelengths."
       )
-      spectra <- c(
-        min(1:terra::nlyr(x)),
-        terra::median(1:terra::nlyr(x)),
-        max(terra::nlyr(x))
-      ) |>
-        (\(i) as.numeric(terra::names(1:terra::subset(x, i))))()
+    )
+  } else if (is.numeric(type)) {
+    # Custom wavelengths
+    if (length(type) != 3) {
+      cli::cli_abort(
+        "Custom wavelengths must provide exactly 3 values, got {length(type)}."
+      )
     }
-  } else if (type == "CIR") {
-    # Check if there are values close to CIR, within the tolerance
-    if (
-      all(
-        any(
-          purrr::list_c(
-            purrr::map(
-              c(860, 650, 555),
-              \(i) dplyr::near(i, as.numeric(terra::names(x)), tol = tol)
-            )
-          )
-        )
-      ) ==
-        TRUE
-    ) {
-      spectra <- c(860, 650, 555)
-    } else {
-      cli::cli_abort("No layers matching CIR.")
-    }
-  } else if (type == "NIR") {
-    # Check if there are values close to NIR, within the tolerance
-    if (
-      all(
-        any(
-          purrr::list_c(
-            purrr::map(
-              c(900, 800, 700),
-              \(i) dplyr::near(i, as.numeric(terra::names(x)), tol = tol)
-            )
-          )
-        )
-      ) ==
-        TRUE
-    ) {
-      spectra <- c(900, 800, 700)
-    } else {
-      cli::cli_abort("No layers matching NIR.")
-    }
-  } else if (type == "SWIR") {
-    # Check if there are values close to SWIR, within the tolerance
-    if (
-      all(
-        any(
-          purrr::list_c(
-            purrr::map(
-              c(2200, 1650, 1200),
-              \(i) dplyr::near(i, as.numeric(terra::names(x)), tol = tol)
-            )
-          )
-        )
-      ) ==
-        TRUE
-    ) {
-      spectra <- c(2200, 1650, 1200)
-    } else {
-      cli::cli_abort("No layers matching SWIR.")
-    }
+    spectra <- type
+  } else {
+    cli::cli_abort(
+      "{.arg type} must be either a character string (e.g., 'RGB') or a numeric vector of 3 wavelengths."
+    )
   }
-
-  # Resume code
-
-  # Subset and stretch
-  result <- HSItools::spectra_position(
+  
+  # Band names should always be the wavelengths (as character)
+  band_names <- as.character(spectra)
+  
+  # Validate tolerance
+  if (!is.numeric(tol) || length(tol) != 1 || tol < 0) {
+    cli::cli_abort("{.arg tol} must be a single non-negative numeric value.")
+  }
+  
+  # Check if all required bands exist
+  available_bands <- as.numeric(terra::names(x))
+  
+  # Check each band individually
+  band_exists <- purrr::map_lgl(spectra, \(target_wl) {
+    any(dplyr::near(target_wl, available_bands, tol = tol))
+  })
+  
+  if (!all(band_exists)) {
+    missing_bands <- spectra[!band_exists]
+    cli::cli_abort(
+      c(
+        "Cannot find all required bands within tolerance of {tol} nm.",
+        x = "Missing bands near: {missing_bands} nm",
+        i = "Available bands: {sort(available_bands)} nm"
+      )
+    )
+  }
+  
+  # Find band positions and subset
+  band_positions <- HSItools::spectra_position(
     x,
     spectra = spectra
-  ) |>
-    HSItools::spectra_sub(
-      raster = x,
-      spectra_tbl = _
-    ) |>
-    terra::stretch(
-      filename = filename,
+  )
+  
+  selected_bands <- HSItools::spectra_sub(
+    raster = x,
+    spectra_tbl = band_positions
+  )
+  
+  # Perform stretching
+  if (filename != "") {
+    # If saving to file, pass writeRaster options
+    result <- terra::stretch(
+      selected_bands,
       histeq = histeq,
+      filename = filename,
       overwrite = overwrite,
-      wopt = wopt
+      names = band_names,
+      ...
     )
-
-  # Return SpatRaster
+  } else {
+    # If keeping in memory
+    result <- terra::stretch(
+      selected_bands,
+      histeq = histeq
+    )
+    names(result) <- band_names
+  }
+  
+  # Return stretched SpatRaster
   return(result)
 }
