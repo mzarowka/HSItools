@@ -238,7 +238,7 @@ create_reference_raster <- function(raster, roi, ref_type, ...) {
 #' @param whiteref a terra SpatRaster of the white reference matching capture extent.
 #' @param darkref a terra SpatRaster of the dark reference matching capture extent.
 #' @param tintw integration time of the white reference.
-#' @param tints integration time of the captured utils::data (sample).
+#' @param tints integration time of the captured data (sample).
 #'
 #' @return a normalized terra SpatRaster of the capture.
 #'
@@ -284,7 +284,7 @@ normalization <- function(
 #' @param whiteref terra SpatRaster of the white reference matching capture extent.
 #' @param darkref terra SpatRaster of the dark reference matching capture extent.
 #' @param tintw integration time of the white reference.
-#' @param tints integration time of the captured utils::data (sample).
+#' @param tints integration time of the captured data (sample).
 #' @param fun function to apply: normalization.
 #' @param ... additional arguments.
 #'

@@ -1,15 +1,15 @@
 simpleShiny <- function(){
-  ui <- fluidPage(
-    fluidRow(
+  ui <- shiny::fluidPage(
+    shiny::fluidRow(
     "Hello, world!",
-    actionButton('begin','Save Selections and Proceed')
+    shiny::actionButton('begin','Save Selections and Proceed')
     )
   )
   server <- function(input, output, session) {
-    observeEvent(input$begin, {
+    shiny::observeEvent(input$begin, {
       print("button clicked")
       shinyalert::shinyalert("clicked!")
     })
   }
-  shinyApp(ui, server)
+  shiny::shinyApp(ui, server)
 }
