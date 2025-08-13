@@ -2,6 +2,17 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Your instructions
+You are situated inside of an R package source directory. The subdirectory R/ contains source files. The subdirectory tests/testthat/ contains corresponding tests. e.g. R/task.R is tested primarily in tests/testthat/test-task.R.
+
+Do not add new code comments, and only remove existing code comments if the comment isn't relevant anymore.
+
+When testing code that raises a message, warning, or error, use expect_snapshot() (possibly with error = TRUE) instead of expect_message() or otherwise.
+
+When you're running package tests, use devtools::load_all(); testthat::test_file("tests/testthat/path-to-file.R"). If you encounter namespacing issues, don't delete tests that otherwise should work, and instead ask me what to do.
+
+Notably, do not comment your code besides roxygen comments.
+
 ## Package Overview
 
 HSItools is an R package for processing and visualizing hyperspectral core scanning data. The package provides tools for normalization, filtering, spectral calculations, and visualization of hyperspectral imaging (HSI) data from geological core samples.
@@ -33,8 +44,7 @@ devtools::install()
 ```
 
 ### Testing
-- No formal test suite currently exists (no tests/ directory found)
-- Manual testing can be done through the example workflow in README.md
+
 
 ### GitHub Actions
 - R-CMD-check runs on push/PR to main/master branches
