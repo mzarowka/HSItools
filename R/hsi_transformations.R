@@ -1058,13 +1058,13 @@ hsi_ndi <- function(
 #'
 #' @family HSI Transformations
 #'
-#' @param x A terra SpatRaster with hyperspectral data. Band names must be 
+#' @param x A terra SpatRaster with hyperspectral data. Band names must be
 #'   numeric wavelengths in nm.
-#' @param type Character or numeric. Either a predefined band combination 
-#'   ("RGB", "CIR", "NIR", "SWIR") or a numeric vector of exactly 3 
+#' @param type Character or numeric. Either a predefined band combination
+#'   ("RGB", "CIR", "NIR", "SWIR") or a numeric vector of exactly 3
 #'   wavelengths in nm (e.g., c(400, 500, 600))
 #' @param tol Numeric. Tolerance for band selection in nm (default: 25)
-#' @param histeq Logical. If TRUE histogram equalization is used instead of 
+#' @param histeq Logical. If TRUE histogram equalization is used instead of
 #'   linear stretch (default: FALSE)
 #' @param filename Character. Output filename. Default "" keeps in memory
 #' @param overwrite Logical. Overwrite existing file (default: FALSE)
@@ -1076,12 +1076,12 @@ hsi_ndi <- function(
 #' \dontrun{
 #' # Using predefined band combination
 #' rgb_stretched <- hsi_stretch(hyperspectral_raster, type = "RGB")
-#' 
+#'
 #' # Using custom wavelengths
 #' custom_stretched <- hsi_stretch(hyperspectral_raster, type = c(400, 500, 600))
-#' 
+#'
 #' # Save to file with histogram equalization
-#' hsi_stretch(hyperspectral_raster, type = "CIR", histeq = TRUE, 
+#' hsi_stretch(hyperspectral_raster, type = "CIR", histeq = TRUE,
 #'             filename = "cir_stretched.tif", overwrite = TRUE)
 #' }
 #'
@@ -1099,7 +1099,7 @@ hsi_stretch <- function(
   if (!inherits(x, what = "SpatRaster")) {
     cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
   }
-  
+
   # Validate and process the type argument
   if (is.character(type) && length(type) == 1) {
     # Predefined band combinations
@@ -1127,23 +1127,23 @@ hsi_stretch <- function(
       "{.arg type} must be either a character string (e.g., 'RGB') or a numeric vector of 3 wavelengths."
     )
   }
-  
+
   # Band names should always be the wavelengths (as character)
   band_names <- as.character(spectra)
-  
+
   # Validate tolerance
   if (!is.numeric(tol) || length(tol) != 1 || tol < 0) {
     cli::cli_abort("{.arg tol} must be a single non-negative numeric value.")
   }
-  
+
   # Check if all required bands exist
   available_bands <- as.numeric(terra::names(x))
-  
+
   # Check each band individually
   band_exists <- purrr::map_lgl(spectra, \(target_wl) {
     any(dplyr::near(target_wl, available_bands, tol = tol))
   })
-  
+
   if (!all(band_exists)) {
     missing_bands <- spectra[!band_exists]
     cli::cli_abort(
@@ -1154,18 +1154,18 @@ hsi_stretch <- function(
       )
     )
   }
-  
+
   # Find band positions and subset
   band_positions <- HSItools::spectra_position(
     x,
     spectra = spectra
   )
-  
+
   selected_bands <- HSItools::spectra_sub(
     raster = x,
     spectra_tbl = band_positions
   )
-  
+
   # Perform stretching
   if (filename != "") {
     # If saving to file, pass writeRaster options
@@ -1185,7 +1185,165 @@ hsi_stretch <- function(
     )
     names(result) <- band_names
   }
-  
+
   # Return stretched SpatRaster
+  return(result)
+}
+
+#' Normalize hyperspectral raster
+#'
+#' @family HSI Transformations
+#' @param sample A terra SpatRaster with hyperspectral sample data. Band names must be
+#'   numeric wavelengths in nm.
+#' @param whiteref A terra SpatRaster with hyperspectral white reference data. Band names must be
+#'   numeric wavelengths in nm.
+#' @param darkref A terra SpatRaster with hyperspectral dark reference data. Band names must be
+#'   numeric wavelengths in nm.
+#' @param tint A vector of two with integration times for white reference and sample data (in this order).
+#'
+#' @details
+#' Normalizes a SpatRaster (prefferably a layer) in respect to white and dark references.
+#'
+#' @return A temporary terra SpatRaster with normalized reflectance values.
+#' @export
+hsi_normalize <- function(
+  sample,
+  whiteref,
+  darkref,
+  tint
+) {
+  # Get the average value of the white reference for each column
+  whiteref_onecol_raster <- terra::aggregate(
+    whiteref,
+    fact = c(terra::nrow(whiteref), 1),
+    fun = "mean"
+  )
+
+  # Store it in a vector
+  whiteref_onecol_vector <- as.vector(whiteref_onecol_raster)
+
+  # Get the average value of the dark reference for each column
+  darkref_onecol_raster <- terra::aggregate(
+    darkref,
+    fact = c(terra::nrow(darkref), 1),
+    fun = "mean"
+  )
+
+  # Store it in a vector
+  darkref_onecol_vector <- as.vector(darkref_onecol_raster)
+
+  # Convert the raster to a matrix
+  sample_matrix <- terra::as.matrix(sample, wide = TRUE)
+
+  # Subtract the dark reference from the capture matrix for each column
+  numerator <- sweep(sample_matrix, 2, darkref_onecol_vector, FUN = "-")
+
+  # Subtract the dark reference from the white reference for each column
+  denominator <- whiteref_onecol_vector - darkref_onecol_vector
+
+  f_tint <- tint[1] / tint[2]
+
+  # Divide the numerator by the denominator for each column and multiply by the tint factor
+  result <- sweep(numerator, 2, denominator, "/") * f_tint
+
+  # Set the result to NA if the denominator is lower than 0
+  result[is.na(result) | result < 0] <- 0
+
+  # Create a temporary raster to store the result
+  result <- terra::init(
+    sample,
+    t(result),
+    filename = tempfile(fileext = ".tif"),
+    wopt = list(gdal = c("COMPRESS=NONE"))
+  )
+
+  # Return SpatRaster
+  return(result)
+}
+
+#' Hyperspectral reflectance raster
+#'
+#' @family HSI Transformations
+#' @param sample A terra SpatRaster with hyperspectral sample data. Band names must be
+#'   numeric wavelengths in nm.
+#' @param whiteref A terra SpatRaster with hyperspectral white reference data. Band names must be
+#'   numeric wavelengths in nm.
+#' @param darkref A terra SpatRaster with hyperspectral dark reference data. Band names must be
+#'   numeric wavelengths in nm.
+#' @param tint A vector of two with integration times for white reference and sample data (in this order). Default c(1, 1).
+#' @param filename Character. Output filename. Default "" keeps in memory
+#' @param overwrite Logical. Overwrite existing file (default: FALSE)
+#' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
+#'
+#' @details
+#' Normalizes a SpatRaster layer by layer in respect to white and dark references.
+#'
+#' @return A terra SpatRaster with normalized reflectance values.
+#' @export
+hsi_reflectance <- function(
+  sample,
+  whiteref,
+  darkref,
+  tint = c(1, 1),
+  filename = "",
+  overwrite = FALSE,
+  ...
+) {
+  # Needs cleanup
+  # Needs proper validation, now it produces and error with not matching raster extents
+  # Needs to properly handle temporary files, otherwise it clogs up the drive almost imediately
+  # Test if last parallelization in purrr gives anything
+
+  # Validate input
+  # if (
+  #   !all(purrr::map_lgl(c(sample, whiteref, darkref), \(x) {
+  #     inherits(x, what = "SpatRaster")
+  #   }))
+  # ) {
+  #   cli::cli_abort("All of inputs must be terra SpatRasters.")
+  # }
+
+  # # Store user input in a spliceable list
+  wopt_user <- rlang::list2(...)
+
+  # # Extract band names
+  # band_names <- terra::names(x)
+
+  # # Named list with write options
+  wopt_default <- list(
+    # names = band_names
+  )
+
+  # # Splice wopt defaults with user input if any
+  wopt <- purrr::list_modify(wopt_default, !!!wopt_user)
+
+  # Perform normalization
+  # If saving to file, pass writeRaster options
+  result <- list(
+    sample = terra::as.list(sample),
+    whiteref = terra::as.list(whiteref),
+    darkref = terra::as.list(darkref),
+    tint = list(tint)
+  ) |>
+    purrr::pmap(purrr::in_parallel(\(sample, whiteref, darkref, tint) {
+      HSItools::hsi_normalize(
+        sample = sample,
+        whiteref = whiteref,
+        darkref = darkref,
+        tint = tint
+      )
+    })) |>
+    terra::rast()
+
+  if (filename != "") {
+    terra::writeRaster(
+      result,
+      filename = filename,
+      overwrite = overwrite,
+      wopt = wopt
+    )
+  }
+
+  # Return SpatRaster
   return(result)
 }

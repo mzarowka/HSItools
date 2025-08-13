@@ -15,13 +15,17 @@ hsi_stretch(
 )
 }
 \arguments{
-\item{x}{A terra SpatRaster with hyperspectral data}
+\item{x}{A terra SpatRaster with hyperspectral data. Band names must be
+numeric wavelengths in nm.}
 
-\item{type}{Character. One of "RGB", "CIR", "NIR", "SWIR" or any choice of three bands}
+\item{type}{Character or numeric. Either a predefined band combination
+("RGB", "CIR", "NIR", "SWIR") or a numeric vector of exactly 3
+wavelengths in nm (e.g., c(400, 500, 600))}
 
 \item{tol}{Numeric. Tolerance for band selection in nm (default: 25)}
 
-\item{histeq}{logical. If TRUE histogram equalization is used instead of linear stretch}
+\item{histeq}{Logical. If TRUE histogram equalization is used instead of
+linear stretch (default: FALSE)}
 
 \item{filename}{Character. Output filename. Default "" keeps in memory}
 
@@ -29,8 +33,26 @@ hsi_stretch(
 
 \item{...}{Additional arguments passed to \code{\link[terra]{writeRaster}}}
 }
+\value{
+A SpatRaster with 3 bands after stretching
+}
 \description{
-Stretch and optionally save full RGB preview of SpatRaster
+Performs histogram stretching on selected bands from a hyperspectral SpatRaster.
+Supports both predefined band combinations and custom wavelength selection.
+}
+\examples{
+\dontrun{
+# Using predefined band combination
+rgb_stretched <- hsi_stretch(hyperspectral_raster, type = "RGB")
+
+# Using custom wavelengths
+custom_stretched <- hsi_stretch(hyperspectral_raster, type = c(400, 500, 600))
+
+# Save to file with histogram equalization
+hsi_stretch(hyperspectral_raster, type = "CIR", histeq = TRUE,
+            filename = "cir_stretched.tif", overwrite = TRUE)
+}
+
 }
 \seealso{
 Other HSI Transformations: 
@@ -39,9 +61,11 @@ Other HSI Transformations:
 \code{\link{hsi_difference}()},
 \code{\link{hsi_median}()},
 \code{\link{hsi_ndi}()},
+\code{\link{hsi_normalize}()},
 \code{\link{hsi_raba}()},
 \code{\link{hsi_rabd}()},
 \code{\link{hsi_ratio}()},
+\code{\link{hsi_reflectance}()},
 \code{\link{hsi_remp}()},
 \code{\link{hsi_rmean}()},
 \code{\link{hsi_savgol}()}
