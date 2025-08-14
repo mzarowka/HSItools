@@ -1205,7 +1205,6 @@ hsi_stretch <- function(
 #' Normalizes a SpatRaster (prefferably a layer) in respect to white and dark references.
 #'
 #' @return A temporary terra SpatRaster with normalized reflectance values.
-#' @export
 hsi_normalize <- function(
   sample,
   whiteref,
