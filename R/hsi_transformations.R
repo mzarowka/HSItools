@@ -1292,9 +1292,8 @@ hsi_reflectance <- function(
   # Needs cleanup
   # Needs proper validation, now it produces and error with not matching raster extents
   # Needs to properly handle temporary files, otherwise it clogs up the drive almost imediately
-  # Test if last parallelization in purrr gives anything
 
-  # Validate input
+  # Validate input -> this one gives an error of extents not matching
   # if (
   #   !all(purrr::map_lgl(c(sample, whiteref, darkref), \(x) {
   #     inherits(x, what = "SpatRaster")
@@ -1303,38 +1302,39 @@ hsi_reflectance <- function(
   #   cli::cli_abort("All of inputs must be terra SpatRasters.")
   # }
 
-  # # Store user input in a spliceable list
+  # # Store user input in a spliceable list -> probably not needed
   wopt_user <- rlang::list2(...)
 
   # # Extract band names
   # band_names <- terra::names(x)
 
-  # # Named list with write options
+  # # Named list with write options -> probably not needed
   wopt_default <- list(
     # names = band_names
   )
 
-  # # Splice wopt defaults with user input if any
+  # # Splice wopt defaults with user input if any -> probably not needed
   wopt <- purrr::list_modify(wopt_default, !!!wopt_user)
 
   # Perform normalization
-  # If saving to file, pass writeRaster options
+  # In memory
   result <- list(
     sample = terra::as.list(sample),
     whiteref = terra::as.list(whiteref),
     darkref = terra::as.list(darkref),
     tint = list(tint)
   ) |>
-    purrr::pmap(purrr::in_parallel(\(sample, whiteref, darkref, tint) {
+    purrr::pmap(\(sample, whiteref, darkref, tint) {
       HSItools::hsi_normalize(
         sample = sample,
         whiteref = whiteref,
         darkref = darkref,
         tint = tint
       )
-    })) |>
+    }) |>
     terra::rast()
 
+  # If saving to file, pass to writeRaster with user options
   if (filename != "") {
     terra::writeRaster(
       result,
