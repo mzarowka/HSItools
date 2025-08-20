@@ -33,7 +33,7 @@ hsi_smooth_savgol(
 \item{...}{Additional arguments passed to \code{\link[terra]{writeRaster}}
 
 #' @description
-Smooth data with a Savitzky-Golay smoothing filter using \code{\link[signal]{sgolayfilt}}.}
+Smooth data with a Savitzky-Golay smoothing filter using \code{\link[gsignal]{sgolayfilt}}.}
 }
 \value{
 A terra SpatRaster with Savitzky-Golay filtered values
@@ -58,6 +58,7 @@ Other HSI Transformations:
 \code{\link{hsi_normalize}()},
 \code{\link{hsi_reflectance}()},
 \code{\link{hsi_smooth_median}()},
+\code{\link{hsi_smooth_savgol_OLD}()},
 \code{\link{hsi_stretch}()}
 }
 \concept{HSI Transformations}
