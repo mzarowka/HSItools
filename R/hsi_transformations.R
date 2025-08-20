@@ -12,7 +12,7 @@
 #'
 #' @return A terra SpatRaster with median filtered values
 #' @export
-hsi_median <- function(
+hsi_smooth_median <- function(
   x,
   window = 3,
   filename = "",
@@ -78,7 +78,7 @@ hsi_median <- function(
 #'
 #' @return A terra SpatRaster with Savitzky-Golay filtered values
 #' @export
-hsi_savgol <- function(
+hsi_smooth_savgol <- function(
   x,
   p = 3,
   n = p + 13 - p %% 2,
@@ -228,7 +228,7 @@ hsi_continuum <- function(
 #'
 #' @return A terra SpatRaster with RABD values
 #' @export
-hsi_rabd <- function(
+hsi_calc_rabd <- function(
   x,
   rabd_name,
   rabd_type,
@@ -379,7 +379,7 @@ hsi_rabd <- function(
 #' @export
 #'
 #' @description calculate band ratio of selected wavelengths
-hsi_ratio <- function(
+hsi_calc_ratio <- function(
   x,
   ratio_name,
   edges,
@@ -450,7 +450,7 @@ hsi_ratio <- function(
 #' @export
 #'
 #' @description calculate band ratio of selected wavelengths.
-hsi_difference <- function(
+hsi_calc_difference <- function(
   x,
   difference_name,
   edges,
@@ -537,7 +537,7 @@ hsi_difference <- function(
 #'                    filename = "output_rmean.tif",
 #'                    overwrite = TRUE)
 #' }
-hsi_rmean <- function(
+hsi_calc_rmean <- function(
   x,
   rmean_name,
   na.rm = TRUE,
@@ -601,7 +601,7 @@ hsi_rmean <- function(
 #'
 #' @return A terra SpatRaster with RABA values
 #' @export
-hsi_raba <- function(
+hsi_calc_raba <- function(
   x,
   raba_name,
   edges,
@@ -675,7 +675,7 @@ hsi_raba <- function(
 #' Limnology and Oceanography: Methods 21, 703-717 https://doi.org/10.1002/lom3.10576
 #'
 #' @export
-hsi_remp <- function(
+hsi_calc_remp <- function(
   x,
   remp_name,
   edges = c(660, 680),
@@ -831,7 +831,7 @@ hsi_remp <- function(
 #' Where h, h1, and h2 are wavelength differences between bands.
 #' The derivative provides information about the rate of change in reflectance,
 #' which can be useful for identifying absorption features and inflection points.
-hsi_derivative <- function(
+hsi_calc_derivative <- function(
   x,
   derivative_name,
   band,
@@ -999,7 +999,7 @@ hsi_derivative <- function(
 #' @export
 #'
 #' @description calculate normalized difference index
-hsi_ndi <- function(
+hsi_calc_ndi <- function(
   x,
   ndi_name,
   edges,

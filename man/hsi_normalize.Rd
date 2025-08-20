@@ -29,18 +29,18 @@ Normalizes a SpatRaster (prefferably a layer) in respect to white and dark refer
 }
 \seealso{
 Other HSI Transformations: 
+\code{\link{hsi_calc_derivative}()},
+\code{\link{hsi_calc_difference}()},
+\code{\link{hsi_calc_ndi}()},
+\code{\link{hsi_calc_raba}()},
+\code{\link{hsi_calc_rabd}()},
+\code{\link{hsi_calc_ratio}()},
+\code{\link{hsi_calc_remp}()},
+\code{\link{hsi_calc_rmean}()},
 \code{\link{hsi_continuum}()},
-\code{\link{hsi_derivative}()},
-\code{\link{hsi_difference}()},
-\code{\link{hsi_median}()},
-\code{\link{hsi_ndi}()},
-\code{\link{hsi_raba}()},
-\code{\link{hsi_rabd}()},
-\code{\link{hsi_ratio}()},
 \code{\link{hsi_reflectance}()},
-\code{\link{hsi_remp}()},
-\code{\link{hsi_rmean}()},
-\code{\link{hsi_savgol}()},
+\code{\link{hsi_smooth_median}()},
+\code{\link{hsi_smooth_savgol}()},
 \code{\link{hsi_stretch}()}
 }
 \concept{HSI Transformations}
