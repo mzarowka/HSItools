@@ -1324,7 +1324,7 @@ hsi_reflectance <- function(
     tint = list(tint)
   ) |>
     purrr::pmap(\(sample, whiteref, darkref, tint) {
-      HSItools::hsi_normalize(
+      HSItools:::hsi_normalize(
         sample = sample,
         whiteref = whiteref,
         darkref = darkref,
