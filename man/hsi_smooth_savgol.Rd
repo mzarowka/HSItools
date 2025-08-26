@@ -12,6 +12,7 @@ hsi_smooth_savgol(
   ts = 1,
   filename = "",
   overwrite = FALSE,
+  cores,
   ...
 )
 }
@@ -29,6 +30,8 @@ hsi_smooth_savgol(
 \item{filename}{Character. Output filename. Default "" keeps in memory}
 
 \item{overwrite}{Logical. Overwrite existing file (default: FALSE)}
+
+\item{cores}{positive integer. If cores > 1, a 'parallel' package cluster with that many cores is created and used. You can also supply a cluster object.}
 
 \item{...}{Additional arguments passed to \code{\link[terra]{writeRaster}}
 

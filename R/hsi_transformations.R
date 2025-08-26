@@ -126,6 +126,7 @@ hsi_smooth_savgol_OLD <- function(
 #' @param x A terra SpatRaster with hyperspectral data
 #' @param filename Character. Output filename. Default "" keeps in memory
 #' @param overwrite Logical. Overwrite existing file (default: FALSE)
+#' @param cores positive integer. If cores > 1, a 'parallel' package cluster with that many cores is created and used. You can also supply a cluster object.
 #' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
 #'
 #' @details
@@ -139,6 +140,7 @@ hsi_continuum <- function(
   x,
   filename = "",
   overwrite = FALSE,
+  cores,
   ...
 ) {
   # Validate input
@@ -206,6 +208,7 @@ hsi_continuum <- function(
     fun = remove_continuum_fun,
     filename = filename,
     overwrite = overwrite,
+    cores = cores,
     wopt = wopt
   )
 
@@ -515,6 +518,7 @@ hsi_calc_difference <- function(
 #' @param na.rm Logical. Remove NA values when calculating mean (default: TRUE)
 #' @param filename Character. Output filename. Default "" keeps in memory
 #' @param overwrite Logical. Overwrite existing file (default: FALSE)
+#' @param cores positive integer. If cores > 1, a 'parallel' package cluster with that many cores is created and used. You can also supply a cluster object.
 #' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
 #'
 #' @return A terra SpatRaster with mean reflectance values
@@ -543,6 +547,7 @@ hsi_calc_rmean <- function(
   na.rm = TRUE,
   filename = "",
   overwrite = FALSE,
+  cores,
   ...
 ) {
   # Validate input
@@ -569,7 +574,7 @@ hsi_calc_rmean <- function(
   wopt <- purrr::list_modify(wopt_default, !!!wopt_user)
 
   # Apply mean function over entire SpatRaster
-  result <- terra::app(x, fun = "mean", na.rm = na.rm)
+  result <- terra::app(x, fun = "mean", na.rm = na.rm, cores = cores)
 
   # Set layer name
   names(result) <- rmean_name
@@ -663,6 +668,7 @@ hsi_calc_raba <- function(
 #' @param edges Numeric. Vector of two for the wide calculation window. Default c(660, 680)
 #' @param filename Character. Output filename. Default "" keeps in memory
 #' @param overwrite Logical. Overwrite existing file (default: FALSE)
+#' @param cores positive integer. If cores > 1, a 'parallel' package cluster with that many cores is created and used. You can also supply a cluster object.
 #' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
 #'
 #' @return A terra SpatRaster with lambdaREMP values
@@ -681,6 +687,7 @@ hsi_calc_remp <- function(
   edges = c(660, 680),
   filename = "",
   overwrite = FALSE,
+  cores,
   ...
 ) {
   # Validate input
@@ -797,6 +804,7 @@ hsi_calc_remp <- function(
     fun = find_remp_derivative,
     filename = filename,
     overwrite = overwrite,
+    cores = cores,
     wopt = wopt
   )
 
@@ -1357,6 +1365,7 @@ hsi_reflectance <- function(
 #' @param ts time scaling factor
 #' @param filename Character. Output filename. Default "" keeps in memory
 #' @param overwrite Logical. Overwrite existing file (default: FALSE)
+#' @param cores positive integer. If cores > 1, a 'parallel' package cluster with that many cores is created and used. You can also supply a cluster object.
 #' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
 #'
 #' #' @description
@@ -1375,6 +1384,7 @@ hsi_smooth_savgol <- function(
   ts = 1,
   filename = "",
   overwrite = FALSE,
+  cores,
   ...
 ) {
   # Validate input
@@ -1402,6 +1412,7 @@ hsi_smooth_savgol <- function(
     fun = \(x) gsignal::sgolayfilt(as.vector(x), p = p, n = n, m = m, ts = ts),
     filename = filename,
     overwrite = overwrite,
+    cores = cores,
     wopt = wopt
   )
 

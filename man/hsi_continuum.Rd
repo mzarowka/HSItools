@@ -4,7 +4,7 @@
 \alias{hsi_continuum}
 \title{Remove continuum from hyperspectral data}
 \usage{
-hsi_continuum(x, filename = "", overwrite = FALSE, ...)
+hsi_continuum(x, filename = "", overwrite = FALSE, cores, ...)
 }
 \arguments{
 \item{x}{A terra SpatRaster with hyperspectral data}
@@ -12,6 +12,8 @@ hsi_continuum(x, filename = "", overwrite = FALSE, ...)
 \item{filename}{Character. Output filename. Default "" keeps in memory}
 
 \item{overwrite}{Logical. Overwrite existing file (default: FALSE)}
+
+\item{cores}{positive integer. If cores > 1, a 'parallel' package cluster with that many cores is created and used. You can also supply a cluster object.}
 
 \item{...}{Additional arguments passed to \code{\link[terra]{writeRaster}}}
 }
