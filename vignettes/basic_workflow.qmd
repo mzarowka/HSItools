@@ -1,0 +1,17 @@
+---
+title: "Basic HSItools workflow"
+vignette: >
+  %\VignetteIndexEntry{basic_workflow}
+  %\VignetteEngine{quarto::html}
+  %\VignetteEncoding{UTF-8}
+knitr:
+  opts_chunk:
+    collapse: true
+    comment: '#>'
+---
+
+```{r}
+#| label: setup
+library(HSItools)
+```
+

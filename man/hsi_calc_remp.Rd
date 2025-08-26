@@ -10,7 +10,7 @@ hsi_calc_remp(
   edges = c(660, 680),
   filename = "",
   overwrite = FALSE,
-  cores,
+  cores = 1,
   ...
 )
 }
@@ -54,7 +54,6 @@ Other HSI Transformations:
 \code{\link{hsi_reflectance}()},
 \code{\link{hsi_smooth_median}()},
 \code{\link{hsi_smooth_savgol}()},
-\code{\link{hsi_smooth_savgol_OLD}()},
 \code{\link{hsi_stretch}()}
 }
 \concept{HSI Transformations}

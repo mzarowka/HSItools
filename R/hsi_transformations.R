@@ -58,68 +58,6 @@ hsi_smooth_median <- function(
   return(result)
 }
 
-#' Spectral raster smooth with a Savitzky-Golay filter
-#'
-#' @family HSI Transformations
-#' @param x A terra SpatRaster with hyperspectral data
-#' @param p filter order
-#' @param n filter length (must be odd)
-#' @param m return the m-th derivative of the filter coefficients
-#' @param ts time scaling factor
-#' @param filename Character. Output filename. Default "" keeps in memory
-#' @param overwrite Logical. Overwrite existing file (default: FALSE)
-#' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
-#'
-#' #' @description
-#' Smooth data with a Savitzky-Golay smoothing filter using \code{\link[signal]{sgolayfilt}}.
-#'
-#' @details
-#' Focal (spatial) median filter smoothes data by findig the median value within a given window and assiging its value to a pixel of interest.
-#'
-#' @return A terra SpatRaster with Savitzky-Golay filtered values
-#' @export
-hsi_smooth_savgol_OLD <- function(
-  x,
-  p = 3,
-  n = p + 13 - p %% 2,
-  m = 0,
-  ts = 1,
-  filename = "",
-  overwrite = FALSE,
-  ...
-) {
-  # Validate input
-  if (!inherits(x, what = "SpatRaster")) {
-    cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
-  }
-
-  # Store user input in a spliceable list
-  wopt_user <- rlang::list2(...)
-
-  # Extract band names
-  band_names <- terra::names(x)
-
-  # Named list with write options
-  wopt_default <- list(
-    names = band_names
-  )
-
-  # Splice wopt defaults with user input if any
-  wopt <- purrr::list_modify(wopt_default, !!!wopt_user)
-
-  # Apply Savitzky-Golay filter
-  result <- terra::app(
-    x,
-    fun = \(x) signal::sgolayfilt(x, p = p, n = n, m = m, ts = ts),
-    filename = filename,
-    overwrite = overwrite,
-    wopt = wopt
-  )
-
-  # Return raster
-  return(result)
-}
-
 #' Remove continuum from hyperspectral data
 #'
 #' @family HSI Transformations
@@ -140,7 +78,7 @@ hsi_continuum <- function(
   x,
   filename = "",
   overwrite = FALSE,
-  cores,
+  cores = 1,
   ...
 ) {
   # Validate input
@@ -547,7 +485,7 @@ hsi_calc_rmean <- function(
   na.rm = TRUE,
   filename = "",
   overwrite = FALSE,
-  cores,
+  cores = 1,
   ...
 ) {
   # Validate input
@@ -687,7 +625,7 @@ hsi_calc_remp <- function(
   edges = c(660, 680),
   filename = "",
   overwrite = FALSE,
-  cores,
+  cores = 1,
   ...
 ) {
   # Validate input
@@ -1379,12 +1317,12 @@ hsi_reflectance <- function(
 hsi_smooth_savgol <- function(
   x,
   p = 3,
-  n = p + 13 - p%%2,
+  n = p + 13 - p %% 2,
   m = 0,
   ts = 1,
   filename = "",
   overwrite = FALSE,
-  cores,
+  cores = 1,
   ...
 ) {
   # Validate input

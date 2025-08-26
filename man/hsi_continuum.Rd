@@ -4,7 +4,7 @@
 \alias{hsi_continuum}
 \title{Remove continuum from hyperspectral data}
 \usage{
-hsi_continuum(x, filename = "", overwrite = FALSE, cores, ...)
+hsi_continuum(x, filename = "", overwrite = FALSE, cores = 1, ...)
 }
 \arguments{
 \item{x}{A terra SpatRaster with hyperspectral data}
@@ -42,7 +42,6 @@ Other HSI Transformations:
 \code{\link{hsi_reflectance}()},
 \code{\link{hsi_smooth_median}()},
 \code{\link{hsi_smooth_savgol}()},
-\code{\link{hsi_smooth_savgol_OLD}()},
 \code{\link{hsi_stretch}()}
 }
 \concept{HSI Transformations}

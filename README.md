@@ -25,12 +25,12 @@ You can install the development version of HSItools like so:
 ``` r
 # install.packages("pak")
 
-# pak::pak("mzarowka/HSItools)
+# pak::pak("mzarowka/HSItools@dev)
 ```
 
 ## Book
 
-An extensive tutorial is available at:
+A more extensive tutorial is available at:
 <https://mzarowka.quarto.pub/hsitools>
 
 ## Example
@@ -43,20 +43,7 @@ or its subsets.
 ``` r
 library(HSItools)
 
-# Run shiny app and store results for further processing
-core <- run_core()
-
-# Get reflectance, normalize the capture
-reflectance <- core |>
-  prepare_core()
-
-# Create RGB preview and write to file
-rgb_preview <- reflectance |>
-  stretch_raster_full(reflectance, extension = "tif", write = TRUE)
-
-# Plot RGB preview
-rgb_plot <- reflectance |>
-  plot_raster_rgb(reflectance)
+# Basic functionality is beeing rewritten now
 ```
 
 Maurycy Żarczyński is founded by the Polish National Agency for Academic
