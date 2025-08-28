@@ -4,7 +4,7 @@
 \alias{plot_raster_overlay}
 \title{Overlay color plot of proxy on RGB}
 \usage{
-plot_raster_overlay(raster, index, alpha = 0.5, filename = NULL, ...)
+plot_raster_overlay(raster, index, alpha = 0.5, ...)
 }
 \arguments{
 \item{raster}{raster a SpatRaster with calculated hyperspectral indices and RGB layers.}
@@ -13,11 +13,7 @@ plot_raster_overlay(raster, index, alpha = 0.5, filename = NULL, ...)
 
 \item{alpha}{a number in (0, 1) controlling transparency.}
 
-\item{filename}{a path to save file (with extension). Defaultys to NULL and processing in memory.}
-
 \item{...}{additional arguments.}
-
-\item{palette}{a character indicating one of \pkg{viridis} palettes of choice: "viridis", "magma", "plasma", "inferno", "civids", "mako", "rocket" and "turbo".}
 }
 \value{
 a plot with color map of selected hyperspectral index overlain on RGB image.
@@ -31,7 +27,6 @@ Other Plotting:
 \code{\link{plot_profile_spectral_profile}()},
 \code{\link{plot_profile_spectral_series}()},
 \code{\link{plot_raster_proxy}()},
-\code{\link{plot_raster_rgb}()},
-\code{\link{stretch_raster_full}()}
+\code{\link{plot_raster_rgb}()}
 }
 \concept{Plotting}

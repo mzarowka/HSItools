@@ -1,118 +1,9 @@
-#' Stretch and optionally save full RGB preview of SpatRaster
-#'
-#' @family Plotting
-#' @param raster a SpatRaster, preferably reflectance file.
-#' @param type one of RGB, CIR or NIR.
-#' @param histeq logical. If TRUE histogram equalization is used instead of linear stretch.
-#' @param filename a path to save file (with extension). Defaultys to NULL and processing in memory.
-#' @param ... additional arguments.
-#'
-#' @export
-stretch_raster_full <- function(
-  raster,
-  type = "RGB",
-  histeq = FALSE,
-  filename = NULL,
-  ...
-) {
-  # Check if correct class is supplied.
-  if (!inherits(raster, what = "SpatRaster")) {
-    rlang::abort(message = "Supplied data is not a terra SpatRaster.")
-  }
-
-  if (type == "RGB") {
-    # Check if there are values close to RGB, within the 25 nm.
-    if (
-      all(
-        any(
-          purrr::list_c(
-            purrr::map(
-              c(640, 545, 460),
-              \(i) dplyr::near(i, as.numeric(terra::names(raster)), tol = 25)
-            )
-          )
-        )
-      ) ==
-        TRUE
-    ) {
-      spectra <- c(650, 550, 450)
-    } else {
-      rlang::warn(
-        "No layers matching RGB. Using the first, middle and last available layers."
-      )
-      spectra <- c(
-        min(1:terra::nlyr(raster)),
-        terra::median(1:terra::nlyr(raster)),
-        max(terra::nlyr(raster))
-      ) |>
-        (\(i) as.numeric(terra::names(1:terra::subset(raster, i))))()
-    }
-  } else if (type == "CIR") {
-    # Check if there are values close to CIR, within the 25 nm.
-    if (
-      all(
-        any(
-          purrr::list_c(
-            purrr::map(
-              c(860, 650, 555),
-              \(i) dplyr::near(i, as.numeric(terra::names(raster)), tol = 25)
-            )
-          )
-        )
-      ) ==
-        TRUE
-    ) {
-      spectra <- c(860, 650, 555)
-    } else {
-      rlang::abort("No layers matching CIR.")
-    }
-  } else if (type == "NIR") {
-    # Check if there are values close to NIR, within the 25 nm.
-    if (
-      all(
-        any(
-          purrr::list_c(
-            purrr::map(
-              c(900, 800, 700),
-              \(i) dplyr::near(i, as.numeric(terra::names(raster)), tol = 25)
-            )
-          )
-        )
-      ) ==
-        TRUE
-    ) {
-      spectra <- c(900, 800, 700)
-    } else {
-      rlang::abort("No layers matching NIR.")
-    }
-  }
-
-  # Subset and stretch
-  raster <- HSItools::spectra_position(
-    raster,
-    spectra = spectra
-  ) |>
-    HSItools::spectra_sub(
-      raster = raster,
-      spectra_tbl = _
-    ) |>
-    terra::stretch(
-      filename = filename,
-      histeq = histeq,
-      overwrite = TRUE
-    )
-
-  # Return SpatRaster
-  return(raster)
-}
-
 #' Plot spatial map plots of calculated proxies, and optionally save to file
 #'
 #' @family Plotting
 #' @param raster a SpatRaster with calculated hyperspectral indices and RGB layers.
 #' @param calibration result of pixel_to_distance or actual call to pixel_to_distance with appropriate input.
 #' @param index a character indicating hyperspectral index layer to plot.
-#' @param filename a path to save file (with extension). Defaultys to NULL and processing in memory.
 #' @param ... additional arguments.
 #'
 #' @importFrom ggplot2 theme
@@ -167,7 +58,7 @@ plot_raster_proxy <- function(
       ggplot2::coord_fixed() +
       # Modify Y scale
       ggplot2::scale_y_continuous(
-        labels = \(i)
+        labels = \(i) {
           format(
             terra::round(
               -1 *
@@ -176,7 +67,8 @@ plot_raster_proxy <- function(
                 calibration$distance -
                 calibration$point_zero
             )
-          ),
+          )
+        },
         breaks = scales::breaks_pretty()
       ) +
       # Modify theme
@@ -194,15 +86,6 @@ plot_raster_proxy <- function(
       )
   }
 
-  if (write == TRUE) {
-    cli::cli_alert("Writing {index} SpatRaster to {filename}")
-
-    ggplot2::ggsave(
-      plot = plot,
-      filename = filename
-    )
-  }
-
   # Return plot as an object
   return(plot)
 }
@@ -212,7 +95,6 @@ plot_raster_proxy <- function(
 #' @family Plotting
 #' @param raster a SpatRaster with calculated hyperspectral indices and RGB layers or just RGB layers.
 #' @param calibration result of pixel_to_distance or actual call to pixel_to_distance with appropriate input.
-#' @param filename a path to save file (with extension). Defaultys to NULL and processing in memory.
 #' @param ... additional arguments.
 #'
 #' @return a plot with color map of selected hyperspectral index.
@@ -220,7 +102,6 @@ plot_raster_proxy <- function(
 plot_raster_rgb <- function(
   raster,
   calibration = NULL,
-  filename = NULL,
   ...
 ) {
   # Check if correct class is supplied.
@@ -306,7 +187,7 @@ plot_raster_rgb <- function(
       ggplot2::coord_fixed() +
       # Modify Y scale
       ggplot2::scale_y_continuous(
-        labels = \(i)
+        labels = \(i) {
           format(
             terra::round(
               -1 *
@@ -315,7 +196,8 @@ plot_raster_rgb <- function(
                 calibration$distance -
                 calibration$point_zero
             )
-          ),
+          )
+        },
         breaks = scales::breaks_pretty()
       ) +
       # Modify theme
@@ -331,16 +213,6 @@ plot_raster_rgb <- function(
       )
   }
 
-  if (write == TRUE) {
-    cli::cli_alert("Writing RGB SpatRaster to {filename}")
-
-    ggplot2::ggsave(
-      plot = plot,
-      filename = filename,
-      device = extension
-    )
-  }
-
   # Return plot as an object
   return(plot)
 }
@@ -350,9 +222,7 @@ plot_raster_rgb <- function(
 #' @family Plotting
 #' @param raster raster a SpatRaster with calculated hyperspectral indices and RGB layers.
 #' @param index a character indicating hyperspectral index layer to plot.
-#' @param palette a character indicating one of \pkg{viridis} palettes of choice: "viridis", "magma", "plasma", "inferno", "civids", "mako", "rocket" and "turbo".
 #' @param alpha a number in (0, 1) controlling transparency.
-#' @param filename a path to save file (with extension). Defaultys to NULL and processing in memory.
 #' @param ... additional arguments.
 #'
 #' @return a plot with color map of selected hyperspectral index overlain on RGB image.
@@ -361,7 +231,6 @@ plot_raster_overlay <- function(
   raster,
   index,
   alpha = 0.5,
-  filename = NULL,
   ...
 ) {
   # Check if correct class is supplied.
@@ -407,7 +276,6 @@ plot_raster_overlay <- function(
     # Define fill colors
     ggplot2::scale_fill_viridis_c(
       alpha = alpha,
-      option = palette,
       guide = ggplot2::guide_colorbar(
         title = index,
         title.position = "bottom",
@@ -429,18 +297,6 @@ plot_raster_overlay <- function(
       y = "Depth"
     )
 
-  if (write == TRUE) {
-    cli::cli_alert(
-      "Writing {index} overlay on RGB SpatRaster to {filename}"
-    )
-
-    ggplot2::ggsave(
-      plot = plot,
-      filename = filename,
-      device = extension
-    )
-  }
-
   # Return plot as an object
   return(plot)
 }
@@ -452,7 +308,6 @@ plot_raster_overlay <- function(
 #' @family Plotting
 #' @param raster a SpatRaster with REFLECTANCE file. Used for correct placement.
 #' @param plots a list of plots.
-#' @param filename a path to save file (with extension). Defaultys to NULL and processing in memory.
 #' @param ... additional arguments.
 #'
 #' @return a plot.
@@ -460,7 +315,6 @@ plot_raster_overlay <- function(
 plot_composite <- function(
   raster,
   plots,
-  filename = NULL,
   ...
 ) {
   # Check if correct class is supplied.
@@ -483,16 +337,6 @@ plot_composite <- function(
       axes = "collect"
     )
 
-  if (write == TRUE) {
-    cli::cli_alert("Writing stacked plots to {filename}")
-
-    ggplot2::ggsave(
-      plot = plot,
-      filename = filename,
-      device = extension
-    )
-  }
-
   # Return plot as an object
   return(plot)
 }
@@ -503,9 +347,8 @@ plot_composite <- function(
 #' @param raster a SpatRaster with calculated hyperspectral indices and RGB layers.
 #' @param index a character indicating hyperspectral index layer to plot.
 #' @param calibration result of pixel_to_distance or actual call to pixel_to_distance with appropriate input.
-#' @param filename a path to save file (with extension). Defaultys to NULL and processing in memory.
 #' @param ... additional arguments.
-#' 
+#'
 #' @importFrom rlang .data
 #'
 #' @return line plot with of selected hyperspectral index.
@@ -514,7 +357,6 @@ plot_profile_spectral_series <- function(
   raster,
   index,
   calibration = NULL,
-  filename = NULL,
   ...
 ) {
   # Check if correct class is supplied.
@@ -583,7 +425,7 @@ plot_profile_spectral_series <- function(
       ggplot2::geom_path() +
       # Modify Y scale
       ggplot2::scale_y_continuous(
-        labels = \(i)
+        labels = \(i) {
           format(
             terra::round(
               -1 *
@@ -592,7 +434,8 @@ plot_profile_spectral_series <- function(
                 calibration$distance -
                 calibration$point_zero
             )
-          ),
+          )
+        },
         breaks = scales::breaks_pretty()
       ) +
       # Modify theme
@@ -609,15 +452,6 @@ plot_profile_spectral_series <- function(
       )
   }
 
-  if (!is.null(filename) == TRUE) {
-    cli::cli_alert("Writing spectral profile plot to {filename}")
-
-    ggplot2::ggsave(
-      plot = plot,
-      filename = filename
-    )
-  }
-
   # Return plot as an object
   return(plot)
 }
@@ -627,7 +461,6 @@ plot_profile_spectral_series <- function(
 #' @family Plotting
 #' @param raster Reflectance SpatRaster.
 #' @param extent extent to work over.
-#' @param filename filename to write plot to.
 #' @param ... other arguments.
 #'
 #' @importFrom rlang .data
@@ -637,7 +470,6 @@ plot_profile_spectral_series <- function(
 plot_profile_spectral_profile <- function(
   raster,
   extent = NULL,
-  filename = NULL,
   ...
 ) {
   # Check if correct class is supplied.
@@ -677,15 +509,6 @@ plot_profile_spectral_profile <- function(
       x = "Wavelength (nm)",
       y = "Reflectance"
     )
-
-  if (!is.null(filename) == TRUE) {
-    cli::cli_alert("Writing spectral profile plot to {filename}")
-
-    ggplot2::ggsave(
-      plot = plot,
-      filename = filename
-    )
-  }
 
   # Return plot as an object
   return(plot)

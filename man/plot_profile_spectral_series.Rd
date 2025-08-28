@@ -4,13 +4,7 @@
 \alias{plot_profile_spectral_series}
 \title{Line plots of calculated proxies series}
 \usage{
-plot_profile_spectral_series(
-  raster,
-  index,
-  calibration = NULL,
-  filename = NULL,
-  ...
-)
+plot_profile_spectral_series(raster, index, calibration = NULL, ...)
 }
 \arguments{
 \item{raster}{a SpatRaster with calculated hyperspectral indices and RGB layers.}
@@ -18,8 +12,6 @@ plot_profile_spectral_series(
 \item{index}{a character indicating hyperspectral index layer to plot.}
 
 \item{calibration}{result of pixel_to_distance or actual call to pixel_to_distance with appropriate input.}
-
-\item{filename}{a path to save file (with extension). Defaultys to NULL and processing in memory.}
 
 \item{...}{additional arguments.}
 }
@@ -35,7 +27,6 @@ Other Plotting:
 \code{\link{plot_profile_spectral_profile}()},
 \code{\link{plot_raster_overlay}()},
 \code{\link{plot_raster_proxy}()},
-\code{\link{plot_raster_rgb}()},
-\code{\link{stretch_raster_full}()}
+\code{\link{plot_raster_rgb}()}
 }
 \concept{Plotting}

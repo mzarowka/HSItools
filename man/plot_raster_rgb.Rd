@@ -4,14 +4,12 @@
 \alias{plot_raster_rgb}
 \title{Spatial map plots of RGB image}
 \usage{
-plot_raster_rgb(raster, calibration = NULL, filename = NULL, ...)
+plot_raster_rgb(raster, calibration = NULL, ...)
 }
 \arguments{
 \item{raster}{a SpatRaster with calculated hyperspectral indices and RGB layers or just RGB layers.}
 
 \item{calibration}{result of pixel_to_distance or actual call to pixel_to_distance with appropriate input.}
-
-\item{filename}{a path to save file (with extension). Defaultys to NULL and processing in memory.}
 
 \item{...}{additional arguments.}
 }
@@ -27,7 +25,6 @@ Other Plotting:
 \code{\link{plot_profile_spectral_profile}()},
 \code{\link{plot_profile_spectral_series}()},
 \code{\link{plot_raster_overlay}()},
-\code{\link{plot_raster_proxy}()},
-\code{\link{stretch_raster_full}()}
+\code{\link{plot_raster_proxy}()}
 }
 \concept{Plotting}

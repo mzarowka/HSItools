@@ -14,8 +14,6 @@ plot_raster_proxy(raster, index, calibration = NULL, ...)
 \item{calibration}{result of pixel_to_distance or actual call to pixel_to_distance with appropriate input.}
 
 \item{...}{additional arguments.}
-
-\item{filename}{a path to save file (with extension). Defaultys to NULL and processing in memory.}
 }
 \value{
 a plot with color map of selected hyperspectral index.
@@ -29,7 +27,6 @@ Other Plotting:
 \code{\link{plot_profile_spectral_profile}()},
 \code{\link{plot_profile_spectral_series}()},
 \code{\link{plot_raster_overlay}()},
-\code{\link{plot_raster_rgb}()},
-\code{\link{stretch_raster_full}()}
+\code{\link{plot_raster_rgb}()}
 }
 \concept{Plotting}

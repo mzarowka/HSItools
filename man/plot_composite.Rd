@@ -5,14 +5,12 @@
 \title{Composite hyperspectral indices plots
 Can composite line profiles and SpatRasters}
 \usage{
-plot_composite(raster, plots, filename = NULL, ...)
+plot_composite(raster, plots, ...)
 }
 \arguments{
 \item{raster}{a SpatRaster with REFLECTANCE file. Used for correct placement.}
 
 \item{plots}{a list of plots.}
-
-\item{filename}{a path to save file (with extension). Defaultys to NULL and processing in memory.}
 
 \item{...}{additional arguments.}
 }
@@ -29,7 +27,6 @@ Other Plotting:
 \code{\link{plot_profile_spectral_series}()},
 \code{\link{plot_raster_overlay}()},
 \code{\link{plot_raster_proxy}()},
-\code{\link{plot_raster_rgb}()},
-\code{\link{stretch_raster_full}()}
+\code{\link{plot_raster_rgb}()}
 }
 \concept{Plotting}

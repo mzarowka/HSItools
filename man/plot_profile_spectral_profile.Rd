@@ -4,14 +4,12 @@
 \alias{plot_profile_spectral_profile}
 \title{Line plot of spectral profile from the ROI}
 \usage{
-plot_profile_spectral_profile(raster, extent = NULL, filename = NULL, ...)
+plot_profile_spectral_profile(raster, extent = NULL, ...)
 }
 \arguments{
 \item{raster}{Reflectance SpatRaster.}
 
 \item{extent}{extent to work over.}
-
-\item{filename}{filename to write plot to.}
 
 \item{...}{other arguments.}
 }
@@ -27,7 +25,6 @@ Other Plotting:
 \code{\link{plot_profile_spectral_series}()},
 \code{\link{plot_raster_overlay}()},
 \code{\link{plot_raster_proxy}()},
-\code{\link{plot_raster_rgb}()},
-\code{\link{stretch_raster_full}()}
+\code{\link{plot_raster_rgb}()}
 }
 \concept{Plotting}
