@@ -4,10 +4,10 @@
 \alias{hsi_normalize}
 \title{Normalize hyperspectral raster}
 \usage{
-hsi_normalize(sample, whiteref, darkref, tint)
+hsi_normalize(hsi_data, whiteref, darkref, tint)
 }
 \arguments{
-\item{sample}{A terra SpatRaster with hyperspectral sample data. Band names must be
+\item{hsi_data}{A terra SpatRaster with hyperspectral sample data. Band names must be
 numeric wavelengths in nm.}
 
 \item{whiteref}{A terra SpatRaster with hyperspectral white reference data. Band names must be

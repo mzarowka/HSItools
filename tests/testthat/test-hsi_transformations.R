@@ -3,7 +3,7 @@
 test_that("reflectance is calculated as expected", {
   expect_equal(
     terra::values(hsi_reflectance(
-      sample = terra::rast(
+      hsi_data = terra::rast(
         system.file(
           package = "HSItools",
           "testdata/capture/testdata.tif"

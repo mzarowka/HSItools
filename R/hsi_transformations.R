@@ -1139,7 +1139,7 @@ hsi_stretch <- function(
 #' Normalize hyperspectral raster
 #'
 #' @family HSI Transformations
-#' @param sample A terra SpatRaster with hyperspectral sample data. Band names must be
+#' @param hsi_data A terra SpatRaster with hyperspectral sample data. Band names must be
 #'   numeric wavelengths in nm.
 #' @param whiteref A terra SpatRaster with hyperspectral white reference data. Band names must be
 #'   numeric wavelengths in nm.
@@ -1152,7 +1152,7 @@ hsi_stretch <- function(
 #'
 #' @return A temporary terra SpatRaster with normalized reflectance values.
 hsi_normalize <- function(
-  sample,
+  hsi_data,
   whiteref,
   darkref,
   tint
@@ -1178,10 +1178,10 @@ hsi_normalize <- function(
   darkref_onecol_vector <- as.vector(darkref_onecol_raster)
 
   # Convert the raster to a matrix
-  sample_matrix <- terra::as.matrix(sample, wide = TRUE)
+  hsi_data_matrix <- terra::as.matrix(hsi_data, wide = TRUE)
 
   # Subtract the dark reference from the capture matrix for each column
-  numerator <- sweep(sample_matrix, 2, darkref_onecol_vector, FUN = "-")
+  numerator <- sweep(hsi_data_matrix, 2, darkref_onecol_vector, FUN = "-")
 
   # Subtract the dark reference from the white reference for each column
   denominator <- whiteref_onecol_vector - darkref_onecol_vector
@@ -1196,7 +1196,7 @@ hsi_normalize <- function(
 
   # Create a temporary raster to store the result
   result <- terra::init(
-    sample,
+    hsi_data,
     t(result),
     filename = tempfile(fileext = ".tif"),
     wopt = list(gdal = c("COMPRESS=NONE"))
@@ -1209,7 +1209,7 @@ hsi_normalize <- function(
 #' Hyperspectral reflectance raster
 #'
 #' @family HSI Transformations
-#' @param sample A terra SpatRaster with hyperspectral sample data. Band names must be
+#' @param hsi_data A terra SpatRaster with hyperspectral sample data. Band names must be
 #'   numeric wavelengths in nm.
 #' @param whiteref A terra SpatRaster with hyperspectral white reference data. Band names must be
 #'   numeric wavelengths in nm.
@@ -1226,7 +1226,7 @@ hsi_normalize <- function(
 #' @return A terra SpatRaster with normalized reflectance values.
 #' @export
 hsi_reflectance <- function(
-  sample,
+  hsi_data,
   whiteref,
   darkref,
   tint = c(1, 1),
@@ -1264,14 +1264,14 @@ hsi_reflectance <- function(
   # Perform normalization
   # In memory
   result <- list(
-    sample = terra::as.list(sample),
+    hsi_data = terra::as.list(hsi_data),
     whiteref = terra::as.list(whiteref),
     darkref = terra::as.list(darkref),
     tint = list(tint)
   ) |>
-    purrr::pmap(\(sample, whiteref, darkref, tint) {
-      HSItools:::hsi_normalize(
-        sample = sample,
+    purrr::pmap(\(hsi_data, whiteref, darkref, tint) {
+      hsi_normalize(
+        hsi_data = hsi_data,
         whiteref = whiteref,
         darkref = darkref,
         tint = tint

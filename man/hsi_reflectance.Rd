@@ -5,7 +5,7 @@
 \title{Hyperspectral reflectance raster}
 \usage{
 hsi_reflectance(
-  sample,
+  hsi_data,
   whiteref,
   darkref,
   tint = c(1, 1),
@@ -15,7 +15,7 @@ hsi_reflectance(
 )
 }
 \arguments{
-\item{sample}{A terra SpatRaster with hyperspectral sample data. Band names must be
+\item{hsi_data}{A terra SpatRaster with hyperspectral sample data. Band names must be
 numeric wavelengths in nm.}
 
 \item{whiteref}{A terra SpatRaster with hyperspectral white reference data. Band names must be
