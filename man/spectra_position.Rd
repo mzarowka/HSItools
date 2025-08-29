@@ -24,7 +24,6 @@ Other Utilities:
 \code{\link{find_fixed_extent}()},
 \code{\link{merge_rasters}()},
 \code{\link{pixel_to_distance}()},
-\code{\link{roi_to_vect}()},
 \code{\link{spectra_sub}()}
 }
 \concept{Utilities}

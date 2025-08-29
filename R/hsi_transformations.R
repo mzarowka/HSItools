@@ -26,7 +26,7 @@ hsi_smooth_median <- function(
 
   # Validate window terra::size (must be odd)
   if (window %% 2 == 0) {
-    cli::abort("Window size must be an odd number.")
+    cli::cli_abort("Window size must be an odd number.")
   }
 
   # Store user input in a spliceable list
@@ -770,9 +770,9 @@ hsi_calc_remp <- function(
 #'
 #' @description
 #' Calculates the spectral derivative at a specific wavelength using one of three methods:
-#' - "central": Central difference method, [f(x+h1) - f(x-h2)]/(h1+h2)
-#' - "forward": Forward difference method, [f(x+h) - f(x)]/h
-#' - "backward": Backward difference method, [f(x) - f(x-h)]/h
+#' - "central": Central difference method, \code{[f(x+h1) - f(x-h2)]/(h1+h2)}
+#' - "forward": Forward difference method, \code{[f(x+h) - f(x)]/h}
+#' - "backward": Backward difference method, \code{[f(x) - f(x-h)]/h}
 #'
 #' Where h, h1, and h2 are wavelength differences between bands.
 #' The derivative provides information about the rate of change in reflectance,

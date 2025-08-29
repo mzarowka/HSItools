@@ -73,39 +73,39 @@ extract_spectral_series <- function(
         dplyr::filter(.data$tube.mm >= 0)
     }
   } else {
-
-  if (is.null(calibration) == TRUE) {
-    spectral_series <- raster |>
-      terra::aggregate(
-        fact = c(1, terra::ncol(raster)),
-        fun = "mean",
-        na.rm = TRUE
-      ) |>
-      # Coerce do data frame with coordinates
-      terra::as.data.frame(xy = TRUE) |>
-      # To tibble
-      dplyr::tibble()
-  } else {
-    spectral_series <- raster |>
-      terra::aggregate(
-        fact = c(1, terra::ncol(raster)),
-        fun = "mean",
-        na.rm = TRUE
-      ) |>
-      # Coerce do data frame with coordinates
-      terra::as.data.frame(xy = TRUE) |>
-      # To tibble
-      dplyr::tibble() |>
-      # Calculate metric depths
-      dplyr::mutate(
-        depth.mm = calibration$distance - (.data$y * calibration$pixel_ratio),
-        tube.mm = .data$depth.mm - calibration$point_zero
-      ) |>
-      # Drop x and y
-      dplyr::select(-c(.data$x, .data$y)) |>
-      # Keep only non-negative depths
-      dplyr::filter(.data$tube.mm >= 0)
-  }}
+    if (is.null(calibration) == TRUE) {
+      spectral_series <- raster |>
+        terra::aggregate(
+          fact = c(1, terra::ncol(raster)),
+          fun = "mean",
+          na.rm = TRUE
+        ) |>
+        # Coerce do data frame with coordinates
+        terra::as.data.frame(xy = TRUE) |>
+        # To tibble
+        dplyr::tibble()
+    } else {
+      spectral_series <- raster |>
+        terra::aggregate(
+          fact = c(1, terra::ncol(raster)),
+          fun = "mean",
+          na.rm = TRUE
+        ) |>
+        # Coerce do data frame with coordinates
+        terra::as.data.frame(xy = TRUE) |>
+        # To tibble
+        dplyr::tibble() |>
+        # Calculate metric depths
+        dplyr::mutate(
+          depth.mm = calibration$distance - (.data$y * calibration$pixel_ratio),
+          tube.mm = .data$depth.mm - calibration$point_zero
+        ) |>
+        # Drop x and y
+        dplyr::select(-c(.data$x, .data$y)) |>
+        # Keep only non-negative depths
+        dplyr::filter(.data$tube.mm >= 0)
+    }
+  }
 
   # Reset window
   terra::window(raster) <- NULL
@@ -121,7 +121,7 @@ extract_spectral_series <- function(
 
       readr::write_csv(spectral_series, file = filename)
 
-      raster::print(filename)
+      print(filename)
     } else {
       # Raster source directory
       raster_src <- raster |>

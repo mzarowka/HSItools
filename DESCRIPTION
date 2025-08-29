@@ -33,10 +33,8 @@ Imports:
     purrr,
     cli,
     rlang,
-    tibble,
     readr,
     fs,
-    sf,
     prospectr,
     gsignal
 Depends: 

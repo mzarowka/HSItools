@@ -15,7 +15,7 @@ pixel_to_distance(
 )
 }
 \arguments{
-\item{core}{\code{\link{run_core}} output. If provided fills pixel_ratio, sample_start and sample_end. Exclusive with pixel_ratio.}
+\item{core}{\code{run_core} output. If provided fills pixel_ratio, sample_start and sample_end. Exclusive with pixel_ratio.}
 
 \item{pixel_ratio}{a source of conversion factor, manually input. Exclusive with pixel_ratio.}
 
@@ -23,9 +23,9 @@ pixel_to_distance(
 
 \item{ymin}{pixel value of the bottom, default to 0.}
 
-\item{sample_start}{position of the sample beginning (point zero), either from \code{\link{run_core}} output or manually input.}
+\item{sample_start}{position of the sample beginning (point zero), either from \code{run_core} output or manually input.}
 
-\item{sample_end}{position of the sample end, either from \code{\link{run_core}} output or manually input.}
+\item{sample_end}{position of the sample end, either from \code{run_core} output or manually input.}
 
 \item{extent}{a terra extent or terra SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.}
 }
@@ -39,7 +39,6 @@ Get depth in metric units
 Other Utilities: 
 \code{\link{find_fixed_extent}()},
 \code{\link{merge_rasters}()},
-\code{\link{roi_to_vect}()},
 \code{\link{spectra_position}()},
 \code{\link{spectra_sub}()}
 }

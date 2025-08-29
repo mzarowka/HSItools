@@ -123,7 +123,7 @@ extract_series <- function(
 
       readr::write_csv(spectral_series, file = filename)
 
-      raster::print(filename)
+      print(filename)
     } else {
       # Raster source directory
       raster_src <- raster |>
