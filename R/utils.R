@@ -148,28 +148,28 @@ pixel_to_distance <- function(
 #' Merge SpatRasters in a stratigraphic order
 #'
 #' @family Utilities
-#' @param raster_1 a terra SpatRaster. First in the sequence.
-#' @param raster_2 a terra SpatRaster. Second in the sequence.
-#' @param filename a path to save file (with extension). Defaultys to NULL and processing in memory.
+#' @param x a terra SpatRaster. First in the sequence.
+#' @param y a terra SpatRaster. Second in the sequence.
+#' @param filename Character. Output filename. Default "" keeps in memory
 #'
 #' @return a terra SpatRaster. Merged inputs.
 #' @export
-merge_rasters <- function(raster_1, raster_2, filename = NULL) {
+merge_rasters <- function(x, y, filename = "") {
   # Check if correct class is supplied.
-  if (!inherits(raster_1, what = "SpatRaster")) {
+  if (!inherits(x, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
   }
 
   # Check if correct class is supplied.
-  if (!inherits(raster_2, what = "SpatRaster")) {
+  if (!inherits(y, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
   }
 
   # Get extent of the first SpatRaster
-  extent_1 <- terra::ext(raster_1)
+  extent_1 <- terra::ext(x)
 
   # Get extent of the second SpatRaster
-  extent_2 <- terra::ext(raster_2)
+  extent_2 <- terra::ext(y)
 
   # Shift second extent
   # xmin and xmax stay the same
@@ -181,10 +181,10 @@ merge_rasters <- function(raster_1, raster_2, filename = NULL) {
   )
 
   # Update extent of second SpatRaster
-  terra::ext(raster_2) <- extent_2
+  terra::ext(y) <- extent_2
 
   # Get merged SpatRaster
-  raster <- terra::merge(raster_1, raster_2, filename = filename)
+  raster <- terra::merge(x, y, filename = filename)
 
   # Return
   raster

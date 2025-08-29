@@ -4,15 +4,7 @@
 \alias{extract_series}
 \title{Extract average proxy series from ROI}
 \usage{
-extract_series(
-  x,
-  index,
-  categorical = FALSE,
-  calibration,
-  extent = NULL,
-  filename,
-  extension = NULL
-)
+extract_series(x, index, categorical = FALSE, calibration, extent = NULL)
 }
 \arguments{
 \item{x}{A terra SpatRaster with hyperspectral data}
@@ -24,10 +16,6 @@ extract_series(
 \item{calibration}{result of pixel_to_distance or actual call to pixel_to_distance with appropriate input.}
 
 \item{extent}{an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.}
-
-\item{filename}{empty = in memory, TRUE = guess name and attempt write, or user specified path to glue with extension.}
-
-\item{extension}{character, a graphic format extension.}
 }
 \value{
 tibble frame with XY coordinates and averaged proxy values.

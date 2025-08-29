@@ -6,12 +6,10 @@
 \usage{
 extract_spectral_series(
   raster,
-  index = NULL,
+  index,
   categorical = FALSE,
   calibration = NULL,
-  extent = NULL,
-  filename = NULL,
-  extension = NULL
+  extent = NULL
 )
 }
 \arguments{
@@ -24,10 +22,6 @@ extract_spectral_series(
 \item{calibration}{result of pixel_to_distance or actual call to pixel_to_distance with appropriate input.}
 
 \item{extent}{an extent or SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.}
-
-\item{filename}{empty = in memory, TRUE = guess name and attempt write, or user specified path to glue with extension.}
-
-\item{extension}{character, a graphic format extension.}
 }
 \value{
 tibble frame with XY coordinates and averaged proxy values.

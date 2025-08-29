@@ -33,8 +33,6 @@ Imports:
     purrr,
     cli,
     rlang,
-    readr,
-    fs,
     prospectr,
     gsignal
 Depends: 

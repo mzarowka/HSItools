@@ -4,14 +4,14 @@
 \alias{merge_rasters}
 \title{Merge SpatRasters in a stratigraphic order}
 \usage{
-merge_rasters(raster_1, raster_2, filename = NULL)
+merge_rasters(x, y, filename = "")
 }
 \arguments{
-\item{raster_1}{a terra SpatRaster. First in the sequence.}
+\item{x}{a terra SpatRaster. First in the sequence.}
 
-\item{raster_2}{a terra SpatRaster. Second in the sequence.}
+\item{y}{a terra SpatRaster. Second in the sequence.}
 
-\item{filename}{a path to save file (with extension). Defaultys to NULL and processing in memory.}
+\item{filename}{Character. Output filename. Default "" keeps in memory}
 }
 \value{
 a terra SpatRaster. Merged inputs.
