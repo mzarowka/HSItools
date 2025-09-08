@@ -248,7 +248,7 @@ hsi_calc_rabd <- function(
       # Find trough position in the original raster
       (\(i) terra::which.lyr(x == i))() |>
       # Coerce to integer
-      (\(i) as.integer(x[i]))()
+      (\(i) as.integer(i[1]))()
   }
 
   # Find minimum reflectance value in the trough (denominator)
