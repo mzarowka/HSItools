@@ -1,7 +1,7 @@
 #' Plot spatial map plots of calculated proxies, and optionally save to file
 #'
 #' @family Plotting
-#' @param raster a SpatRaster with calculated hyperspectral indices and RGB layers.
+#' @param x a SpatRaster with calculated hyperspectral indices and RGB layers.
 #' @param calibration result of pixel_to_distance or actual call to pixel_to_distance with appropriate input.
 #' @param index a character indicating hyperspectral index layer to plot.
 #' @param ... additional arguments.
@@ -11,13 +11,13 @@
 #' @return a plot with color map of selected hyperspectral index.
 #' @export
 plot_raster_proxy <- function(
-  raster,
+  x,
   index,
   calibration = NULL,
   ...
 ) {
   # Check if correct class is supplied.
-  if (!inherits(raster, what = "SpatRaster")) {
+  if (!inherits(x, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
   }
 
@@ -26,7 +26,7 @@ plot_raster_proxy <- function(
   }
 
   # Subset SpatRaster
-  hsi_layer <- raster |>
+  hsi_layer <- x |>
     terra::subset(index)
 
   if (is.null(calibration)) {
@@ -93,19 +93,19 @@ plot_raster_proxy <- function(
 #' Spatial map plots of RGB image
 #'
 #' @family Plotting
-#' @param raster a SpatRaster with calculated hyperspectral indices and RGB layers or just RGB layers.
+#' @param x a SpatRaster with calculated hyperspectral indices and RGB layers or just RGB layers.
 #' @param calibration result of pixel_to_distance or actual call to pixel_to_distance with appropriate input.
 #' @param ... additional arguments.
 #'
 #' @return a plot with color map of selected hyperspectral index.
 #' @export
 plot_raster_rgb <- function(
-  raster,
+  x,
   calibration = NULL,
   ...
 ) {
   # Check if correct class is supplied.
-  if (!inherits(raster, what = "SpatRaster")) {
+  if (!inherits(x, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
   }
 
@@ -116,7 +116,7 @@ plot_raster_rgb <- function(
         purrr::list_c(
           purrr::map(
             c(640, 545, 460),
-            \(i) dplyr::near(i, as.numeric(terra::names(raster)), tol = 25)
+            \(i) dplyr::near(i, as.numeric(terra::names(x)), tol = 25)
           )
         )
       )
@@ -125,36 +125,36 @@ plot_raster_rgb <- function(
   ) {
     spectra <- c(640, 545, 460)
   } else {
-    rlang::warn(
+    cli::cli_alert_warning(
       "No layers matching the RGB. Using the first, middle and last available layers."
     )
-    spectra <- c(
-      min(1:terra::nlyr(raster)),
-      terra::median(1:terra::nlyr(raster)),
-      max(1:terra::nlyr(raster))
+    wavelength <- c(
+      min(1:terra::nlyr(x)),
+      terra::median(1:terra::nlyr(x)),
+      max(1:terra::nlyr(x))
     ) |>
-      (\(i) as.numeric(terra::names(terra::subset(raster, i))))()
+      (\(i) as.numeric(terra::names(terra::subset(x, i))))()
   }
 
   # Prepare SpatRaster
-  raster <- HSItools::spectra_position(
-    raster,
-    spectra = spectra
+  x <- HSItools::wavelength_position(
+    x = x,
+    wavelength = wavelength
   ) |>
-    HSItools::spectra_sub(
-      raster = raster,
-      spectra_tbl = _
+    HSItools::wavelength_sub(
+      x = x,
+      wavelength_tbl = _
     )
 
   # Stretch SpatRaster
-  raster <- terra::stretch(raster)
+  x <- terra::stretch(x)
 
   if (is.null(calibration)) {
     # Plot SpatRaster
     plot <- ggplot2::ggplot() +
       # Add RGB raster layer
       tidyterra::geom_spatraster_rgb(
-        data = raster,
+        data = x,
         r = 1,
         g = 2,
         b = 3,
@@ -177,7 +177,7 @@ plot_raster_rgb <- function(
     plot <- ggplot2::ggplot() +
       # Add RGB raster layer
       tidyterra::geom_spatraster_rgb(
-        data = raster,
+        data = x,
         r = 1,
         g = 2,
         b = 3,
@@ -220,7 +220,7 @@ plot_raster_rgb <- function(
 #' Overlay color plot of proxy on RGB
 #'
 #' @family Plotting
-#' @param raster raster a SpatRaster with calculated hyperspectral indices and RGB layers.
+#' @param x raster a SpatRaster with calculated hyperspectral indices and RGB layers.
 #' @param index a character indicating hyperspectral index layer to plot.
 #' @param alpha a number in (0, 1) controlling transparency.
 #' @param ... additional arguments.
@@ -228,13 +228,13 @@ plot_raster_rgb <- function(
 #' @return a plot with color map of selected hyperspectral index overlain on RGB image.
 #' @export
 plot_raster_overlay <- function(
-  raster,
+  x,
   index,
   alpha = 0.5,
   ...
 ) {
   # Check if correct class is supplied.
-  if (!inherits(raster, what = "SpatRaster")) {
+  if (!inherits(x, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
   }
 
@@ -243,26 +243,26 @@ plot_raster_overlay <- function(
   }
 
   # Subset SpatRaster
-  hsi_layer <- raster |>
+  hsi_layer <- x |>
     terra::subset(index)
 
-  raster <- HSItools::spectra_position(
-    raster,
-    spectra = c(650, 550, 450)
+  x <- HSItools::wavelength_position(
+    x = x,
+    wavelength = c(650, 550, 450)
   ) |>
-    HSItools::spectra_sub(
-      raster = raster,
-      spectra_tbl = _
+    HSItools::wavelength_sub(
+      x = x,
+      wavelength_tbl = _
     )
 
   # Stretch SpatRaster
-  raster <- terra::stretch(raster)
+  x <- terra::stretch(x)
 
   # Plot SpatRaster
   plot <- ggplot2::ggplot() +
     # Add RGB raster layer
     tidyterra::geom_spatraster_rgb(
-      data = raster,
+      data = x,
       r = 1,
       g = 2,
       b = 3,
@@ -306,19 +306,19 @@ plot_raster_overlay <- function(
 #' Can composite line profiles and SpatRasters
 #'
 #' @family Plotting
-#' @param raster a SpatRaster with REFLECTANCE file. Used for correct placement.
+#' @param x a SpatRaster with REFLECTANCE file. Used for correct placement.
 #' @param plots a list of plots.
 #' @param ... additional arguments.
 #'
 #' @return a plot.
 #' @export
 plot_composite <- function(
-  raster,
+  x,
   plots,
   ...
 ) {
   # Check if correct class is supplied.
-  if (!inherits(raster, what = "SpatRaster")) {
+  if (!inherits(x, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
   }
 
@@ -344,7 +344,7 @@ plot_composite <- function(
 #' Line plots of calculated proxies series
 #'
 #' @family Plotting
-#' @param raster a SpatRaster with calculated hyperspectral indices and RGB layers.
+#' @param x a SpatRaster with calculated hyperspectral indices and RGB layers.
 #' @param index a character indicating hyperspectral index layer to plot.
 #' @param calibration result of pixel_to_distance or actual call to pixel_to_distance with appropriate input.
 #' @param ... additional arguments.
@@ -354,13 +354,13 @@ plot_composite <- function(
 #' @return line plot with of selected hyperspectral index.
 #' @export
 plot_profile_spectral_series <- function(
-  raster,
+  x,
   index,
   calibration = NULL,
   ...
 ) {
   # Check if correct class is supplied.
-  if (!inherits(raster, what = "SpatRaster")) {
+  if (!inherits(x, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
   }
 
@@ -369,11 +369,11 @@ plot_profile_spectral_series <- function(
   }
 
   # Subset SpatRaster
-  hsi_layer <- raster |>
+  hsi_layer <- x |>
     terra::subset(index)
 
   # Clean data
-  data <- raster |>
+  data <- x |>
     HSItools::extract_spectral_series() |>
     dplyr::select(
       .data$y,
@@ -459,7 +459,7 @@ plot_profile_spectral_series <- function(
 #' Line plot of spectral profile from the ROI
 #'
 #' @family Plotting
-#' @param raster Reflectance SpatRaster.
+#' @param x Reflectance SpatRaster.
 #' @param extent extent to work over.
 #' @param ... other arguments.
 #'
@@ -468,17 +468,17 @@ plot_profile_spectral_series <- function(
 #' @return line plot with of selected hyperspectral index.
 #' @export
 plot_profile_spectral_profile <- function(
-  raster,
+  x,
   extent = NULL,
   ...
 ) {
   # Check if correct class is supplied.
-  if (!inherits(raster, what = "SpatRaster")) {
+  if (!inherits(x, what = "SpatRaster")) {
     rlang::abort(message = "Supplied data is not a terra SpatRaster.")
   }
 
   # Clean data
-  data <- raster |>
+  data <- x |>
     HSItools::extract_spectral_profile() |>
     tidyr::pivot_longer(
       dplyr::everything(),

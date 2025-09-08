@@ -1,76 +1,111 @@
-#' Find position of selected spectra
+#' Find position of selected wavelengths
 #'
 #' @family Utilities
-#' @param raster a terra SpatRaster.
-#' @param spectra vector with choice of desired spectra.
+#' @param x A terra SpatRaster with hyperspectral data
+#' @param wavelength Numeric vector of desired wavelengths
 #'
-#' @return positions (indices) of desired spectra in SpatRaster
+#' @return A tibble with columns:
+#'   - `wavelength`: the requested wavelengths
+#'   - `position`: the corresponding band indices in the SpatRaster
+#' 
 #' @export
 #'
-#' @description find index position of the nearest spectra (band) in the dataset.
-#' Match for the lowest difference between integer band and actual SpatRaster band.
-#' This will produce duplicates with multiple bands. Drop.
-spectra_position <- function(
-  raster,
-  spectra
+#' @description Find index position of the nearest wavelength (band) in the dataset
+#' by matching the smallest difference between requested and actual wavelengths.
+#' If multiple wavelengths map to the same band, only the last is kept.
+#'
+#' @examples
+#' \dontrun{
+#' # Create example raster
+#' r <- terra::rast(nrows = 10, ncols = 10, nlyrs = 5)
+#' names(r) <- c("400", "500", "600", "700", "800")
+#'
+#' # Find positions
+#' wavelength_position(r, c(450, 650))
+#' }
+wavelength_position <- function(
+  x,
+  wavelength
 ) {
   # Check if correct class is supplied.
-  if (!inherits(raster, what = "SpatRaster")) {
-    rlang::abort(message = "Supplied data is not a terra SpatRaster.")
+  if (!inherits(x, what = "SpatRaster")) {
+    cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
   }
 
-  # Find index (position) of selected spectra by comparing choice and names
-  spectraIndex <- purrr::map(
-    spectra,
-    \(x) terra::which.min(abs(x - as.numeric(terra::names(raster))))
-  ) |>
-    # Get positions
-    purrr::as_vector()
+  # Check wavelength argument
+  if (!is.numeric(wavelength)) {
+    cli::cli_abort("Input {.arg wavelength} must be numeric.")
+  }
 
-  # Create tibble with spectra of choice and respective position
-  spectraIndex <- dplyr::tibble(
-    spectra = spectra,
-    position = spectraIndex
+  if (length(wavelength) == 0) {
+    cli::cli_abort("Input {.arg wavelength} must not be empty.")
+  }
+
+  # Extract and validate band wavelengths
+  band_wavelengths <- as.numeric(terra::names(x))
+
+  if (all(is.na(band_wavelengths))) {
+    cli::cli_abort(
+      c(
+        "Band names cannot be converted to numeric wavelengths.",
+        "i" = "Band names are: {.val {head(terra::names(x), 5)}}..."
+      )
+    )
+  }
+
+  # Find index (position) of selected wavelength by comparing choice and names
+  wavelength_index <- purrr::map_int(
+    wavelength,
+    \(i) terra::which.min(abs(i - band_wavelengths))
+  )
+
+  # Create tibble with wavelength of choice and respective position
+  wavelength_table <- dplyr::tibble(
+    wavelength = wavelength,
+    position = wavelength_index
   ) |>
-    # Keep second observation if duplicates are present
-    # From experience closer to desired product
+    # Keep last observation if there are duplicates
     dplyr::slice_tail(by = .data$position)
 
   # Return values
-  return(spectraIndex)
+  return(wavelength_table)
 }
 
 
-#' Subset SpatRaster by spectra
+#' Subset SpatRaster by wavelength
 #'
 #' @family Utilities
-#' @param raster a terra SpatRaster to be subset.
-#' @param spectra_tbl a tibble with spectra positions from spectra_position.
+#' 
+#' @param x A terra SpatRaster to be subset
+#' @param wavelength_tbl a tibble with wavelength positions from wavelength_position.
 #'
-#' @return SpatRaster subset to contain only required spectral bands.
+#' @return SpatRaster subset to contain only required wavelengthl bands.
 #' @export
+#' 
+#' @description Subset SpatRaster using wavelength (band) positions from a lookup table.
 #'
-#' @description subset SpatRaster with spectra (bands) positions.
-spectra_sub <- function(
-  raster,
-  spectra_tbl
+#' @description subset SpatRaster with wavelength (bands) positions.
+wavelength_sub <- function(
+  x,
+  wavelength_tbl
 ) {
   # Check if correct class is supplied.
-  if (!inherits(raster, what = "SpatRaster")) {
-    rlang::abort(message = "Supplied data is not a terra SpatRaster.")
+  if (!inherits(x, what = "SpatRaster")) {
+    cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
   }
 
-  # Get spectra from tibble
-  spectra <- dplyr::pull(spectra_tbl, 1)
+  # Validate input
+  if (!inherits(wavelength_tbl, "data.frame")) {
+    cli::cli_abort(
+      "Input {.arg wavelength_tbl} must be a data frame or tibble."
+    )
+  }
 
   # Get positions from tibble
-  position <- dplyr::pull(spectra_tbl, 2)
+  position <- dplyr::pull(wavelength_tbl, position)
 
   # Subset raster by position
-  raster <- terra::subset(raster, position)
-
-  # Set raster names to match spectra
-  # terra::names(raster) <- as.character(spectra)
+  raster <- terra::subset(x, position)
 
   # Return raster
   return(raster)
@@ -237,10 +272,10 @@ hsi_calibrate_spatial <- function(
 #'   Same length as input pixels. Negative depths indicate positions above the start position.
 #'
 #' @details
-#' Converts pixel coordinates to real-world depth measurements using spatial 
-#' calibration. The function automatically handles the depth direction based on 
-#' the order of sample_boundaries. If boundaries\[1\] < boundaries\[2\], depths 
-#' increase downward (typical orientation). If boundaries\[1\] > boundaries\[2\], 
+#' Converts pixel coordinates to real-world depth measurements using spatial
+#' calibration. The function automatically handles the depth direction based on
+#' the order of sample_boundaries. If boundaries\[1\] < boundaries\[2\], depths
+#' increase downward (typical orientation). If boundaries\[1\] > boundaries\[2\],
 #' depths increase upward (inverted image).
 #'
 #' @export

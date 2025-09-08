@@ -4,10 +4,10 @@
 \alias{plot_raster_overlay}
 \title{Overlay color plot of proxy on RGB}
 \usage{
-plot_raster_overlay(raster, index, alpha = 0.5, ...)
+plot_raster_overlay(x, index, alpha = 0.5, ...)
 }
 \arguments{
-\item{raster}{raster a SpatRaster with calculated hyperspectral indices and RGB layers.}
+\item{x}{raster a SpatRaster with calculated hyperspectral indices and RGB layers.}
 
 \item{index}{a character indicating hyperspectral index layer to plot.}
 

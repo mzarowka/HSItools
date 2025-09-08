@@ -23,7 +23,7 @@ Merge SpatRasters in a stratigraphic order
 Other Utilities: 
 \code{\link{find_fixed_extent}()},
 \code{\link{pixel_to_distance}()},
-\code{\link{spectra_position}()},
-\code{\link{spectra_sub}()}
+\code{\link{wavelength_position}()},
+\code{\link{wavelength_sub}()}
 }
 \concept{Utilities}

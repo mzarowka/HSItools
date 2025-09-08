@@ -4,10 +4,10 @@
 \alias{plot_profile_spectral_series}
 \title{Line plots of calculated proxies series}
 \usage{
-plot_profile_spectral_series(raster, index, calibration = NULL, ...)
+plot_profile_spectral_series(x, index, calibration = NULL, ...)
 }
 \arguments{
-\item{raster}{a SpatRaster with calculated hyperspectral indices and RGB layers.}
+\item{x}{a SpatRaster with calculated hyperspectral indices and RGB layers.}
 
 \item{index}{a character indicating hyperspectral index layer to plot.}
 

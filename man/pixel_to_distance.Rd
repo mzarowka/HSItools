@@ -39,7 +39,7 @@ Get depth in metric units
 Other Utilities: 
 \code{\link{find_fixed_extent}()},
 \code{\link{merge_rasters}()},
-\code{\link{spectra_position}()},
-\code{\link{spectra_sub}()}
+\code{\link{wavelength_position}()},
+\code{\link{wavelength_sub}()}
 }
 \concept{Utilities}

@@ -21,7 +21,7 @@ Find a fixed-width extent in the middle of a larger one
 Other Utilities: 
 \code{\link{merge_rasters}()},
 \code{\link{pixel_to_distance}()},
-\code{\link{spectra_position}()},
-\code{\link{spectra_sub}()}
+\code{\link{wavelength_position}()},
+\code{\link{wavelength_sub}()}
 }
 \concept{Utilities}

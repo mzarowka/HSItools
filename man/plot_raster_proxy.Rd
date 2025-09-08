@@ -4,10 +4,10 @@
 \alias{plot_raster_proxy}
 \title{Plot spatial map plots of calculated proxies, and optionally save to file}
 \usage{
-plot_raster_proxy(raster, index, calibration = NULL, ...)
+plot_raster_proxy(x, index, calibration = NULL, ...)
 }
 \arguments{
-\item{raster}{a SpatRaster with calculated hyperspectral indices and RGB layers.}
+\item{x}{a SpatRaster with calculated hyperspectral indices and RGB layers.}
 
 \item{index}{a character indicating hyperspectral index layer to plot.}
 

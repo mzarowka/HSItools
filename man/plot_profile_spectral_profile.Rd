@@ -4,10 +4,10 @@
 \alias{plot_profile_spectral_profile}
 \title{Line plot of spectral profile from the ROI}
 \usage{
-plot_profile_spectral_profile(raster, extent = NULL, ...)
+plot_profile_spectral_profile(x, extent = NULL, ...)
 }
 \arguments{
-\item{raster}{Reflectance SpatRaster.}
+\item{x}{Reflectance SpatRaster.}
 
 \item{extent}{extent to work over.}
 

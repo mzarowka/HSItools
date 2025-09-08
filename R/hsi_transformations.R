@@ -218,9 +218,9 @@ hsi_calc_rabd <- function(
   # If RABD is defined as range and "max" is selected flexibly find the position of the absolute minimum within the range.
   if (index_type == "max") {
     # Find trough position
-    trough_position <- spectra_position(
-      raster = x,
-      spectra = trough
+    trough_position <- wavelength_position(
+      x = x,
+      wavelength = trough
     ) |>
       # Pull vector with positions
       dplyr::pull(var = 2) |>
@@ -237,7 +237,7 @@ hsi_calc_rabd <- function(
     trough <- stats::median(trough)
 
     # Find trough position
-    trough_position <- spectra_position(raster = x, spectra = trough) |>
+    trough_position <- wavelength_position(x = x, wavelength = trough) |>
       # Pull vector with positions
       dplyr::pull(var = 2) |>
       # Subset normalized raster to match trough
@@ -252,7 +252,7 @@ hsi_calc_rabd <- function(
     # If RABD is defined as a specific wavelength.
   } else if (index_type == "strict") {
     # Find trough position
-    trough_position <- spectra_position(raster = x, spectra = trough) |>
+    trough_position <- wavelength_position(x = x, wavelength = trough) |>
       # Pull vector with positions
       dplyr::pull(var = 2) |>
       # Subset normalized raster to match trough
@@ -271,7 +271,7 @@ hsi_calc_rabd <- function(
     as.numeric()
 
   # Find edge positions
-  edge_positions <- spectra_position(raster = x, spectra = edges) |>
+  edge_positions <- wavelength_position(x = x, wavelength = edges) |>
     # Pull vector with positions
     dplyr::pull(var = 2)
 
@@ -372,7 +372,7 @@ hsi_calc_ratio <- function(
   )
 
   # Find edge positions
-  edge_positions <- spectra_position(raster = x, spectra = edges) |>
+  edge_positions <- wavelength_position(x = x, wavelength = edges) |>
     # Pull vector with positions
     dplyr::pull(var = 2)
 
@@ -450,7 +450,7 @@ hsi_calc_difference <- function(
   )
 
   # Find edge positions
-  edge_positions <- spectra_position(raster = x, spectra = edges) |>
+  edge_positions <- wavelength_position(x = x, wavelength = edges) |>
     # Pull vector with positions
     dplyr::pull(var = 2)
 
@@ -875,7 +875,7 @@ hsi_calc_derivative <- function(
 
   # Find position of the requested band
   band_position <- x |>
-    spectra_position(spectra = band) |>
+    wavelength_position(wavelength = band) |>
     dplyr::pull(var = 2)
 
   # Validate band position is within range
@@ -1026,7 +1026,7 @@ hsi_calc_ndi <- function(
   wopt <- purrr::list_modify(wopt_default, !!!wopt_user)
 
   # Find edge positions
-  edge_positions <- spectra_position(raster = x, spectra = edges) |>
+  edge_positions <- wavelength_position(x = x, wavelength = edges) |>
     # Pull vector with positions
     dplyr::pull(var = 2)
 
@@ -1158,13 +1158,13 @@ hsi_stretch <- function(
   }
 
   # Find band positions and subset
-  band_positions <- HSItools::spectra_position(
+  band_positions <- HSItools::wavelength_position(
     x,
-    spectra = spectra
+    wavelength = spectra
   )
 
-  selected_bands <- HSItools::spectra_sub(
-    raster = x,
+  selected_bands <- HSItools::wavelength_sub(
+    x = x,
     spectra_tbl = band_positions
   )
 

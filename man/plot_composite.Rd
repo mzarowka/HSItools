@@ -5,10 +5,10 @@
 \title{Composite hyperspectral indices plots
 Can composite line profiles and SpatRasters}
 \usage{
-plot_composite(raster, plots, ...)
+plot_composite(x, plots, ...)
 }
 \arguments{
-\item{raster}{a SpatRaster with REFLECTANCE file. Used for correct placement.}
+\item{x}{a SpatRaster with REFLECTANCE file. Used for correct placement.}
 
 \item{plots}{a list of plots.}
 

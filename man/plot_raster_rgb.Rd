@@ -4,10 +4,10 @@
 \alias{plot_raster_rgb}
 \title{Spatial map plots of RGB image}
 \usage{
-plot_raster_rgb(raster, calibration = NULL, ...)
+plot_raster_rgb(x, calibration = NULL, ...)
 }
 \arguments{
-\item{raster}{a SpatRaster with calculated hyperspectral indices and RGB layers or just RGB layers.}
+\item{x}{a SpatRaster with calculated hyperspectral indices and RGB layers or just RGB layers.}
 
 \item{calibration}{result of pixel_to_distance or actual call to pixel_to_distance with appropriate input.}
 
