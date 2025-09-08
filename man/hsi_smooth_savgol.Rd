@@ -19,33 +19,37 @@ hsi_smooth_savgol(
 \arguments{
 \item{x}{A terra SpatRaster with hyperspectral data}
 
-\item{p}{filter order}
+\item{p}{Integer. Filter polynomial order (typically 2-4)}
 
-\item{n}{filter length (must be odd)}
+\item{n}{Integer. Filter length/window size (must be odd, typically 5-15)}
 
-\item{m}{return the m-th derivative of the filter coefficients}
+\item{m}{Integer. Derivative order (0 = smoothing, 1 = first derivative, etc.)}
 
-\item{ts}{time scaling factor}
+\item{ts}{Numeric. Sampling interval for derivative calculations}
 
 \item{filename}{Character. Output filename. Default "" keeps in memory}
 
 \item{overwrite}{Logical. Overwrite existing file (default: FALSE)}
 
-\item{cores}{positive integer. If cores > 1, a 'parallel' package cluster with that many cores is created and used. You can also supply a cluster object.}
+\item{cores}{Positive integer. Number of cores for parallel processing}
 
-\item{...}{Additional arguments passed to \code{\link[terra]{writeRaster}}
-
-#' @description
-Smooth data with a Savitzky-Golay smoothing filter using \code{\link[gsignal]{sgolayfilt}}.}
+\item{...}{Additional arguments passed to \code{\link[terra]{writeRaster}}}
 }
 \value{
 A terra SpatRaster with Savitzky-Golay filtered values
 }
 \description{
-Spectral raster smooth with a Savitzky-Golay filter
+Smooth hyperspectral data using a Savitzky-Golay filter via \code{\link[gsignal]{sgolayfilt}}.
+This filter fits successive sub-sets of adjacent data points with a low-degree polynomial
+by the method of linear least squares.
 }
 \details{
-Focal (spatial) median filter smoothes data by findig the median value within a given window and assiging its value to a pixel of interest.
+The Savitzky-Golay filter is a spectral smoothing technique that preserves features
+of the spectral curve such as peak height and width, which are usually flattened
+by other smoothing methods. The filter works by fitting a polynomial of order \code{p}
+through a moving window of \code{n} points.
+
+Note: Any pixels with NA values will result in function failure.
 }
 \seealso{
 Other HSI Transformations: 

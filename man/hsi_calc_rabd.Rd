@@ -6,8 +6,8 @@
 \usage{
 hsi_calc_rabd(
   x,
-  rabd_name,
-  rabd_type,
+  index_name,
+  index_type,
   edges,
   trough,
   filename = "",
@@ -18,9 +18,9 @@ hsi_calc_rabd(
 \arguments{
 \item{x}{A terra SpatRaster with hyperspectral data}
 
-\item{rabd_name}{Character. Name of calculated RABD}
+\item{index_name}{Character. Name of calculated RABD}
 
-\item{rabd_type}{Character. Type of RABD. One of "strict" - specific wavelength, "max" - flexible choice of the maximum reflectance dip, "mid" - middle point between the min and max trough wavelength (similar to strict)}
+\item{index_type}{Character. Type of RABD. One of "strict" - specific wavelength, "max" - flexible choice of the maximum reflectance dip, "mid" - middle point between the min and max trough wavelength (similar to strict)}
 
 \item{edges}{Numeric. Vector of two for the wide calculation window}
 

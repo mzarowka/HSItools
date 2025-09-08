@@ -6,7 +6,7 @@
 \usage{
 hsi_calc_rmean(
   x,
-  rmean_name,
+  index_name,
   na.rm = TRUE,
   filename = "",
   overwrite = FALSE,
@@ -17,7 +17,7 @@ hsi_calc_rmean(
 \arguments{
 \item{x}{A terra SpatRaster with hyperspectral data}
 
-\item{rmean_name}{Character. Name of calculated rmean.}
+\item{index_name}{Character. Name of calculated rmean.}
 
 \item{na.rm}{Logical. Remove NA values when calculating mean (default: TRUE)}
 
@@ -42,11 +42,11 @@ in a hyperspectral image.
 hsi_data <- terra::rast("hyperspectral_image.tif")
 
 # Calculate mean reflectance
-rmean <- hsi_rmean(hsi_data, rmean_name = "mean_reflectance")
+rmean <- hsi_rmean(hsi_data, index_name = "mean_reflectance")
 
 # Save to file
 rmean <- hsi_rmean(hsi_data,
-                   rmean_name = "mean_reflectance",
+                   index_name = "mean_reflectance",
                    filename = "output_rmean.tif",
                    overwrite = TRUE)
 }

@@ -6,7 +6,7 @@
 \usage{
 hsi_calc_derivative(
   x,
-  derivative_name,
+  index_name,
   band,
   method = "central",
   filename = "",
@@ -17,7 +17,7 @@ hsi_calc_derivative(
 \arguments{
 \item{x}{A terra SpatRaster with hyperspectral data}
 
-\item{derivative_name}{Character. Name of calculated ratio}
+\item{index_name}{Character. Name of calculated ratio}
 
 \item{band}{Numeric. Wavelength at which to calculate the derivative}
 

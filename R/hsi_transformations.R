@@ -127,7 +127,7 @@ hsi_continuum <- function(
   remove_continuum_fun <- function(x) {
     # Skip NA values
     if (anyNA(x)) {
-      return(rep(NA, length(x)))
+      return(rep(NA_real_, length(x)))
     }
 
     # For a single pixel, transpose the data structure
@@ -159,8 +159,8 @@ hsi_continuum <- function(
 #' @family HSI Transformations
 #'
 #' @param x A terra SpatRaster with hyperspectral data
-#' @param rabd_name Character. Name of calculated RABD
-#' @param rabd_type Character. Type of RABD. One of "strict" - specific wavelength, "max" - flexible choice of the maximum reflectance dip, "mid" - middle point between the min and max trough wavelength (similar to strict)
+#' @param index_name Character. Name of calculated RABD
+#' @param index_type Character. Type of RABD. One of "strict" - specific wavelength, "max" - flexible choice of the maximum reflectance dip, "mid" - middle point between the min and max trough wavelength (similar to strict)
 #' @param edges Numeric. Vector of two for the wide calculation window
 #' @param trough Character. Vector of wavelength(s) to look for trough
 #' @param filename Character. Output filename. Default "" keeps in memory
@@ -171,8 +171,8 @@ hsi_continuum <- function(
 #' @export
 hsi_calc_rabd <- function(
   x,
-  rabd_name,
-  rabd_type,
+  index_name,
+  index_type,
   edges,
   trough,
   filename = "",
@@ -184,12 +184,26 @@ hsi_calc_rabd <- function(
     cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
   }
 
+  # Validate input
+  if (!index_type %in% c("strict", "mid", "max")) {
+    cli::cli_abort(
+      "Input {.arg index_type} must be one of 'strict', 'mid' or 'max'."
+    )
+  }
+
+  # Validate name handling
+  if (
+    missing(index_name) || !is.character(index_name) || length(index_name) != 1
+  ) {
+    cli::cli_abort("{.arg index_name} must be a single character string.")
+  }
+
   # Store user input in a spliceable list
   wopt_user <- rlang::list2(...)
 
   # Named list with write options
   wopt_default <- list(
-    names = rabd_name
+    names = index_name
   )
 
   # Splice wopt defaults with user input if any
@@ -202,7 +216,7 @@ hsi_calc_rabd <- function(
   )
 
   # If RABD is defined as range and "max" is selected flexibly find the position of the absolute minimum within the range.
-  if (rabd_type == "max") {
+  if (index_type == "max") {
     # Find trough position
     trough_position <- spectra_position(
       raster = x,
@@ -218,7 +232,7 @@ hsi_calc_rabd <- function(
       (\(i) terra::which.lyr(x == i))() |>
       # Coerce to integer
       (\(i) as.integer(i[1]))()
-  } else if (rabd_type == "mid") {
+  } else if (index_type == "mid") {
     # Find trough position
     trough <- stats::median(trough)
 
@@ -236,7 +250,7 @@ hsi_calc_rabd <- function(
       (\(i) as.integer(i[1]))()
 
     # If RABD is defined as a specific wavelength.
-  } else if (rabd_type == "strict") {
+  } else if (index_type == "strict") {
     # Find trough position
     trough_position <- spectra_position(raster = x, spectra = trough) |>
       # Pull vector with positions
@@ -289,7 +303,7 @@ hsi_calc_rabd <- function(
   terra::values(result) <- rabd
 
   # Set name
-  names(result) <- rabd_name
+  names(result) <- index_name
 
   # Write new raster to file based on user input
   if (filename != "") {
@@ -310,7 +324,7 @@ hsi_calc_rabd <- function(
 #' @family HSI Transformations
 #'
 #' @param x A terra SpatRaster with hyperspectral data
-#' @param ratio_name Character. Name of calculated ratio
+#' @param index_name Character. Name of calculated ratio
 #' @param edges Numeric. Vector of two for the numerator and denominator
 #' @param filename Character. Output filename. Default "" keeps in memory
 #' @param overwrite Logical. Overwrite existing file (default: FALSE)
@@ -322,7 +336,7 @@ hsi_calc_rabd <- function(
 #' @description calculate band ratio of selected wavelengths
 hsi_calc_ratio <- function(
   x,
-  ratio_name,
+  index_name,
   edges,
   filename = "",
   overwrite = FALSE,
@@ -333,12 +347,19 @@ hsi_calc_ratio <- function(
     cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
   }
 
+  # Validate name handling
+  if (
+    missing(index_name) || !is.character(index_name) || length(index_name) != 1
+  ) {
+    cli::cli_abort("{.arg index_name} must be a single character string.")
+  }
+
   # Store user input in a spliceable list
   wopt_user <- rlang::list2(...)
 
   # Named list with write options
   wopt_default <- list(
-    names = ratio_name
+    names = index_name
   )
 
   # Splice wopt defaults with user input if any
@@ -360,7 +381,7 @@ hsi_calc_ratio <- function(
     terra::subset(x, edge_positions[2])
 
   # Set layer name
-  names(result) <- ratio_name
+  names(result) <- index_name
 
   # Write new raster to file based on user input
   if (filename != "") {
@@ -381,7 +402,7 @@ hsi_calc_ratio <- function(
 #' @family HSI Transformations
 #'
 #' @param x A terra SpatRaster with hyperspectral data
-#' @param difference_name Character. Name of calculated ratio
+#' @param index_name Character. Name of calculated ratio
 #' @param edges Numeric. Vector of two for the numerator and denominator
 #' @param filename Character. Output filename. Default "" keeps in memory
 #' @param overwrite Logical. Overwrite existing file (default: FALSE)
@@ -393,7 +414,7 @@ hsi_calc_ratio <- function(
 #' @description calculate band ratio of selected wavelengths.
 hsi_calc_difference <- function(
   x,
-  difference_name,
+  index_name,
   edges,
   filename = "",
   overwrite = FALSE,
@@ -404,12 +425,19 @@ hsi_calc_difference <- function(
     cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
   }
 
+  # Validate name handling
+  if (
+    missing(index_name) || !is.character(index_name) || length(index_name) != 1
+  ) {
+    cli::cli_abort("{.arg index_name} must be a single character string.")
+  }
+
   # Store user input in a spliceable list
   wopt_user <- rlang::list2(...)
 
   # Named list with write options
   wopt_default <- list(
-    names = difference_name
+    names = index_name
   )
 
   # Splice wopt defaults with user input if any
@@ -431,7 +459,7 @@ hsi_calc_difference <- function(
     terra::subset(x, edge_positions[2])
 
   # Set layer name
-  names(result) <- difference_name
+  names(result) <- index_name
 
   # Write new raster to file based on user input
   if (filename != "") {
@@ -452,7 +480,7 @@ hsi_calc_difference <- function(
 #' @family HSI Transformations
 #'
 #' @param x A terra SpatRaster with hyperspectral data
-#' @param rmean_name Character. Name of calculated rmean.
+#' @param index_name Character. Name of calculated rmean.
 #' @param na.rm Logical. Remove NA values when calculating mean (default: TRUE)
 #' @param filename Character. Output filename. Default "" keeps in memory
 #' @param overwrite Logical. Overwrite existing file (default: FALSE)
@@ -471,17 +499,17 @@ hsi_calc_difference <- function(
 #' hsi_data <- terra::rast("hyperspectral_image.tif")
 #'
 #' # Calculate mean reflectance
-#' rmean <- hsi_rmean(hsi_data, rmean_name = "mean_reflectance")
+#' rmean <- hsi_rmean(hsi_data, index_name = "mean_reflectance")
 #'
 #' # Save to file
 #' rmean <- hsi_rmean(hsi_data,
-#'                    rmean_name = "mean_reflectance",
+#'                    index_name = "mean_reflectance",
 #'                    filename = "output_rmean.tif",
 #'                    overwrite = TRUE)
 #' }
 hsi_calc_rmean <- function(
   x,
-  rmean_name,
+  index_name,
   na.rm = TRUE,
   filename = "",
   overwrite = FALSE,
@@ -495,9 +523,9 @@ hsi_calc_rmean <- function(
 
   # Validate name handling
   if (
-    missing(rmean_name) || !is.character(rmean_name) || length(rmean_name) != 1
+    missing(index_name) || !is.character(index_name) || length(index_name) != 1
   ) {
-    cli::cli_abort("{.arg rmean_name} must be a single character string.")
+    cli::cli_abort("{.arg index_name} must be a single character string.")
   }
 
   # Store user input in a spliceable list
@@ -505,7 +533,7 @@ hsi_calc_rmean <- function(
 
   # Named list with write options
   wopt_default <- list(
-    names = rmean_name
+    names = index_name
   )
 
   # Splice wopt defaults with user input if any
@@ -515,7 +543,7 @@ hsi_calc_rmean <- function(
   result <- terra::app(x, fun = "mean", na.rm = na.rm, cores = cores)
 
   # Set layer name
-  names(result) <- rmean_name
+  names(result) <- index_name
 
   # Write new raster to file based on user input
   if (filename != "") {
@@ -536,7 +564,7 @@ hsi_calc_rmean <- function(
 #' @family HSI Transformations
 #'
 #' @param x A terra SpatRaster with hyperspectral data
-#' @param raba_name Character. Name of calculated RABA
+#' @param index_name Character. Name of calculated RABA
 #' @param edges Numeric. Vector of two for the wide calculation window
 #' @param filename Character. Output filename. Default "" keeps in memory
 #' @param overwrite Logical. Overwrite existing file (default: FALSE)
@@ -546,7 +574,7 @@ hsi_calc_rmean <- function(
 #' @export
 hsi_calc_raba <- function(
   x,
-  raba_name,
+  index_name,
   edges,
   filename = "",
   overwrite = FALSE,
@@ -557,12 +585,19 @@ hsi_calc_raba <- function(
     cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
   }
 
+  # Validate name handling
+  if (
+    missing(index_name) || !is.character(index_name) || length(index_name) != 1
+  ) {
+    cli::cli_abort("{.arg index_name} must be a single character string.")
+  }
+
   # Store user input in a spliceable list
   wopt_user <- rlang::list2(...)
 
   # Named list with write options
   wopt_default <- list(
-    names = raba_name
+    names = index_name
   )
 
   # Splice wopt defaults with user input if any
@@ -581,7 +616,7 @@ hsi_calc_raba <- function(
   ##########################
 
   # Set name
-  names(result) <- raba_name
+  names(result) <- index_name
 
   # Write new raster to file based on user input
   if (filename != "") {
@@ -602,7 +637,7 @@ hsi_calc_raba <- function(
 #' @family HSI Transformations
 #'
 #' @param x A terra SpatRaster with hyperspectral data
-#' @param remp_name Character. Name of calculated index
+#' @param index_name Character. Name of calculated index
 #' @param edges Numeric. Vector of two for the wide calculation window. Default c(660, 680)
 #' @param filename Character. Output filename. Default "" keeps in memory
 #' @param overwrite Logical. Overwrite existing file (default: FALSE)
@@ -621,7 +656,7 @@ hsi_calc_raba <- function(
 #' @export
 hsi_calc_remp <- function(
   x,
-  remp_name,
+  index_name,
   edges = c(660, 680),
   filename = "",
   overwrite = FALSE,
@@ -633,12 +668,19 @@ hsi_calc_remp <- function(
     cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
   }
 
+  # Validate name handling
+  if (
+    missing(index_name) || !is.character(index_name) || length(index_name) != 1
+  ) {
+    cli::cli_abort("{.arg index_name} must be a single character string.")
+  }
+
   # Store user input in a spliceable list
   wopt_user <- rlang::list2(...)
 
   # Named list with write options
   wopt_default <- list(
-    names = remp_name
+    names = index_name
   )
 
   # Splice wopt defaults with user input if any
@@ -747,7 +789,7 @@ hsi_calc_remp <- function(
   )
 
   # Set the layer name
-  names(result) <- remp_name
+  names(result) <- index_name
 
   # Return the result
   return(result)
@@ -758,7 +800,7 @@ hsi_calc_remp <- function(
 #' @family HSI Transformations
 #'
 #' @param x A terra SpatRaster with hyperspectral data
-#' @param derivative_name Character. Name of calculated ratio
+#' @param index_name Character. Name of calculated ratio
 #' @param band Numeric. Wavelength at which to calculate the derivative
 #' @param method Character. method to use for derivative calculation. One of "central" (default), "forward", or "backward".
 #' @param filename Character. Output filename. Default "" keeps in memory
@@ -779,7 +821,7 @@ hsi_calc_remp <- function(
 #' which can be useful for identifying absorption features and inflection points.
 hsi_calc_derivative <- function(
   x,
-  derivative_name,
+  index_name,
   band,
   method = "central",
   filename = "",
@@ -791,12 +833,19 @@ hsi_calc_derivative <- function(
     cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
   }
 
+  # Validate name handling
+  if (
+    missing(index_name) || !is.character(index_name) || length(index_name) != 1
+  ) {
+    cli::cli_abort("{.arg index_name} must be a single character string.")
+  }
+
   # Store user input in a spliceable list
   wopt_user <- rlang::list2(...)
 
   # Named list with write options
   wopt_default <- list(
-    names = derivative_name
+    names = index_name
   )
 
   # Splice wopt defaults with user input if any
@@ -914,7 +963,7 @@ hsi_calc_derivative <- function(
   # terra::values(result) <- derivative_values
 
   # Set layer name
-  names(result) <- derivative_name
+  names(result) <- index_name
 
   # Write new raster to file based on user input
   if (filename != "") {
@@ -935,7 +984,7 @@ hsi_calc_derivative <- function(
 #' @family HSI Transformations
 #'
 #' @param x A terra SpatRaster with hyperspectral data
-#' @param ndi_name Character. Name of calculated ratio
+#' @param index_name Character. Name of calculated ratio
 #' @param edges Numeric. Vector of two for the numerator and denominator
 #' @param filename Character. Output filename. Default "" keeps in memory
 #' @param overwrite Logical. Overwrite existing file (default: FALSE)
@@ -947,7 +996,7 @@ hsi_calc_derivative <- function(
 #' @description calculate normalized difference index
 hsi_calc_ndi <- function(
   x,
-  ndi_name,
+  index_name,
   edges,
   filename = "",
   overwrite = FALSE,
@@ -958,12 +1007,19 @@ hsi_calc_ndi <- function(
     cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
   }
 
+  # Validate name handling
+  if (
+    missing(index_name) || !is.character(index_name) || length(index_name) != 1
+  ) {
+    cli::cli_abort("{.arg index_name} must be a single character string.")
+  }
+
   # Store user input in a spliceable list
   wopt_user <- rlang::list2(...)
 
   # Named list with write options
   wopt_default <- list(
-    names = ndi_name
+    names = index_name
   )
 
   # Splice wopt defaults with user input if any
@@ -981,7 +1037,7 @@ hsi_calc_ndi <- function(
       terra::subset(x, edge_positions[2]))
 
   # Set layer name
-  names(result) <- ndi_name
+  names(result) <- index_name
 
   # Write new raster to file based on user input
   if (filename != "") {
@@ -1297,20 +1353,27 @@ hsi_reflectance <- function(
 #'
 #' @family HSI Transformations
 #' @param x A terra SpatRaster with hyperspectral data
-#' @param p filter order
-#' @param n filter length (must be odd)
-#' @param m return the m-th derivative of the filter coefficients
-#' @param ts time scaling factor
+#' @param p Integer. Filter polynomial order (typically 2-4)
+#' @param n Integer. Filter length/window size (must be odd, typically 5-15)
+#' @param m Integer. Derivative order (0 = smoothing, 1 = first derivative, etc.)
+#' @param ts Numeric. Sampling interval for derivative calculations
 #' @param filename Character. Output filename. Default "" keeps in memory
 #' @param overwrite Logical. Overwrite existing file (default: FALSE)
-#' @param cores positive integer. If cores > 1, a 'parallel' package cluster with that many cores is created and used. You can also supply a cluster object.
+#' @param cores Positive integer. Number of cores for parallel processing
 #' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
 #'
-#' #' @description
-#' Smooth data with a Savitzky-Golay smoothing filter using \code{\link[gsignal]{sgolayfilt}}.
+#' @description
+#' Smooth hyperspectral data using a Savitzky-Golay filter via \code{\link[gsignal]{sgolayfilt}}.
+#' This filter fits successive sub-sets of adjacent data points with a low-degree polynomial
+#' by the method of linear least squares.
 #'
 #' @details
-#' Focal (spatial) median filter smoothes data by findig the median value within a given window and assiging its value to a pixel of interest.
+#' The Savitzky-Golay filter is a spectral smoothing technique that preserves features
+#' of the spectral curve such as peak height and width, which are usually flattened
+#' by other smoothing methods. The filter works by fitting a polynomial of order \code{p}
+#' through a moving window of \code{n} points.
+#'
+#' Note: Any pixels with NA values will result in function failure.
 #'
 #' @return A terra SpatRaster with Savitzky-Golay filtered values
 #' @export
@@ -1330,6 +1393,37 @@ hsi_smooth_savgol <- function(
     cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
   }
 
+  # Check if gsignal is available
+  if (!requireNamespace("gsignal", quietly = TRUE)) {
+    cli::cli_abort(
+      "Package {.pkg gsignal} is required for Savitzky-Golay filtering.",
+      "i" = "Install with: {.code install.packages('gsignal')}"
+    )
+  }
+
+  # Validate arguments
+  if (n %% 2 != 1) {
+    cli::cli_abort("Filter length {.arg n} must be odd, got {n}.")
+  }
+
+  if (p >= n) {
+    cli::cli_abort(
+      "Filter order {.arg p} must be less than filter length {.arg n}."
+    )
+  }
+
+  if (p < 0 || n < 0 || m < 0) {
+    cli::cli_abort("Filter parameters must be non-negative.")
+  }
+
+  # Check for sufficient bands
+  if (terra::nlyr(x) < n) {
+    cli::cli_abort(
+      "SpatRaster has {terra::nlyr(x)} bands but filter length is {n}.",
+      "i" = "Reduce filter length or use a raster with more bands."
+    )
+  }
+
   # Store user input in a spliceable list
   wopt_user <- rlang::list2(...)
 
@@ -1345,6 +1439,7 @@ hsi_smooth_savgol <- function(
   wopt <- purrr::list_modify(wopt_default, !!!wopt_user)
 
   # Apply Savitzky-Golay filter
+  # Note: as.vector() is required for gsignal::sgolayfilt (not needed for previous approach with signal::sgolayfilt)
   result <- terra::app(
     x,
     fun = \(x) gsignal::sgolayfilt(as.vector(x), p = p, n = n, m = m, ts = ts),

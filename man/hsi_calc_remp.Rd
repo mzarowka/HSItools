@@ -6,7 +6,7 @@
 \usage{
 hsi_calc_remp(
   x,
-  remp_name,
+  index_name,
   edges = c(660, 680),
   filename = "",
   overwrite = FALSE,
@@ -17,7 +17,7 @@ hsi_calc_remp(
 \arguments{
 \item{x}{A terra SpatRaster with hyperspectral data}
 
-\item{remp_name}{Character. Name of calculated index}
+\item{index_name}{Character. Name of calculated index}
 
 \item{edges}{Numeric. Vector of two for the wide calculation window. Default c(660, 680)}
 

@@ -4,12 +4,12 @@
 \alias{hsi_calc_ndi}
 \title{Calculate normalized difference index (NDI)}
 \usage{
-hsi_calc_ndi(x, ndi_name, edges, filename = "", overwrite = FALSE, ...)
+hsi_calc_ndi(x, index_name, edges, filename = "", overwrite = FALSE, ...)
 }
 \arguments{
 \item{x}{A terra SpatRaster with hyperspectral data}
 
-\item{ndi_name}{Character. Name of calculated ratio}
+\item{index_name}{Character. Name of calculated ratio}
 
 \item{edges}{Numeric. Vector of two for the numerator and denominator}
 

@@ -6,7 +6,7 @@
 \usage{
 hsi_calc_difference(
   x,
-  difference_name,
+  index_name,
   edges,
   filename = "",
   overwrite = FALSE,
@@ -16,7 +16,7 @@ hsi_calc_difference(
 \arguments{
 \item{x}{A terra SpatRaster with hyperspectral data}
 
-\item{difference_name}{Character. Name of calculated ratio}
+\item{index_name}{Character. Name of calculated ratio}
 
 \item{edges}{Numeric. Vector of two for the numerator and denominator}
 

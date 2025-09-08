@@ -4,12 +4,12 @@
 \alias{hsi_calc_raba}
 \title{Calculate Relative Absorption Band Area (RABA)}
 \usage{
-hsi_calc_raba(x, raba_name, edges, filename = "", overwrite = FALSE, ...)
+hsi_calc_raba(x, index_name, edges, filename = "", overwrite = FALSE, ...)
 }
 \arguments{
 \item{x}{A terra SpatRaster with hyperspectral data}
 
-\item{raba_name}{Character. Name of calculated RABA}
+\item{index_name}{Character. Name of calculated RABA}
 
 \item{edges}{Numeric. Vector of two for the wide calculation window}
 

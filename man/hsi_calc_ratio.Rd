@@ -4,12 +4,12 @@
 \alias{hsi_calc_ratio}
 \title{Calculate band ratio}
 \usage{
-hsi_calc_ratio(x, ratio_name, edges, filename = "", overwrite = FALSE, ...)
+hsi_calc_ratio(x, index_name, edges, filename = "", overwrite = FALSE, ...)
 }
 \arguments{
 \item{x}{A terra SpatRaster with hyperspectral data}
 
-\item{ratio_name}{Character. Name of calculated ratio}
+\item{index_name}{Character. Name of calculated ratio}
 
 \item{edges}{Numeric. Vector of two for the numerator and denominator}
 
