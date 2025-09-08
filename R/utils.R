@@ -145,6 +145,145 @@ pixel_to_distance <- function(
     pixel_ratio = pixel_ratio
   ))
 }
+
+#' Get spatial calibration in true units
+#'
+#' @family HSI Calibration
+#'
+#' @param x SpatVector with two points or polyline. Should have NULL crs like SpatRasters (pixels)
+#' @param distance Numeric. Actual distance, read from measurement. Defaults to 10000.
+#' @param units Character. Units of distance (e.g., "um", "mm", "cm"). Default "um".
+#' @param direction Character. Either "vertical" or "horizontal". Default "vertical".
+#'
+#' @returns A list with spatial calibration information:
+#'   \item{ratio}{Numeric. Distance units per pixel}
+#'   \item{units}{Character. Units of measurement}
+#'   \item{pixel_distance}{Numeric. Measured distance in pixels}
+#'   \item{actual_distance}{Numeric. Actual distance in specified units}
+#'   \item{direction}{Character. Direction of measurement}
+#'   \item{reference_geometry}{SpatVector. Original calibration geometry}
+#'
+#' @export
+hsi_calibrate_spatial <- function(
+  x,
+  distance = 10000,
+  units = "um",
+  direction = "vertical"
+) {
+  # Check if correct object is supplied.
+  if (!inherits(x, what = "SpatVector")) {
+    cli::cli_abort(message = "Input {.arg x} must be a terra SpatVector.")
+  }
+
+  # Validate distance
+  if (!is.numeric(distance) || distance <= 0) {
+    cli::cli_abort("{.arg distance} must be a positive number.")
+  }
+
+  # Validate units
+  valid_units <- c("um", "mm", "cm", "m")
+  if (!units %in% valid_units) {
+    cli::cli_abort("{.arg units} must be one of: {.val {valid_units}}")
+  }
+
+  # Validate direction
+  if (!direction %in% c("vertical", "horizontal")) {
+    cli::cli_abort(
+      "{.arg direction} must be either 'vertical' or 'horizontal'."
+    )
+  }
+
+  # Convert everything to micrometers
+  distance_um <- switch(
+    units,
+    "um" = distance,
+    "mm" = distance * 1000,
+    "cm" = distance * 10000,
+    "m" = distance * 1000000,
+    cli::cli_abort("Unknown unit: {.val {units}}")
+  )
+
+  # Calculate length of line in pixels
+  pixel_distance <- terra::perim(x)
+
+  # Get distance per pixel ratio
+  ratio <- distance_um / pixel_distance
+
+  # Construct list with calibration info
+  spatial_calibration <- list(
+    ratio = ratio,
+    units = "um",
+    user_units = units,
+    pixel_distance = pixel_distance,
+    physical_distance = distance,
+    direction = direction
+  )
+
+  # Return list
+  return(spatial_calibration)
+}
+
+#' Calculate depth from pixel coordinates using spatial calibration
+#'
+#' @family HSI Calibration
+#'
+#' @param pixels Numeric. A vector of Y-coordinate pixel values to convert to depth.
+#' @param calibration List. Spatial calibration object created by
+#'   \code{\link{hsi_calibrate_spatial}}. Must contain at minimum a 'ratio' element.
+#' @param sample_boundaries Numeric. A vector of length 2. Y-coordinate pixel values
+#'   defining sample boundaries as c(start, end). Start position will be depth = 0.
+#'   The order determines depth direction.
+#' @returns Numeric vector of depth values in the units specified by the calibration.
+#'   Same length as input pixels. Negative depths indicate positions above the start position.
+#'
+#' @details
+#' Converts pixel coordinates to real-world depth measurements using spatial 
+#' calibration. The function automatically handles the depth direction based on 
+#' the order of sample_boundaries. If boundaries\[1\] < boundaries\[2\], depths 
+#' increase downward (typical orientation). If boundaries\[1\] > boundaries\[2\], 
+#' depths increase upward (inverted image).
+#'
+#' @export
+hsi_calc_depth <- function(
+  pixels,
+  calibration,
+  sample_boundaries
+) {
+  # Validate type
+  if (!is.numeric(pixels)) {
+    cli::cli_abort("{.arg pixels} must be a numeric vector")
+  }
+
+  # Validate type and length
+  if (!is.numeric(sample_boundaries) || length(sample_boundaries) != 2) {
+    cli::cli_abort(
+      "{.arg sample_boundaries} must be a numeric vector of length 2"
+    )
+  }
+
+  # Validate if there is actual distance
+  if (sample_boundaries[1] == sample_boundaries[2]) {
+    cli::cli_abort("Sample boundaries cannot be identical")
+  }
+
+  # Extract start and end
+  sample_start <- sample_boundaries[1]
+  sample_end <- sample_boundaries[2]
+
+  # Determine if image is flipped
+  is_flipped <- sample_start > sample_end
+
+  # Calculate depths - simple vector operation
+  if (is_flipped) {
+    depth <- (sample_start - pixels) * calibration$ratio
+  } else {
+    depth <- (pixels - sample_start) * calibration$ratio
+  }
+
+  # Return calibrated depths
+  return(depth)
+}
+
 #' Merge SpatRasters in a stratigraphic order
 #'
 #' @family Utilities
