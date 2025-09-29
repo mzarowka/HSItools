@@ -111,22 +111,22 @@ stretch_raster_full <- function(
   # Check if raster is written to file
   if (filename == FALSE) {
     # Subset and write to RGB
-    raster <- HSItools::spectra_position(
+    raster <- spectra_position(
       raster,
       spectra = spectra
     ) |>
-      HSItools::spectra_sub(
+      spectra_sub(
         raster = raster,
         spectra_tbl = _
       ) |>
       terra::stretch(filename = NULL)
   } else {
     # Subset and write to RGB
-    raster <- HSItools::spectra_position(
+    raster <- spectra_position(
       raster,
       spectra = spectra
     ) |>
-      HSItools::spectra_sub(
+      spectra_sub(
         raster = raster,
         spectra_tbl = _
       ) |>
@@ -379,11 +379,11 @@ plot_raster_rgb <- function(
   }
 
   # Prepare SpatRaster
-  raster <- HSItools::spectra_position(
+  raster <- spectra_position(
     raster,
     spectra = spectra
   ) |>
-    HSItools::spectra_sub(
+    spectra_sub(
       raster = raster,
       spectra_tbl = _
     )
@@ -537,11 +537,11 @@ plot_raster_overlay <- function(
   hsi_layer <- raster |>
     terra::subset(index)
 
-  raster <- HSItools::spectra_position(
+  raster <- spectra_position(
     raster,
     spectra = c(650, 550, 450)
   ) |>
-    HSItools::spectra_sub(
+    spectra_sub(
       raster = raster,
       spectra_tbl = _
     )
@@ -721,7 +721,7 @@ plot_profile_spectral_series <- function(
 
   # Clean data
   data <- raster |>
-    HSItools::extract_spectral_series() |>
+    extract_spectral_series() |>
     dplyr::select(
       .data$y,
       {{ index }}
@@ -906,7 +906,7 @@ plot_profile_spectral_profile <- function(
 
   # Clean data
   data <- raster |>
-    HSItools::extract_spectral_profile() |>
+    extract_spectral_profile() |>
     tidyr::pivot_longer(
       dplyr::everything(),
       names_to = "Wavelength.nm",

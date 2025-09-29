@@ -46,27 +46,27 @@ run_core <- function(autoSave = TRUE){
   shiny::runApp(
     shiny::shinyApp(
       ui = shiny::fluidPage(
-        tags$head(tags$style(HTML('* {font-family: "Georgia"};'))),
-        tags$style(type = "text/css", ".irs-grid-pol.small {height: 0px;}"),
-        tags$script(HTML("
+        shiny::tags$head(shiny::tags$style(shiny::HTML('* {font-family: "Georgia"};'))),
+        shiny::tags$style(type = "text/css", ".irs-grid-pol.small {height: 0px;}"),
+        shiny::tags$script(shiny::HTML("
           $(document).ready(function() {setTimeout(function() {
             supElement = document.getElementById('scalermarkerPointSize').parentElement;
             $(supElement).find('span.irs-max, span.irs-min, span.irs-single, span.irs-from, span.irs-to').remove();
           }, 50);})
         ")),
-        tags$script(HTML("
+        shiny::tags$script(shiny::HTML("
           $(document).ready(function() {setTimeout(function() {
             supElement = document.getElementById('scaleOrigImg').parentElement;
             $(supElement).find('span.irs-max, span.irs-min, span.irs-single, span.irs-from, span.irs-to').remove();
           }, 50);})
         ")),
-        tags$script(HTML("
+        shiny::tags$script(shiny::HTML("
           $(document).ready(function() {setTimeout(function() {
             supElement = document.getElementById('scaleDistImg').parentElement;
             $(supElement).find('span.irs-max, span.irs-min, span.irs-single, span.irs-from, span.irs-to').remove();
           }, 50);})
         ")),
-        tags$script(HTML("
+        shiny::tags$script(shiny::HTML("
           $(document).ready(function() {setTimeout(function() {
             supElement = document.getElementById('selectionSize').parentElement;
             $(supElement).find('span.irs-max, span.irs-min, span.irs-single, span.irs-from, span.irs-to').remove();
@@ -74,12 +74,12 @@ run_core <- function(autoSave = TRUE){
         ")),
         titlePanel("HSItools", windowTitle = "HSItools"),
         # Output: Tabset w/ plot, summary, and table ----
-        tabsetPanel(type = "tabs",
+        shiny::tabsetPanel(type = "tabs",
                     id = "tabset1",
-                    tabPanel("Analysis",
+                    shiny::tabPanel("Analysis",
                              align="center",
                              br(),
-                             headerPanel("Select the analysis methods and settings"),
+                             shiny::headerPanel("Select the analysis methods and settings"),
                              br(),
                              br(),
                              br(),
@@ -100,29 +100,29 @@ run_core <- function(autoSave = TRUE){
                              ),
                              shiny::fluidRow(
                                style = "text-align:center; font-weight:100;",
-                               actionButton('begin','Save Selections and Proceed')
+                               shiny::actionButton('begin','Save Selections and Proceed')
                              )
                     ),
-                    tabPanel("Select Data",
+                    shiny::tabPanel("Select Data",
                              align="center",
                              shiny::br(),
-                             headerPanel("Select the core files and layers to utilize"),
+                             shiny::headerPanel("Select the core files and layers to utilize"),
                              br(),
                              br(),
                              br(),
                              br(),
-                             uiOutput("file_select"),
-                             uiOutput("file_show"),
+                             shiny::uiOutput("file_select"),
+                             shiny::uiOutput("file_show"),
                              shiny::br(),
-                             uiOutput("table1"),
+                             shiny::uiOutput("table1"),
                              shiny::br(),
                              shiny::actionButton("proceed_with_data", "Proceed with selected data")
 
                     ),
-                    tabPanel("Crop Image",
+                    shiny::tabPanel("Crop Image",
                              align="center",
                              shiny::br(),
-                             headerPanel("Crop viable region of terra::image (or skip to use full image)"),
+                             shiny::headerPanel("Crop viable region of terra::image (or skip to use full image)"),
                              br(),
                              br(),
                              br(),
@@ -130,15 +130,15 @@ run_core <- function(autoSave = TRUE){
                              shiny::column(
                                6,
                                align="left",
-                               actionButton("resetPlot", "Reset selection"),
+                               shiny::actionButton("resetPlot", "Reset selection"),
                              ),
                              shiny::column(
                                6,
                                align="right",
-                               actionButton("selectPlotRegion", "Accept crop"),
+                               shiny::actionButton("selectPlotRegion", "Accept crop"),
                              ),
                              shiny::fluidRow(
-                               sliderInput(
+                               shiny::sliderInput(
                                  inputId="scaleOrigImg",
                                  label="Size of Image",
                                  min=-2,
@@ -173,10 +173,10 @@ run_core <- function(autoSave = TRUE){
                              )
                              ),
                     ),
-                    tabPanel("Select Analysis Regions",
+                    shiny::tabPanel("Select Analysis Regions",
                              align="center",
                              br(),
-                             headerPanel("Select specific regions to analyze (or skip to use analyze all)"),
+                             shiny::headerPanel("Select specific regions to analyze (or skip to use analyze all)"),
                              br(),
                              br(),
                              br(),
@@ -190,7 +190,7 @@ run_core <- function(autoSave = TRUE){
                                           id = "Analysisregions",
                                           style = "height:600px; overflow-y: scroll; overflow-x:scroll; max-width: 800px",
 
-                                          actionButton("selectAnalysisRegion", "Add selected region"),
+                                          shiny::actionButton("selectAnalysisRegion", "Add selected region"),
                                           shiny::br(),
                                           shiny::br(),
                                           shiny::fluidRow(
@@ -222,9 +222,9 @@ run_core <- function(autoSave = TRUE){
                                             ),
                                           ),
                                           shiny::br(),
-                                          actionButton("removeRegion", "Remove highlighted region"),
+                                          shiny::actionButton("removeRegion", "Remove highlighted region"),
                                           shiny::br(),
-                                          actionButton("acceptAnalysisRegions", "Accept all selections"),
+                                          shiny::actionButton("acceptAnalysisRegions", "Accept all selections"),
                                         ),
                                  ),
                                  column(
@@ -232,7 +232,7 @@ run_core <- function(autoSave = TRUE){
                                    wellPanel(
                                      id = "fullCorePanel",style = "height:600px; overflow-y: scroll; overflow-x:scroll; max-width: 800px",
                                      "Full Core",
-                                     sliderInput(
+                                     shiny::sliderInput(
                                        inputId="selectionSize2",
                                        label="Size of image",
                                        min=0.5,
@@ -268,7 +268,7 @@ run_core <- function(autoSave = TRUE){
                                    wellPanel(
                                      id = "currentselectionPanel",style = "height:600px; overflow-y: scroll; overflow-x:scroll; max-width: 1600px",
                                      "Current Selection (Note image scrollbar below image)",
-                                     sliderInput(
+                                     shiny::sliderInput(
                                        inputId="selectionSize",
                                        label="Size of image",
                                        min=0.5,
@@ -296,10 +296,10 @@ run_core <- function(autoSave = TRUE){
                                width = 12,
                              ),
                     ),
-                    tabPanel("Distance Calibration",
+                    shiny::tabPanel("Distance Calibration",
                              align="center",
                              shiny::br(),
-                             headerPanel("Choose the start and end points of the scale and sample"),
+                             shiny::headerPanel("Choose the start and end points of the scale and sample"),
                              br(),
                              br(),
                              br(),
@@ -309,7 +309,7 @@ run_core <- function(autoSave = TRUE){
                                style = "text-align:center; font-weight:100;",
                                shiny::column(
                                  2,
-                                 sliderInput(
+                                 shiny::sliderInput(
                                    inputId="scalermarkerPointSize",
                                    label="Size of markers",
                                    min=1,
@@ -330,7 +330,7 @@ run_core <- function(autoSave = TRUE){
                                ),
                                shiny::column(
                                  2,
-                                 sliderInput(
+                                 shiny::sliderInput(
                                    inputId="scaleDistImg",
                                    label="Size of Image",
                                    min=-2,
@@ -421,7 +421,7 @@ run_core <- function(autoSave = TRUE){
                              shiny::br(),
                              shiny::fluidRow(
                                align="center",
-                               actionButton("done", "Accept distance calibration and Exit", style = "margin-right: 10px; margin-top:10px;"),
+                               shiny::actionButton("done", "Accept distance calibration and Exit", style = "margin-right: 10px; margin-top:10px;"),
                              ),
                              shiny::br(),
                              shinycssloaders::withSpinner(shiny::plotOutput(outputId = "core_plot2",width = "100%", click="plot_click")),
@@ -436,7 +436,7 @@ run_core <- function(autoSave = TRUE){
         aaa <- try(terra::rast(system.file("extdata/CORE_XYZ/capture/CORE_XYZ.tif", package = "HSItools"), noflip = TRUE),silent = TRUE)
 
         session$onSessionEnded(function() {
-          stopApp()
+          shiny::stopApp()
         })
 
         countRegions <- reactiveValues(count = 0)
@@ -1339,7 +1339,7 @@ run_core <- function(autoSave = TRUE){
 
 
 
-          stopApp(invisible(allParams))
+          shiny::stopApp(invisible(allParams))
         })
 
         observeEvent(input$acceptAnalysisRegions, {

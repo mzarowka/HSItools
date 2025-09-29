@@ -11,7 +11,7 @@ calculate_rabd(
   edges,
   trough,
   extent = NULL,
-  ext = NULL,
+  ext = "tif",
   filename = NULL
 )
 }

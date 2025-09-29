@@ -73,26 +73,26 @@ plotHeatmap <- function(rasDat,depthScale,cmPerPixel,palette = "Greens",palette.
   plotOut <- rasDat %>%
     matrix(ncol = ncol(rasDat),nrow = nrow(rasDat),byrow = TRUE) %>%
     # Data wrangling
-    as_tibble() %>%
-    rowid_to_column(var="depthIndex") %>%
+    tibble::as_tibble() %>%
+    tibble::rowid_to_column(var="depthIndex") %>%
     tidyr::gather(key="X", value="index", -1) %>%
 
     # Change X to numeric
-    mutate(X=as.numeric(gsub("V","",X))*cmPerPixel) %>%
+    dplyr::mutate(X=as.numeric(gsub("V","",X))*cmPerPixel) %>%
 
     #convert to depth
-    mutate(depth = syf[depthIndex]) %>%
-    ggplot(aes(X, depth, fill= index)) +
-    geom_raster() +
-    theme(legend.position="none")+
-    coord_equal()+
-    scale_y_continuous(expand = c(0,0))+
-    scale_fill_distiller(palette = palette,
+    dplyr::mutate(depth = syf[depthIndex]) %>%
+    ggplot2::ggplot(ggplot2::aes(X, depth, fill= index)) +
+    ggplot2::geom_raster() +
+    ggplot2::theme(legend.position="none")+
+    ggplot2::coord_equal()+
+    ggplot2::scale_y_continuous(expand = c(0,0))+
+    ggplot2::scale_fill_distiller(palette = palette,
                          direction = palette.direction)+
-    theme(axis.title.x=element_blank(),
-          axis.text.x=element_blank(),
-          axis.ticks.x=element_blank(),
-          panel.background = element_blank())
+    ggplot2::theme(axis.title.x=ggplot2::element_blank(),
+          axis.text.x=ggplot2::element_blank(),
+          axis.ticks.x=ggplot2::element_blank(),
+          panel.background = ggplot2::element_blank())
 
   return(plotOut)
 
@@ -116,11 +116,11 @@ plotVerticalIndex <- function(ind,
                               line.color = "gray70",
                               smooth.color = "black",
                               smooth.width = .5){
-  linPlot <- ggplot(ind)+
-    geom_path(aes_string(y = "depth",x = index.name),color = line.color)+
-    geom_path(aes_string(y = "depth",x = paste0("smooth",index.name)),color = smooth.color,size = smooth.width)+
-    theme_bw()+
-    scale_y_reverse(expand = c(0,0))
+  linPlot <- ggplot2::ggplot(ind)+
+    ggplot2::geom_path(ggplot2::aes_string(y = "depth",x = index.name),color = line.color)+
+    ggplot2::geom_path(ggplot2::aes_string(y = "depth",x = paste0("smooth",index.name)),color = smooth.color,size = smooth.width)+
+    ggplot2::theme_bw()+
+    ggplot2::scale_y_reverse(expand = c(0,0))
 
   return(linPlot)
 
@@ -215,13 +215,13 @@ plotSpectralDashboard <- function(core,
     ggplot2::scale_y_continuous(depth.label,labels = rev(depth.ticks),breaks = -rev(depth.ticks))
 
 
-  ticks <- ggplot_build(ggimg)$layout$panel_params[[1]]$y$breaks
+  ticks <- ggplot2::ggplot_build(ggimg)$layout$panel_params[[1]]$y$breaks
 
   ggimg <- ggimg+
-    theme(axis.title.x=element_blank(),
-          axis.text.x=element_blank(),
-          axis.ticks.x=element_blank())+
-    geom_rect(aes(xmin = cmRoi@xmin,
+    ggplot2::theme(axis.title.x=ggplot2::element_blank(),
+          axis.text.x=ggplot2::element_blank(),
+          axis.ticks.x=ggplot2::element_blank())+
+    ggplot2::geom_rect(ggplot2::aes(xmin = cmRoi@xmin,
                   xmax = cmRoi@xmax,
                   ymin = -cmRoi@ymin,
                   ymax = -cmRoi@ymax),
@@ -243,9 +243,9 @@ plotSpectralDashboard <- function(core,
     depth_index <- ind[[i]] |>
       extract_spectral_series(
         index = names(ind[[i]])) |>
-      mutate(depth = depths) |>
-      select(depth,!!names(ind[[i]])) |>
-      mutate(across(-depth, smoother::smth,window = smooth.win,.names = "smooth{.col}"))
+      dplyr::mutate(depth = depths) |>
+      dplyr::select(depth,!!names(ind[[i]])) |>
+      dplyr::mutate(dplyr::across(-depth, smoother::smth,window = smooth.win,.names = "smooth{.col}"))
 
     if(!is.na(output.file.path)){
       thisCsvPath <- file.path(dirname(output.file.path),paste0(names(ind[[i]]),"-roi",i,".csv"))
@@ -259,37 +259,37 @@ plotSpectralDashboard <- function(core,
                                         line.color = cols$smooth,
                                         smooth.color = cols$smooth,
                                         smooth.width = 0)+
-      scale_x_continuous(sec.axis = dup_axis())
+      ggplot2::scale_x_continuous(sec.axis = ggplot2::dup_axis())
 
     if(i<length(index.name)){
-      plots[[2*i+1]] <- plots[[2*i+1]] +   theme(axis.title.y=element_blank(),
-                                                 axis.text.y=element_blank(),
-                                                 axis.ticks.y=element_blank())
+      plots[[2*i+1]] <- plots[[2*i+1]] +   ggplot2::theme(axis.title.y=ggplot2::element_blank(),
+                                                 axis.text.y=ggplot2::element_blank(),
+                                                 axis.ticks.y=ggplot2::element_blank())
     }else{
       plots[[2*i+1]] <- plots[[2*i+1]] +
-        scale_y_reverse("Depth (cm)",position = "right",expand = c(0,0),breaks = rev(depth.ticks))+
-        theme(axis.title.y.right = element_text(angle = 90))
+        ggplot2::scale_y_reverse("Depth (cm)",position = "right",expand = c(0,0),breaks = rev(depth.ticks))+
+        ggplot2::theme(axis.title.y.right = ggplot2::element_text(angle = 90))
     }
 
     #make a heatmap
     plots[[2*i]] <- plotHeatmap(ind[[i]],depthScale = depths, cmPerPixel = core$distances$pixelRatio, palette = cols$palette) +
-      theme(axis.title.y=element_blank(),
-            axis.text.y=element_blank(),
-            axis.ticks.y=element_blank(),
-            panel.background = element_blank(),
-            plot.margin=unit(c(1,-.5,1,-0.5), "cm"))
+      ggplot2::theme(axis.title.y=ggplot2::element_blank(),
+            axis.text.y=ggplot2::element_blank(),
+            axis.ticks.y=ggplot2::element_blank(),
+            panel.background = ggplot2::element_blank(),
+            plot.margin=grid::unit(c(1,-.5,1,-0.5), "cm"))
     #make a dashboard plot
   }
 
   rel.widths <- c(core.width,rep(c(1,plot.width),times = length(index.name)))
-  widths <- unit(rel.widths/sum(rel.widths)*page.width,units = page.units)
+  widths <- grid::unit(rel.widths/sum(rel.widths)*page.width,units = page.units)
   page.length <- rel.widths[1]/sum(rel.widths)*page.width*c.height/c.width
 
   #egg
   outplot <- egg::ggarrange(plots = plots,nrow = 1,widths = widths,padding = 0,draw = FALSE,clip = "on")
 
   if(!is.na(output.file.path)){
-  ggsave(plot = outplot,
+  ggplot2::ggsave(plot = outplot,
          filename = output.file.path,
          width = page.width*page.width.multiplier,
          height = page.length*page.length.multiplier,

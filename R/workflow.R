@@ -133,13 +133,13 @@ get_reflectance <- function(
         purrr::map(\(x) terra::rast(x, noflip = TRUE))
 
       # Get band positions and subset
-      band_position <- HSItools::spectra_position(rasters[["capture"]], layers)
+      band_position <- spectra_position(rasters[["capture"]], layers)
 
       # Subset bands in the SpatRasters
       rasters_subset <- rasters |>
         purrr::map(
           \(x)
-            HSItools::spectra_sub(
+            spectra_sub(
               raster = x,
               spectra_tbl = band_position
             )
@@ -215,7 +215,7 @@ get_reflectance <- function(
         rasters_subset,
         types,
         \(x, y)
-          HSItools::raster_crop(
+          raster_crop(
             raster = x,
             type = y,
             roi = big_roi
@@ -232,7 +232,7 @@ get_reflectance <- function(
       rasters_cropped[c("darkref", "whiteref")],
       types[c("darkref", "whiteref")],
       \(x, y)
-        HSItools::create_reference_raster(
+        create_reference_raster(
           raster = x,
           ref_type = y,
           roi = big_roi,
@@ -253,7 +253,7 @@ get_reflectance <- function(
     }
 
     # Normalize data
-    reflectance <- HSItools::create_normalized_raster(
+    reflectance <- create_normalized_raster(
       capture = rasters_cropped[["capture"]],
       whiteref = rasters_references[["whiteref"]],
       darkref = rasters_references[["darkref"]],
@@ -434,6 +434,11 @@ standard_workflow <- function(core,
 
     ind <- list(rabd_max,r570_630,r590_690)
 
+    #create downcore csv files
+
+
+
+    # create plots
     names(ind) <- purrr::map_chr(ind,names)
     plotSpectralDashboard(core,
                           ind,
