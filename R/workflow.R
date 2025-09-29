@@ -416,7 +416,23 @@ standard_workflow <- function(core,
         rabd_type = "max",
         filename = file.path(core$directory,"products",paste0("rabd660670_roi",r)))
 
-    ind <- list(rabd_max)
+    # Calculate indices
+    r570_630 <- roi |>
+      calculate_band_ratio(
+        edges = c(570,630),
+        ratio_name = "R570R630",
+        filename = file.path(core$directory,"products",paste0("R570R630_roi",r)),
+        ext = "tif")
+
+    # Calculate indices
+    r590_690 <- roi |>
+      calculate_band_ratio(
+        edges = c(590,690),
+        ratio_name = "R590R690",
+        filename = file.path(core$directory,"products",paste0("R590R690_roi",r)),
+        ext = "tif")
+
+    ind <- list(rabd_max,r570_630,r590_690)
 
     names(ind) <- purrr::map_chr(ind,names)
     plotSpectralDashboard(core,
