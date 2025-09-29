@@ -1,3 +1,18 @@
+
+#' Fix paths on shiny outputs created with older versions
+#'
+#' @param scanFolder folder that contains the scan
+#'
+#' @returns
+#' @export
+fixPathsAndLoad <- function(scanFolder){
+  coreData <- terra::readRDS(file.path(scanFolder,'HSItools_core.rds'))
+  coreData$directory <- scanFolder
+  coreData$rasterPaths <- purrr::map_chr(coreData$rasterPaths,\(x) stringr::str_remove_all(x,"capture/"))
+  return(coreData)
+}
+
+
 #' Find position of selected spectra
 #'
 #' @family Utilities

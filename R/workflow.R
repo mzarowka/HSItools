@@ -337,7 +337,7 @@ standard_workflow <- function(core,
 
   if(!dir.exists(core$directory)){
     message("Cannot find the directory. Choose the HSItools_core.rds file associated with this core")
-    newdir <- dirname(utils::file.choose())
+    newdir <- dirname(file.choose())
     core$directory <- newdir
   }
 
