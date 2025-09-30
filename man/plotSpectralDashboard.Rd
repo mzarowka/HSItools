@@ -2,7 +2,7 @@
 % Please edit documentation in R/nickViz.R
 \name{plotSpectralDashboard}
 \alias{plotSpectralDashboard}
-\title{Title}
+\title{Plot spectral dashboard}
 \usage{
 plotSpectralDashboard(
   core,
@@ -28,5 +28,5 @@ plotSpectralDashboard(
 \item{output.dpi}{}
 }
 \description{
-Title
+Plot spectral dashboard
 }

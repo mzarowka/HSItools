@@ -2,7 +2,7 @@
 % Please edit documentation in R/nickViz.R
 \name{getColorsByIndex}
 \alias{getColorsByIndex}
-\title{Title}
+\title{Look up color ramps}
 \usage{
 getColorsByIndex(index)
 }
@@ -10,5 +10,5 @@ getColorsByIndex(index)
 \item{index}{}
 }
 \description{
-Title
+Look up color ramps
 }
