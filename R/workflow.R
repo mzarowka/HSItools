@@ -465,8 +465,6 @@ standard_workflow <- function(core,
 
     #create downcore csv files
 
-
-
     # create plots
     names(ind) <- purrr::map_chr(ind,names)
     plotSpectralDashboard(core,

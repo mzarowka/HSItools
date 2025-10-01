@@ -247,7 +247,7 @@ plotSpectralDashboard <- function(core,
       dplyr::mutate(dplyr::across(-depth, smoother::smth,window = smooth.win,.names = "smooth{.col}"))
 
     if(!is.na(output.file.path)){
-      thisCsvPath <- file.path(dirname(output.file.path),paste0(names(ind[[i]]),"-roi",i,".csv"))
+      thisCsvPath <- file.path(dirname(output.file.path),paste0(names(ind[[i]]),"-roi",roi_i,".csv"))
       readr::write_csv(depth_index,file = thisCsvPath)
     }
 
