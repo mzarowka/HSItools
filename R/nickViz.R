@@ -1,3 +1,10 @@
+#' Get depths
+#'
+#' @param core core
+#' @param rast raster
+#'
+#' @returns depths
+#' @export
 get_depths <- function(core,rast){
   cal <- pixel_to_distance(core)
 
@@ -10,14 +17,12 @@ get_depths <- function(core,rast){
   return(depths)
 }
 
-#' Title
+#' Look up color ramps
 #'
 #' @param index
 #'
 #' @return
 #' @export
-#'
-#' @examples
 getColorsByIndex <- function(index){
 
   if("RABD615" == index){
@@ -55,7 +60,7 @@ getColorsByIndex <- function(index){
   return(cols)
 }
 
-#' Title
+#' Plot a heatmap
 #'
 #' @param rasDat
 #' @param depthScale
@@ -64,8 +69,6 @@ getColorsByIndex <- function(index){
 #'
 #' @return
 #' @export
-#'
-#' @examples
 plotHeatmap <- function(rasDat,depthScale,cmPerPixel,palette = "Greens",palette.direction = 1){
   #depth
   syf <- rev(depthScale)
@@ -99,7 +102,7 @@ plotHeatmap <- function(rasDat,depthScale,cmPerPixel,palette = "Greens",palette.
 }
 
 
-#' Title
+#' Plot vertically
 #'
 #' @param ind
 #' @param index.name
@@ -109,8 +112,6 @@ plotHeatmap <- function(rasDat,depthScale,cmPerPixel,palette = "Greens",palette.
 #'
 #' @return
 #' @export
-#'
-#' @examples
 plotVerticalIndex <- function(ind,
                               index.name = "RABD660",
                               line.color = "gray70",
@@ -127,7 +128,7 @@ plotVerticalIndex <- function(ind,
 }
 
 
-#' Title
+#' Plot spectral dashboard
 #'
 #' @param normalized
 #' @param ind
@@ -147,8 +148,6 @@ plotVerticalIndex <- function(ind,
 #'
 #' @return
 #' @export
-#'
-#' @examples
 plotSpectralDashboard <- function(core,
                                   ind,
                                   processed.image.dir = file.path(core$directory,"photos"),

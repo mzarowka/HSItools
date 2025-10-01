@@ -2,7 +2,7 @@
 % Please edit documentation in R/nickViz.R
 \name{plotVerticalIndex}
 \alias{plotVerticalIndex}
-\title{Title}
+\title{Plot vertically}
 \usage{
 plotVerticalIndex(
   ind,
@@ -16,5 +16,5 @@ plotVerticalIndex(
 \item{smooth.width}{}
 }
 \description{
-Title
+Plot vertically
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/nickViz.R
 \name{plotHeatmap}
 \alias{plotHeatmap}
-\title{Title}
+\title{Plot a heatmap}
 \usage{
 plotHeatmap(
   rasDat,
@@ -16,5 +16,5 @@ plotHeatmap(
 \item{cmPerPixel}{}
 }
 \description{
-Title
+Plot a heatmap
 }

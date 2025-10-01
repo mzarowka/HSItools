@@ -6,10 +6,8 @@
 #' @param type either data raster or reference raster.
 #' @param dir directory.
 #' @param roi Region Of Interest: cropping extent.
-#'
 #' @return terra SpatRaster cropped to ROI.
 #' @export
-#'
 #' @description Crop SpatRaster to large ROI (entire core)
 #' For capture (core) SpatRaster use full extent
 #' For reference (white and dark) SpatRaster use only x-direction.

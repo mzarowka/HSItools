@@ -331,6 +331,14 @@ get_reflectance <- function(
 
 
 
+#' A standard workflow for typical analysis
+#'
+#' @param core output of shiny process, typically loaded in with terra::readRDS()
+#' @param verbose verbose output - TRUE (default) or FALSE
+#' @param smooth.win smoothing window
+#'
+#' @returns
+#' @export
 standard_workflow <- function(core,
                               verbose = TRUE,
                               smooth.win = NA){
@@ -383,11 +391,32 @@ standard_workflow <- function(core,
 
 
   #Process data through the ROIs
-  rois <- core$analysisRegions
+  rois <- terra::vect(core$analysisRegions)
 
   for(r in 1:nrow(rois)){
 
-    roi <- terra::crop(refl,y = rois[r,])
+    #check to make sure it's not all zeroes
+    if(sum(sum(terra::ext(rois[r,]))) == 0){
+      next
+    }
+
+    roi <- try(terra::crop(refl,y = rois[r,]))
+    if(is(roi,"try-error")){
+      refl2 <- terra::vect(refl)
+      roi <- try(terra::crop(refl2,y = rois[r,]))
+    }
+    if(is(roi,"try-error")){
+      refl2 <- terra::rast(refl)
+      roi <- try(terra::crop(refl2,y = rois[r,]))
+    }
+    if(is(roi,"try-error")){
+      newExt <- terra::ext(rois[r,])
+      roi <- try(terra::crop(refl,newExt))
+    }
+
+    if(is(roi,"try-error")){
+      stop("Still having issue with the crop.")
+    }
 
     if(!dir.exists(file.path(core$directory,"photos"))){
       dir.create(file.path(core$directory,"photos"))
