@@ -484,7 +484,7 @@ standard_workflow <- function(core,
                           page.width = 20,
                           roi.box = TRUE,
                           smooth.win = smooth.win,
-                          output.file.path = file.path(core$directory,"products",paste0("roi",r,"-dashboard.pdf")))
+                          output.file.path = file.path(core$directory,"products",paste0("roi",r,"-dashboard.png")))
 
     plotSpectralDashboard(core,
                           ind,
@@ -492,7 +492,7 @@ standard_workflow <- function(core,
                           page.width = 20,
                           roi.box = FALSE,
                           smooth.win = smooth.win,
-                          output.file.path = file.path(core$directory,"products",paste0("roi",r,"-dashboard-nobox.pdf")))
+                          output.file.path = file.path(core$directory,"products",paste0("roi",r,"-dashboard-nobox.png")))
 
     #create individual index plots
     for(iii in ind){
@@ -501,14 +501,14 @@ standard_workflow <- function(core,
                             roi_i = r,
                             roi.box = TRUE,
                             smooth.win = smooth.win,
-                            output.file.path = file.path(core$directory,"products",paste0("roi",r,"-",names(iii),"-dashboard.pdf")))
+                            output.file.path = file.path(core$directory,"products",paste0("roi",r,"-",names(iii),"-dashboard.png")))
 
       plotSpectralDashboard(core,
                             iii,
                             roi_i = r,
                             roi.box = FALSE,
                             smooth.win = smooth.win,
-                            output.file.path = file.path(core$directory,"products",paste0("roi",r,"-",names(iii),"-dashboard-nobox.pdf")))
+                            output.file.path = file.path(core$directory,"products",paste0("roi",r,"-",names(iii),"-dashboard-nobox.png")))
     }
 
   }
