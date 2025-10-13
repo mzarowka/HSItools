@@ -288,7 +288,7 @@ plotSpectralDashboard <- function(core,
   }
 
   spectralIndices <- spectralIndices |>
-    dplyr::select(depth,dplyr::everything(), dplyr::startsWith("smooth")) |>
+    dplyr::select(depth,dplyr::everything(), dplyr::starts_with("smooth")) |>
     readr::write_csv(file = file.path(dirname(output.file.path),"spectralIndices.csv"))
 
 
