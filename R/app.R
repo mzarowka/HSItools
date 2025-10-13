@@ -1368,8 +1368,8 @@ run_core <- function(autoSave = TRUE){
               stringsAsFactors = FALSE
             )
 
-            core_liner_top_pixel <- min(distances$startCore[2], distances$endCore[2])
-            core_liner_bottom_pixel <- max(distances$startCore[2], distances$endCore[2])
+            core_liner_top_pixel <- max(distances$startCore[2], distances$endCore[2])
+            core_liner_bottom_pixel <- min(distances$startCore[2], distances$endCore[2])
 
             core_liner_top_depth <- min(distances$topDepthCm, distances$bottomDepthCm)
             core_liner_bottom_depth <- max(distances$topDepthCm, distances$bottomDepthCm)

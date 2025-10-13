@@ -247,6 +247,12 @@ plotSpectralDashboard <- function(core,
       dplyr::select(depth,!!names(ind[[i]])) |>
       dplyr::mutate(dplyr::across(-depth, smoother::smth,window = smooth.win,.names = "smooth{.col}"))
 
+    if(i == 1){
+      spectralIndices <- depth_index
+    }else{
+      spectralIndices <- dpylr::bind_cols(spectralIndices,dplyr::select(depth_index,-depth))
+    }
+
     if(!is.na(output.file.path)){
       thisCsvPath <- file.path(dirname(output.file.path),paste0(names(ind[[i]]),"-roi",roi_i,".csv"))
       readr::write_csv(depth_index,file = thisCsvPath)
@@ -280,6 +286,11 @@ plotSpectralDashboard <- function(core,
             plot.margin=grid::unit(c(1,-.5,1,-0.5), "cm"))
     #make a dashboard plot
   }
+
+  spectralIndices <- spectralIndices |>
+    dplyr::select(depth,dplyr::everything(), dplyr::startsWith("smooth")) |>
+    readr::write_csv(file = file.path(dirname(output.file.path),"spectralIndices.csv"))
+
 
   rel.widths <- c(core.width,rep(c(1,plot.width),times = length(index.name)))
   widths <- grid::unit(rel.widths/sum(rel.widths)*page.width,units = page.units)
