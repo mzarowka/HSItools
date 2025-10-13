@@ -299,7 +299,7 @@ run_core <- function(autoSave = TRUE){
                     shiny::tabPanel("Distance Calibration",
                              align="center",
                              shiny::br(),
-                             shiny::headerPanel("Choose the start and end points of the scale and sample"),
+                             shiny::headerPanel("Choose the start and end points of the scale and core liner"),
                              br(),
                              br(),
                              br(),
@@ -352,7 +352,7 @@ run_core <- function(autoSave = TRUE){
                                shiny::column(
                                  2,
                                  br(),
-                                 radioButtons("sampleOrScale",label = "Marker Selection",choices = c("Scale","Sample"),selected = "Scale"),
+                                 radioButtons("sampleOrScale",label = "Marker Selection",choices = c("Scale","Core Liner"),selected = "Scale"),
                                ),
                                shiny::column(
                                  1,
@@ -410,12 +410,27 @@ run_core <- function(autoSave = TRUE){
                                # ),
 
                                shiny::column(
-                                 1,
+                                 2,
                                  style = "margin-top: 10px;",
-                                 "start sample (x,y)",
+                                 "top core liner (x,y)",
                                  shiny::verbatimTextOutput("distSamplePointA"),
-                                 "end sample (x,y)",
-                                 shiny::verbatimTextOutput("distSamplePointB")
+                                 "bottom core liner (x,y)",
+                                 shiny::verbatimTextOutput("distSamplePointB"),
+                                 br(),
+                                 "top depth (cm)",
+                                 numericInput(inputId = "topDepth",
+                                              step = 0.1,
+                                              min = 0,
+                                              label = NULL,
+                                              max = 10000,
+                                              value = 0),
+                                 "bottom depth (cm)",
+                                 numericInput(inputId = "bottomDepth",
+                                              step = 0.1,
+                                              min = 0,
+                                              label = NULL,
+                                              max = 10000,
+                                              value = 100)
                                ),
                              ),
                              shiny::br(),
@@ -744,7 +759,7 @@ run_core <- function(autoSave = TRUE){
             }else{
               source_coords$xy[1,] <- c(terra::round(input$plot_click$x), terra::round(input$plot_click$y))
             }
-          } else {
+          } else if (input$sampleOrScale == "Core Liner") {
             if (ceiling(clickCounter$count/2) == clickCounter$count/2){
               sample_coords$xy[2,] <- c(terra::round(input$plot_click$x), terra::round(input$plot_click$y))
             }else{
@@ -1294,6 +1309,8 @@ run_core <- function(autoSave = TRUE){
           distances$scaleDist <- distTot()
           distances$scaleDistmm <- input$scaleLength
           distances$pixelRatio <- input$scaleLength/distTot()
+          distances$topDepthCm <- input$topDepth
+          distances$bottomDepthCm <- input$bottomDepth
           analysisOptions <- list()
           analysisOptions$normalize <- as.logical(input$choice_normalize)
           analysisOptions$integration <- as.logical(input$choice_integration)
@@ -1337,6 +1354,82 @@ run_core <- function(autoSave = TRUE){
             cat("\n")
             cat(paste0("Load the rds to use new utils::data (eg. core1A <- terra::readRDS('", saveLoc, "'))"))
             cat("\n")
+            cat("\n")
+
+            products_dir <- file.path(allParams$directory, "products")
+            if (!dir.exists(products_dir)) {
+              dir.create(products_dir, recursive = TRUE)
+            }
+
+            depth_table <- data.frame(
+              position = character(),
+              pixel = numeric(),
+              cm = numeric(),
+              stringsAsFactors = FALSE
+            )
+
+            core_liner_top_pixel <- min(distances$startCore[2], distances$endCore[2])
+            core_liner_bottom_pixel <- max(distances$startCore[2], distances$endCore[2])
+
+            core_liner_top_depth <- min(distances$topDepthCm, distances$bottomDepthCm)
+            core_liner_bottom_depth <- max(distances$topDepthCm, distances$bottomDepthCm)
+
+            depth_table <- rbind(depth_table, data.frame(
+              position = "coreLinerTop",
+              pixel = core_liner_top_pixel,
+              cm = core_liner_top_depth
+            ))
+
+            depth_table <- rbind(depth_table, data.frame(
+              position = "coreLinerBottom",
+              pixel = core_liner_bottom_pixel,
+              cm = core_liner_bottom_depth
+            ))
+
+            if (sum(stats::complete.cases(analysisRegions$DT)) > 0) {
+              for (roi_idx in 1:nrow(analysisRegions$DT)) {
+                roi_top_pixel <- min(analysisRegions$DT[roi_idx, "ymin"],
+                                    analysisRegions$DT[roi_idx, "ymax"])
+                roi_bottom_pixel <- max(analysisRegions$DT[roi_idx, "ymin"],
+                                       analysisRegions$DT[roi_idx, "ymax"])
+
+                roi_top_depth <- approx(
+                  x = c(core_liner_top_pixel, core_liner_bottom_pixel),
+                  y = c(core_liner_top_depth, core_liner_bottom_depth),
+                  xout = roi_top_pixel
+                )$y
+
+                roi_bottom_depth <- approx(
+                  x = c(core_liner_top_pixel, core_liner_bottom_pixel),
+                  y = c(core_liner_top_depth, core_liner_bottom_depth),
+                  xout = roi_bottom_pixel
+                )$y
+
+                if (nrow(analysisRegions$DT) == 1) {
+                  roi_top_name <- "roiTop"
+                  roi_bottom_name <- "roiBottom"
+                } else {
+                  roi_top_name <- paste0("roi", roi_idx, "Top")
+                  roi_bottom_name <- paste0("roi", roi_idx, "Bottom")
+                }
+
+                depth_table <- rbind(depth_table, data.frame(
+                  position = roi_top_name,
+                  pixel = roi_top_pixel,
+                  cm = roi_top_depth
+                ))
+
+                depth_table <- rbind(depth_table, data.frame(
+                  position = roi_bottom_name,
+                  pixel = roi_bottom_pixel,
+                  cm = roi_bottom_depth
+                ))
+              }
+            }
+
+            depth_table_path <- file.path(products_dir, "depthTable.csv")
+            readr::write_csv(depth_table, depth_table_path)
+            cat(paste0("Depth table saved: ", depth_table_path))
             cat("\n")
           }
 

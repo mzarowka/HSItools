@@ -341,8 +341,7 @@ get_reflectance <- function(
 #' @export
 standard_workflow <- function(core,
                               verbose = TRUE,
-                              smooth.win = NA,
-                              roi.box = TRUE){
+                              smooth.win = NA){
 
   if(!dir.exists(core$directory)){
     message("Cannot find the directory. Choose the HSItools_core.rds file associated with this core")
@@ -483,7 +482,15 @@ standard_workflow <- function(core,
                           ind,
                           roi_i = r,
                           page.width = 20,
-                          roi.box = roi.box,
+                          roi.box = TRUE,
+                          smooth.win = smooth.win,
+                          output.file.path = file.path(core$directory,"products",paste0("roi",r,"-dashboard.pdf")))
+
+    plotSpectralDashboard(core,
+                          ind,
+                          roi_i = r,
+                          page.width = 20,
+                          roi.box = FALSE,
                           smooth.win = smooth.win,
                           output.file.path = file.path(core$directory,"products",paste0("roi",r,"-dashboard.pdf")))
 
@@ -492,7 +499,14 @@ standard_workflow <- function(core,
       plotSpectralDashboard(core,
                             iii,
                             roi_i = r,
-                            roi.box = roi.box,
+                            roi.box = TRUE,
+                            smooth.win = smooth.win,
+                            output.file.path = file.path(core$directory,"products",paste0("roi",r,"-",names(iii),"-dashboard.pdf")))
+
+      plotSpectralDashboard(core,
+                            iii,
+                            roi_i = r,
+                            roi.box = FALSE,
                             smooth.win = smooth.win,
                             output.file.path = file.path(core$directory,"products",paste0("roi",r,"-",names(iii),"-dashboard.pdf")))
     }
