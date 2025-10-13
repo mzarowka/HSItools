@@ -250,7 +250,7 @@ plotSpectralDashboard <- function(core,
     if(i == 1){
       spectralIndices <- depth_index
     }else{
-      spectralIndices <- dpylr::bind_cols(spectralIndices,dplyr::select(depth_index,-depth))
+      spectralIndices <- dplyr::bind_cols(spectralIndices,dplyr::select(depth_index,-depth))
     }
 
     if(!is.na(output.file.path)){
