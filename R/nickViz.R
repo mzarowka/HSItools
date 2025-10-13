@@ -8,9 +8,9 @@
 get_depths <- function(core,rast){
   cal <- pixel_to_distance(core)
 
-  depths <- seq_len(nrow(rast)) * cal$pixel_ratio +
-        cal$distance -
-        cal$point_zero
+  depths <- seq_len(nrow(rast)) * cal$pixel_ratio #+
+        #cal$distance -
+        #cal$point_zero
 
   if(mean(depths) < 0){depths <- depths * -1}
 
@@ -23,42 +23,38 @@ get_depths <- function(core,rast){
 #'
 #' @return
 #' @export
-getColorsByIndex <- function(index){
+getColorsByIndex <- function(index) {
+  # Define index-to-palette mappings
+  palette_map <- c(
+    "RABD615" = "GnBu",
+    "RABD660" = "BuGn",
+    "rabd660670_max" = "Greens",
+    "RABD640655" = "YlGn",
+    "RABD845" = "Blues",
+    "rabd845_strict" = "Blues",
+    "R570R630" = "YlOrRd",
+    "R590R690" = "Purples",
+    "R950R970" = "Oranges"
+  )
 
-  if("RABD615" == index){
-    pall <- "GnBu"
-  }
-  if("RABD660" == index){
-    pall <- "BuGn"
-  }
-  if("rabd660670_max" == index){
-    pall <- "Greens"
-  }
-  if("RABD640655" == index){
-    pall <- "YlGn"
-  }
-  if("RABD845" == index){
-    pall <- "Blues"
-  }
+  # Look up palette
+  pall <- palette_map[index]
 
-
-  #band ratios
-  if("R570R630"== index){
-    pall <- "YlOrRd"
+  # Handle unrecognized index
+  if (is.na(pall)) {
+    stop(glue::glue("Index {index} not recognized"))
   }
 
-  if("R590R690" == index){
-    pall <- "Purples"
-  }
+  # Generate color list
+  colors <- RColorBrewer::brewer.pal(name = pall, n = 7)
 
-  if("R950R970" == index){
-    pall <- "Oranges"
-  }
-
-  cols <- list(line = RColorBrewer::brewer.pal(name = pall,n = 7)[3],
-               smooth = RColorBrewer::brewer.pal(name = pall,n = 7)[7],palette = pall)
-  return(cols)
+  list(
+    line = colors[3],
+    smooth = colors[7],
+    palette = pall
+  )
 }
+
 
 #' Plot a heatmap
 #'
@@ -162,6 +158,7 @@ plotSpectralDashboard <- function(core,
                                   page.length.multiplier = 3,
                                   y.tick.interval = 5,
                                   page.units = "cm",
+                                  roi.box = TRUE,
                                   tol = 1,
                                   output.file.path = NA,
                                   output.dpi = 600){
@@ -195,10 +192,10 @@ plotSpectralDashboard <- function(core,
   cmRoi@ymax <- min(roi@ymax - yOffset + 1,topPos)*core$distances$pixelRatio/10
 
 
-  # iroi <- magick::geometry_area(width = width,height = height, x_off = xOffset,y_off = yOffset)
-  # cimg <- magick::image_crop(img,geometry = iroi,gravity = "SouthWest")
+  iroi <- magick::geometry_area(width = width,height = height, x_off = xOffset,y_off = yOffset)
+  cimg <- magick::image_crop(img,geometry = iroi,gravity = "SouthWest")
 
-  cimg <- img
+  #cimg <- img
 
   cinfo <- magick::image_info(img)
 
@@ -219,13 +216,17 @@ plotSpectralDashboard <- function(core,
   ggimg <- ggimg+
     ggplot2::theme(axis.title.x=ggplot2::element_blank(),
           axis.text.x=ggplot2::element_blank(),
-          axis.ticks.x=ggplot2::element_blank())+
+          axis.ticks.x=ggplot2::element_blank())
+
+  if(roi.box){
+    ggimg <- ggimg +
     ggplot2::geom_rect(ggplot2::aes(xmin = cmRoi@xmin,
                   xmax = cmRoi@xmax,
                   ymin = -cmRoi@ymin,
                   ymax = -cmRoi@ymax),
               color = "red",
               fill = NA)
+  }
 
   plots <- vector(mode = "list",length = length(index.name)*2+1)
   plots[[1]] <- ggimg
@@ -242,7 +243,7 @@ plotSpectralDashboard <- function(core,
     depth_index <- ind[[i]] |>
       extract_spectral_series(
         index = names(ind[[i]])) |>
-      dplyr::mutate(depth = depths) |>
+      dplyr::mutate(depth = depths/10) |>
       dplyr::select(depth,!!names(ind[[i]])) |>
       dplyr::mutate(dplyr::across(-depth, smoother::smth,window = smooth.win,.names = "smooth{.col}"))
 

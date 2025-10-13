@@ -341,7 +341,8 @@ get_reflectance <- function(
 #' @export
 standard_workflow <- function(core,
                               verbose = TRUE,
-                              smooth.win = NA){
+                              smooth.win = NA,
+                              roi.box = TRUE){
 
   if(!dir.exists(core$directory)){
     message("Cannot find the directory. Choose the HSItools_core.rds file associated with this core")
@@ -446,6 +447,15 @@ standard_workflow <- function(core,
         filename = file.path(core$directory,"products",paste0("rabd660670_roi",r)))
 
     # Calculate indices
+    rabd_845 <- roi |>
+      calculate_rabd(
+        edges = c(790,900),
+        trough = 845,
+        rabd_name = "rabd845",
+        rabd_type = "strict",
+        filename = file.path(core$directory,"products",paste0("rabd845_roi",r)))
+
+    # Calculate indices
     r570_630 <- roi |>
       calculate_band_ratio(
         edges = c(570,630),
@@ -461,17 +471,31 @@ standard_workflow <- function(core,
         filename = file.path(core$directory,"products",paste0("R590R690_roi",r)),
         ext = "tif")
 
-    ind <- list(rabd_max,r570_630,r590_690)
+    ind <- list(rabd_max,rabd_845,r570_630,r590_690)
 
     #create downcore csv files
 
     # create plots
     names(ind) <- purrr::map_chr(ind,names)
+
+    #create full dashboard
     plotSpectralDashboard(core,
                           ind,
                           roi_i = r,
+                          page.width = 20,
+                          roi.box = roi.box,
                           smooth.win = smooth.win,
                           output.file.path = file.path(core$directory,"products",paste0("roi",r,"-dashboard.pdf")))
+
+    #create individual index plots
+    for(iii in ind){
+      plotSpectralDashboard(core,
+                            iii,
+                            roi_i = r,
+                            roi.box = roi.box,
+                            smooth.win = smooth.win,
+                            output.file.path = file.path(core$directory,"products",paste0("roi",r,"-",names(iii),"-dashboard.pdf")))
+    }
 
   }
 }

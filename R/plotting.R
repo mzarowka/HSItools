@@ -13,7 +13,8 @@ stretch_raster_full <- function(
   type = "RGB",
   histeq = FALSE,
   extension = NULL,
-  filename = NULL
+  filename = NULL,
+  trunc.per = 0.02
 ) {
   # Check if correct class is supplied.
   if (!inherits(raster, what = "SpatRaster")) {
@@ -51,12 +52,13 @@ stretch_raster_full <- function(
   #   fs::path_file() |>
   #   fs::path_ext_remove()
 
+
   if (type == "RGB") {
     # Check if there are values close to RGB, within the 25 nm.
-    if (any(purrr::list_c(purrr::map(c(640, 545, 460),
+    if (any(purrr::list_c(purrr::map(c(630,532,465),
               \(i) dplyr::near(i, as.numeric(terra::names(raster)), tol = 25)))) == TRUE &
-        nrow(spectra_position(raster,c(650, 550, 450))) == 3){
-          spectra <- c(650, 550, 450)
+        nrow(spectra_position(raster,c(630,532,465))) == 3){
+          spectra <- c(630,532,465)
     } else {
       rlang::warn(
         "Can't match layers to RGB. Using the first, middle and last available layers."
@@ -109,7 +111,7 @@ stretch_raster_full <- function(
   }
 
   # Check if raster is written to file
-  if (filename == FALSE) {
+  if (filename == FALSE){
     # Subset and write to RGB
     raster <- spectra_position(
       raster,
@@ -119,7 +121,8 @@ stretch_raster_full <- function(
         raster = raster,
         spectra_tbl = _
       ) |>
-      terra::stretch(filename = NULL)
+      terra::stretch(filename = NULL,
+                     histeq = histeq)
   } else {
     # Subset and write to RGB
     raster <- spectra_position(
@@ -129,12 +132,54 @@ stretch_raster_full <- function(
       spectra_sub(
         raster = raster,
         spectra_tbl = _
-      ) |>
-      terra::stretch(
-        filename = filename,
-        histeq = histeq,
-        overwrite = TRUE
       )
+
+    #specimR method
+    rescaledROI <- raster %>%
+      as.matrix() %>%
+      linearStretch() %>%
+      c() %>%
+      imager::as.cimg(x = ncol(raster),y = nrow(raster),cc = 3) %>%
+      imager::mirror("y")
+
+
+    imager::save.image(imager::mirror(rescaledROI,"y"),file = filename)
+
+    # Also from specimR, maybe helpful
+    # rescale the outer parts of the png
+    # rescaledOverview <- imager::mirror(overviewPng,"y")
+    # rescaledOverview[(bigRoi@xmin+1):bigRoi@xmax,(bigRoi@ymin+1):bigRoi@ymax, , ] <- NA
+    # rescaledOverview <-  imager::imsplit(rescaledOverview,"c") %>%
+    #   imager::map_il(linearStretch) %>%
+    #   imager::imappend("c")
+    #
+    #
+    # #plop the new rescaled mud back in.
+    #
+    # mudAndScale <- rescaledOverview
+    #
+    # mudAndScale[(bigRoi@xmin+1):bigRoi@xmax,(bigRoi@ymin+1):bigRoi@ymax, , ] <- rescaledROI
+    #
+    # #flip back
+    # mudAndScale <- imager::mirror(mudAndScale,"y")
+    #
+    #
+    # imager::save.image(mudAndScale,file = file.path(image.output.dir,paste0("fullImage-",stretch.fun,".png")))
+    #
+
+    #
+    # mic <- quantile(as.matrix(raster),trunc.per,na.rm = TRUE)
+    # mac <- quantile(as.matrix(raster),1-trunc.per,na.rm = TRUE)
+
+    # if(mac < 1){
+    #   mic <- (mic * 254) + 1
+    #   mac <- (mac * 254) + 1
+    # }
+
+    raster <- raster |>
+      terra::stretch(
+        filename = NULL,
+        histeq = histeq)
   }
 
   # Return SpatRaster
@@ -951,4 +996,27 @@ plot_profile_spectral_profile <- function(
 
   # Return plot as an object
   return(plot)
+}
+
+
+
+#' Title
+#'
+#' @param lay
+#' @param na.rm
+#' @param trunc.perc
+#'
+#' @return
+#' @export
+#'
+#' @examples
+linearStretch <- function(lay,na.rm = TRUE,trunc.perc = 0.02){
+  mac <-  quantile((lay),1-trunc.perc,na.rm = na.rm)
+  mic <- quantile((lay),trunc.perc,na.rm = na.rm)
+
+  stretch <- (lay-mic)/(mac-mic)
+  stretch[stretch > 1] <- 1
+  stretch[stretch < 0] <- 0
+  stretch <- (stretch * 254)+1
+  return(stretch)
 }

@@ -1327,7 +1327,10 @@ run_core <- function(autoSave = TRUE){
 
 
           if (autoSave==TRUE){
-            saveLoc <- normalizePath(paste0(allParams$directory,"/HSItools_core.rds"))
+            scanFolder <- allParams$directory
+            allParams$directory <- scanFolder
+            allParams$rasterPaths <- purrr::map_chr(allParams$rasterPaths,\(x) stringr::str_remove_all(x,"capture/"))
+            saveLoc <- file.path(allParams$directory,"HSItools_core.rds")
             terra::saveRDS(allParams, saveLoc)
             cat("\n")
             cat(paste0("Output saved: ", saveLoc))
