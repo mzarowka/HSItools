@@ -287,7 +287,7 @@ plotSpectralDashboard <- function(core,
     #make a dashboard plot
   }
 
-  if(length(ind > 1)){#write out spectral indices if there are multiple indices
+  if(length(ind) > 1){#write out spectral indices if there are multiple indices
 
   spectralIndices <- spectralIndices |>
     dplyr::select(depth,dplyr::everything(), dplyr::starts_with("smooth")) |>
