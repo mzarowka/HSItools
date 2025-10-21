@@ -2,13 +2,19 @@
 #'
 #' @family HSI Transformations
 #' @param x A terra SpatRaster with hyperspectral data
-#' @param window focal window size, default is 3
+#' @param window Focal window size, must be odd (default: 3)
 #' @param filename Character. Output filename. Default "" keeps in memory
 #' @param overwrite Logical. Overwrite existing file (default: FALSE)
 #' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
 #'
+#' @description
+#' Apply a focal (spatial) median filter to smooth hyperspectral data.
+#' The median filter finds the median value within a given window and assigns
+#' it to the pixel of interest, reducing noise while preserving edges.
+#'
 #' @details
-#' Focal (spatial) median filter smoothes data by findig the median value within a given window and assiging its value to a pixel of interest.
+#' The focal median filter smoothes data by finding the median value within
+#' a given window and assigning its value to a pixel of interest.
 #'
 #' @return A terra SpatRaster with median filtered values
 #' @export
@@ -20,13 +26,13 @@ hsi_smooth_median <- function(
   ...
 ) {
   # Validate input
-  if (!inherits(x, what = "SpatRaster")) {
+  if (!inherits(x, "SpatRaster")) {
     cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
   }
 
-  # Validate window terra::size (must be odd)
+  # Validate window size (must be odd)
   if (window %% 2 == 0) {
-    cli::cli_abort("Window size must be an odd number.")
+    cli::cli_abort("{.arg window} size must be an odd number.")
   }
 
   # Store user input in a spliceable list
@@ -67,14 +73,21 @@ hsi_smooth_median <- function(
 #' @param cores positive integer. If cores > 1, a 'parallel' package cluster with that many cores is created and used. You can also supply a cluster object.
 #' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
 #'
+#' @description
+#' Remove the spectral continuum from hyperspectral reflectance data to
+#' normalize spectra and highlight absorption features. The continuum represents
+#' the overall convex hull shape of the spectrum connecting local maxima.
+#'
 #' @details
 #' Continuum removal normalizes reflectance spectra to highlight absorption
 #' features by removing the overall spectral shape. The continuum is the
 #' convex hull that connects local maxima in the spectrum.
 #'
+#' Requires the \pkg{prospectr} package.
+#'
 #' @return A terra SpatRaster with continuum-removed values
 #' @export
-hsi_continuum <- function(
+hsi_remove_continuum <- function(
   x,
   filename = "",
   overwrite = FALSE,
@@ -82,14 +95,15 @@ hsi_continuum <- function(
   ...
 ) {
   # Validate input
-  if (!inherits(x, what = "SpatRaster")) {
+  if (!inherits(x, "SpatRaster")) {
     cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
   }
 
   # Validate if it is possible to remove the continuum
   if (terra::nlyr(x) < 3) {
     cli::cli_abort(
-      "Input raster must have at least 3 bands for continuum removal."
+      "Input raster must have at least 3 bands for continuum removal.",
+      i = "Current raster has {terra::nlyr(x)} band{?s}."
     )
   }
 
@@ -120,6 +134,9 @@ hsi_continuum <- function(
 
   # If wavelengths couldn't be converted, create a sequence
   if (all(is.na(wavelengths))) {
+    cli::cli_alert_warning(
+      "Band names cannot be converted to wavelengths. Using band indices."
+    )
     wavelengths <- seq_along(band_names)
   }
 
@@ -159,10 +176,15 @@ hsi_continuum <- function(
 #' @family HSI Transformations
 #'
 #' @param x A terra SpatRaster with hyperspectral data
-#' @param index_name Character. Name of calculated RABD
-#' @param index_type Character. Type of RABD. One of "strict" - specific wavelength, "max" - flexible choice of the maximum reflectance dip, "mid" - middle point between the min and max trough wavelength (similar to strict)
-#' @param edges Numeric. Vector of two for the wide calculation window
-#' @param trough Character. Vector of wavelength(s) to look for trough
+#' @param index_name Character. Name of calculated RABD index
+#' @param index_type Character. Type of RABD. One of:
+#' #'   \describe{
+#'     \item{"strict"}{Use specific wavelength as trough}
+#'     \item{"max"}{Flexibly find maximum reflectance dip within trough range}
+#'     \item{"mid"}{Use midpoint between min and max trough wavelength}
+#'   }
+#' @param continuum_edges Numeric. Vector of two for the continuum anchor points
+#' @param absorption_band Numeric Vector of wavelength(s) to look for trough (absorption feature location)
 #' @param filename Character. Output filename. Default "" keeps in memory
 #' @param overwrite Logical. Overwrite existing file (default: FALSE)
 #' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
@@ -173,8 +195,8 @@ hsi_calc_rabd <- function(
   x,
   index_name,
   index_type,
-  edges,
-  trough,
+  continuum_edges,
+  absorption_band,
   filename = "",
   overwrite = FALSE,
   ...
@@ -196,6 +218,20 @@ hsi_calc_rabd <- function(
     missing(index_name) || !is.character(index_name) || length(index_name) != 1
   ) {
     cli::cli_abort("{.arg index_name} must be a single character string.")
+  }
+
+  # Validate continuum_edges
+  if (!is.numeric(continuum_edges) || length(continuum_edges) != 2) {
+    cli::cli_abort(
+      "{.arg continuum_edges} must be a numeric vector of length 2 (wavelength boundaries)."
+    )
+  }
+
+  # Validate absorption feature
+  if (!is.numeric(absorption_band)) {
+    cli::cli_abort(
+      "{.arg absorption_band} must be numeric."
+    )
   }
 
   # Store user input in a spliceable list
@@ -220,7 +256,7 @@ hsi_calc_rabd <- function(
     # Find trough position
     trough_position <- wavelength_position(
       x = x,
-      wavelength = trough
+      wavelength = absorption_band
     ) |>
       # Pull vector with positions
       dplyr::pull(var = 2) |>
@@ -234,10 +270,13 @@ hsi_calc_rabd <- function(
       (\(i) as.integer(i[1]))()
   } else if (index_type == "mid") {
     # Find trough position
-    trough <- stats::median(trough)
+    trough <- stats::median(absorption_band)
 
     # Find trough position
-    trough_position <- wavelength_position(x = x, wavelength = trough) |>
+    trough_position <- wavelength_position(
+      x = x,
+      wavelength = absorption_band
+    ) |>
       # Pull vector with positions
       dplyr::pull(var = 2) |>
       # Subset normalized raster to match trough
@@ -252,7 +291,10 @@ hsi_calc_rabd <- function(
     # If RABD is defined as a specific wavelength.
   } else if (index_type == "strict") {
     # Find trough position
-    trough_position <- wavelength_position(x = x, wavelength = trough) |>
+    trough_position <- wavelength_position(
+      x = x,
+      wavelength = absorption_band
+    ) |>
       # Pull vector with positions
       dplyr::pull(var = 2) |>
       # Subset normalized raster to match trough
@@ -271,7 +313,7 @@ hsi_calc_rabd <- function(
     as.numeric()
 
   # Find edge positions
-  edge_positions <- wavelength_position(x = x, wavelength = edges) |>
+  edge_positions <- wavelength_position(x = x, wavelength = continuum_edges) |>
     # Pull vector with positions
     dplyr::pull(var = 2)
 
@@ -325,10 +367,17 @@ hsi_calc_rabd <- function(
 #'
 #' @param x A terra SpatRaster with hyperspectral data
 #' @param index_name Character. Name of calculated ratio
-#' @param edges Numeric. Vector of two for the numerator and denominator
+#' @param edges Numeric vector of length 2. The two wavelengths (in nm)
+#'   to use for ratio calculation
 #' @param filename Character. Output filename. Default "" keeps in memory
 #' @param overwrite Logical. Overwrite existing file (default: FALSE)
 #' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
+#'
+#' @description
+#' Calculate a band ratio index by dividing reflectance at one wavelength by
+#' reflectance at another wavelength. Band ratios are commonly used to
+#' normalize spectral data and highlight specific features such as clay
+#' minerals or dust content.
 #'
 #' @return A terra SpatRaster with ratio values
 #' @export
@@ -337,21 +386,38 @@ hsi_calc_rabd <- function(
 hsi_calc_ratio <- function(
   x,
   index_name,
-  edges,
+  bands,
   filename = "",
   overwrite = FALSE,
   ...
 ) {
   # Validate input
-  if (!inherits(x, what = "SpatRaster")) {
+  if (!inherits(x, "SpatRaster")) {
     cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
   }
 
-  # Validate name handling
+  # Validate index_name
   if (
-    missing(index_name) || !is.character(index_name) || length(index_name) != 1
+    missing(index_name) ||
+      !is.character(index_name) ||
+      length(index_name) != 1
   ) {
     cli::cli_abort("{.arg index_name} must be a single character string.")
+  }
+
+  # Validate bands
+  if (missing(bands)) {
+    cli::cli_abort("{.arg bands} is required and cannot be missing.")
+  }
+
+  if (!is.numeric(bands) || length(bands) != 2) {
+    cli::cli_abort(
+      c(
+        "{.arg bands} must be a numeric vector of length 2.",
+        "x" = "Got {typeof(bands)} of length {length(bands)}",
+        "i" = "Example: bands = c(570, 630)"
+      )
+    )
   }
 
   # Store user input in a spliceable list
@@ -372,7 +438,7 @@ hsi_calc_ratio <- function(
   )
 
   # Find edge positions
-  edge_positions <- wavelength_position(x = x, wavelength = edges) |>
+  edge_positions <- wavelength_position(x = x, wavelength = bands) |>
     # Pull vector with positions
     dplyr::pull(var = 2)
 
@@ -402,34 +468,55 @@ hsi_calc_ratio <- function(
 #' @family HSI Transformations
 #'
 #' @param x A terra SpatRaster with hyperspectral data
-#' @param index_name Character. Name of calculated ratio
-#' @param edges Numeric. Vector of two for the numerator and denominator
+#' @param index_name Character. Name of calculated difference index
+#' @param bands Numeric vector of length 2. The two wavelengths (in nm)
+#'   to use for difference calculation
 #' @param filename Character. Output filename. Default "" keeps in memory
 #' @param overwrite Logical. Overwrite existing file (default: FALSE)
 #' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
 #'
-#' @return A terra SpatRaster with ratio values
-#' @export
+#' @description
+#' Calculate a band difference index by subtracting reflectance at one wavelength
+#' from reflectance at another wavelength. Band differences can highlight
+#' spectral features and are commonly used to detect clay minerals, dust, and
+#' other sedimentary components.
 #'
-#' @description calculate band ratio of selected wavelengths.
+#' @export
 hsi_calc_difference <- function(
   x,
   index_name,
-  edges,
+  bands,
   filename = "",
   overwrite = FALSE,
   ...
 ) {
   # Validate input
-  if (!inherits(x, what = "SpatRaster")) {
+  if (!inherits(x, "SpatRaster")) {
     cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
   }
 
-  # Validate name handling
+  # Validate index_name
   if (
-    missing(index_name) || !is.character(index_name) || length(index_name) != 1
+    missing(index_name) ||
+      !is.character(index_name) ||
+      length(index_name) != 1
   ) {
     cli::cli_abort("{.arg index_name} must be a single character string.")
+  }
+
+  # Validate bands
+  if (missing(bands)) {
+    cli::cli_abort("{.arg bands} is required and cannot be missing.")
+  }
+
+  if (!is.numeric(bands) || length(bands) != 2) {
+    cli::cli_abort(
+      c(
+        "{.arg bands} must be a numeric vector of length 2.",
+        "x" = "Got {typeof(bands)} of length {length(bands)}",
+        "i" = "Example: bands = c(675, 750)"
+      )
+    )
   }
 
   # Store user input in a spliceable list
@@ -450,7 +537,7 @@ hsi_calc_difference <- function(
   )
 
   # Find edge positions
-  edge_positions <- wavelength_position(x = x, wavelength = edges) |>
+  edge_positions <- wavelength_position(x = x, wavelength = bands) |>
     # Pull vector with positions
     dplyr::pull(var = 2)
 
@@ -490,8 +577,14 @@ hsi_calc_difference <- function(
 #' @return A terra SpatRaster with mean reflectance values
 #' @export
 #'
-#' @description Calculate mean reflectance across all spectral bands for each pixel
-#' in a hyperspectral image.
+#' @description
+#' Calculate mean reflectance across all spectral bands for each pixel in a
+#' hyperspectral image. This provides a measure of overall brightness and can
+#' be useful for normalizing other spectral indices.
+#'
+#' @details
+#' Mean reflectance (Rmean) is calculated as the arithmetic mean of reflectance
+#' values across all wavelengths for each pixel
 #'
 #' @examples
 #' \dontrun{
@@ -517,7 +610,7 @@ hsi_calc_rmean <- function(
   ...
 ) {
   # Validate input
-  if (!inherits(x, what = "SpatRaster")) {
+  if (!inherits(x, "SpatRaster")) {
     cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
   }
 
@@ -538,6 +631,8 @@ hsi_calc_rmean <- function(
 
   # Splice wopt defaults with user input if any
   wopt <- purrr::list_modify(wopt_default, !!!wopt_user)
+
+  # Conditional writing can be, probably, handled a little bit better?
 
   # Apply mean function over entire SpatRaster
   result <- terra::app(x, fun = "mean", na.rm = na.rm, cores = cores)
@@ -565,17 +660,27 @@ hsi_calc_rmean <- function(
 #'
 #' @param x A terra SpatRaster with hyperspectral data
 #' @param index_name Character. Name of calculated RABA
-#' @param edges Numeric. Vector of two for the wide calculation window
+#' @param continuum_edges Numeric vector of length 2. Wavelength boundaries
+#'   (in nm) that define the continuum for the calculation window
 #' @param filename Character. Output filename. Default "" keeps in memory
 #' @param overwrite Logical. Overwrite existing file (default: FALSE)
 #' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
+#'
+#' @description
+#' Calculate Relative Absorption Band Area (RABA), which quantifies the area
+#' of an absorption feature relative to a continuum.
+#'
+#' @details
+#' RABA is calculated as the integrated area between the actual reflectance
+#' spectrum and a linear continuum connecting the edge wavelengths, divided
+#' by the area under the continuum
 #'
 #' @return A terra SpatRaster with RABA values
 #' @export
 hsi_calc_raba <- function(
   x,
   index_name,
-  edges,
+  continuum_edges,
   filename = "",
   overwrite = FALSE,
   ...
@@ -590,6 +695,13 @@ hsi_calc_raba <- function(
     missing(index_name) || !is.character(index_name) || length(index_name) != 1
   ) {
     cli::cli_abort("{.arg index_name} must be a single character string.")
+  }
+
+  # Validate continuum_edges
+  if (!is.numeric(continuum_edges) || length(continuum_edges) != 2) {
+    cli::cli_abort(
+      "{.arg continuum_edges} must be a numeric vector of length 2 (wavelength boundaries)."
+    )
   }
 
   # Store user input in a spliceable list
@@ -638,7 +750,7 @@ hsi_calc_raba <- function(
 #'
 #' @param x A terra SpatRaster with hyperspectral data
 #' @param index_name Character. Name of calculated index
-#' @param edges Numeric. Vector of two for the wide calculation window. Default c(660, 680)
+#' @param search_range Numeric. Vector of two for the wide calculation window. Default c(660, 680)
 #' @param filename Character. Output filename. Default "" keeps in memory
 #' @param overwrite Logical. Overwrite existing file (default: FALSE)
 #' @param cores positive integer. If cores > 1, a 'parallel' package cluster with that many cores is created and used. You can also supply a cluster object.
@@ -646,18 +758,41 @@ hsi_calc_raba <- function(
 #'
 #' @return A terra SpatRaster with lambdaREMP values
 #'
-#' @description Calculate lambdaREMP (wavelength of the red-edge minimum point).
-#' This is the wavelength somewhere between 660 and 680 nm where the first derivative of
-#' reflectance equals zero, indicating the maximum absorption of light by chlorophyll.
+#' @description
+#' Calculate lambda REMP (wavelength of the Red-Edge Minimum Point), which
+#' identifies the wavelength where the first derivative of reflectance equals
+#' zero, indicating maximum chlorophyll absorption. This index provides a
+#' precise measure of chlorophyll content in sediment cores.
+#'
 #' Based on Ghanbari, H., Zilkey, D.R., Gregory-Eaves, I., Antoniades, D., 2023.
 #' A new index for the rapid generation of chlorophyll time series from hyperspectral imaging of sediment cores.
 #' Limnology and Oceanography: Methods 21, 703-717 https://doi.org/10.1002/lom3.10576
+#'
+#' @details
+#' Lambda REMP identifies the wavelength between approximately 660-680 nm where
+#' the first derivative of reflectance crosses from negative to positive
+#' (i.e., the inflection point where reflectance transitions from decreasing
+#' to increasing). This wavelength is highly sensitive to chlorophyll-a
+#' concentration.
+#'
+#' The algorithm:
+#' 1. Calculates first derivatives between adjacent bands within the search range
+#' 2. Identifies zero-crossings (negative to positive)
+#' 3. Uses linear interpolation to find the exact wavelength where derivative = 0
+#' 4. If multiple crossings exist, selects the one with the steepest slope
+#' 5. Falls back to minimum reflectance if no zero-crossing is found
+#'
+#' @references
+#' Ghanbari, H., Zilkey, D.R., Gregory-Eaves, I., Antoniades, D., 2023.
+#' A new index for the rapid generation of chlorophyll time series from
+#' hyperspectral imaging of sediment cores. Limnology and Oceanography:
+#' Methods 21, 703-717. \doi{10.1002/lom3.10576}
 #'
 #' @export
 hsi_calc_remp <- function(
   x,
   index_name,
-  edges = c(660, 680),
+  search_range = c(660, 680),
   filename = "",
   overwrite = FALSE,
   cores = 1,
@@ -673,6 +808,13 @@ hsi_calc_remp <- function(
     missing(index_name) || !is.character(index_name) || length(index_name) != 1
   ) {
     cli::cli_abort("{.arg index_name} must be a single character string.")
+  }
+
+  # Validate search_range
+  if (!is.numeric(search_range) || length(search_range) != 2) {
+    cli::cli_abort(
+      "{.arg search_range} must be a numeric vector of length 2 (wavelength range)."
+    )
   }
 
   # Store user input in a spliceable list
@@ -699,16 +841,16 @@ hsi_calc_remp <- function(
 
   # Find which bands fall within trough range
   trough_indices <- which(
-    wavelengths >= edges[1] & wavelengths <= edges[2]
+    wavelengths >= search_range[1] & wavelengths <= search_range[2]
   )
 
   if (length(trough_indices) < 3) {
     cli::cli_abort(
       message = paste0(
         "Not enough bands found in the trough range (",
-        edges[1],
+        search_range[1],
         "-",
-        edges[2],
+        search_range[2],
         " nm) to calculate derivatives. ",
         "Found only ",
         length(trough_indices),
@@ -801,7 +943,7 @@ hsi_calc_remp <- function(
 #'
 #' @param x A terra SpatRaster with hyperspectral data
 #' @param index_name Character. Name of calculated ratio
-#' @param band Numeric. Wavelength at which to calculate the derivative
+#' @param band Numeric. Wavelength (in nm) at which to calculate the derivative
 #' @param method Character. method to use for derivative calculation. One of "central" (default), "forward", or "backward".
 #' @param filename Character. Output filename. Default "" keeps in memory
 #' @param overwrite Logical. Overwrite existing file (default: FALSE)
@@ -811,7 +953,14 @@ hsi_calc_remp <- function(
 #' @export
 #'
 #' @description
-#' Calculates the spectral derivative at a specific wavelength using one of three methods:
+#' Calculate the spectral derivative (rate of change of reflectance with respect
+#' to wavelength) at a specific wavelength. Derivatives are useful for identifying
+#' absorption features, inflection points, and subtle spectral variations that
+#' may be obscured in the original reflectance data.
+#'
+#' @details
+#' The spectral derivative quantifies how quickly reflectance changes with
+#' wavelength. Three methods are available:
 #' - "central": Central difference method, \code{[f(x+h1) - f(x-h2)]/(h1+h2)}
 #' - "forward": Forward difference method, \code{[f(x+h) - f(x)]/h}
 #' - "backward": Backward difference method, \code{[f(x) - f(x-h)]/h}
@@ -985,10 +1134,17 @@ hsi_calc_derivative <- function(
 #'
 #' @param x A terra SpatRaster with hyperspectral data
 #' @param index_name Character. Name of calculated ratio
-#' @param edges Numeric. Vector of two for the numerator and denominator
+#' @param bands Numeric vector of length 2. The two wavelengths (in nm) to use
+#'   for NDI calculation
 #' @param filename Character. Output filename. Default "" keeps in memory
 #' @param overwrite Logical. Overwrite existing file (default: FALSE)
 #' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
+#'
+#' @description
+#' Calculate a Normalized Difference Index (NDI), which normalizes the difference
+#' between two bands by their sum. This approach is widely used in remote sensing
+#' (e.g., NDVI, NDWI) as it reduces the effects of illumination and viewing
+#' geometry while highlighting spectral contrasts.
 #'
 #' @return A terra SpatRaster with ndi values
 #' @export
@@ -997,7 +1153,7 @@ hsi_calc_derivative <- function(
 hsi_calc_ndi <- function(
   x,
   index_name,
-  edges,
+  bands,
   filename = "",
   overwrite = FALSE,
   ...
@@ -1014,6 +1170,13 @@ hsi_calc_ndi <- function(
     cli::cli_abort("{.arg index_name} must be a single character string.")
   }
 
+  # Validate bands
+  if (!is.numeric(bands) || length(bands) != 2) {
+    cli::cli_abort(
+      "{.arg bands} must be a numeric vector of length 2."
+    )
+  }
+
   # Store user input in a spliceable list
   wopt_user <- rlang::list2(...)
 
@@ -1026,7 +1189,7 @@ hsi_calc_ndi <- function(
   wopt <- purrr::list_modify(wopt_default, !!!wopt_user)
 
   # Find edge positions
-  edge_positions <- wavelength_position(x = x, wavelength = edges) |>
+  edge_positions <- wavelength_position(x = x, wavelength = bands) |>
     # Pull vector with positions
     dplyr::pull(var = 2)
 
@@ -1264,25 +1427,38 @@ hsi_normalize <- function(
 
 #' Hyperspectral reflectance raster
 #'
-#' @family HSI Transformations
-#' @param hsi_data A terra SpatRaster with hyperspectral sample data. Band names must be
-#'   numeric wavelengths in nm.
-#' @param whiteref A terra SpatRaster with hyperspectral white reference data. Band names must be
-#'   numeric wavelengths in nm.
-#' @param darkref A terra SpatRaster with hyperspectral dark reference data. Band names must be
-#'   numeric wavelengths in nm.
-#' @param tint A vector of two with integration times for white reference and sample data (in this order). Default c(1, 1).
+#' @param x A terra SpatRaster with raw hyperspectral sample data. Band names
+#'   must be numeric wavelengths in nm
+#' @param whiteref A terra SpatRaster with hyperspectral white reference data.
+#'   Must have same bands and wavelengths as \code{x}
+#' @param darkref A terra SpatRaster with hyperspectral dark reference data.
+#'   Must have same bands and wavelengths as \code{x}
+#' @param tint Numeric vector of length 2. Integration times for white reference
+#'   and sample data (in this order). Default c(1, 1) assumes equal integration times
 #' @param filename Character. Output filename. Default "" keeps in memory
 #' @param overwrite Logical. Overwrite existing file (default: FALSE)
 #' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
 #'
+#' @description
+#' Convert raw hyperspectral imaging data (digital numbers) to calibrated
+#' reflectance values using white and dark reference measurements. This is
+#' the essential first step in hyperspectral data processing.
+#'
 #' @details
-#' Normalizes a SpatRaster layer by layer in respect to white and dark references.
+#' Reflectance calibration normalizes raw sensor values using reference
+#' measurements to produce comparable reflectance data.
+#'
+#' **Important**: All three inputs (sample, white reference, dark reference)
+#' must have:
+#' - Same spatial resolution
+#' - Same number of bands
+#' - Same wavelength labels
+#' - Compatible spatial extents (vertical stacking is allowed)
 #'
 #' @return A terra SpatRaster with normalized reflectance values.
 #' @export
-hsi_reflectance <- function(
-  hsi_data,
+hsi_calc_reflectance <- function(
+  x,
   whiteref,
   darkref,
   tint = c(1, 1),
@@ -1290,18 +1466,63 @@ hsi_reflectance <- function(
   overwrite = FALSE,
   ...
 ) {
+  # Processing logic by Jakub Nowosad - add to contributors at some point.
   # Needs cleanup
-  # Needs proper validation, now it produces and error with not matching raster extents
-  # Needs to properly handle temporary files, otherwise it clogs up the drive almost imediately
+  # IMPORTANT Needs to properly handle temporary files, otherwise it clogs up the drive almost imediately
 
-  # Validate input -> this one gives an error of extents not matching
-  # if (
-  #   !all(purrr::map_lgl(c(sample, whiteref, darkref), \(x) {
-  #     inherits(x, what = "SpatRaster")
-  #   }))
-  # ) {
-  #   cli::cli_abort("All of inputs must be terra SpatRasters.")
-  # }
+  # Validate inputs are SpatRasters
+  if (!inherits(x, "SpatRaster")) {
+    cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
+  }
+
+  if (!inherits(whiteref, "SpatRaster")) {
+    cli::cli_abort("Input {.arg whiteref} must be a terra SpatRaster.")
+  }
+
+  if (!inherits(darkref, "SpatRaster")) {
+    cli::cli_abort("Input {.arg darkref} must be a terra SpatRaster.")
+  }
+
+  # Validate tint parameter
+  if (!is.numeric(tint) || length(tint) != 2) {
+    cli::cli_abort(
+      c(
+        "{.arg tint} must be a numeric vector of length 2.",
+        "i" = "Format: c(white_integration_time, sample_integration_time)"
+      )
+    )
+  }
+
+  if (any(tint <= 0)) {
+    cli::cli_abort("Integration times in {.arg tint} must be positive values.")
+  }
+
+  # Check that all inputs have the same number of bands
+  n_bands_x <- terra::nlyr(x)
+  n_bands_white <- terra::nlyr(whiteref)
+  n_bands_dark <- terra::nlyr(darkref)
+
+  if (n_bands_x != n_bands_white || n_bands_x != n_bands_dark) {
+    cli::cli_abort(
+      c(
+        "All inputs must have the same number of bands.",
+        "x" = "Sample: {n_bands_x} band{?s}",
+        "x" = "White reference: {n_bands_white} band{?s}",
+        "x" = "Dark reference: {n_bands_dark} band{?s}"
+      )
+    )
+  }
+
+  # Check that band names match
+  bands_x <- terra::names(x)
+  bands_white <- terra::names(whiteref)
+  bands_dark <- terra::names(darkref)
+
+  if (!identical(bands_x, bands_white) || !identical(bands_x, bands_dark)) {
+    cli::cli_alert_warning(
+      "Band names don't match across inputs. Proceeding with band-by-band processing."
+    )
+  }
 
   # # Store user input in a spliceable list -> probably not needed
   wopt_user <- rlang::list2(...)
@@ -1320,7 +1541,7 @@ hsi_reflectance <- function(
   # Perform normalization
   # In memory
   result <- list(
-    hsi_data = terra::as.list(hsi_data),
+    hsi_data = terra::as.list(x),
     whiteref = terra::as.list(whiteref),
     darkref = terra::as.list(darkref),
     tint = list(tint)
@@ -1389,7 +1610,7 @@ hsi_smooth_savgol <- function(
   ...
 ) {
   # Validate input
-  if (!inherits(x, what = "SpatRaster")) {
+  if (!inherits(x, "SpatRaster")) {
     cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
   }
 

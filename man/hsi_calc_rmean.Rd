@@ -33,8 +33,13 @@ hsi_calc_rmean(
 A terra SpatRaster with mean reflectance values
 }
 \description{
-Calculate mean reflectance across all spectral bands for each pixel
-in a hyperspectral image.
+Calculate mean reflectance across all spectral bands for each pixel in a
+hyperspectral image. This provides a measure of overall brightness and can
+be useful for normalizing other spectral indices.
+}
+\details{
+Mean reflectance (Rmean) is calculated as the arithmetic mean of reflectance
+values across all wavelengths for each pixel
 }
 \examples{
 \dontrun{
@@ -60,9 +65,8 @@ Other HSI Transformations:
 \code{\link{hsi_calc_rabd}()},
 \code{\link{hsi_calc_ratio}()},
 \code{\link{hsi_calc_remp}()},
-\code{\link{hsi_continuum}()},
 \code{\link{hsi_normalize}()},
-\code{\link{hsi_reflectance}()},
+\code{\link{hsi_remove_continuum}()},
 \code{\link{hsi_smooth_median}()},
 \code{\link{hsi_smooth_savgol}()},
 \code{\link{hsi_stretch}()}

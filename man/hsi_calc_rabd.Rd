@@ -8,8 +8,8 @@ hsi_calc_rabd(
   x,
   index_name,
   index_type,
-  edges,
-  trough,
+  continuum_edges,
+  absorption_band,
   filename = "",
   overwrite = FALSE,
   ...
@@ -18,13 +18,18 @@ hsi_calc_rabd(
 \arguments{
 \item{x}{A terra SpatRaster with hyperspectral data}
 
-\item{index_name}{Character. Name of calculated RABD}
+\item{index_name}{Character. Name of calculated RABD index}
 
-\item{index_type}{Character. Type of RABD. One of "strict" - specific wavelength, "max" - flexible choice of the maximum reflectance dip, "mid" - middle point between the min and max trough wavelength (similar to strict)}
+\item{index_type}{Character. Type of RABD. One of:
+#'   \describe{
+\item{"strict"}{Use specific wavelength as trough}
+\item{"max"}{Flexibly find maximum reflectance dip within trough range}
+\item{"mid"}{Use midpoint between min and max trough wavelength}
+}}
 
-\item{edges}{Numeric. Vector of two for the wide calculation window}
+\item{continuum_edges}{Numeric. Vector of two for the continuum anchor points}
 
-\item{trough}{Character. Vector of wavelength(s) to look for trough}
+\item{absorption_band}{Numeric Vector of wavelength(s) to look for trough (absorption feature location)}
 
 \item{filename}{Character. Output filename. Default "" keeps in memory}
 
@@ -47,9 +52,8 @@ Other HSI Transformations:
 \code{\link{hsi_calc_ratio}()},
 \code{\link{hsi_calc_remp}()},
 \code{\link{hsi_calc_rmean}()},
-\code{\link{hsi_continuum}()},
 \code{\link{hsi_normalize}()},
-\code{\link{hsi_reflectance}()},
+\code{\link{hsi_remove_continuum}()},
 \code{\link{hsi_smooth_median}()},
 \code{\link{hsi_smooth_savgol}()},
 \code{\link{hsi_stretch}()}

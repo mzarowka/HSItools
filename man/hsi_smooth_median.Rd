@@ -9,7 +9,7 @@ hsi_smooth_median(x, window = 3, filename = "", overwrite = FALSE, ...)
 \arguments{
 \item{x}{A terra SpatRaster with hyperspectral data}
 
-\item{window}{focal window size, default is 3}
+\item{window}{Focal window size, must be odd (default: 3)}
 
 \item{filename}{Character. Output filename. Default "" keeps in memory}
 
@@ -21,10 +21,13 @@ hsi_smooth_median(x, window = 3, filename = "", overwrite = FALSE, ...)
 A terra SpatRaster with median filtered values
 }
 \description{
-Focal raster smooth with a median
+Apply a focal (spatial) median filter to smooth hyperspectral data.
+The median filter finds the median value within a given window and assigns
+it to the pixel of interest, reducing noise while preserving edges.
 }
 \details{
-Focal (spatial) median filter smoothes data by findig the median value within a given window and assiging its value to a pixel of interest.
+The focal median filter smoothes data by finding the median value within
+a given window and assigning its value to a pixel of interest.
 }
 \seealso{
 Other HSI Transformations: 
@@ -36,9 +39,8 @@ Other HSI Transformations:
 \code{\link{hsi_calc_ratio}()},
 \code{\link{hsi_calc_remp}()},
 \code{\link{hsi_calc_rmean}()},
-\code{\link{hsi_continuum}()},
 \code{\link{hsi_normalize}()},
-\code{\link{hsi_reflectance}()},
+\code{\link{hsi_remove_continuum}()},
 \code{\link{hsi_smooth_savgol}()},
 \code{\link{hsi_stretch}()}
 }

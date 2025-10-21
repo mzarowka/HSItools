@@ -7,7 +7,7 @@
 hsi_calc_remp(
   x,
   index_name,
-  edges = c(660, 680),
+  search_range = c(660, 680),
   filename = "",
   overwrite = FALSE,
   cores = 1,
@@ -19,7 +19,7 @@ hsi_calc_remp(
 
 \item{index_name}{Character. Name of calculated index}
 
-\item{edges}{Numeric. Vector of two for the wide calculation window. Default c(660, 680)}
+\item{search_range}{Numeric. Vector of two for the wide calculation window. Default c(660, 680)}
 
 \item{filename}{Character. Output filename. Default "" keeps in memory}
 
@@ -33,12 +33,36 @@ hsi_calc_remp(
 A terra SpatRaster with lambdaREMP values
 }
 \description{
-Calculate lambdaREMP (wavelength of the red-edge minimum point).
-This is the wavelength somewhere between 660 and 680 nm where the first derivative of
-reflectance equals zero, indicating the maximum absorption of light by chlorophyll.
+Calculate lambda REMP (wavelength of the Red-Edge Minimum Point), which
+identifies the wavelength where the first derivative of reflectance equals
+zero, indicating maximum chlorophyll absorption. This index provides a
+precise measure of chlorophyll content in sediment cores.
+
 Based on Ghanbari, H., Zilkey, D.R., Gregory-Eaves, I., Antoniades, D., 2023.
 A new index for the rapid generation of chlorophyll time series from hyperspectral imaging of sediment cores.
 Limnology and Oceanography: Methods 21, 703-717 https://doi.org/10.1002/lom3.10576
+}
+\details{
+Lambda REMP identifies the wavelength between approximately 660-680 nm where
+the first derivative of reflectance crosses from negative to positive
+(i.e., the inflection point where reflectance transitions from decreasing
+to increasing). This wavelength is highly sensitive to chlorophyll-a
+concentration.
+
+The algorithm:
+\enumerate{
+\item Calculates first derivatives between adjacent bands within the search range
+\item Identifies zero-crossings (negative to positive)
+\item Uses linear interpolation to find the exact wavelength where derivative = 0
+\item If multiple crossings exist, selects the one with the steepest slope
+\item Falls back to minimum reflectance if no zero-crossing is found
+}
+}
+\references{
+Ghanbari, H., Zilkey, D.R., Gregory-Eaves, I., Antoniades, D., 2023.
+A new index for the rapid generation of chlorophyll time series from
+hyperspectral imaging of sediment cores. Limnology and Oceanography:
+Methods 21, 703-717. \doi{10.1002/lom3.10576}
 }
 \seealso{
 Other HSI Transformations: 
@@ -49,9 +73,8 @@ Other HSI Transformations:
 \code{\link{hsi_calc_rabd}()},
 \code{\link{hsi_calc_ratio}()},
 \code{\link{hsi_calc_rmean}()},
-\code{\link{hsi_continuum}()},
 \code{\link{hsi_normalize}()},
-\code{\link{hsi_reflectance}()},
+\code{\link{hsi_remove_continuum}()},
 \code{\link{hsi_smooth_median}()},
 \code{\link{hsi_smooth_savgol}()},
 \code{\link{hsi_stretch}()}

@@ -7,7 +7,7 @@
 hsi_calc_difference(
   x,
   index_name,
-  edges,
+  bands,
   filename = "",
   overwrite = FALSE,
   ...
@@ -16,9 +16,10 @@ hsi_calc_difference(
 \arguments{
 \item{x}{A terra SpatRaster with hyperspectral data}
 
-\item{index_name}{Character. Name of calculated ratio}
+\item{index_name}{Character. Name of calculated difference index}
 
-\item{edges}{Numeric. Vector of two for the numerator and denominator}
+\item{bands}{Numeric vector of length 2. The two wavelengths (in nm)
+to use for difference calculation}
 
 \item{filename}{Character. Output filename. Default "" keeps in memory}
 
@@ -26,11 +27,11 @@ hsi_calc_difference(
 
 \item{...}{Additional arguments passed to \code{\link[terra]{writeRaster}}}
 }
-\value{
-A terra SpatRaster with ratio values
-}
 \description{
-calculate band ratio of selected wavelengths.
+Calculate a band difference index by subtracting reflectance at one wavelength
+from reflectance at another wavelength. Band differences can highlight
+spectral features and are commonly used to detect clay minerals, dust, and
+other sedimentary components.
 }
 \seealso{
 Other HSI Transformations: 
@@ -41,9 +42,8 @@ Other HSI Transformations:
 \code{\link{hsi_calc_ratio}()},
 \code{\link{hsi_calc_remp}()},
 \code{\link{hsi_calc_rmean}()},
-\code{\link{hsi_continuum}()},
 \code{\link{hsi_normalize}()},
-\code{\link{hsi_reflectance}()},
+\code{\link{hsi_remove_continuum}()},
 \code{\link{hsi_smooth_median}()},
 \code{\link{hsi_smooth_savgol}()},
 \code{\link{hsi_stretch}()}

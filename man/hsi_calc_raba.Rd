@@ -4,14 +4,22 @@
 \alias{hsi_calc_raba}
 \title{Calculate Relative Absorption Band Area (RABA)}
 \usage{
-hsi_calc_raba(x, index_name, edges, filename = "", overwrite = FALSE, ...)
+hsi_calc_raba(
+  x,
+  index_name,
+  continuum_edges,
+  filename = "",
+  overwrite = FALSE,
+  ...
+)
 }
 \arguments{
 \item{x}{A terra SpatRaster with hyperspectral data}
 
 \item{index_name}{Character. Name of calculated RABA}
 
-\item{edges}{Numeric. Vector of two for the wide calculation window}
+\item{continuum_edges}{Numeric vector of length 2. Wavelength boundaries
+(in nm) that define the continuum for the calculation window}
 
 \item{filename}{Character. Output filename. Default "" keeps in memory}
 
@@ -23,7 +31,13 @@ hsi_calc_raba(x, index_name, edges, filename = "", overwrite = FALSE, ...)
 A terra SpatRaster with RABA values
 }
 \description{
-Calculate Relative Absorption Band Area (RABA)
+Calculate Relative Absorption Band Area (RABA), which quantifies the area
+of an absorption feature relative to a continuum.
+}
+\details{
+RABA is calculated as the integrated area between the actual reflectance
+spectrum and a linear continuum connecting the edge wavelengths, divided
+by the area under the continuum
 }
 \seealso{
 Other HSI Transformations: 
@@ -34,9 +48,8 @@ Other HSI Transformations:
 \code{\link{hsi_calc_ratio}()},
 \code{\link{hsi_calc_remp}()},
 \code{\link{hsi_calc_rmean}()},
-\code{\link{hsi_continuum}()},
 \code{\link{hsi_normalize}()},
-\code{\link{hsi_reflectance}()},
+\code{\link{hsi_remove_continuum}()},
 \code{\link{hsi_smooth_median}()},
 \code{\link{hsi_smooth_savgol}()},
 \code{\link{hsi_stretch}()}

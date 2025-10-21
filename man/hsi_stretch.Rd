@@ -64,9 +64,8 @@ Other HSI Transformations:
 \code{\link{hsi_calc_ratio}()},
 \code{\link{hsi_calc_remp}()},
 \code{\link{hsi_calc_rmean}()},
-\code{\link{hsi_continuum}()},
 \code{\link{hsi_normalize}()},
-\code{\link{hsi_reflectance}()},
+\code{\link{hsi_remove_continuum}()},
 \code{\link{hsi_smooth_median}()},
 \code{\link{hsi_smooth_savgol}()}
 }

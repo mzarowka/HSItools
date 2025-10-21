@@ -4,14 +4,15 @@
 \alias{hsi_calc_ndi}
 \title{Calculate normalized difference index (NDI)}
 \usage{
-hsi_calc_ndi(x, index_name, edges, filename = "", overwrite = FALSE, ...)
+hsi_calc_ndi(x, index_name, bands, filename = "", overwrite = FALSE, ...)
 }
 \arguments{
 \item{x}{A terra SpatRaster with hyperspectral data}
 
 \item{index_name}{Character. Name of calculated ratio}
 
-\item{edges}{Numeric. Vector of two for the numerator and denominator}
+\item{bands}{Numeric vector of length 2. The two wavelengths (in nm) to use
+for NDI calculation}
 
 \item{filename}{Character. Output filename. Default "" keeps in memory}
 
@@ -23,6 +24,11 @@ hsi_calc_ndi(x, index_name, edges, filename = "", overwrite = FALSE, ...)
 A terra SpatRaster with ndi values
 }
 \description{
+Calculate a Normalized Difference Index (NDI), which normalizes the difference
+between two bands by their sum. This approach is widely used in remote sensing
+(e.g., NDVI, NDWI) as it reduces the effects of illumination and viewing
+geometry while highlighting spectral contrasts.
+
 calculate normalized difference index
 }
 \seealso{
@@ -34,9 +40,8 @@ Other HSI Transformations:
 \code{\link{hsi_calc_ratio}()},
 \code{\link{hsi_calc_remp}()},
 \code{\link{hsi_calc_rmean}()},
-\code{\link{hsi_continuum}()},
 \code{\link{hsi_normalize}()},
-\code{\link{hsi_reflectance}()},
+\code{\link{hsi_remove_continuum}()},
 \code{\link{hsi_smooth_median}()},
 \code{\link{hsi_smooth_savgol}()},
 \code{\link{hsi_stretch}()}

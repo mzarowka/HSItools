@@ -19,7 +19,7 @@ hsi_calc_derivative(
 
 \item{index_name}{Character. Name of calculated ratio}
 
-\item{band}{Numeric. Wavelength at which to calculate the derivative}
+\item{band}{Numeric. Wavelength (in nm) at which to calculate the derivative}
 
 \item{method}{Character. method to use for derivative calculation. One of "central" (default), "forward", or "backward".}
 
@@ -33,7 +33,14 @@ hsi_calc_derivative(
 A terra SpatRaster with ratio values
 }
 \description{
-Calculates the spectral derivative at a specific wavelength using one of three methods:
+Calculate the spectral derivative (rate of change of reflectance with respect
+to wavelength) at a specific wavelength. Derivatives are useful for identifying
+absorption features, inflection points, and subtle spectral variations that
+may be obscured in the original reflectance data.
+}
+\details{
+The spectral derivative quantifies how quickly reflectance changes with
+wavelength. Three methods are available:
 \itemize{
 \item "central": Central difference method, \code{[f(x+h1) - f(x-h2)]/(h1+h2)}
 \item "forward": Forward difference method, \code{[f(x+h) - f(x)]/h}
@@ -53,9 +60,8 @@ Other HSI Transformations:
 \code{\link{hsi_calc_ratio}()},
 \code{\link{hsi_calc_remp}()},
 \code{\link{hsi_calc_rmean}()},
-\code{\link{hsi_continuum}()},
 \code{\link{hsi_normalize}()},
-\code{\link{hsi_reflectance}()},
+\code{\link{hsi_remove_continuum}()},
 \code{\link{hsi_smooth_median}()},
 \code{\link{hsi_smooth_savgol}()},
 \code{\link{hsi_stretch}()}

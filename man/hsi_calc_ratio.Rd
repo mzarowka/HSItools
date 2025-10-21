@@ -4,25 +4,31 @@
 \alias{hsi_calc_ratio}
 \title{Calculate band ratio}
 \usage{
-hsi_calc_ratio(x, index_name, edges, filename = "", overwrite = FALSE, ...)
+hsi_calc_ratio(x, index_name, bands, filename = "", overwrite = FALSE, ...)
 }
 \arguments{
 \item{x}{A terra SpatRaster with hyperspectral data}
 
 \item{index_name}{Character. Name of calculated ratio}
 
-\item{edges}{Numeric. Vector of two for the numerator and denominator}
-
 \item{filename}{Character. Output filename. Default "" keeps in memory}
 
 \item{overwrite}{Logical. Overwrite existing file (default: FALSE)}
 
 \item{...}{Additional arguments passed to \code{\link[terra]{writeRaster}}}
+
+\item{edges}{Numeric vector of length 2. The two wavelengths (in nm)
+to use for ratio calculation}
 }
 \value{
 A terra SpatRaster with ratio values
 }
 \description{
+Calculate a band ratio index by dividing reflectance at one wavelength by
+reflectance at another wavelength. Band ratios are commonly used to
+normalize spectral data and highlight specific features such as clay
+minerals or dust content.
+
 calculate band ratio of selected wavelengths
 }
 \seealso{
@@ -34,9 +40,8 @@ Other HSI Transformations:
 \code{\link{hsi_calc_rabd}()},
 \code{\link{hsi_calc_remp}()},
 \code{\link{hsi_calc_rmean}()},
-\code{\link{hsi_continuum}()},
 \code{\link{hsi_normalize}()},
-\code{\link{hsi_reflectance}()},
+\code{\link{hsi_remove_continuum}()},
 \code{\link{hsi_smooth_median}()},
 \code{\link{hsi_smooth_savgol}()},
 \code{\link{hsi_stretch}()}

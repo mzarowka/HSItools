@@ -3,8 +3,8 @@
 # In a way it also test for a number of layers in a SpatRaster
 test_that("Reflectance is calculated as expected", {
   expect_equal(
-    terra::values(hsi_reflectance(
-      hsi_data = terra::rast(
+    terra::values(hsi_calc_reflectance(
+      x = terra::rast(
         system.file(
           package = "HSItools",
           "testdata/capture/testdata.tif"
@@ -35,8 +35,8 @@ test_that("Reflectance is calculated as expected", {
 # Test type
 test_that("Calculated reflectance is a SpatRaster", {
   expect_s4_class(
-    hsi_reflectance(
-      hsi_data = terra::rast(
+    hsi_calc_reflectance(
+      x = terra::rast(
         system.file(
           package = "HSItools",
           "testdata/capture/testdata.tif"
@@ -100,7 +100,7 @@ test_that("Calculated Savitzky-Golay data is a SpatRaster", {
 # Some tolerance is needed
 test_that("Continuum removal reflectance is calculated as expected", {
   expect_equal(
-    terra::values(hsi_continuum(
+    terra::values(hsi_remove_continuum(
       x = terra::rast(
         system.file(
           package = "HSItools",
@@ -121,7 +121,7 @@ test_that("Continuum removal reflectance is calculated as expected", {
 # Test type
 test_that("Calculated continuum removed data is a SpatRaster", {
   expect_s4_class(
-    hsi_continuum(
+    hsi_remove_continuum(
       x = terra::rast(
         system.file(
           package = "HSItools",
@@ -158,7 +158,7 @@ test_that("Spatial median smoothing is calculated as expected", {
 # Test type
 test_that("Median smoothed data is a SpatRaster", {
   expect_s4_class(
-    hsi_continuum(
+    hsi_remove_continuum(
       x = terra::rast(
         system.file(
           package = "HSItools",
