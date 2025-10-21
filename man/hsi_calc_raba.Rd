@@ -10,13 +10,14 @@ hsi_calc_raba(
   continuum_edges,
   filename = "",
   overwrite = FALSE,
+  cores = 1,
   ...
 )
 }
 \arguments{
 \item{x}{A terra SpatRaster with hyperspectral data}
 
-\item{index_name}{Character. Name of calculated RABA}
+\item{index_name}{Character. Name of calculated RABA index}
 
 \item{continuum_edges}{Numeric vector of length 2. Wavelength boundaries
 (in nm) that define the continuum for the calculation window}
@@ -25,21 +26,62 @@ hsi_calc_raba(
 
 \item{overwrite}{Logical. Overwrite existing file (default: FALSE)}
 
+\item{cores}{Positive integer. Number of cores for parallel processing}
+
 \item{...}{Additional arguments passed to \code{\link[terra]{writeRaster}}}
 }
 \value{
 A terra SpatRaster with RABA values
 }
 \description{
-Calculate Relative Absorption Band Area (RABA), which quantifies the area
-of an absorption feature relative to a continuum.
+Calculate Relative Absorption Band Area (RABA), which quantifies the total
+absorption across a spectral feature by summing band-by-band RABD calculations.
+Implementation follows Butz et al. (2015) formula in HSI scanning manual.
 }
 \details{
-RABA is calculated as the integrated area between the actual reflectance
-spectrum and a linear continuum connecting the edge wavelengths, divided
-by the area under the continuum
+RABA extends the RABD concept from a single point to the entire absorption
+feature. The method calculates RABD at each wavelength between the continuum
+edges and sums them. The continuum is calculated using linear interpolation.
+
+This approach:
+\itemize{
+\item Uses the same continuum concept as \code{\link{hsi_calc_rabd}}
+\item Integrates across the entire absorption feature
+\item Is bandwidth-independent (works with any spectral resolution)
+\item Provides a measure of total absorption strength
+}
+}
+\examples{
+\dontrun{
+# Calculate RABA for chlorophyll-a (typical range 650-700 nm)
+raba_chl <- hsi_calc_raba(
+  x = reflectance,
+  index_name = "raba_650_700",
+  continuum_edges = c(650, 700)
+)
+
+# Calculate RABA for different spectral window (590-730 nm)
+raba_broad <- hsi_calc_raba(
+  x = reflectance,
+  index_name = "raba_590_730",
+  continuum_edges = c(590, 730)
+)
+
+# Save to file with parallel processing
+raba <- hsi_calc_raba(
+  x = reflectance,
+  index_name = "raba_650_700",
+  continuum_edges = c(650, 700),
+  cores = 4,
+  filename = "raba_output.tif",
+  overwrite = TRUE
+)
+}
+
 }
 \seealso{
+\code{\link{hsi_calc_rabd}} for single-point absorption depth
+
 Other HSI Transformations: 
 \code{\link{hsi_calc_derivative}()},
 \code{\link{hsi_calc_difference}()},
