@@ -176,15 +176,15 @@ hsi_remove_continuum <- function(
 #' @family HSI Transformations
 #'
 #' @param x A terra SpatRaster with hyperspectral data
-#' @param index_name Character. Name of calculated RABD index
+#' @param continuum_edges Numeric. Vector of two for the continuum anchor points
+#' @param absorption_band Numeric Vector of wavelength(s) to look for trough (absorption feature location)
 #' @param index_type Character. Type of RABD. One of:
 #' #'   \describe{
 #'     \item{"strict"}{Use specific wavelength as trough}
 #'     \item{"max"}{Flexibly find maximum reflectance dip within trough range}
 #'     \item{"mid"}{Use midpoint between min and max trough wavelength}
 #'   }
-#' @param continuum_edges Numeric. Vector of two for the continuum anchor points
-#' @param absorption_band Numeric Vector of wavelength(s) to look for trough (absorption feature location)
+#' @param index_name Character. Name of calculated RABD index. Default NULL.
 #' @param filename Character. Output filename. Default "" keeps in memory
 #' @param overwrite Logical. Overwrite existing file (default: FALSE)
 #' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
@@ -193,10 +193,10 @@ hsi_remove_continuum <- function(
 #' @export
 hsi_calc_rabd <- function(
   x,
-  index_name,
-  index_type,
   continuum_edges,
   absorption_band,
+  index_type,
+  index_name = NULL,
   filename = "",
   overwrite = FALSE,
   ...
@@ -345,7 +345,9 @@ hsi_calc_rabd <- function(
   terra::values(result) <- rabd
 
   # Set name
-  names(result) <- index_name
+  if (!is.null(index_name)) {
+    names(result) <- index_name
+  }
 
   # Write new raster to file based on user input
   if (filename != "") {
@@ -366,9 +368,9 @@ hsi_calc_rabd <- function(
 #' @family HSI Transformations
 #'
 #' @param x A terra SpatRaster with hyperspectral data
-#' @param index_name Character. Name of calculated ratio
-#' @param edges Numeric vector of length 2. The two wavelengths (in nm)
+#' @param bands Numeric vector of length 2. The two wavelengths (in nm)
 #'   to use for ratio calculation
+#' @param index_name Character. Name of calculated ratio. Default NULL
 #' @param filename Character. Output filename. Default "" keeps in memory
 #' @param overwrite Logical. Overwrite existing file (default: FALSE)
 #' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
@@ -385,8 +387,8 @@ hsi_calc_rabd <- function(
 #' @description calculate band ratio of selected wavelengths
 hsi_calc_ratio <- function(
   x,
-  index_name,
   bands,
+  index_name = NULL,
   filename = "",
   overwrite = FALSE,
   ...
@@ -394,15 +396,6 @@ hsi_calc_ratio <- function(
   # Validate input
   if (!inherits(x, "SpatRaster")) {
     cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
-  }
-
-  # Validate index_name
-  if (
-    missing(index_name) ||
-      !is.character(index_name) ||
-      length(index_name) != 1
-  ) {
-    cli::cli_abort("{.arg index_name} must be a single character string.")
   }
 
   # Validate bands
@@ -446,8 +439,10 @@ hsi_calc_ratio <- function(
   result <- terra::subset(x, edge_positions[1]) /
     terra::subset(x, edge_positions[2])
 
-  # Set layer name
-  names(result) <- index_name
+  # Set name
+  if (!is.null(index_name)) {
+    names(result) <- index_name
+  }
 
   # Write new raster to file based on user input
   if (filename != "") {
@@ -468,9 +463,9 @@ hsi_calc_ratio <- function(
 #' @family HSI Transformations
 #'
 #' @param x A terra SpatRaster with hyperspectral data
-#' @param index_name Character. Name of calculated difference index
 #' @param bands Numeric vector of length 2. The two wavelengths (in nm)
 #'   to use for difference calculation
+#' @param index_name Character. Name of calculated difference index. Default NULL
 #' @param filename Character. Output filename. Default "" keeps in memory
 #' @param overwrite Logical. Overwrite existing file (default: FALSE)
 #' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
@@ -484,8 +479,8 @@ hsi_calc_ratio <- function(
 #' @export
 hsi_calc_difference <- function(
   x,
-  index_name,
   bands,
+  index_name = NULL,
   filename = "",
   overwrite = FALSE,
   ...
@@ -493,15 +488,6 @@ hsi_calc_difference <- function(
   # Validate input
   if (!inherits(x, "SpatRaster")) {
     cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
-  }
-
-  # Validate index_name
-  if (
-    missing(index_name) ||
-      !is.character(index_name) ||
-      length(index_name) != 1
-  ) {
-    cli::cli_abort("{.arg index_name} must be a single character string.")
   }
 
   # Validate bands
@@ -545,8 +531,10 @@ hsi_calc_difference <- function(
   result <- terra::subset(x, edge_positions[1]) -
     terra::subset(x, edge_positions[2])
 
-  # Set layer name
+  # Set name
+  if (!is.null(index_name)) {
   names(result) <- index_name
+  }
 
   # Write new raster to file based on user input
   if (filename != "") {
@@ -567,7 +555,7 @@ hsi_calc_difference <- function(
 #' @family HSI Transformations
 #'
 #' @param x A terra SpatRaster with hyperspectral data
-#' @param index_name Character. Name of calculated rmean.
+#' @param index_name Character. Name of calculated rmean. Default NULL
 #' @param na.rm Logical. Remove NA values when calculating mean (default: TRUE)
 #' @param filename Character. Output filename. Default "" keeps in memory
 #' @param overwrite Logical. Overwrite existing file (default: FALSE)
@@ -602,7 +590,7 @@ hsi_calc_difference <- function(
 #' }
 hsi_calc_rmean <- function(
   x,
-  index_name,
+  index_name = NULL,
   na.rm = TRUE,
   filename = "",
   overwrite = FALSE,
@@ -612,13 +600,6 @@ hsi_calc_rmean <- function(
   # Validate input
   if (!inherits(x, "SpatRaster")) {
     cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
-  }
-
-  # Validate name handling
-  if (
-    missing(index_name) || !is.character(index_name) || length(index_name) != 1
-  ) {
-    cli::cli_abort("{.arg index_name} must be a single character string.")
   }
 
   # Store user input in a spliceable list
@@ -637,8 +618,10 @@ hsi_calc_rmean <- function(
   # Apply mean function over entire SpatRaster
   result <- terra::app(x, fun = "mean", na.rm = na.rm, cores = cores)
 
-  # Set layer name
+  # Set name
+  if (!is.null(index_name)) {
   names(result) <- index_name
+  }
 
   # Write new raster to file based on user input
   if (filename != "") {
@@ -659,9 +642,9 @@ hsi_calc_rmean <- function(
 #' @family HSI Transformations
 #'
 #' @param x A terra SpatRaster with hyperspectral data
-#' @param index_name Character. Name of calculated RABA index
 #' @param continuum_edges Numeric vector of length 2. Wavelength boundaries
 #'   (in nm) that define the continuum for the calculation window
+#' @param index_name Character. Name of calculated RABA index. Default NULL
 #' @param filename Character. Output filename. Default "" keeps in memory
 #' @param overwrite Logical. Overwrite existing file (default: FALSE)
 #' @param cores Positive integer. Number of cores for parallel processing
@@ -693,22 +676,22 @@ hsi_calc_rmean <- function(
 #' # Calculate RABA for chlorophyll-a (typical range 650-700 nm)
 #' raba_chl <- hsi_calc_raba(
 #'   x = reflectance,
-#'   index_name = "raba_650_700",
-#'   continuum_edges = c(650, 700)
+#'   continuum_edges = c(650, 700),
+#'   index_name = "raba_650_700"
 #' )
 #'
 #' # Calculate RABA for different spectral window (590-730 nm)
 #' raba_broad <- hsi_calc_raba(
 #'   x = reflectance,
-#'   index_name = "raba_590_730",
-#'   continuum_edges = c(590, 730)
+#'   continuum_edges = c(590, 730),
+#'   index_name = "raba_590_730"
 #' )
 #'
 #' # Save to file with parallel processing
 #' raba <- hsi_calc_raba(
 #'   x = reflectance,
-#'   index_name = "raba_650_700",
 #'   continuum_edges = c(650, 700),
+#'   index_name = "raba_650_700",
 #'   cores = 4,
 #'   filename = "raba_output.tif",
 #'   overwrite = TRUE
@@ -718,8 +701,8 @@ hsi_calc_rmean <- function(
 #' @export
 hsi_calc_raba <- function(
   x,
-  index_name,
   continuum_edges,
+  index_name = NULL,
   filename = "",
   overwrite = FALSE,
   cores = 1,
@@ -728,15 +711,6 @@ hsi_calc_raba <- function(
   # Validate input
   if (!inherits(x, "SpatRaster")) {
     cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
-  }
-
-  # Validate index name
-  if (
-    missing(index_name) ||
-      !is.character(index_name) ||
-      length(index_name) != 1
-  ) {
-    cli::cli_abort("{.arg index_name} must be a single character string.")
   }
 
   # Validate continuum edges
@@ -830,7 +804,9 @@ hsi_calc_raba <- function(
   )
 
   # Set name
+  if (!is.null(index_name)) {
   names(result) <- index_name
+  }
 
   # Return raster
   return(result)
@@ -841,8 +817,8 @@ hsi_calc_raba <- function(
 #' @family HSI Transformations
 #'
 #' @param x A terra SpatRaster with hyperspectral data
-#' @param index_name Character. Name of calculated index
 #' @param search_range Numeric. Vector of two for the wide calculation window. Default c(660, 680)
+#' @param index_name Character. Name of calculated index. Default NULL
 #' @param filename Character. Output filename. Default "" keeps in memory
 #' @param overwrite Logical. Overwrite existing file (default: FALSE)
 #' @param cores positive integer. If cores > 1, a 'parallel' package cluster with that many cores is created and used. You can also supply a cluster object.
@@ -883,8 +859,8 @@ hsi_calc_raba <- function(
 #' @export
 hsi_calc_remp <- function(
   x,
-  index_name,
   search_range = c(660, 680),
+  index_name = NULL,
   filename = "",
   overwrite = FALSE,
   cores = 1,
@@ -893,13 +869,6 @@ hsi_calc_remp <- function(
   # Validate input
   if (!inherits(x, what = "SpatRaster")) {
     cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
-  }
-
-  # Validate name handling
-  if (
-    missing(index_name) || !is.character(index_name) || length(index_name) != 1
-  ) {
-    cli::cli_abort("{.arg index_name} must be a single character string.")
   }
 
   # Validate search_range
@@ -1022,8 +991,10 @@ hsi_calc_remp <- function(
     wopt = wopt
   )
 
-  # Set the layer name
+  # Set name
+  if (!is.null(index_name)) {
   names(result) <- index_name
+  }
 
   # Return the result
   return(result)
@@ -1034,8 +1005,8 @@ hsi_calc_remp <- function(
 #' @family HSI Transformations
 #'
 #' @param x A terra SpatRaster with hyperspectral data
-#' @param index_name Character. Name of calculated ratio
 #' @param band Numeric. Wavelength (in nm) at which to calculate the derivative
+#' @param index_name Character. Name of calculated ratio. Default NULL
 #' @param method Character. method to use for derivative calculation. One of "central" (default), "forward", or "backward".
 #' @param filename Character. Output filename. Default "" keeps in memory
 #' @param overwrite Logical. Overwrite existing file (default: FALSE)
@@ -1062,8 +1033,8 @@ hsi_calc_remp <- function(
 #' which can be useful for identifying absorption features and inflection points.
 hsi_calc_derivative <- function(
   x,
-  index_name,
   band,
+  index_name = NULL,
   method = "central",
   filename = "",
   overwrite = FALSE,
@@ -1072,13 +1043,6 @@ hsi_calc_derivative <- function(
   # Validate input
   if (!inherits(x, what = "SpatRaster")) {
     cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
-  }
-
-  # Validate name handling
-  if (
-    missing(index_name) || !is.character(index_name) || length(index_name) != 1
-  ) {
-    cli::cli_abort("{.arg index_name} must be a single character string.")
   }
 
   # Store user input in a spliceable list
@@ -1203,8 +1167,10 @@ hsi_calc_derivative <- function(
   # Set derivative values onto SpatRaster template
   # terra::values(result) <- derivative_values
 
-  # Set layer name
+  # Set name
+  if (!is.null(index_name)) {
   names(result) <- index_name
+  }
 
   # Write new raster to file based on user input
   if (filename != "") {
@@ -1225,9 +1191,9 @@ hsi_calc_derivative <- function(
 #' @family HSI Transformations
 #'
 #' @param x A terra SpatRaster with hyperspectral data
-#' @param index_name Character. Name of calculated ratio
 #' @param bands Numeric vector of length 2. The two wavelengths (in nm) to use
 #'   for NDI calculation
+#' @param index_name Character. Name of calculated ratio. Default NULL
 #' @param filename Character. Output filename. Default "" keeps in memory
 #' @param overwrite Logical. Overwrite existing file (default: FALSE)
 #' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
@@ -1244,8 +1210,8 @@ hsi_calc_derivative <- function(
 #' @description calculate normalized difference index
 hsi_calc_ndi <- function(
   x,
-  index_name,
   bands,
+  index_name = NULL,
   filename = "",
   overwrite = FALSE,
   ...
@@ -1253,13 +1219,6 @@ hsi_calc_ndi <- function(
   # Validate input
   if (!inherits(x, what = "SpatRaster")) {
     cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
-  }
-
-  # Validate name handling
-  if (
-    missing(index_name) || !is.character(index_name) || length(index_name) != 1
-  ) {
-    cli::cli_abort("{.arg index_name} must be a single character string.")
   }
 
   # Validate bands
@@ -1291,8 +1250,10 @@ hsi_calc_ndi <- function(
     (terra::subset(x, edge_positions[1]) +
       terra::subset(x, edge_positions[2]))
 
-  # Set layer name
+  # Set name
+  if (!is.null(index_name)) {
   names(result) <- index_name
+  }
 
   # Write new raster to file based on user input
   if (filename != "") {
@@ -1332,14 +1293,21 @@ hsi_calc_ndi <- function(
 #' @examples
 #' \dontrun{
 #' # Using predefined band combination
-#' rgb_stretched <- hsi_stretch(hyperspectral_raster, type = "RGB")
+#' rgb_stretched <- hsi_stretch(
+#' hyperspectral_raster,
+#' type = "RGB")
 #'
 #' # Using custom wavelengths
-#' custom_stretched <- hsi_stretch(hyperspectral_raster, type = c(400, 500, 600))
+#' custom_stretched <- hsi_stretch(
+#' hyperspectral_raster,
+#' type = c(400, 500, 600))
 #'
 #' # Save to file with histogram equalization
-#' hsi_stretch(hyperspectral_raster, type = "CIR", histeq = TRUE,
-#'             filename = "cir_stretched.tif", overwrite = TRUE)
+#' hsi_stretch(
+#' x = hyperspectral_raster,
+#' type = "CIR",
+#' histeq = TRUE,
+#' filename = "cir_stretched.tif", overwrite = TRUE)
 #' }
 #'
 #' @export
@@ -1420,7 +1388,7 @@ hsi_stretch <- function(
 
   selected_bands <- HSItools::wavelength_sub(
     x = x,
-    spectra_tbl = band_positions
+    wavelength_tbl = band_positions
   )
 
   # Perform stretching
