@@ -213,12 +213,12 @@ hsi_calc_rabd <- function(
     )
   }
 
-  # Validate name handling
-  if (
-    missing(index_name) || !is.character(index_name) || length(index_name) != 1
-  ) {
-    cli::cli_abort("{.arg index_name} must be a single character string.")
-  }
+  # # Validate name handling
+  # if (
+  #   missing(index_name) || !is.character(index_name) || length(index_name) != 1
+  # ) {
+  #   cli::cli_abort("{.arg index_name} must be a single character string.")
+  # }
 
   # Validate continuum_edges
   if (!is.numeric(continuum_edges) || length(continuum_edges) != 2) {
