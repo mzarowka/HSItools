@@ -1533,7 +1533,7 @@ hsi_stretch <- function(
       RGB = c(650, 550, 450),
       NIR = c(900, 800, 700),
       CIR = c(860, 650, 555),
-      SWIR = c(2200, 1650, 1200),
+      SWIR = c(1650, 1100, 2200),
       cli::cli_abort(
         "Unknown band type: {.val {type}}",
         i = "Use one of: RGB, NIR, CIR, SWIR, or provide numeric wavelengths."
