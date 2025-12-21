@@ -6,7 +6,7 @@
 \usage{
 hsi_calc_rmean(
   x,
-  index_name,
+  index_name = NULL,
   na.rm = TRUE,
   filename = "",
   overwrite = FALSE,
@@ -17,7 +17,7 @@ hsi_calc_rmean(
 \arguments{
 \item{x}{A terra SpatRaster with hyperspectral data}
 
-\item{index_name}{Character. Name of calculated rmean.}
+\item{index_name}{Character. Name of calculated rmean. Default NULL}
 
 \item{na.rm}{Logical. Remove NA values when calculating mean (default: TRUE)}
 
@@ -63,9 +63,11 @@ Other HSI Transformations:
 \code{\link{hsi_calc_ndi}()},
 \code{\link{hsi_calc_raba}()},
 \code{\link{hsi_calc_rabd}()},
+\code{\link{hsi_calc_rabd_old}()},
 \code{\link{hsi_calc_ratio}()},
 \code{\link{hsi_calc_remp}()},
 \code{\link{hsi_normalize}()},
+\code{\link{hsi_normalize2}()},
 \code{\link{hsi_remove_continuum}()},
 \code{\link{hsi_smooth_median}()},
 \code{\link{hsi_smooth_savgol}()},

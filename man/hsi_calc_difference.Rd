@@ -6,8 +6,8 @@
 \usage{
 hsi_calc_difference(
   x,
-  index_name,
   bands,
+  index_name = NULL,
   filename = "",
   overwrite = FALSE,
   ...
@@ -16,10 +16,10 @@ hsi_calc_difference(
 \arguments{
 \item{x}{A terra SpatRaster with hyperspectral data}
 
-\item{index_name}{Character. Name of calculated difference index}
-
 \item{bands}{Numeric vector of length 2. The two wavelengths (in nm)
 to use for difference calculation}
+
+\item{index_name}{Character. Name of calculated difference index. Default NULL}
 
 \item{filename}{Character. Output filename. Default "" keeps in memory}
 
@@ -39,10 +39,12 @@ Other HSI Transformations:
 \code{\link{hsi_calc_ndi}()},
 \code{\link{hsi_calc_raba}()},
 \code{\link{hsi_calc_rabd}()},
+\code{\link{hsi_calc_rabd_old}()},
 \code{\link{hsi_calc_ratio}()},
 \code{\link{hsi_calc_remp}()},
 \code{\link{hsi_calc_rmean}()},
 \code{\link{hsi_normalize}()},
+\code{\link{hsi_normalize2}()},
 \code{\link{hsi_remove_continuum}()},
 \code{\link{hsi_smooth_median}()},
 \code{\link{hsi_smooth_savgol}()},

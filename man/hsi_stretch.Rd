@@ -43,14 +43,21 @@ Supports both predefined band combinations and custom wavelength selection.
 \examples{
 \dontrun{
 # Using predefined band combination
-rgb_stretched <- hsi_stretch(hyperspectral_raster, type = "RGB")
+rgb_stretched <- hsi_stretch(
+hyperspectral_raster,
+type = "RGB")
 
 # Using custom wavelengths
-custom_stretched <- hsi_stretch(hyperspectral_raster, type = c(400, 500, 600))
+custom_stretched <- hsi_stretch(
+hyperspectral_raster,
+type = c(400, 500, 600))
 
 # Save to file with histogram equalization
-hsi_stretch(hyperspectral_raster, type = "CIR", histeq = TRUE,
-            filename = "cir_stretched.tif", overwrite = TRUE)
+hsi_stretch(
+x = hyperspectral_raster,
+type = "CIR",
+histeq = TRUE,
+filename = "cir_stretched.tif", overwrite = TRUE)
 }
 
 }
@@ -61,10 +68,12 @@ Other HSI Transformations:
 \code{\link{hsi_calc_ndi}()},
 \code{\link{hsi_calc_raba}()},
 \code{\link{hsi_calc_rabd}()},
+\code{\link{hsi_calc_rabd_old}()},
 \code{\link{hsi_calc_ratio}()},
 \code{\link{hsi_calc_remp}()},
 \code{\link{hsi_calc_rmean}()},
 \code{\link{hsi_normalize}()},
+\code{\link{hsi_normalize2}()},
 \code{\link{hsi_remove_continuum}()},
 \code{\link{hsi_smooth_median}()},
 \code{\link{hsi_smooth_savgol}()}

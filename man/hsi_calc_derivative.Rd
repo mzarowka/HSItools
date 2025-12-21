@@ -6,8 +6,8 @@
 \usage{
 hsi_calc_derivative(
   x,
-  index_name,
   band,
+  index_name = NULL,
   method = "central",
   filename = "",
   overwrite = FALSE,
@@ -17,9 +17,9 @@ hsi_calc_derivative(
 \arguments{
 \item{x}{A terra SpatRaster with hyperspectral data}
 
-\item{index_name}{Character. Name of calculated ratio}
-
 \item{band}{Numeric. Wavelength (in nm) at which to calculate the derivative}
+
+\item{index_name}{Character. Name of calculated ratio. Default NULL}
 
 \item{method}{Character. method to use for derivative calculation. One of "central" (default), "forward", or "backward".}
 
@@ -57,10 +57,12 @@ Other HSI Transformations:
 \code{\link{hsi_calc_ndi}()},
 \code{\link{hsi_calc_raba}()},
 \code{\link{hsi_calc_rabd}()},
+\code{\link{hsi_calc_rabd_old}()},
 \code{\link{hsi_calc_ratio}()},
 \code{\link{hsi_calc_remp}()},
 \code{\link{hsi_calc_rmean}()},
 \code{\link{hsi_normalize}()},
+\code{\link{hsi_normalize2}()},
 \code{\link{hsi_remove_continuum}()},
 \code{\link{hsi_smooth_median}()},
 \code{\link{hsi_smooth_savgol}()},

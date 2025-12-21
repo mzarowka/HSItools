@@ -6,8 +6,8 @@
 \usage{
 hsi_calc_remp(
   x,
-  index_name,
   search_range = c(660, 680),
+  index_name = NULL,
   filename = "",
   overwrite = FALSE,
   cores = 1,
@@ -17,9 +17,9 @@ hsi_calc_remp(
 \arguments{
 \item{x}{A terra SpatRaster with hyperspectral data}
 
-\item{index_name}{Character. Name of calculated index}
-
 \item{search_range}{Numeric. Vector of two for the wide calculation window. Default c(660, 680)}
+
+\item{index_name}{Character. Name of calculated index. Default NULL}
 
 \item{filename}{Character. Output filename. Default "" keeps in memory}
 
@@ -71,9 +71,11 @@ Other HSI Transformations:
 \code{\link{hsi_calc_ndi}()},
 \code{\link{hsi_calc_raba}()},
 \code{\link{hsi_calc_rabd}()},
+\code{\link{hsi_calc_rabd_old}()},
 \code{\link{hsi_calc_ratio}()},
 \code{\link{hsi_calc_rmean}()},
 \code{\link{hsi_normalize}()},
+\code{\link{hsi_normalize2}()},
 \code{\link{hsi_remove_continuum}()},
 \code{\link{hsi_smooth_median}()},
 \code{\link{hsi_smooth_savgol}()},

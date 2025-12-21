@@ -6,8 +6,8 @@
 \usage{
 hsi_calc_raba(
   x,
-  index_name,
   continuum_edges,
+  index_name = NULL,
   filename = "",
   overwrite = FALSE,
   cores = 1,
@@ -17,10 +17,10 @@ hsi_calc_raba(
 \arguments{
 \item{x}{A terra SpatRaster with hyperspectral data}
 
-\item{index_name}{Character. Name of calculated RABA index}
-
 \item{continuum_edges}{Numeric vector of length 2. Wavelength boundaries
 (in nm) that define the continuum for the calculation window}
+
+\item{index_name}{Character. Name of calculated RABA index. Default NULL}
 
 \item{filename}{Character. Output filename. Default "" keeps in memory}
 
@@ -56,22 +56,22 @@ This approach:
 # Calculate RABA for chlorophyll-a (typical range 650-700 nm)
 raba_chl <- hsi_calc_raba(
   x = reflectance,
-  index_name = "raba_650_700",
-  continuum_edges = c(650, 700)
+  continuum_edges = c(650, 700),
+  index_name = "raba_650_700"
 )
 
 # Calculate RABA for different spectral window (590-730 nm)
 raba_broad <- hsi_calc_raba(
   x = reflectance,
-  index_name = "raba_590_730",
-  continuum_edges = c(590, 730)
+  continuum_edges = c(590, 730),
+  index_name = "raba_590_730"
 )
 
 # Save to file with parallel processing
 raba <- hsi_calc_raba(
   x = reflectance,
-  index_name = "raba_650_700",
   continuum_edges = c(650, 700),
+  index_name = "raba_650_700",
   cores = 4,
   filename = "raba_output.tif",
   overwrite = TRUE
@@ -87,10 +87,12 @@ Other HSI Transformations:
 \code{\link{hsi_calc_difference}()},
 \code{\link{hsi_calc_ndi}()},
 \code{\link{hsi_calc_rabd}()},
+\code{\link{hsi_calc_rabd_old}()},
 \code{\link{hsi_calc_ratio}()},
 \code{\link{hsi_calc_remp}()},
 \code{\link{hsi_calc_rmean}()},
 \code{\link{hsi_normalize}()},
+\code{\link{hsi_normalize2}()},
 \code{\link{hsi_remove_continuum}()},
 \code{\link{hsi_smooth_median}()},
 \code{\link{hsi_smooth_savgol}()},
