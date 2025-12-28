@@ -1,6 +1,5 @@
 #' Preset proxies settings
 #'
-#'
 #' @format ## Proxies
 #' A list with properties of proxies
 #' \describe{

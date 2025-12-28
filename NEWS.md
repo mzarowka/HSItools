@@ -1,4 +1,4 @@
-# HSItools (development version)
+# HSItools 0.4.0
 
 # HSItools 0.3.0
 
