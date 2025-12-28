@@ -175,7 +175,7 @@ hsi_calc_remp <- function(
       lambda_remp <- x1 + (0 - y1) * (x2 - x1) / (y2 - y1)
 
       # Make sure result is within the specified range
-      lambda_remp <- max(min(lambda_remp, edges[2]), edges[1])
+      lambda_remp <- max(min(lambda_remp, search_range[2]), search_range[1])
 
       return(lambda_remp)
     } else {
