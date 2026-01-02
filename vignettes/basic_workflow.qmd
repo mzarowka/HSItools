@@ -10,8 +10,135 @@ knitr:
     comment: '#>'
 ---
 
+# Setup
+
 ```{r}
 #| label: setup
 library(HSItools)
 ```
 
+# Reflectance
+
+Typically, you need to calculate reflectance from raw data captured during the scan. HSItools makes this straightforward using a combination of {[terra](https://CRAN.R-project.org/package=terra)} and {HSItools} functions.
+
+First, locate your data. Because no assumptions about directory structure are made, you can use external white and dark reference files in this step. This is useful when, for example, high exposure time during the scan led to overexposure of your white reference and you need to substitute an external one.
+
+If you're reading data from ENVI .raw files, it may be important to use `noflip = TRUE` in your `terra::rast()` call, otherwise files will be flipped vertically.
+
+Our test dataset is a tiny 9 by 9 pixel subset of HSI data from the Hyperspectral Imaging Laboratory in Gdańsk.
+
+```{r}
+# Read in captured data and references
+data <- list(
+  x = terra::rast(
+    system.file(
+      package = "HSItools",
+      "testdata/capture/testdata.tif"
+    )
+  ),
+  whiteref = terra::rast(
+    system.file(
+      package = "HSItools",
+      "testdata/capture/WHITEREF_testdata.tif"
+    )
+  ),
+  darkref = terra::rast(
+    system.file(
+      package = "HSItools",
+      "testdata/capture/DARKREF_testdata.tif"
+    )
+  )
+)
+```
+
+With this data you are ready to calculate reflectance—a fraction between 0 and 1 representing "complete" darkness and whiteness. You can control integration times for your specimen and white reference with the `tint` argument, which defaults to `c(1, 1)`, assuming both use the same integration time. If you are using external references with different integration times, adjust accordingly; the white reference integration time comes first.
+
+You can also control whether processing should be done in memory or not. The default produces as many temporary files as there are layers in the SpatRaster. If your system has sufficient RAM, you can speed up computation by processing in memory. Finally, you can write your result to file or keep it in memory.
+
+```{r}
+# Calculate with defaults: temporary files, result in memory
+r1 <- HSItools::hsi_calc_reflectance(
+  x = data$x,
+  whiteref = data$whiteref,
+  darkref = data$darkref
+)
+
+# Calculate entirely in memory
+r2 <- HSItools::hsi_calc_reflectance(
+  x = data$x,
+  whiteref = data$whiteref,
+  darkref = data$darkref,
+  in_memory = TRUE
+)
+
+# Calculate in memory and write to file
+r3 <- HSItools::hsi_calc_reflectance(
+  x = data$x,
+  whiteref = data$whiteref,
+  darkref = data$darkref,
+  in_memory = TRUE,
+  filename = tempfile(fileext = ".tif")
+)
+
+# Results should be nearly identical, differing only at distant decimal places
+terra::all.equal(r1, r2)
+```
+
+# Clamping
+
+You may want to set all values outside the 0–1 range to NA. Use {terra} for this.
+
+```{r}
+r4 <- r2 |>
+  terra::clamp(lower = 0, upper = 1)
+```
+
+# Smoothing: spatial
+
+Next, apply a spatial filter such as a simple median to remove outliers. The default window size is 3 by 3.
+
+```{r}
+r5 <- r4 |>
+  HSItools::hsi_smooth_median()
+```
+
+# Smoothing: spectral
+
+With data smoothed across the spatial dimension, there should be no NAs in the spectral series. Now you can apply a Savitzky-Golay filter to smooth the reflectance spectrum in each pixel. Several arguments are available to control the smoothing parameters. The function uses the {[gsignal](https://CRAN.R-project.org/package=gsignal)} implementation.
+
+```{r}
+r6 <- r5 |>
+  HSItools::hsi_smooth_savgol()
+```
+
+# Continuum removal
+
+Smoothed data can be enhanced by removing the continuum. This corrects for the inherent tendency in spectral data to slope toward one edge of the sensing range. This is a computationally intensive function, so consider using it on subsets or regions of interest (ROI) rather than full-resolution data. The function uses the {[prospectr](https://CRAN.R-project.org/package=prospectr)} implementation.
+
+```{r}
+r7 <- r6 |>
+  HSItools::hsi_remove_continuum()
+```
+
+# Workflow
+
+With {HSItools} and {terra} it is easy to pipe operations into a single workflow. You can write to file at any point.
+
+```{r}
+# Calculate reflectance
+r <- HSItools::hsi_calc_reflectance(
+  x = data$x,
+  whiteref = data$whiteref,
+  darkref = data$darkref,
+  in_memory = TRUE
+) |>
+  # Clamp to valid range
+
+  terra::clamp(lower = 0, upper = 1) |>
+  # Smooth spatially
+  HSItools::hsi_smooth_median() |>
+  # Smooth spectrally and write intermediate result
+  HSItools::hsi_smooth_savgol(filename = tempfile(fileext = ".tif")) |>
+  # Optionally remove continuum
+  HSItools::hsi_remove_continuum()
+```
