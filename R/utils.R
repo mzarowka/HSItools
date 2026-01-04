@@ -7,7 +7,7 @@
 #' @return A tibble with columns:
 #'   - `wavelength`: the requested wavelengths
 #'   - `position`: the corresponding band indices in the SpatRaster
-#' 
+#'
 #' @export
 #'
 #' @description Find index position of the nearest wavelength (band) in the dataset
@@ -76,13 +76,13 @@ wavelength_position <- function(
 #' Subset SpatRaster by wavelength
 #'
 #' @family Utilities
-#' 
+#'
 #' @param x A terra SpatRaster to be subset
 #' @param wavelength_tbl a tibble with wavelength positions from wavelength_position.
 #'
 #' @return SpatRaster subset to contain only required wavelengthl bands.
 #' @export
-#' 
+#'
 #' @description Subset SpatRaster using wavelength (band) positions from a lookup table.
 #'
 #' @description subset SpatRaster with wavelength (bands) positions.
@@ -110,76 +110,6 @@ wavelength_sub <- function(
 
   # Return raster
   return(raster)
-}
-
-#' Get depth in metric units
-#'
-#' @family Utilities
-#' @param core \code{run_core} output. If provided fills pixel_ratio, sample_start and sample_end. Exclusive with pixel_ratio.
-#' @param pixel_ratio a source of conversion factor, manually input. Exclusive with pixel_ratio.
-#' @param ymax pixel value of the top.
-#' @param ymin pixel value of the bottom, default to 0.
-#' @param sample_start position of the sample beginning (point zero), either from \code{run_core} output or manually input.
-#' @param sample_end position of the sample end, either from \code{run_core} output or manually input.
-#' @param extent a terra extent or terra SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
-#'
-#' @return lookup table with depths.
-#' @export
-pixel_to_distance <- function(
-  core,
-  pixel_ratio,
-  ymax,
-  ymin = 0,
-  sample_start,
-  sample_end,
-  extent = NULL
-) {
-  # Check if only one argument is provided
-  rlang::check_exclusive(core, pixel_ratio, .require = TRUE)
-
-  # Calculate mm distance and depths
-
-  # Using run_core output
-  if (is.null(core) == FALSE) {
-    # Set core to run_core output
-    core <- core
-
-    # Extract pixel ratio
-    pixel_ratio <- core$distances$pixelRatio
-
-    # Extract sample_start
-    sample_start <- core$distances$startCore
-
-    # Extract sample_end
-    sample_end <- core$distances$endCore
-
-    # Extract full extent of the captured data
-    extent <- terra::ext(core$simpleRGB$ext)
-
-    # Get the full capture distance
-    distance <- (terra::ymax(extent) - terra::ymin(extent)) * (pixel_ratio)
-  } else {
-    # Get the full capture distance
-    distance <- (ymax - ymin) * (pixel_ratio)
-  }
-
-  # Reverse values, get metric zero at the capture top
-  capture_top <- c(y = (terra::ymax(extent) * pixel_ratio) - distance)
-
-  # Reverse values, get metric max at the capture bottom
-  capture_bottom <- c(y = (terra::ymin(extent) * pixel_ratio) + distance)
-
-  # Get the metric point of the sample beginning
-  point_zero <- capture_top - (sample_start[2] * pixel_ratio) + distance
-
-  # Return
-  return(list(
-    distance = distance,
-    capture_top = capture_top,
-    capture_bottom = capture_bottom,
-    point_zero = point_zero,
-    pixel_ratio = pixel_ratio
-  ))
 }
 
 #' Get spatial calibration in true units
@@ -259,7 +189,7 @@ hsi_calibrate_spatial <- function(
   return(spatial_calibration)
 }
 
-#' Calculate depth from pixel coordinates using spatial calibration
+#' Calculate real units from pixels using the calibration
 #'
 #' @family HSI Calibration
 #'
@@ -280,7 +210,7 @@ hsi_calibrate_spatial <- function(
 #' depths increase upward (inverted image).
 #'
 #' @export
-hsi_calc_depth <- function(
+hsi_pixels_to_units <- function(
   pixels,
   calibration,
   sample_boundaries

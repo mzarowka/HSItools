@@ -17,11 +17,12 @@ hsi_calc_rsd(
 \arguments{
 \item{x}{A terra SpatRaster with hyperspectral data}
 
-\item{index_name}{Character. Name of calculated rmean. Default NULL}
+\item{index_name}{Character. Name of calculated index. Default NULL}
 
-\item{na.rm}{Logical. Remove NA values when calculating mean (default: TRUE)}
+\item{na.rm}{Logical. Remove NA values when calculating (default: TRUE)}
 
-\item{cores}{positive integer. If cores > 1, a \pkg{parallel} package cluster with that many cores is created and used. You can also supply a cluster object.}
+\item{cores}{positive integer. If cores > 1, a \pkg{parallel} package cluster
+with that many cores is created and used. You can also supply a cluster object.}
 
 \item{filename}{Character. Output filename. Default "" keeps in memory}
 
@@ -30,7 +31,7 @@ hsi_calc_rsd(
 \item{...}{Additional arguments passed to \code{\link[terra]{writeRaster}}}
 }
 \value{
-A terra SpatRaster with mean reflectance values
+A terra SpatRaster with reflectance standard deviation values
 }
 \description{
 Calculate standard deviation of reflectance across all spectral bands for each pixel in a
@@ -46,7 +47,7 @@ values across all wavelengths for each pixel
 x <- terra::rast("REFLECTANCE_testdata.tif")
 
 # Calculate standard deviation of reflectance
-x_rsd <- hsi_calc_rsd(x, index_name = "sd_reflectance")
+x_rsd <- hsi_calc_rsd(x)
 
 # Save to file
 x_rsd <- hsi_calc_rsd(
@@ -65,6 +66,7 @@ Other HSI Transformations:
 \code{\link{hsi_calc_raba}()},
 \code{\link{hsi_calc_rabd}()},
 \code{\link{hsi_calc_ratio}()},
+\code{\link{hsi_calc_rcv}()},
 \code{\link{hsi_calc_remp}()},
 \code{\link{hsi_calc_rmean}()},
 \code{\link{hsi_calc_rmedian}()},

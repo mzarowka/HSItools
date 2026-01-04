@@ -20,7 +20,6 @@ Find a fixed-width extent in the middle of a larger one
 \seealso{
 Other Utilities: 
 \code{\link{merge_rasters}()},
-\code{\link{pixel_to_distance}()},
 \code{\link{wavelength_position}()},
 \code{\link{wavelength_sub}()}
 }

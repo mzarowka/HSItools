@@ -34,6 +34,6 @@ Get spatial calibration in true units
 }
 \seealso{
 Other HSI Calibration: 
-\code{\link{hsi_calc_depth}()}
+\code{\link{hsi_pixels_to_units}()}
 }
 \concept{HSI Calibration}

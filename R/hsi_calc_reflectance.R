@@ -198,6 +198,18 @@ hsi_calc_reflectance <- function(
     )
   }
 
+  # Validate band names are numeric wavelengths
+  wavelengths <- suppressWarnings(as.numeric(terra::names(x)))
+
+  if (all(is.na(wavelengths))) {
+    cli::cli_abort(
+      c(
+        "Band names cannot be converted to numeric wavelengths.",
+        "i" = "Band names are: {.val {head(terra::names(x), 5)}}..."
+      )
+    )
+  }
+
   # Check that band names match
   bands_x <- terra::names(x)
   bands_white <- terra::names(whiteref)

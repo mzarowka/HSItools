@@ -37,7 +37,6 @@ wavelength_position(r, c(450, 650))
 Other Utilities: 
 \code{\link{find_fixed_extent}()},
 \code{\link{merge_rasters}()},
-\code{\link{pixel_to_distance}()},
 \code{\link{wavelength_sub}()}
 }
 \concept{Utilities}

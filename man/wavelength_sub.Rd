@@ -23,7 +23,6 @@ subset SpatRaster with wavelength (bands) positions.
 Other Utilities: 
 \code{\link{find_fixed_extent}()},
 \code{\link{merge_rasters}()},
-\code{\link{pixel_to_distance}()},
 \code{\link{wavelength_position}()}
 }
 \concept{Utilities}

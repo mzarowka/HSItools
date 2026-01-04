@@ -22,7 +22,6 @@ Merge SpatRasters in a stratigraphic order
 \seealso{
 Other Utilities: 
 \code{\link{find_fixed_extent}()},
-\code{\link{pixel_to_distance}()},
 \code{\link{wavelength_position}()},
 \code{\link{wavelength_sub}()}
 }

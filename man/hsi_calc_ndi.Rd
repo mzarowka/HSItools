@@ -67,6 +67,7 @@ Other HSI Transformations:
 \code{\link{hsi_calc_raba}()},
 \code{\link{hsi_calc_rabd}()},
 \code{\link{hsi_calc_ratio}()},
+\code{\link{hsi_calc_rcv}()},
 \code{\link{hsi_calc_remp}()},
 \code{\link{hsi_calc_rmean}()},
 \code{\link{hsi_calc_rmedian}()},
