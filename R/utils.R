@@ -63,7 +63,7 @@ wavelength_position <- function(
   wavelength_table <- dplyr::tibble(
     wavelength = wavelength,
     position = wavelength_index,
-    band_wavelength = band_wavelengths[position]
+    band_wavelength = band_wavelengths[wavelength_index]
   ) |>
     # Keep last observation if there are duplicates
     dplyr::slice_tail(by = .data$position)
