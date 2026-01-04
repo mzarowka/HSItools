@@ -3,14 +3,15 @@
 #' @family HSI Transformations
 #'
 #' @param x A terra SpatRaster with hyperspectral data
-#' @param index_name Character. Name of calculated rmean. Default NULL
-#' @param na.rm Logical. Remove NA values when calculating mean (default: TRUE)
-#' @param cores positive integer. If cores > 1, a \pkg{parallel} package cluster with that many cores is created and used. You can also supply a cluster object.
+#' @param index_name Character. Name of calculated index. Default NULL
+#' @param na.rm Logical. Remove NA values when calculating (default: TRUE)
+#' @param cores positive integer. If cores > 1, a \pkg{parallel} package cluster
+#'   with that many cores is created and used. You can also supply a cluster object.
 #' @param filename Character. Output filename. Default "" keeps in memory
 #' @param overwrite Logical. Overwrite existing file (default: FALSE)
 #' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
 #'
-#' @return A terra SpatRaster with mean reflectance values
+#' @return A terra SpatRaster with reflectance standard deviation values
 #'
 #' @description
 #' Calculate standard deviation of reflectance across all spectral bands for each pixel in a
@@ -26,7 +27,7 @@
 #' x <- terra::rast("REFLECTANCE_testdata.tif")
 #'
 #' # Calculate standard deviation of reflectance
-#' x_rsd <- hsi_calc_rsd(x, index_name = "sd_reflectance")
+#' x_rsd <- hsi_calc_rsd(x)
 #'
 #' # Save to file
 #' x_rsd <- hsi_calc_rsd(
@@ -64,7 +65,7 @@ hsi_calc_rsd <- function(
 
   # Conditional writing can be, probably, handled a little bit better?
 
-  # Apply mean function over entire SpatRaster
+  # Apply sd function over entire SpatRaster
   result <- terra::app(x, fun = "sd", na.rm = na.rm, cores = cores)
 
   # Set name

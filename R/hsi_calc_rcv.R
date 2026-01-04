@@ -1,4 +1,4 @@
-#' Calculate mean reflectance (Rmean)
+#' Calculate coefficient of variation of reflectance (Rcv)
 #'
 #' @family HSI Transformations
 #'
@@ -11,35 +11,49 @@
 #' @param overwrite Logical. Overwrite existing file (default: FALSE)
 #' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
 #'
-#' @return A terra SpatRaster with mean reflectance values
+#' @return A terra SpatRaster with coefficient of variation values
 #'
 #' @description
-#' Calculate mean reflectance across all spectral bands for each pixel in a
-#' hyperspectral image. This provides a measure of overall brightness and can
-#' be useful for normalizing other spectral indices.
+#' Calculate coefficient of variation (CV) of reflectance across all spectral
+#' bands for each pixel. CV is a standardized, dimensionless measure of spectral
+#' dispersion relative to mean brightness.
 #'
 #' @details
-#' Mean reflectance (Rmean) is calculated as the arithmetic mean of reflectance
-#' values across all wavelengths for each pixel
+#' Coefficient of variation is calculated as the ratio of standard deviation
+#' to mean reflectance (CV = sd / mean) for each pixel across all wavelengths.
+#'
+#' CV is useful for:
+#' - Identifying pixels with strong spectral features (absorption bands increase variability)
+#' - Detecting spectrally mixed pixels
+#' - Comparing spectral variability across areas with different overall brightness
+#' - Quality assessment (high CV in dark areas may indicate noise)
+#'
+#' Unlike standard deviation alone, CV normalizes for brightness differences,
+#' making it comparable across pixels with different mean reflectance values.
+#'
+#' @seealso
+#' \code{\link{hsi_calc_rsd}} for standard deviation,
+#' \code{\link{hsi_calc_rmean}} for mean reflectance
 #'
 #' @examples
 #' \dontrun{
 #' # Load hyperspectral data
 #' x <- terra::rast("REFLECTANCE_testdata.tif")
 #'
-#' # Calculate mean reflectance
-#' x_rmean <- hsi_calc_rmean(x)
+#' # Calculate coefficient of variation
+#' x_rcv <- hsi_calc_rcv(x)
 #'
-#' # Save to file and provide a name
-#' x_rmean <- hsi_calc_rmean(
-#'  x,
-#'  index_name = "mean_reflectance",
-#'  filename = "output_rmean.tif",
-#'  overwrite = TRUE)
+#' # Save to file with custom name
+#' x_rcv <- hsi_calc_rcv(
+#'   x,
+#'   index_name = "cv_reflectance",
+#'   filename = "output_rcv.tif",
+#'   overwrite = TRUE
+#' )
 #' }
 #'
 #' @export
-hsi_calc_rmean <- function(
+hsi_calc_rcv <- function(
   x,
   index_name = NULL,
   na.rm = TRUE,
@@ -64,8 +78,16 @@ hsi_calc_rmean <- function(
   # Splice wopt defaults with user input if any
   wopt <- purrr::list_modify(wopt_default, !!!wopt_user)
 
+  # Conditional writing can be, probably, handled a little bit better?
+
+  # Apply sd function over entire SpatRaster
+  x_sd <- terra::app(x, fun = "sd", na.rm = na.rm, cores = cores)
+
   # Apply mean function over entire SpatRaster
-  result <- terra::app(x, fun = "mean", na.rm = na.rm, cores = cores)
+  x_mean <- terra::app(x, fun = "mean", na.rm = na.rm, cores = cores)
+
+  # Result
+  result <- x_sd / x_mean
 
   # Set name
   if (!is.null(index_name)) {
