@@ -2,15 +2,19 @@
 
 -   Major functions now live in separate files.
 
+-   Created first vignette "Basic HSItools workflow".
+
 -   Fixed and improved RABD calculation speed with `hsi_calc_rabd`
 
 -   Added `hsi_calc_rsd` for calculation of reflectance standard deviation per pixel.
+
+-   Added `hsi_calc_rcv` for calculation of reflectance coefficient of variation per pixel.
 
 -   Added `hsi_calc_rmedian` for calculation of median reflectance per pixel.
 
 -   `hsi_calc_reflectance` gained `in_memory` argument to process everything in memory, if it is available. This needs user's control and knowledge of their OS and hardware.
 
--   Created first vignette "Basic HSItools workflow".
+-   Plotting got split into separate files, too.
 
 # HSItools 0.3.0
 
@@ -20,7 +24,7 @@
 
 -   Most SpatRasters now use default names from {terra}.
 
--   Reflectance calculation is no longer based on aggregate/ disaggregate functions and resampling.
+-   Reflectance calculation is no longer based on aggregate / disaggregate functions and resampling.
 
 -   Most functions gain *hsi\_* prefix.
 
