@@ -17,11 +17,12 @@ hsi_calc_rmedian(
 \arguments{
 \item{x}{A terra SpatRaster with hyperspectral data}
 
-\item{index_name}{Character. Name of calculated rmean. Default NULL}
+\item{index_name}{Character. Name of calculated index. Default NULL}
 
-\item{na.rm}{Logical. Remove NA values when calculating mean (default: TRUE)}
+\item{na.rm}{Logical. Remove NA values when calculating (default: TRUE)}
 
-\item{cores}{positive integer. If cores > 1, a \pkg{parallel} package cluster with that many cores is created and used. You can also supply a cluster object.}
+\item{cores}{positive integer. If cores > 1, a \pkg{parallel} package cluster
+with that many cores is created and used. You can also supply a cluster object.}
 
 \item{filename}{Character. Output filename. Default "" keeps in memory}
 
@@ -34,27 +35,28 @@ A terra SpatRaster with median reflectance values
 }
 \description{
 Calculate median reflectance across all spectral bands for each pixel in a
-hyperspectral image. This provides a measure of overall brightness and can
-be useful for normalizing other spectral indices.
+hyperspectral image. This provides a robust measure of central tendency for
+overall brightness, less sensitive to outliers than mean reflectance.
 }
 \details{
-Median reflectance (Rmedian) is calculated as the arithmetic median of reflectance
-values across all wavelengths for each pixel
+Median reflectance (Rmedian) is calculated as the median of reflectance
+values across all wavelengths for each pixel.
 }
 \examples{
 \dontrun{
 # Load hyperspectral data
 x <- terra::rast("REFLECTANCE_testdata.tif")
 
-# Calculate mean reflectance
-x_rmedian <- hsi_calc_rmean(x)
+# Calculate median reflectance
+x_rmedian <- hsi_calc_rmedian(x)
 
 # Save to file and provide a name
-x_rmedian <- hsi_calc_rmean(
- x,
- index_name = "median_reflectance",
- filename = "output_rmedian.tif",
- overwrite = TRUE)
+x_rmedian <- hsi_calc_rmedian(
+  x,
+  index_name = "median_reflectance",
+  filename = "output_rmedian.tif",
+  overwrite = TRUE
+)
 }
 
 }

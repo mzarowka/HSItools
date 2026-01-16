@@ -27,6 +27,9 @@ to use for difference calculation}
 
 \item{...}{Additional arguments passed to \code{\link[terra]{writeRaster}}}
 }
+\value{
+A terra SpatRaster with difference values
+}
 \description{
 Calculate a band difference index by subtracting reflectance at one wavelength
 from reflectance at another wavelength. Band differences can highlight
@@ -40,17 +43,17 @@ x <- terra::rast("REFLECTANCE_testdata.tif")
 
 # Calculate band difference between 620 and 680
 x_diff <- hsi_calc_difference(
- x,
- bands = c(620, 680)
+  x,
+  bands = c(620, 680)
 )
 
 # Save to file and provide a name
-x_dif <- hsi_calc_difference(
- x,
- bands = c(620, 680)
- index_name = "diff620680",
- filename = "output_diff.tif",
- overwrite = TRUE
+x_diff <- hsi_calc_difference(
+  x,
+  bands = c(620, 680),
+  index_name = "diff620680",
+  filename = "output_diff.tif",
+  overwrite = TRUE
 )
 }
 

@@ -76,15 +76,12 @@ hsi_calc_rcv <- function(
   # Splice wopt defaults with user input if any
   wopt <- purrr::list_modify(wopt_default, !!!wopt_user)
 
-  # Conditional writing can be, probably, handled a little bit better?
-
-  # Apply sd function over entire SpatRaster
+  # Calculate sd and mean
+  # Note: these are intermediate results, not written to file
   x_sd <- terra::app(x, fun = "sd", na.rm = na.rm, cores = cores)
-
-  # Apply mean function over entire SpatRaster
   x_mean <- terra::app(x, fun = "mean", na.rm = na.rm, cores = cores)
 
-  # Result
+  # Calculate CV = sd / mean
   result <- x_sd / x_mean
 
   # Set name
@@ -92,13 +89,13 @@ hsi_calc_rcv <- function(
     names(result) <- index_name
   }
 
-  # Write new raster to file based on user input
+  # Write to file if requested
   if (filename != "") {
     terra::writeRaster(
       result,
       filename = filename,
       overwrite = overwrite,
-      ...
+      wopt = wopt
     )
   }
 

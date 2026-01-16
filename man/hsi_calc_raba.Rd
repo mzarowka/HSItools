@@ -58,8 +58,8 @@ x <- terra::rast("REFLECTANCE_testdata.tif")
 
 # Calculate RABA for chlorophyll-a (typical range 650-700 nm)
 x_raba <- hsi_calc_raba(
- x,
- continuum_edges = c(650, 700)
+  x,
+  continuum_edges = c(650, 700)
 )
 
 # Save to file and provide a name

@@ -28,34 +28,32 @@ for NDI calculation}
 \item{...}{Additional arguments passed to \code{\link[terra]{writeRaster}}}
 }
 \value{
-A terra SpatRaster with ndi values
+A terra SpatRaster with NDI values
 }
 \description{
 Calculate a Normalized Difference Index (NDI), which normalizes the difference
 between two bands by their sum. This approach is widely used in remote sensing
 (e.g., NDVI, NDWI) as it reduces the effects of illumination and viewing
 geometry while highlighting spectral contrasts.
-
-calculate normalized difference index
 }
 \examples{
 \dontrun{
 # Load hyperspectral data
 x <- terra::rast("REFLECTANCE_testdata.tif")
 
-# Calculate band ratio between 570 and 690
+# Calculate NDI between 570 and 690
 x_ndi <- hsi_calc_ndi(
- x,
- bands = c(570, 690)
+  x,
+  bands = c(570, 690)
 )
 
 # Save to file and provide a name
 x_ndi <- hsi_calc_ndi(
- x,
- bands = c(570, 690)
- index_name = "ndi570690",
- filename = "output_ndi.tif",
- overwrite = TRUE
+  x,
+  bands = c(570, 690),
+  index_name = "ndi570690",
+  filename = "output_ndi.tif",
+  overwrite = TRUE
 )
 }
 

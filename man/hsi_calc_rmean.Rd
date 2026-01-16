@@ -40,7 +40,7 @@ be useful for normalizing other spectral indices.
 }
 \details{
 Mean reflectance (Rmean) is calculated as the arithmetic mean of reflectance
-values across all wavelengths for each pixel
+values across all wavelengths for each pixel.
 }
 \examples{
 \dontrun{
@@ -52,10 +52,11 @@ x_rmean <- hsi_calc_rmean(x)
 
 # Save to file and provide a name
 x_rmean <- hsi_calc_rmean(
- x,
- index_name = "mean_reflectance",
- filename = "output_rmean.tif",
- overwrite = TRUE)
+  x,
+  index_name = "mean_reflectance",
+  filename = "output_rmean.tif",
+  overwrite = TRUE
+)
 }
 
 }

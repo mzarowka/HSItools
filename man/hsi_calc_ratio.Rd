@@ -35,8 +35,6 @@ Calculate a band ratio index by dividing reflectance at one wavelength by
 reflectance at another wavelength. Band ratios are commonly used to
 normalize spectral data and highlight specific features such as clay
 minerals or dust content.
-
-calculate band ratio of selected wavelengths
 }
 \examples{
 \dontrun{
@@ -45,17 +43,17 @@ x <- terra::rast("REFLECTANCE_testdata.tif")
 
 # Calculate band ratio between 570 and 690
 x_ratio <- hsi_calc_ratio(
- x,
- bands = c(570, 690)
+  x,
+  bands = c(570, 690)
 )
 
 # Save to file and provide a name
 x_ratio <- hsi_calc_ratio(
- x,
- bands = c(570, 690)
- index_name = "ratio570690",
- filename = "output_ratio.tif",
- overwrite = TRUE
+  x,
+  bands = c(570, 690),
+  index_name = "ratio570690",
+  filename = "output_ratio.tif",
+  overwrite = TRUE
 )
 }
 

@@ -1,4 +1,4 @@
-#' Calculate coefficient of variation of reflectance (Rcv)
+#' Calculate standard deviation of reflectance (Rsd)
 #'
 #' @family HSI Transformations
 #'
@@ -11,49 +11,35 @@
 #' @param overwrite Logical. Overwrite existing file (default: FALSE)
 #' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
 #'
-#' @return A terra SpatRaster with coefficient of variation values
+#' @return A terra SpatRaster with reflectance standard deviation values
 #'
 #' @description
-#' Calculate coefficient of variation (CV) of reflectance across all spectral
-#' bands for each pixel. CV is a standardized, dimensionless measure of spectral
-#' dispersion relative to mean brightness.
+#' Calculate standard deviation of reflectance across all spectral bands for each pixel in a
+#' hyperspectral image. This provides a measure of overall spectral heterogeneity.
 #'
 #' @details
-#' Coefficient of variation is calculated as the ratio of standard deviation
-#' to mean reflectance (CV = sd / mean) for each pixel across all wavelengths.
-#'
-#' CV is useful for:
-#' - Identifying pixels with strong spectral features (absorption bands increase variability)
-#' - Detecting spectrally mixed pixels
-#' - Comparing spectral variability across areas with different overall brightness
-#' - Quality assessment (high CV in dark areas may indicate noise)
-#'
-#' Unlike standard deviation alone, CV normalizes for brightness differences,
-#' making it comparable across pixels with different mean reflectance values.
-#'
-#' @seealso
-#' \code{\link{hsi_calc_rsd}} for standard deviation,
-#' \code{\link{hsi_calc_rmean}} for mean reflectance
+#' Standard deviation of reflectance (Rsd) is calculated as the standard deviation of reflectance
+#' values across all wavelengths for each pixel.
 #'
 #' @examples
 #' \dontrun{
 #' # Load hyperspectral data
 #' x <- terra::rast("REFLECTANCE_testdata.tif")
 #'
-#' # Calculate coefficient of variation
-#' x_rcv <- hsi_calc_rcv(x)
+#' # Calculate standard deviation of reflectance
+#' x_rsd <- hsi_calc_rsd(x)
 #'
-#' # Save to file with custom name
-#' x_rcv <- hsi_calc_rcv(
+#' # Save to file
+#' x_rsd <- hsi_calc_rsd(
 #'   x,
-#'   index_name = "cv_reflectance",
-#'   filename = "output_rcv.tif",
+#'   index_name = "sd_reflectance",
+#'   filename = "output_rsd.tif",
 #'   overwrite = TRUE
 #' )
 #' }
 #'
 #' @export
-hsi_calc_rcv <- function(
+hsi_calc_rsd <- function(
   x,
   index_name = NULL,
   na.rm = TRUE,
@@ -76,27 +62,20 @@ hsi_calc_rcv <- function(
   # Splice wopt defaults with user input if any
   wopt <- purrr::list_modify(wopt_default, !!!wopt_user)
 
-  # Calculate sd and mean
-  # Note: these are intermediate results, not written to file
-  x_sd <- terra::app(x, fun = "sd", na.rm = na.rm, cores = cores)
-  x_mean <- terra::app(x, fun = "mean", na.rm = na.rm, cores = cores)
+  # Apply sd function over entire SpatRaster
+  result <- terra::app(
+    x,
+    fun = "sd",
+    na.rm = na.rm,
+    cores = cores,
+    filename = filename,
+    overwrite = overwrite,
+    wopt = wopt
+  )
 
-  # Calculate CV = sd / mean
-  result <- x_sd / x_mean
-
-  # Set name
-  if (!is.null(index_name)) {
+  # Set name (needed when not writing to file)
+  if (!is.null(index_name) && filename == "") {
     names(result) <- index_name
-  }
-
-  # Write to file if requested
-  if (filename != "") {
-    terra::writeRaster(
-      result,
-      filename = filename,
-      overwrite = overwrite,
-      wopt = wopt
-    )
   }
 
   # Return

@@ -35,11 +35,11 @@ A terra SpatRaster with reflectance standard deviation values
 }
 \description{
 Calculate standard deviation of reflectance across all spectral bands for each pixel in a
-hyperspectral image. This provides a measure of overall spectral heterogenity.
+hyperspectral image. This provides a measure of overall spectral heterogeneity.
 }
 \details{
 Standard deviation of reflectance (Rsd) is calculated as the standard deviation of reflectance
-values across all wavelengths for each pixel
+values across all wavelengths for each pixel.
 }
 \examples{
 \dontrun{
@@ -51,10 +51,11 @@ x_rsd <- hsi_calc_rsd(x)
 
 # Save to file
 x_rsd <- hsi_calc_rsd(
- x,
- index_name = "sd_reflectance",
- filename = "output_rsd.tif",
- overwrite = TRUE)
+  x,
+  index_name = "sd_reflectance",
+  filename = "output_rsd.tif",
+  overwrite = TRUE
+)
 }
 
 }
