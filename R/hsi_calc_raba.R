@@ -81,14 +81,6 @@ hsi_calc_raba <- function(
   # Splice wopt defaults with user input if any
   wopt <- purrr::list_modify(wopt_default, !!!wopt_user)
 
-  if (all(is.na(wavelengths))) {
-    cli::cli_abort(
-      c(
-        "Band names cannot be converted to numeric wavelengths."
-      )
-    )
-  }
-
   # Find edge positions
   edge_positions <- wavelength_position(x = x, wavelength = continuum_edges) |>
     dplyr::pull(2)
@@ -100,7 +92,7 @@ hsi_calc_raba <- function(
   )
 
   # Extract wavelengths in the range
-  range_wavelengths <- wavelengths[band_range]
+  range_wavelengths <- terra::names(x)[band_range]
 
   # Subset to bands in range
   x_range <- terra::subset(x, band_range)

@@ -10,103 +10,96 @@
 #'
 #' @return line plot with of selected hyperspectral index.
 #' @export
-plot_profile_spectral_series <- function(
+hsi_plot_profile <- function(
   x,
   index,
   calibration = NULL,
   ...
 ) {
-  # Validate input
-  check_spatraster(x)
+  # Logic should be as follow:
+  # Calculate index - user
+  # Extract profile - user
+  # Plot profile - user
 
-  if (!inherits(index, what = "character")) {
-    rlang::abort(message = "Supplied index name is not a character.")
-  }
+  # # Validate input
+  # check_spatraster(x)
 
-  # Subset SpatRaster
-  hsi_layer <- x |>
-    terra::subset(index)
+  # if (!inherits(index, what = "character")) {
+  #   rlang::abort(message = "Supplied index name is not a character.")
+  # }
 
-  # Clean data
-  data <- x |>
-    HSItools::extract_spectral_series() |>
-    dplyr::select(
-      .data$y,
-      {{ index }}
-    ) |>
-    dplyr::rename(
-      y = .data$y,
-      proxy = {{ index }}
-    )
+  # # Subset SpatRaster
+  # hsi_layer <- x |>
+  #   terra::subset(index)
 
-  # Proxy name
-  proxy_name <- rlang::as_label(rlang::enquo(index))
+  # # Proxy name
+  # proxy_name <- rlang::as_label(rlang::enquo(index))
 
-  if (is.null(calibration)) {
-    # Create a plot
-    plot <- data |>
-      # Pass to plot
-      ggplot2::ggplot() +
-      # Add aes
-      ggplot2::aes(
-        x = .data$proxy,
-        y = .data$y
-      ) +
-      # Add geom
-      ggplot2::geom_path() +
-      # Modify theme
-      ggplot2::theme(
-        panel.background = ggplot2::element_blank(),
-        axis.line = ggplot2::element_line(color = "black"),
-        panel.border = ggplot2::element_rect(color = "black", fill = NA),
-        legend.text.position = "bottom"
-      ) +
-      # Add labels
-      ggplot2::labs(
-        x = proxy_name,
-        y = "Depth (px)"
-      )
-  } else {
-    # Create a plot
-    plot <- data |>
-      # Pass to plot
-      ggplot2::ggplot() +
-      # Add aes
-      ggplot2::aes(
-        x = .data$proxy,
-        y = .data$y
-      ) +
-      # Add geom
-      ggplot2::geom_path() +
-      # Modify Y scale
-      ggplot2::scale_y_continuous(
-        labels = \(i) {
-          format(
-            terra::round(
-              -1 *
-                i *
-                calibration$pixel_ratio +
-                calibration$distance -
-                calibration$point_zero
-            )
-          )
-        },
-        breaks = scales::breaks_pretty()
-      ) +
-      # Modify theme
-      ggplot2::theme(
-        panel.background = ggplot2::element_blank(),
-        axis.line = ggplot2::element_line(color = "black"),
-        panel.border = ggplot2::element_rect(color = "black", fill = NA),
-        legend.text.position = "bottom"
-      ) +
-      # Add labels
-      ggplot2::labs(
-        x = proxy_name,
-        y = "Depth (mm)"
-      )
-  }
+  # if (is.null(calibration)) {
+  #   # Create a plot
+  #   plot <- data |>
+  #     # Pass to plot
+  #     ggplot2::ggplot() +
+  #     # Add aes
+  #     ggplot2::aes(
+  #       x = .data$proxy,
+  #       y = .data$y
+  #     ) +
+  #     # Add geom
+  #     ggplot2::geom_path() +
+  #     # Modify theme
+  #     ggplot2::theme(
+  #       panel.background = ggplot2::element_blank(),
+  #       axis.line = ggplot2::element_line(color = "black"),
+  #       panel.border = ggplot2::element_rect(color = "black", fill = NA),
+  #       legend.text.position = "bottom"
+  #     ) +
+  #     # Add labels
+  #     ggplot2::labs(
+  #       x = proxy_name,
+  #       y = "Depth (px)"
+  #     )
+  # } else {
+  #   # Create a plot
+  #   plot <- data |>
+  #     # Pass to plot
+  #     ggplot2::ggplot() +
+  #     # Add aes
+  #     ggplot2::aes(
+  #       x = .data$proxy,
+  #       y = .data$y
+  #     ) +
+  #     # Add geom
+  #     ggplot2::geom_path() +
+  #     # Modify Y scale
+  #     ggplot2::scale_y_continuous(
+  #       labels = \(i) {
+  #         format(
+  #           terra::round(
+  #             -1 *
+  #               i *
+  #               calibration$pixel_ratio +
+  #               calibration$distance -
+  #               calibration$point_zero
+  #           )
+  #         )
+  #       },
+  #       breaks = scales::breaks_pretty()
+  #     ) +
+  #     # Modify theme
+  #     ggplot2::theme(
+  #       panel.background = ggplot2::element_blank(),
+  #       axis.line = ggplot2::element_line(color = "black"),
+  #       panel.border = ggplot2::element_rect(color = "black", fill = NA),
+  #       legend.text.position = "bottom"
+  #     ) +
+  #     # Add labels
+  #     ggplot2::labs(
+  #       x = proxy_name,
+  #       y = "Depth (mm)"
+  #     )
+  # }
 
-  # Return plot as an object
-  return(plot)
+  # # Return plot as an object
+  # return(plot)
 }

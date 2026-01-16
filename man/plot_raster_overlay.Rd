@@ -23,10 +23,10 @@ Overlay color plot of proxy on RGB
 }
 \seealso{
 Other Plotting: 
-\code{\link{plot_composite}()},
-\code{\link{plot_profile_spectral_profile}()},
-\code{\link{plot_profile_spectral_series}()},
-\code{\link{plot_raster_proxy}()},
-\code{\link{plot_raster_rgb}()}
+\code{\link{hsi_plot_color}()},
+\code{\link{hsi_plot_profile}()},
+\code{\link{hsi_plot_raster}()},
+\code{\link{hsi_plot_spectrum}()},
+\code{\link{plot_composite}()}
 }
 \concept{Plotting}

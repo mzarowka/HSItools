@@ -294,8 +294,8 @@ merge_rasters <- function(x, y, filename = "") {
 find_fixed_extent <- function(extent, width) {
   # Check if correct class is supplied.
   # Validate input
-  if (!inherits(x, "SpatExtent")) {
-    cli::cli_abort("Input {.arg x} must be a terra SpatExtent.")
+  if (!inherits(extent, "SpatExtent")) {
+    cli::cli_abort("Input {.arg extent} must be a terra SpatExtent.")
   }
 
   # Get mid point

@@ -32,7 +32,7 @@
 #'  filename = "output_median.tif",
 #'  overwrite = TRUE)
 #' }
-#' 
+#'
 #' @export
 hsi_smooth_median <- function(
   x,

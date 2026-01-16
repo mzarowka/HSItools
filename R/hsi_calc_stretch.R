@@ -23,7 +23,7 @@
 #' \dontrun{
 #' # Load hyperspectral data
 #' x <- terra::rast("REFLECTANCE_testdata.tif")
-#' 
+#'
 #' # Using predefined band combination of RGB c(650, 550, 450)
 #' x_rgb <- hsi_calc_stretch(
 #'  x,
@@ -56,7 +56,7 @@ hsi_calc_stretch <- function(
   # Validate input
   check_spatraster(x)
 
-    # Validate input
+  # Validate input
   check_numeric(tol, positive = TRUE)
 
   # Validate and process the type argument

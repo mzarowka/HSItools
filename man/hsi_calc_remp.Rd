@@ -15,11 +15,14 @@ hsi_calc_remp(
 )
 }
 \arguments{
-\item{x}{A terra SpatRaster with hyperspectral data}
+\item{x}{A terra SpatRaster with first derivative of reflectance.
+Calculate using \code{hsi_smooth_savgol(reflectance, m = 1)}}
 
-\item{search_range}{Numeric. Vector of two for the wide calculation window. Default c(660, 680)}
+\item{search_range}{Numeric vector of length 2. Wavelength range to search
+for the red-edge minimum point. Default c(660, 680)}
 
-\item{cores}{positive integer. If cores > 1, a \pkg{parallel} package cluster with that many cores is created and used. You can also supply a cluster object}
+\item{cores}{Positive integer. If cores > 1, a \pkg{parallel} cluster with
+that many cores is created and used.}
 
 \item{index_name}{Character. Name of calculated index. Default NULL}
 
@@ -30,32 +33,25 @@ hsi_calc_remp(
 \item{...}{Additional arguments passed to \code{\link[terra]{writeRaster}}}
 }
 \value{
-A terra SpatRaster with lambdaREMP values
+A terra SpatRaster with lambdaREMP values (wavelength in nm)
 }
 \description{
 Calculate lambda REMP (wavelength of the Red-Edge Minimum Point), which
 identifies the wavelength where the first derivative of reflectance equals
-zero, indicating maximum chlorophyll absorption. This index provides a
-precise measure of chlorophyll content in sediment cores.
-
-Based on Ghanbari, H., Zilkey, D.R., Gregory-Eaves, I., Antoniades, D., 2023.
-A new index for the rapid generation of chlorophyll time series from hyperspectral imaging of sediment cores.
-Limnology and Oceanography: Methods 21, 703-717 https://doi.org/10.1002/lom3.10576
+zero, indicating maximum chlorophyll absorption.
 }
 \details{
 Lambda REMP identifies the wavelength between approximately 660-680 nm where
 the first derivative of reflectance crosses from negative to positive
-(i.e., the inflection point where reflectance transitions from decreasing
-to increasing). This wavelength is highly sensitive to chlorophyll-a
-concentration.
+(the inflection point where reflectance transitions from decreasing
+to increasing). This wavelength is sensitive to chlorophyll-a concentration.
 
 The algorithm:
 \enumerate{
-\item Calculates first derivatives between adjacent bands within the search range
-\item Identifies zero-crossings (negative to positive)
+\item Subsets derivative raster to the search range
+\item Identifies zero-crossings using \code{\link[gsignal]{zerocrossing}}
 \item Uses linear interpolation to find the exact wavelength where derivative = 0
-\item If multiple crossings exist, selects the one with the steepest slope
-\item Falls back to minimum reflectance if no zero-crossing is found
+\item Falls back to wavelength nearest zero if no crossing is found
 }
 }
 \examples{
@@ -63,17 +59,21 @@ The algorithm:
 # Load hyperspectral data
 x <- terra::rast("REFLECTANCE_testdata.tif")
 
-# Calculate lambda REMP with default settings
-x_remp <- hsi_calc_remp(
- x
-)
+# Calculate first derivative (do once, reuse)
+x_deriv <- hsi_smooth_savgol(x, m = 1)
+
+# Calculate lambda REMP
+x_remp <- hsi_calc_remp(x_deriv)
+
+# Custom search range
+x_remp <- hsi_calc_remp(x_deriv, search_range = c(665, 690))
 
 # Save to file
-x_remp <- hsi_calc_rabd(
- x,
- index_name = "remp",
- filename = "output_remp.tif",
- overwrite = TRUE
+x_remp <- hsi_calc_remp(
+  x_deriv,
+  index_name = "remp",
+  filename = "output_remp.tif",
+  overwrite = TRUE
 )
 }
 
@@ -85,6 +85,9 @@ hyperspectral imaging of sediment cores. Limnology and Oceanography:
 Methods 21, 703-717. \doi{10.1002/lom3.10576}
 }
 \seealso{
+\code{\link{hsi_smooth_savgol}} for calculating the derivative input,
+\code{\link{hsi_subset_range}} for wavelength range extraction
+
 Other HSI Transformations: 
 \code{\link{hsi_calc_difference}()},
 \code{\link{hsi_calc_ndi}()},
