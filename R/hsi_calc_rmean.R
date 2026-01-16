@@ -20,7 +20,7 @@
 #'
 #' @details
 #' Mean reflectance (Rmean) is calculated as the arithmetic mean of reflectance
-#' values across all wavelengths for each pixel
+#' values across all wavelengths for each pixel.
 #'
 #' @examples
 #' \dontrun{
@@ -32,10 +32,11 @@
 #'
 #' # Save to file and provide a name
 #' x_rmean <- hsi_calc_rmean(
-#'  x,
-#'  index_name = "mean_reflectance",
-#'  filename = "output_rmean.tif",
-#'  overwrite = TRUE)
+#'   x,
+#'   index_name = "mean_reflectance",
+#'   filename = "output_rmean.tif",
+#'   overwrite = TRUE
+#' )
 #' }
 #'
 #' @export
@@ -63,21 +64,19 @@ hsi_calc_rmean <- function(
   wopt <- purrr::list_modify(wopt_default, !!!wopt_user)
 
   # Apply mean function over entire SpatRaster
-  result <- terra::app(x, fun = "mean", na.rm = na.rm, cores = cores)
+  result <- terra::app(
+    x,
+    fun = "mean",
+    na.rm = na.rm,
+    cores = cores,
+    filename = filename,
+    overwrite = overwrite,
+    wopt = wopt
+  )
 
-  # Set name
-  if (!is.null(index_name)) {
+  # Set name (needed when not writing to file)
+  if (!is.null(index_name) && filename == "") {
     names(result) <- index_name
-  }
-
-  # Write new raster to file based on user input
-  if (filename != "") {
-    terra::writeRaster(
-      result,
-      filename = filename,
-      overwrite = overwrite,
-      ...
-    )
   }
 
   # Return

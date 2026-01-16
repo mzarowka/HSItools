@@ -16,6 +16,7 @@
 #' spectral features and are commonly used to detect clay minerals, dust, and
 #' other sedimentary components.
 #'
+#' @return A terra SpatRaster with difference values
 #'
 #' @examples
 #' \dontrun{
@@ -24,17 +25,17 @@
 #'
 #' # Calculate band difference between 620 and 680
 #' x_diff <- hsi_calc_difference(
-#'  x,
-#'  bands = c(620, 680)
+#'   x,
+#'   bands = c(620, 680)
 #' )
 #'
 #' # Save to file and provide a name
-#' x_dif <- hsi_calc_difference(
-#'  x,
-#'  bands = c(620, 680)
-#'  index_name = "diff620680",
-#'  filename = "output_diff.tif",
-#'  overwrite = TRUE
+#' x_diff <- hsi_calc_difference(
+#'   x,
+#'   bands = c(620, 680),
+#'   index_name = "diff620680",
+#'   filename = "output_diff.tif",
+#'   overwrite = TRUE
 #' )
 #' }
 #'
@@ -64,27 +65,20 @@ hsi_calc_difference <- function(
   # Splice wopt defaults with user input if any
   wopt <- purrr::list_modify(wopt_default, !!!wopt_user)
 
-  # Create empty SpatRaster template from original SpatRaster
-  result <- terra::rast(
-    terra::ext(x),
-    resolution = terra::res(x)
-  )
-
-  # Find edge positions
-  edge_positions <- wavelength_position(x = x, wavelength = bands) |>
-    # Pull vector with positions
+  # Find band positions
+  band_positions <- wavelength_position(x = x, wavelength = bands) |>
     dplyr::pull(var = 2)
 
-  # Subtract
-  result <- terra::subset(x, edge_positions[1]) -
-    terra::subset(x, edge_positions[2])
+  # Calculate difference
+  result <- terra::subset(x, band_positions[1]) -
+    terra::subset(x, band_positions[2])
 
   # Set name
   if (!is.null(index_name)) {
     names(result) <- index_name
   }
 
-  # Write new raster to file based on user input
+  # Write to file if requested
   if (filename != "") {
     terra::writeRaster(
       result,

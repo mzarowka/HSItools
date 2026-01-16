@@ -16,28 +16,26 @@
 #' (e.g., NDVI, NDWI) as it reduces the effects of illumination and viewing
 #' geometry while highlighting spectral contrasts.
 #'
-#' @return A terra SpatRaster with ndi values
+#' @return A terra SpatRaster with NDI values
 #'
-#' @description calculate normalized difference index
-#' 
 #' @examples
 #' \dontrun{
 #' # Load hyperspectral data
 #' x <- terra::rast("REFLECTANCE_testdata.tif")
 #'
-#' # Calculate band ratio between 570 and 690
+#' # Calculate NDI between 570 and 690
 #' x_ndi <- hsi_calc_ndi(
-#'  x,
-#'  bands = c(570, 690)
+#'   x,
+#'   bands = c(570, 690)
 #' )
 #'
 #' # Save to file and provide a name
 #' x_ndi <- hsi_calc_ndi(
-#'  x,
-#'  bands = c(570, 690)
-#'  index_name = "ndi570690",
-#'  filename = "output_ndi.tif",
-#'  overwrite = TRUE
+#'   x,
+#'   bands = c(570, 690),
+#'   index_name = "ndi570690",
+#'   filename = "output_ndi.tif",
+#'   overwrite = TRUE
 #' )
 #' }
 #'
@@ -67,23 +65,24 @@ hsi_calc_ndi <- function(
   # Splice wopt defaults with user input if any
   wopt <- purrr::list_modify(wopt_default, !!!wopt_user)
 
-  # Find edge positions
-  edge_positions <- wavelength_position(x = x, wavelength = bands) |>
-    # Pull vector with positions
+  # Find band positions
+  band_positions <- wavelength_position(x = x, wavelength = bands) |>
     dplyr::pull(var = 2)
 
-  # Subtract
-  result <- (terra::subset(x, edge_positions[1]) -
-    terra::subset(x, edge_positions[2])) /
-    (terra::subset(x, edge_positions[1]) +
-      terra::subset(x, edge_positions[2]))
+  # Get bands
+
+  band1 <- terra::subset(x, band_positions[1])
+  band2 <- terra::subset(x, band_positions[2])
+
+  # Calculate NDI: (band1 - band2) / (band1 + band2)
+  result <- (band1 - band2) / (band1 + band2)
 
   # Set name
   if (!is.null(index_name)) {
     names(result) <- index_name
   }
 
-  # Write new raster to file based on user input
+  # Write to file if requested
   if (filename != "") {
     terra::writeRaster(
       result,

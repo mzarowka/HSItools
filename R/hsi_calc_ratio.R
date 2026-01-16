@@ -18,8 +18,6 @@
 #'
 #' @return A terra SpatRaster with ratio values
 #'
-#' @description calculate band ratio of selected wavelengths
-#'
 #' @examples
 #' \dontrun{
 #' # Load hyperspectral data
@@ -27,17 +25,17 @@
 #'
 #' # Calculate band ratio between 570 and 690
 #' x_ratio <- hsi_calc_ratio(
-#'  x,
-#'  bands = c(570, 690)
+#'   x,
+#'   bands = c(570, 690)
 #' )
 #'
 #' # Save to file and provide a name
 #' x_ratio <- hsi_calc_ratio(
-#'  x,
-#'  bands = c(570, 690)
-#'  index_name = "ratio570690",
-#'  filename = "output_ratio.tif",
-#'  overwrite = TRUE
+#'   x,
+#'   bands = c(570, 690),
+#'   index_name = "ratio570690",
+#'   filename = "output_ratio.tif",
+#'   overwrite = TRUE
 #' )
 #' }
 #'
@@ -67,27 +65,20 @@ hsi_calc_ratio <- function(
   # Splice wopt defaults with user input if any
   wopt <- purrr::list_modify(wopt_default, !!!wopt_user)
 
-  # Create empty SpatRaster template from original SpatRaster
-  result <- terra::rast(
-    terra::ext(x),
-    resolution = terra::res(x)
-  )
-
-  # Find edge positions
-  edge_positions <- wavelength_position(x = x, wavelength = bands) |>
-    # Pull vector with positions
+  # Find band positions
+  band_positions <- wavelength_position(x = x, wavelength = bands) |>
     dplyr::pull(var = 2)
 
-  # Divide
-  result <- terra::subset(x, edge_positions[1]) /
-    terra::subset(x, edge_positions[2])
+  # Calculate ratio
+  result <- terra::subset(x, band_positions[1]) /
+    terra::subset(x, band_positions[2])
 
   # Set name
   if (!is.null(index_name)) {
     names(result) <- index_name
   }
 
-  # Write new raster to file based on user input
+  # Write to file if requested
   if (filename != "") {
     terra::writeRaster(
       result,

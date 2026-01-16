@@ -39,8 +39,8 @@
 #'
 #' # Calculate RABA for chlorophyll-a (typical range 650-700 nm)
 #' x_raba <- hsi_calc_raba(
-#'  x,
-#'  continuum_edges = c(650, 700)
+#'   x,
+#'   continuum_edges = c(650, 700)
 #' )
 #'
 #' # Save to file and provide a name
@@ -67,7 +67,7 @@ hsi_calc_raba <- function(
   # Validate input
   check_spatraster(x)
 
-  # Validate bands
+  # Validate continuum edges
   check_numeric(continuum_edges, len = 2)
 
   # Store user input in a spliceable list
@@ -85,14 +85,11 @@ hsi_calc_raba <- function(
   edge_positions <- wavelength_position(x = x, wavelength = continuum_edges) |>
     dplyr::pull(2)
 
-  # Get all bands between edges (including edges)
+  # Get all band indices between edges (inclusive)
   band_range <- seq(
     from = min(edge_positions),
     to = max(edge_positions)
   )
-
-  # Extract wavelengths in the range
-  range_wavelengths <- terra::names(x)[band_range]
 
   # Subset to bands in range
   x_range <- terra::subset(x, band_range)
@@ -111,7 +108,7 @@ hsi_calc_raba <- function(
     # Number of bands (excluding end point, following Butz formula)
     n_bands <- length(pixel_values) - 1
 
-    # Calculate sum of RABDs using Butz
+    # Calculate sum of RABDs using Butz formula
     rabd_sum <- purrr::map_dbl(
       0:(n_bands - 1),
       \(i) {

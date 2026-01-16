@@ -45,7 +45,7 @@ hsi_smooth_median <- function(
   check_spatraster(x)
 
   # Validate input
-  check_numeric(window, odd = 2)
+  check_numeric(window, odd = TRUE)
 
   # Store user input in a spliceable list
   wopt_user <- rlang::list2(...)
