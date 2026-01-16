@@ -31,7 +31,6 @@ Normalizes a SpatRaster in respect to white and dark references.
 }
 \seealso{
 Other HSI Transformations: 
-\code{\link{hsi_calc_derivative}()},
 \code{\link{hsi_calc_difference}()},
 \code{\link{hsi_calc_ndi}()},
 \code{\link{hsi_calc_raba}()},

@@ -14,10 +14,8 @@ plot_profile_spectral_profile <- function(
   extent = NULL,
   ...
 ) {
-  # Check if correct class is supplied.
-  if (!inherits(x, what = "SpatRaster")) {
-    rlang::abort(message = "Supplied data is not a terra SpatRaster.")
-  }
+  # Validate input
+  check_spatraster(x)
 
   # Clean data
   data <- x |>

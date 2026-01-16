@@ -53,10 +53,11 @@ hsi_calc_stretch <- function(
   overwrite = FALSE,
   ...
 ) {
-  # Validate input raster
-  if (!inherits(x, what = "SpatRaster")) {
-    cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
-  }
+  # Validate input
+  check_spatraster(x)
+
+    # Validate input
+  check_numeric(tol, positive = TRUE)
 
   # Validate and process the type argument
   if (is.character(type) && length(type) == 1) {

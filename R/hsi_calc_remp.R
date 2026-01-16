@@ -72,16 +72,10 @@ hsi_calc_remp <- function(
   ...
 ) {
   # Validate input
-  if (!inherits(x, what = "SpatRaster")) {
-    cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
-  }
+  check_spatraster(x)
 
-  # Validate search_range
-  if (!is.numeric(search_range) || length(search_range) != 2) {
-    cli::cli_abort(
-      "{.arg search_range} must be a numeric vector of length 2 (wavelength range)."
-    )
-  }
+    # Validate input
+  check_numeric(search_range, len = 2)
 
   # Store user input in a spliceable list
   wopt_user <- rlang::list2(...)
@@ -204,3 +198,5 @@ hsi_calc_remp <- function(
   # Return the result
   return(result)
 }
+
+# hsi_calc_remp2

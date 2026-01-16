@@ -45,9 +45,7 @@ hsi_remove_continuum <- function(
   ...
 ) {
   # Validate input
-  if (!inherits(x, "SpatRaster")) {
-    cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
-  }
+  check_spatraster(x)
 
   # Validate if it is possible to remove the continuum
   if (terra::nlyr(x) < 3) {

@@ -49,9 +49,7 @@ hsi_calc_rmean <- function(
   ...
 ) {
   # Validate input
-  if (!inherits(x, "SpatRaster")) {
-    cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
-  }
+  check_spatraster(x)
 
   # Store user input in a spliceable list
   wopt_user <- rlang::list2(...)

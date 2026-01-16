@@ -14,10 +14,8 @@ plot_raster_overlay <- function(
   alpha = 0.5,
   ...
 ) {
-  # Check if correct class is supplied.
-  if (!inherits(x, what = "SpatRaster")) {
-    rlang::abort(message = "Supplied data is not a terra SpatRaster.")
-  }
+  # Validate input
+  check_spatraster(x)
 
   if (!inherits(index, what = "character")) {
     rlang::abort(message = "Supplied index name is not a character.")

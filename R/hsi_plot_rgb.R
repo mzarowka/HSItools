@@ -12,10 +12,8 @@ plot_raster_rgb <- function(
   calibration = NULL,
   ...
 ) {
-  # Check if correct class is supplied.
-  if (!inherits(x, what = "SpatRaster")) {
-    rlang::abort(message = "Supplied data is not a terra SpatRaster.")
-  }
+  # Validate input
+  check_spatraster(x)
 
   # Check if there are values close to RGB, within the 25 nm.
   if (

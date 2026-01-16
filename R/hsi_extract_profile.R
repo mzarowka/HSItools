@@ -68,9 +68,7 @@ hsi_extract_profile <- function(
   fun = "mean"
 ) {
   # Validate input
-  if (!inherits(x, "SpatRaster")) {
-    cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
-  }
+  check_spatraster(x)
 
   # Validate direction
   direction <- match.arg(direction, c("vertical", "horizontal"))

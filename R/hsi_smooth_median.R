@@ -42,14 +42,10 @@ hsi_smooth_median <- function(
   ...
 ) {
   # Validate input
-  if (!inherits(x, "SpatRaster")) {
-    cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
-  }
+  check_spatraster(x)
 
-  # Validate window size (must be odd)
-  if (window %% 2 == 0) {
-    cli::cli_abort("{.arg window} size must be an odd number.")
-  }
+  # Validate input
+  check_numeric(window, odd = 2)
 
   # Store user input in a spliceable list
   wopt_user <- rlang::list2(...)

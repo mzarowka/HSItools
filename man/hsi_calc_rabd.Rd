@@ -58,7 +58,7 @@ x_rabd <- hsi_calc_rabd(
 
 # Save to file, use fixed minimum and provide a name
 x_rabd <- hsi_calc_rabd(
- x, 
+ x,
  continuum_edges = c(590, 730),
  absorption_band = 673,
  index_type = "strict",
@@ -71,7 +71,6 @@ x_rabd <- hsi_calc_rabd(
 }
 \seealso{
 Other HSI Transformations: 
-\code{\link{hsi_calc_derivative}()},
 \code{\link{hsi_calc_difference}()},
 \code{\link{hsi_calc_ndi}()},
 \code{\link{hsi_calc_raba}()},

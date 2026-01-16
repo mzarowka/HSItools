@@ -23,7 +23,7 @@
 #' through a moving window of \code{n} points.
 #'
 #' Any pixels with NA values will result in function failure.
-#' 
+#'
 #' Requires the \pkg{gsignal} package.
 #'
 #' @return A terra SpatRaster with Savitzky-Golay filtered values
@@ -41,7 +41,7 @@
 #'  filename = "output_savgol.tif",
 #'  overwrite = TRUE)
 #' }
-#' 
+#'
 #' @export
 hsi_smooth_savgol <- function(
   x,
@@ -55,9 +55,7 @@ hsi_smooth_savgol <- function(
   ...
 ) {
   # Validate input
-  if (!inherits(x, "SpatRaster")) {
-    cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
-  }
+  check_spatraster(x)
 
   # Check if gsignal is available
   if (!requireNamespace("gsignal", quietly = TRUE)) {
@@ -74,10 +72,8 @@ hsi_smooth_savgol <- function(
     )
   }
 
-  # Filter length/window size (must be odd)
-  if (n %% 2 != 1) {
-    cli::cli_abort("Filter length {.arg n} must be odd, got {n}.")
-  }
+  # Validate input
+  check_numeric(n, odd = TRUE)
 
   # Check if filter parameters are positive
   if (p < 0 || n < 0 || m < 0) {

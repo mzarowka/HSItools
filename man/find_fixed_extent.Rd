@@ -19,6 +19,8 @@ Find a fixed-width extent in the middle of a larger one
 }
 \seealso{
 Other Utilities: 
+\code{\link{hsi_subset}()},
+\code{\link{hsi_subset_range}()},
 \code{\link{merge_rasters}()},
 \code{\link{wavelength_position}()},
 \code{\link{wavelength_sub}()}

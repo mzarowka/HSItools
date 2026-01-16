@@ -51,16 +51,10 @@ hsi_calc_ndi <- function(
   ...
 ) {
   # Validate input
-  if (!inherits(x, what = "SpatRaster")) {
-    cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
-  }
+  check_spatraster(x)
 
   # Validate bands
-  if (!is.numeric(bands) || length(bands) != 2) {
-    cli::cli_abort(
-      "{.arg bands} must be a numeric vector of length 2."
-    )
-  }
+  check_numeric(bands, len = 2)
 
   # Store user input in a spliceable list
   wopt_user <- rlang::list2(...)

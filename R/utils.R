@@ -27,31 +27,19 @@ wavelength_position <- function(
   x,
   wavelength
 ) {
-  # Check if correct class is supplied.
-  if (!inherits(x, what = "SpatRaster")) {
-    cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
-  }
+  # Validate input
+  check_spatraster(x)
 
-  # Check wavelength argument
-  if (!is.numeric(wavelength)) {
-    cli::cli_abort("Input {.arg wavelength} must be numeric.")
-  }
+  # Validate type
+  check_numeric(wavelength)
 
+  # Check if there is at least one layer
   if (length(wavelength) == 0) {
-    cli::cli_abort("Input {.arg wavelength} must not be empty.")
+    cli::cli_abort("{.arg wavelength} must not be empty.")
   }
 
-  # Extract and validate band wavelengths
-  band_wavelengths <- as.numeric(terra::names(x))
-
-  if (all(is.na(band_wavelengths))) {
-    cli::cli_abort(
-      c(
-        "Band names cannot be converted to numeric wavelengths.",
-        "i" = "Band names are: {.val {head(terra::names(x), 5)}}..."
-      )
-    )
-  }
+  # Check wavelengths
+  band_wavelengths <- check_wavelengths(x)
 
   # Find index (position) of selected wavelength by comparing choice and names
   wavelength_index <- purrr::map_int(
@@ -260,14 +248,14 @@ hsi_pixels_to_units <- function(
 #' @return a terra SpatRaster. Merged inputs.
 #' @export
 merge_rasters <- function(x, y, filename = "") {
-  # Check if correct class is supplied.
-  if (!inherits(x, what = "SpatRaster")) {
-    rlang::abort(message = "Supplied data is not a terra SpatRaster.")
+  # Validate input
+  if (!inherits(x, "SpatRaster")) {
+    cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
   }
 
-  # Check if correct class is supplied.
-  if (!inherits(y, what = "SpatRaster")) {
-    rlang::abort(message = "Supplied data is not a terra SpatRaster.")
+  # Validate input
+  if (!inherits(y, "SpatRaster")) {
+    cli::cli_abort("Input {.arg y} must be a terra SpatRaster.")
   }
 
   # Get extent of the first SpatRaster
@@ -305,8 +293,9 @@ merge_rasters <- function(x, y, filename = "") {
 #' @export
 find_fixed_extent <- function(extent, width) {
   # Check if correct class is supplied.
-  if (!inherits(extent, what = "SpatExtent")) {
-    rlang::abort(message = "Supplied data is not a terra SpatExtent.")
+  # Validate input
+  if (!inherits(x, "SpatExtent")) {
+    cli::cli_abort("Input {.arg x} must be a terra SpatExtent.")
   }
 
   # Get mid point
@@ -323,4 +312,167 @@ find_fixed_extent <- function(extent, width) {
 
   # Return
   extent
+}
+
+#' Subset SpatRaster by wavelength
+#'
+#' @family Utilities
+#'
+#' @param x A terra SpatRaster with hyperspectral data. Band names must be
+#'   numeric wavelengths in nm.
+#' @param wavelength Numeric. Wavelength(s) to extract. Nearest available
+#'   band(s) will be selected.
+#' @param filename Character. Output filename. Default "" keeps in memory
+#' @param overwrite Logical. Overwrite existing file (default: FALSE)
+#' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
+#'
+#' @return A terra SpatRaster subset to the requested wavelength(s)
+#'
+#' @description
+#' Extract band(s) by wavelength value. Finds the nearest available band
+#' for each requested wavelength.
+#'
+#' @examples
+#' \dontrun{
+#' # Single band
+#' x |> hsi_subset(675)
+#'
+#' # Multiple bands
+#' x |> hsi_subset(c(650, 550, 450))
+#'
+#' # Derivative at specific wavelength
+#' x |> hsi_smooth_savgol(m = 1) |>
+#'   hsi_subset(675)
+#' }
+#'
+#' @export
+hsi_subset <- function(
+  x,
+  wavelength,
+  filename = "",
+  overwrite = FALSE,
+  ...
+) {
+  # Validate input
+  if (!inherits(x, "SpatRaster")) {
+    cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
+  }
+
+  if (!is.numeric(wavelength) || length(wavelength) == 0) {
+    cli::cli_abort("{.arg wavelength} must be a non-empty numeric vector.")
+  }
+
+  # Find and subset
+  result <- wavelength_position(x, wavelength) |>
+    wavelength_sub(x = x, wavelength_tbl = _)
+
+  # Write if requested
+  if (filename != "") {
+    terra::writeRaster(
+      result,
+      filename = filename,
+      overwrite = overwrite,
+      ...
+    )
+  }
+
+  # Return
+  return(result)
+}
+
+#' Subset SpatRaster by wavelength range
+#'
+#' @family Utilities
+#'
+#' @param x A terra SpatRaster with hyperspectral data. Band names must be
+#'   numeric wavelengths in nm.
+#' @param from Numeric. Start wavelength of range (inclusive)
+#' @param to Numeric. End wavelength of range (inclusive)
+#' @param filename Character. Output filename. Default "" keeps in memory
+#' @param overwrite Logical. Overwrite existing file (default: FALSE)
+#' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
+#'
+#' @return A terra SpatRaster with all bands within the specified range
+#'
+#' @description
+#' Extract all bands within a wavelength range. Both boundaries are inclusive.
+#'
+#' @examples
+#' \dontrun{
+#' # Extract chlorophyll absorption region
+#' x |> hsi_subset_range(from = 660, to = 680)
+#'
+#' # Derivative in red-edge region
+#' x |>
+#'   hsi_smooth_savgol(m = 1) |>
+#'   hsi_subset_range(from = 680, to = 750)
+#'
+#' # VNIR only
+#' x |> hsi_subset_range(from = 400, to = 1000)
+#' }
+#'
+#' @export
+hsi_subset_range <- function(
+  x,
+  from,
+  to,
+  filename = "",
+  overwrite = FALSE,
+  ...
+) {
+  # Validate input
+  if (!inherits(x, "SpatRaster")) {
+    cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
+  }
+
+  if (!is.numeric(from) || length(from) != 1) {
+    cli::cli_abort("{.arg from} must be a single numeric value.")
+  }
+
+  if (!is.numeric(to) || length(to) != 1) {
+    cli::cli_abort("{.arg to} must be a single numeric value.")
+  }
+
+  # Get wavelengths from band names
+  wavelengths <- as.numeric(terra::names(x))
+
+  if (all(is.na(wavelengths))) {
+    cli::cli_abort(
+      c(
+        "Band names cannot be converted to numeric wavelengths.",
+        "i" = "Band names are: {.val {head(terra::names(x), 5)}}..."
+      )
+    )
+  }
+
+  # Find bands within range (handle inverted from/to)
+  range_min <- min(from, to)
+  range_max <- max(from, to)
+
+  indices <- which(wavelengths >= range_min & wavelengths <= range_max)
+
+  if (length(indices) == 0) {
+    cli::cli_abort(
+      c(
+        "No bands found in range {range_min}-{range_max} nm.",
+        "i" = "Available range: {min(wavelengths)}-{max(wavelengths)} nm"
+      )
+    )
+  }
+
+  # Subset
+  result <- terra::subset(x, indices)
+
+  # Write if requested
+  if (filename != "") {
+    terra::writeRaster(
+      result,
+      filename = filename,
+      overwrite = overwrite,
+      ...
+    )
+  }
+
+  # Return the result
+  return(result)
 }

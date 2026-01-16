@@ -36,7 +36,7 @@
 #' \dontrun{
 #' # Load hyperspectral data
 #' x <- terra::rast("REFLECTANCE_testdata.tif")
-#' 
+#'
 #' # Calculate RABA for chlorophyll-a (typical range 650-700 nm)
 #' x_raba <- hsi_calc_raba(
 #'  x,
@@ -65,16 +65,10 @@ hsi_calc_raba <- function(
   ...
 ) {
   # Validate input
-  if (!inherits(x, "SpatRaster")) {
-    cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
-  }
+  check_spatraster(x)
 
-  # Validate continuum edges
-  if (!is.numeric(continuum_edges) || length(continuum_edges) != 2) {
-    cli::cli_abort(
-      "{.arg continuum_edges} must be a numeric vector of length 2 (wavelength boundaries)."
-    )
-  }
+  # Validate bands
+  check_numeric(continuum_edges, len = 2)
 
   # Store user input in a spliceable list
   wopt_user <- rlang::list2(...)
@@ -86,9 +80,6 @@ hsi_calc_raba <- function(
 
   # Splice wopt defaults with user input if any
   wopt <- purrr::list_modify(wopt_default, !!!wopt_user)
-
-  # Get wavelengths from band names
-  wavelengths <- as.numeric(terra::names(x))
 
   if (all(is.na(wavelengths))) {
     cli::cli_abort(

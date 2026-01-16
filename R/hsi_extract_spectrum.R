@@ -47,9 +47,7 @@ hsi_extract_spectrum <- function(
   fun = "mean"
 ) {
   # Validate input
-  if (!inherits(x, "SpatRaster")) {
-    cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
-  }
+  check_spatraster(x)
 
   # Validate band names are numeric wavelengths
   wavelengths <- suppressWarnings(as.numeric(terra::names(x)))

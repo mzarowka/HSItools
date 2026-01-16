@@ -36,6 +36,8 @@ wavelength_position(r, c(450, 650))
 \seealso{
 Other Utilities: 
 \code{\link{find_fixed_extent}()},
+\code{\link{hsi_subset}()},
+\code{\link{hsi_subset_range}()},
 \code{\link{merge_rasters}()},
 \code{\link{wavelength_sub}()}
 }

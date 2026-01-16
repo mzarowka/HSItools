@@ -78,7 +78,6 @@ x_raba <- hsi_calc_raba(
 \code{\link{hsi_calc_rabd}} for single-point absorption depth
 
 Other HSI Transformations: 
-\code{\link{hsi_calc_derivative}()},
 \code{\link{hsi_calc_difference}()},
 \code{\link{hsi_calc_ndi}()},
 \code{\link{hsi_calc_rabd}()},

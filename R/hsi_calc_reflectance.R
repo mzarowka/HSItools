@@ -155,32 +155,17 @@ hsi_calc_reflectance <- function(
   # Needs cleanup
   # IMPORTANT Needs to properly handle temporary files, otherwise it clogs up the drive almost imediately
 
-  # Validate inputs are SpatRasters
-  if (!inherits(x, "SpatRaster")) {
-    cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
-  }
+  # Validate input
+  check_spatraster(x)
 
-  if (!inherits(whiteref, "SpatRaster")) {
-    cli::cli_abort("Input {.arg whiteref} must be a terra SpatRaster.")
-  }
+  # Validate input
+  check_spatraster(whiteref)
 
-  if (!inherits(darkref, "SpatRaster")) {
-    cli::cli_abort("Input {.arg darkref} must be a terra SpatRaster.")
-  }
+  # Validate input
+  check_spatraster(darkref)
 
-  # Validate tint parameter
-  if (!is.numeric(tint) || length(tint) != 2) {
-    cli::cli_abort(
-      c(
-        "{.arg tint} must be a numeric vector of length 2.",
-        "i" = "Format: c(white_integration_time, sample_integration_time)"
-      )
-    )
-  }
-
-  if (any(tint <= 0)) {
-    cli::cli_abort("Integration times in {.arg tint} must be positive values.")
-  }
+  # Validate input
+  check_numeric(tint, len = 2, positive = TRUE)
 
   # Check that all inputs have the same number of bands
   n_bands_x <- terra::nlyr(x)

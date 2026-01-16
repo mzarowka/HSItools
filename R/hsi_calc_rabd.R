@@ -17,7 +17,7 @@
 #' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
 #'
 #' @return A terra SpatRaster with RABD values
-#' 
+#'
 #' @examples
 #' \dontrun{
 #' # Load hyperspectral data
@@ -33,7 +33,7 @@
 #'
 #' # Save to file, use fixed minimum and provide a name
 #' x_rabd <- hsi_calc_rabd(
-#'  x, 
+#'  x,
 #'  continuum_edges = c(590, 730),
 #'  absorption_band = 673,
 #'  index_type = "strict",
@@ -55,20 +55,21 @@ hsi_calc_rabd <- function(
   ...
 ) {
   # Validate input
-  if (!inherits(x, what = "SpatRaster")) {
-    cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
-  }
+  check_spatraster(x)
 
-  # Validate input
+  # Validate bands
+  check_numeric(continuum_edges, len = 2)
+
+  # Validate index type
   if (!index_type %in% c("strict", "mid", "max")) {
     cli::cli_abort(
       "Input {.arg index_type} must be one of 'strict', 'mid' or 'max'."
     )
   }
 
-  # Validate input
+  # Validate bands for strict
   if (index_type %in% c("strict") && length(absorption_band) > 1) {
-    cli::cli_abort("Input {.arg absorption_band} must be a single number.")
+    check_numeric(absorption_band, len = 1)
   }
 
   # Store user input in a spliceable list

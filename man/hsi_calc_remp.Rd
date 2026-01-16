@@ -86,7 +86,6 @@ Methods 21, 703-717. \doi{10.1002/lom3.10576}
 }
 \seealso{
 Other HSI Transformations: 
-\code{\link{hsi_calc_derivative}()},
 \code{\link{hsi_calc_difference}()},
 \code{\link{hsi_calc_ndi}()},
 \code{\link{hsi_calc_raba}()},

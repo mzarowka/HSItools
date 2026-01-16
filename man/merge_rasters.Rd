@@ -22,6 +22,8 @@ Merge SpatRasters in a stratigraphic order
 \seealso{
 Other Utilities: 
 \code{\link{find_fixed_extent}()},
+\code{\link{hsi_subset}()},
+\code{\link{hsi_subset_range}()},
 \code{\link{wavelength_position}()},
 \code{\link{wavelength_sub}()}
 }

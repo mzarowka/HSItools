@@ -16,7 +16,7 @@
 #' spectral features and are commonly used to detect clay minerals, dust, and
 #' other sedimentary components.
 #'
-#' 
+#'
 #' @examples
 #' \dontrun{
 #' # Load hyperspectral data
@@ -48,24 +48,10 @@ hsi_calc_difference <- function(
   ...
 ) {
   # Validate input
-  if (!inherits(x, "SpatRaster")) {
-    cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
-  }
+  check_spatraster(x)
 
   # Validate bands
-  if (missing(bands)) {
-    cli::cli_abort("{.arg bands} is required and cannot be missing.")
-  }
-
-  if (!is.numeric(bands) || length(bands) != 2) {
-    cli::cli_abort(
-      c(
-        "{.arg bands} must be a numeric vector of length 2.",
-        "x" = "Got {typeof(bands)} of length {length(bands)}",
-        "i" = "Example: bands = c(675, 750)"
-      )
-    )
-  }
+  check_numeric(bands, len = 2)
 
   # Store user input in a spliceable list
   wopt_user <- rlang::list2(...)
