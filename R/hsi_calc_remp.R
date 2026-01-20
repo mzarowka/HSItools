@@ -70,7 +70,6 @@ hsi_calc_remp <- function(
   x,
   search_range = c(660, 680),
   cores = 1,
-
   index_name = NULL,
   filename = "",
   overwrite = FALSE,
@@ -79,18 +78,8 @@ hsi_calc_remp <- function(
   # Validate input
   check_spatraster(x)
 
-  # Validate search_range
+  # Validate input
   check_numeric(search_range, len = 2)
-
-  # Check if gsignal is available
-  if (!requireNamespace("gsignal", quietly = TRUE)) {
-    cli::cli_abort(
-      c(
-        "Package {.pkg gsignal} is required for zero-crossing detection.",
-        "i" = "Install with: {.code install.packages('gsignal')}"
-      )
-    )
-  }
 
   # Store user input in a spliceable list
   wopt_user <- rlang::list2(...)
@@ -110,60 +99,47 @@ hsi_calc_remp <- function(
     to = search_range[2]
   )
 
-  # Extract actual wavelengths from the subset (critical fix!)
-  wavelengths <- as.numeric(terra::names(x_range))
+  # Get wavelengths in the range
+  range_wavelengths <- as.numeric(terra::names(x_range))
 
-  # Validate we have enough bands
-  if (length(wavelengths) < 2) {
+  if (length(range_wavelengths) < 2) {
     cli::cli_abort(
       c(
-        "Search range contains fewer than 2 bands.",
-        "i" = "Expand {.arg search_range} or check input raster wavelengths."
+        "Not enough bands in search range ({search_range[1]}-{search_range[2]} nm).",
+        "i" = "Need at least 2 bands for zero-crossing detection."
       )
     )
   }
 
   # Find zero-crossing for each pixel
-  # wavelengths is captured in closure, available inside terra::app
   find_zero_crossing <- function(deriv_values) {
     # Handle NA values
     if (anyNA(deriv_values)) {
       return(NA_real_)
     }
 
-    # Use gsignal to find crossing indices
-    crossings <- gsignal::zerocrossing(deriv_values)
+    # gsignal returns interpolated wavelengths at zero crossings
+    crossings <- gsignal::zerocrossing(range_wavelengths, deriv_values)
 
-    # If no crossings found, fall back to wavelength closest to zero
-    if (length(crossings) == 0) {
-      min_idx <- which.min(abs(deriv_values))
-      return(wavelengths[min_idx])
+    if (length(crossings) > 0) {
+      # Filter for negative-to-positive crossings
+      neg_to_pos <- crossings[
+        purrr::map_lgl(crossings, \(wl) {
+          # Index just before the crossing
+          idx <- max(which(range_wavelengths < wl))
+          # Check: negative before, positive after
+          deriv_values[idx] <= 0 && deriv_values[idx + 1] > 0
+        })
+      ]
+
+      if (length(neg_to_pos) > 0) {
+        return(neg_to_pos[1])
+      }
     }
 
-    # Filter for negative-to-positive crossings only
-    neg_to_pos <- purrr::keep(crossings, \(idx) {
-      deriv_values[idx] <= 0 && deriv_values[idx + 1] > 0
-    })
-
-    if (length(neg_to_pos) > 0) {
-      # Take first negative-to-positive crossing
-      idx <- neg_to_pos[1]
-
-      # Linear interpolation for exact wavelength
-      x1 <- wavelengths[idx]
-      x2 <- wavelengths[idx + 1]
-      y1 <- deriv_values[idx]
-      y2 <- deriv_values[idx + 1]
-
-      # Interpolate: find x where y = 0
-      lambda_remp <- x1 + (0 - y1) * (x2 - x1) / (y2 - y1)
-
-      return(lambda_remp)
-    } else {
-      # No negative-to-positive crossing: fallback to wavelength closest to zero
-      min_idx <- which.min(abs(deriv_values))
-      return(wavelengths[min_idx])
-    }
+    # Fallback: wavelength closest to zero
+    min_idx <- which.min(abs(deriv_values))
+    return(range_wavelengths[min_idx])
   }
 
   # Apply to each pixel
@@ -181,6 +157,5 @@ hsi_calc_remp <- function(
     names(result) <- index_name
   }
 
-  # Return
   return(result)
 }
