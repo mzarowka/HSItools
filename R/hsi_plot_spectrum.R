@@ -2,7 +2,6 @@
 #'
 #' @family Plotting
 #' @param x Reflectance SpatRaster.
-#' @param extent extent to work over.
 #' @param ... other arguments.
 #'
 #' @importFrom rlang .data

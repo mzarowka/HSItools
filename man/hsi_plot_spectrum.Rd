@@ -10,8 +10,6 @@ hsi_plot_spectrum(x, ...)
 \item{x}{Reflectance SpatRaster.}
 
 \item{...}{other arguments.}
-
-\item{extent}{extent to work over.}
 }
 \value{
 line plot with of selected hyperspectral index.
