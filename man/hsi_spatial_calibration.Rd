@@ -69,6 +69,9 @@ physical_positions <- hsi_pixels_to_units(pixel_values, calibration)
 \code{\link{hsi_pixels_to_units}} for applying the calibration
 
 Other HSI Calibration: 
+\code{\link{hsi_calibration_direct}()},
+\code{\link{hsi_calibration_from_dims}()},
+\code{\link{hsi_calibration_from_scale}()},
 \code{\link{hsi_calibration_schema}()},
 \code{\link{hsi_ends}()},
 \code{\link{hsi_pixels_to_units}()},

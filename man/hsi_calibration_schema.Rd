@@ -32,6 +32,9 @@ schema <- hsi_calibration_schema(print = FALSE)
 }
 \seealso{
 Other HSI Calibration: 
+\code{\link{hsi_calibration_direct}()},
+\code{\link{hsi_calibration_from_dims}()},
+\code{\link{hsi_calibration_from_scale}()},
 \code{\link{hsi_ends}()},
 \code{\link{hsi_pixels_to_units}()},
 \code{\link{hsi_scale}()},

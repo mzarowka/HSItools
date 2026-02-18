@@ -109,7 +109,7 @@ hsi_ends <- function(
 
   # Build data frame with coordinates
   x_df <- terra::as.data.frame(x, geom = "xy") |>
-    dplyr::rename(pixel_x = .data$x, pixel_y = .data$y)
+    dplyr::rename(pixel_x = "x", pixel_y = "y")
 
   # Helper to build single endpoint list
   build_endpoint <- \(df) {

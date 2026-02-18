@@ -54,7 +54,7 @@ wavelength_position <- function(
     band_wavelength = band_wavelengths[wavelength_index]
   ) |>
     # Keep last observation if there are duplicates
-    dplyr::slice_tail(by = .data$position)
+    dplyr::slice_tail(by = "position")
 
   # Return values
   return(wavelength_table)
@@ -337,4 +337,61 @@ hsi_subset_range <- function(
 
   # Return the result
   return(result)
+}
+
+
+#' Convert units to micrometers
+#'
+#' @param value Numeric. Value to convert.
+#' @param from Character. Source units.
+#'
+#' @returns Numeric. Value in micrometers.
+#'
+#' @noRd
+to_um <- function(value, from) {
+  # Get the multiplier
+  multiplier <- switch(
+    from,
+    "um" = 1,
+    "mm" = 1000,
+    "cm" = 10000,
+    # Abort if none of the above is supplied
+    cli::cli_abort(
+      "{.val {from}} is not a supported unit. Use {.or {.val {c('um', 'mm', 'cm')}}}."
+    )
+  )
+
+  # Get the correct value
+  value <- value * multiplier
+
+  # Return
+  value
+}
+
+#' Convert micrometers to target units
+#'
+#' @param value Numeric. Value to convert.
+#' @param to Character. Target units.
+#'
+#' @returns Numeric. Value in target units.
+#'
+#' @noRd
+from_um <- function(value, to) {
+  # Get the multiplier
+  multiplier <- switch(
+    from,
+    "um" = 1,
+    "mm" = 0.001,
+    "cm" = 0.0001,
+    # Abort if none of the above is supplied
+    cli::cli_abort(
+      "{.val {to}} is not a supported unit. Use {.or {.val {c('um', 'mm', 'cm')}}}."
+    )
+  )
+
+  # Get the correct value
+  value <- value * multiplier
+
+  # Return
+  value
 }
