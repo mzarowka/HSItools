@@ -2,59 +2,79 @@
 % Please edit documentation in R/hsi_pixels_to_units.R
 \name{hsi_pixels_to_units}
 \alias{hsi_pixels_to_units}
-\title{Convert pixel coordinates to physical positions}
+\title{Convert pixel coordinates to physical units}
 \usage{
-hsi_pixels_to_units(pixels, calibration, target = "physical")
+hsi_pixels_to_units(
+  pixels,
+  calibration,
+  origin = 0,
+  direction = 1,
+  units = "um"
+)
 }
 \arguments{
-\item{pixels}{Numeric. Pixel coordinates to transform.}
+\item{pixels}{Numeric. Pixel coordinates to convert.}
 
-\item{calibration}{List. Output from \code{\link{hsi_spatial_calibration}}.}
+\item{calibration}{Numeric. Spatial calibration in µm/px, as created
+by any \code{hsi_calibration_*} function.}
 
-\item{target}{Character. Target position system. One of:
-\describe{
-\item{"physical"}{Scale/tape reading coordinates (default)}
-\item{"sample"}{Sample-relative coordinates (e.g., 0 at sample top)}
-\item{"splice"}{Composite/spliced sequence coordinates}
-}}
+\item{origin}{Numeric. Pixel coordinate that corresponds to position
+zero (default 0).}
+
+\item{direction}{Numeric. Either 1 or -1. Controls the sign of the
+output (default 1). Set to -1 to flip direction, which is typically
+needed for vertical profiles in terra where y-coordinates decrease
+downward but physical positions should increase.}
+
+\item{units}{Character. Output units. One of "um" (micrometers, default),
+"mm", or "cm".}
 }
 \value{
-Numeric vector of positions in the target coordinate system,
-same length as input \code{pixels}.
+Numeric vector. Physical positions in the requested units.
+Same length as input \code{pixels}.
 }
 \description{
-Transform pixel coordinates to physical positions using a spatial calibration
-object. Supports multiple position systems depending on how ends were defined.
+Convert pixel coordinates to physical positions using a spatial calibration.
+Optionally set an origin pixel (specimen start) so that output positions
+are specimen-relative.
 }
 \details{
-The transformation uses the formula:
+The conversion formula is:
 
-\code{position = start_position + (pixel - start_pixel) * signed_ratio}
+\code{position = (pixels - origin) * calibration * direction}
 
-The signed ratio accounts for the relationship between pixel coordinate
-direction (Y increases downward in raster space) and physical position
-direction.
+The result is in µm and then converted to the requested output units.
 
-Extrapolation beyond the start/end range is allowed.
+In terra, y-coordinates and row indices run in opposite directions:
+y-coordinates decrease downward while row indices increase downward.
+The appropriate \code{direction} depends on what you pass as \code{pixels}:
+\itemize{
+\item{y-coordinates (e.g., from \code{hsi_extract_profile()}): use
+\code{direction = -1} for positions increasing along the specimen}
+\item{Row indices: use \code{direction = 1} (default)}
+}
 }
 \examples{
-\dontrun{
-# Build calibration
-scale_info <- hsi_scale(scale_line, distance = 10, units = "mm")
-ends_info <- hsi_ends(ends_pts)
-calibration <- hsi_spatial_calibration(scale_info, ends_info)
+# Create calibration: 60 µm per pixel
+calibration <- hsi_calibration_direct(60)
 
-# Convert pixel coordinates
-pixel_values <- c(100, 200, 300, 400, 500)
-physical_pos <- hsi_pixels_to_units(pixel_values, calibration)
+# Row indices are increasing downward, direction = 1 (default)
+hsi_pixels_to_units(c(0, 10, 20), calibration)
 
-# Use sample-relative coordinates
-sample_pos <- hsi_pixels_to_units(pixel_values, calibration, target = "sample")
-}
+# Row indices with origin and specimen starts at row 50
+hsi_pixels_to_units(c(50, 60, 70), calibration, origin = 50)
+
+# Y-coordinates from terra and decreasing downward, use direction = -1
+hsi_pixels_to_units(c(850, 840, 830), calibration, origin = 850, direction = -1)
+
+# Output in mm
+hsi_pixels_to_units(c(0, 10, 20), calibration, units = "mm")
 
 }
 \seealso{
-\code{\link{hsi_spatial_calibration}} for creating calibration object
+\code{\link{hsi_calibration_direct}},
+\code{\link{hsi_calibration_from_scale}},
+\code{\link{hsi_calibration_from_dims}} for creating calibration objects
 
 Other HSI Calibration: 
 \code{\link{hsi_calibration_direct}()},
@@ -62,6 +82,7 @@ Other HSI Calibration:
 \code{\link{hsi_calibration_from_scale}()},
 \code{\link{hsi_calibration_schema}()},
 \code{\link{hsi_ends}()},
+\code{\link{hsi_pixels_to_units_old}()},
 \code{\link{hsi_scale}()},
 \code{\link{hsi_spatial_calibration}()}
 }

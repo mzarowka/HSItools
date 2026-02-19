@@ -75,6 +75,7 @@ Other HSI Calibration:
 \code{\link{hsi_calibration_schema}()},
 \code{\link{hsi_ends}()},
 \code{\link{hsi_pixels_to_units}()},
+\code{\link{hsi_pixels_to_units_old}()},
 \code{\link{hsi_scale}()}
 }
 \concept{HSI Calibration}
