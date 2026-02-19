@@ -379,7 +379,7 @@ to_um <- function(value, from) {
 from_um <- function(value, to) {
   # Get the multiplier
   multiplier <- switch(
-    from,
+    to,
     "um" = 1,
     "mm" = 0.001,
     "cm" = 0.0001,
