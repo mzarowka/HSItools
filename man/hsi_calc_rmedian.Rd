@@ -75,6 +75,7 @@ Other HSI Transformations:
 \code{\link{hsi_normalize}()},
 \code{\link{hsi_remove_continuum}()},
 \code{\link{hsi_smooth_median}()},
-\code{\link{hsi_smooth_savgol}()}
+\code{\link{hsi_smooth_savgol}()},
+\code{\link{hsi_write_scaled}()}
 }
 \concept{HSI Transformations}
