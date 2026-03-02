@@ -5,8 +5,7 @@
 #' @param p Integer. Filter polynomial order (typically 2-4)
 #' @param n Integer. Filter length/window size (must be odd, typically 5-15)
 #' @param m Integer. Derivative order (0 = smoothing, 1 = first derivative, etc.)
-#' @param ts Numeric. Sampling interval for derivative calculations
-#' @param cores positive integer. If cores > 1, a \pkg{parallel} package cluster with that many cores is created and used. You can also supply a cluster object.
+#' @param ts Numeric. Sampling interval for derivative calculations.
 #' @param filename Character. Output filename. Default "" keeps in memory
 #' @param overwrite Logical. Overwrite existing file (default: FALSE)
 #' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
@@ -49,7 +48,6 @@ hsi_smooth_savgol <- function(
   n = p + 13 - p %% 2,
   m = 0,
   ts = 1,
-  cores = 1,
   filename = "",
   overwrite = FALSE,
   ...
@@ -108,7 +106,6 @@ hsi_smooth_savgol <- function(
     fun = \(x) gsignal::sgolayfilt(as.vector(x), p = p, n = n, m = m, ts = ts),
     filename = filename,
     overwrite = overwrite,
-    cores = cores,
     wopt = wopt
   )
 

@@ -4,12 +4,10 @@
 \alias{hsi_remove_continuum}
 \title{Remove continuum from hyperspectral data}
 \usage{
-hsi_remove_continuum(x, cores = 1, filename = "", overwrite = FALSE, ...)
+hsi_remove_continuum(x, filename = "", overwrite = FALSE, ...)
 }
 \arguments{
 \item{x}{A terra SpatRaster with hyperspectral data}
-
-\item{cores}{positive integer. If cores > 1, a \pkg{parallel} package cluster with that many cores is created and used. You can also supply a cluster object.}
 
 \item{filename}{Character. Output filename. Default "" keeps in memory}
 

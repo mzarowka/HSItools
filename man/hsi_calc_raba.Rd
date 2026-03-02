@@ -7,7 +7,6 @@
 hsi_calc_raba(
   x,
   continuum_edges,
-  cores = 1,
   index_name = NULL,
   filename = "",
   overwrite = FALSE,
@@ -19,8 +18,6 @@ hsi_calc_raba(
 
 \item{continuum_edges}{Numeric vector of length 2. Wavelength boundaries
 (in nm) that define the continuum for the calculation window}
-
-\item{cores}{positive integer. If cores > 1, a \pkg{parallel} package cluster with that many cores is created and used. You can also supply a cluster object.}
 
 \item{index_name}{Character. Name of calculated RABA index. Default NULL}
 
@@ -67,7 +64,6 @@ x_raba <- hsi_calc_raba(
   x = reflectance,
   continuum_edges = c(650, 700),
   index_name = "raba_650700",
-  cores = 4,
   filename = "raba_output.tif",
   overwrite = TRUE
 )

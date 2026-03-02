@@ -10,7 +10,6 @@ hsi_smooth_savgol(
   n = p + 13 - p\%\%2,
   m = 0,
   ts = 1,
-  cores = 1,
   filename = "",
   overwrite = FALSE,
   ...
@@ -25,9 +24,7 @@ hsi_smooth_savgol(
 
 \item{m}{Integer. Derivative order (0 = smoothing, 1 = first derivative, etc.)}
 
-\item{ts}{Numeric. Sampling interval for derivative calculations}
-
-\item{cores}{positive integer. If cores > 1, a \pkg{parallel} package cluster with that many cores is created and used. You can also supply a cluster object.}
+\item{ts}{Numeric. Sampling interval for derivative calculations.}
 
 \item{filename}{Character. Output filename. Default "" keeps in memory}
 

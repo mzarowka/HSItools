@@ -5,9 +5,7 @@
 #' @param x A terra SpatRaster with first derivative of reflectance.
 #'   Calculate using \code{hsi_smooth_savgol(reflectance, m = 1)}
 #' @param search_range Numeric vector of length 2. Wavelength range to search
-#'   for the red-edge minimum point. Default c(660, 680)
-#' @param cores Positive integer. If cores > 1, a \pkg{parallel} cluster with
-#'   that many cores is created and used.
+#'   for the red-edge minimum point. Default c(660, 680).
 #' @param index_name Character. Name of calculated index. Default NULL
 #' @param filename Character. Output filename. Default "" keeps in memory
 #' @param overwrite Logical. Overwrite existing file (default: FALSE)
@@ -69,7 +67,6 @@
 hsi_calc_remp <- function(
   x,
   search_range = c(660, 680),
-  cores = 1,
   index_name = NULL,
   filename = "",
   overwrite = FALSE,
@@ -146,7 +143,6 @@ hsi_calc_remp <- function(
   result <- terra::app(
     x_range,
     fun = find_zero_crossing,
-    cores = cores,
     filename = filename,
     overwrite = overwrite,
     wopt = wopt

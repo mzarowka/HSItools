@@ -8,7 +8,6 @@ hsi_calc_rmean(
   x,
   index_name = NULL,
   na.rm = TRUE,
-  cores = 1,
   filename = "",
   overwrite = FALSE,
   ...
@@ -19,10 +18,7 @@ hsi_calc_rmean(
 
 \item{index_name}{Character. Name of calculated index. Default NULL}
 
-\item{na.rm}{Logical. Remove NA values when calculating (default: TRUE)}
-
-\item{cores}{positive integer. If cores > 1, a \pkg{parallel} package cluster
-with that many cores is created and used. You can also supply a cluster object.}
+\item{na.rm}{Logical. Remove NA values when calculating (default: TRUE).}
 
 \item{filename}{Character. Output filename. Default "" keeps in memory}
 

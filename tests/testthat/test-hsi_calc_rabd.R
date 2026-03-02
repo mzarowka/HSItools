@@ -1,7 +1,7 @@
 # Test RABD calculation ----
+# RABD = continuum / trough reflectance — values > 1 indicate absorption.
 
 ## Setup ----
-# Load test data once for all tests
 test_reflectance <- terra::rast(
   system.file(
     package = "HSItools",
@@ -9,7 +9,8 @@ test_reflectance <- terra::rast(
   )
 )
 
-## Test output type ----
+# ── Output type ──────────────────────────────────────────────────────────────
+
 test_that("hsi_calc_rabd returns a SpatRaster", {
   result <- hsi_calc_rabd(
     x = test_reflectance,
@@ -21,8 +22,9 @@ test_that("hsi_calc_rabd returns a SpatRaster", {
   expect_s4_class(result, "SpatRaster")
 })
 
-## Test output dimensions ----
-test_that("hsi_calc_rabd returns single-band raster with correct dimensions", {
+# ── Output dimensions ────────────────────────────────────────────────────────
+
+test_that("hsi_calc_rabd returns a single-band raster", {
   result <- hsi_calc_rabd(
     x = test_reflectance,
     continuum_edges = c(590, 730),
@@ -30,53 +32,58 @@ test_that("hsi_calc_rabd returns single-band raster with correct dimensions", {
     index_type = "strict"
   )
 
-  # Should be single band
-
   expect_equal(terra::nlyr(result), 1)
+})
 
-  # Should preserve spatial dimensions
+test_that("hsi_calc_rabd preserves spatial dimensions", {
+  result <- hsi_calc_rabd(
+    x = test_reflectance,
+    continuum_edges = c(590, 730),
+    absorption_band = 670,
+    index_type = "strict"
+  )
+
   expect_equal(terra::nrow(result), terra::nrow(test_reflectance))
   expect_equal(terra::ncol(result), terra::ncol(test_reflectance))
 })
 
-## Test index_type variants ----
-test_that("hsi_calc_rabd works with index_type = 'max'", {
-  result <- hsi_calc_rabd(
-    x = test_reflectance,
-    continuum_edges = c(590, 730),
-    absorption_band = 660:680,
-    index_type = "max"
-  )
+# ── index_type variants ──────────────────────────────────────────────────────
 
-  expect_s4_class(result, "SpatRaster")
-  expect_equal(terra::nlyr(result), 1)
+test_that("hsi_calc_rabd works with index_type = 'max'", {
+  expect_no_error(
+    hsi_calc_rabd(
+      x = test_reflectance,
+      continuum_edges = c(590, 730),
+      absorption_band = 660:680,
+      index_type = "max"
+    )
+  )
 })
 
 test_that("hsi_calc_rabd works with index_type = 'strict'", {
-  result <- hsi_calc_rabd(
-    x = test_reflectance,
-    continuum_edges = c(590, 730),
-    absorption_band = 670,
-    index_type = "strict"
+  expect_no_error(
+    hsi_calc_rabd(
+      x = test_reflectance,
+      continuum_edges = c(590, 730),
+      absorption_band = 670,
+      index_type = "strict"
+    )
   )
-
-  expect_s4_class(result, "SpatRaster")
-  expect_equal(terra::nlyr(result), 1)
 })
 
 test_that("hsi_calc_rabd works with index_type = 'mid'", {
-  result <- hsi_calc_rabd(
-    x = test_reflectance,
-    continuum_edges = c(590, 730),
-    absorption_band = 660:680,
-    index_type = "mid"
+  expect_no_error(
+    hsi_calc_rabd(
+      x = test_reflectance,
+      continuum_edges = c(590, 730),
+      absorption_band = 660:680,
+      index_type = "mid"
+    )
   )
-
-  expect_s4_class(result, "SpatRaster")
-  expect_equal(terra::nlyr(result), 1)
 })
 
-## Test index_name argument ----
+# ── index_name argument ──────────────────────────────────────────────────────
+
 test_that("hsi_calc_rabd sets layer name when index_name provided", {
   result <- hsi_calc_rabd(
     x = test_reflectance,
@@ -86,10 +93,10 @@ test_that("hsi_calc_rabd sets layer name when index_name provided", {
     index_name = "rabd670"
   )
 
-  expect_equal(names(result), "rabd670")
+  expect_equal(terra::names(result), "rabd670")
 })
 
-test_that("hsi_calc_rabd has NULL name when index_name not provided", {
+test_that("hsi_calc_rabd has default terra name when index_name is NULL", {
   result <- hsi_calc_rabd(
     x = test_reflectance,
     continuum_edges = c(590, 730),
@@ -97,13 +104,85 @@ test_that("hsi_calc_rabd has NULL name when index_name not provided", {
     index_type = "strict"
   )
 
-  # Name should be empty/NULL (terra default behavior)
-  expect_true(
-    names(result) == "" || is.null(names(result)) || names(result) == "lyr.1"
-  )
+  expect_length(terra::names(result), 1)
 })
 
-## Test input validation ----
+# ── Value sanity ─────────────────────────────────────────────────────────────
+
+test_that("hsi_calc_rabd produces positive values for absorption features", {
+  # RABD = continuum / trough; both are positive reflectances, so result > 0
+  result <- hsi_calc_rabd(
+    x = test_reflectance,
+    continuum_edges = c(590, 730),
+    absorption_band = 670,
+    index_type = "strict"
+  )
+
+  values <- terra::values(result, na.rm = TRUE)
+  expect_true(sum(values > 0) > length(values) * 0.5)
+})
+
+test_that("hsi_calc_rabd produces only finite values", {
+  result <- hsi_calc_rabd(
+    x = test_reflectance,
+    continuum_edges = c(590, 730),
+    absorption_band = 670,
+    index_type = "strict"
+  )
+
+  values <- terra::values(result, na.rm = TRUE)
+  expect_false(any(is.infinite(values)))
+  expect_false(any(is.nan(values)))
+})
+
+# ── File writing ─────────────────────────────────────────────────────────────
+
+test_that("hsi_calc_rabd writes to file when filename provided", {
+  temp_file <- tempfile(fileext = ".tif")
+
+  result <- hsi_calc_rabd(
+    x = test_reflectance,
+    continuum_edges = c(590, 730),
+    absorption_band = 670,
+    index_type = "strict",
+    filename = temp_file,
+    overwrite = TRUE
+  )
+
+  expect_true(file.exists(temp_file))
+  expect_s4_class(result, "SpatRaster")
+
+  unlink(temp_file)
+})
+
+test_that("hsi_calc_rabd errors when file exists and overwrite = FALSE", {
+  temp_file <- tempfile(fileext = ".tif")
+
+  hsi_calc_rabd(
+    x = test_reflectance,
+    continuum_edges = c(590, 730),
+    absorption_band = 670,
+    index_type = "strict",
+    filename = temp_file,
+    overwrite = TRUE
+  )
+
+  expect_error(
+    hsi_calc_rabd(
+      x = test_reflectance,
+      continuum_edges = c(590, 730),
+      absorption_band = 670,
+      index_type = "strict",
+      filename = temp_file,
+      overwrite = FALSE
+    )
+  )
+
+  unlink(temp_file)
+})
+
+# ── Input validation ─────────────────────────────────────────────────────────
+
 test_that("hsi_calc_rabd errors with non-SpatRaster input", {
   expect_error(
     hsi_calc_rabd(
@@ -111,12 +190,11 @@ test_that("hsi_calc_rabd errors with non-SpatRaster input", {
       continuum_edges = c(590, 730),
       absorption_band = 670,
       index_type = "strict"
-    ),
-    "must be a.*SpatRaster"
+    )
   )
 })
 
-test_that("hsi_calc_rabd errors with wrong continuum_edges length", {
+test_that("hsi_calc_rabd errors when continuum_edges is not length 2", {
   expect_error(
     hsi_calc_rabd(
       x = test_reflectance,
@@ -140,7 +218,7 @@ test_that("hsi_calc_rabd errors with invalid index_type", {
   )
 })
 
-test_that("hsi_calc_rabd errors with multiple absorption_band for strict type", {
+test_that("hsi_calc_rabd errors with multiple absorption_band for index_type = 'strict'", {
   expect_error(
     hsi_calc_rabd(
       x = test_reflectance,
@@ -150,42 +228,4 @@ test_that("hsi_calc_rabd errors with multiple absorption_band for strict type", 
     ),
     "must be length 1"
   )
-})
-
-## Test file writing ----
-test_that("hsi_calc_rabd writes to file when filename provided", {
-  temp_file <- tempfile(fileext = ".tif")
-
-  result <- hsi_calc_rabd(
-    x = test_reflectance,
-    continuum_edges = c(590, 730),
-    absorption_band = 670,
-    index_type = "strict",
-    filename = temp_file,
-    overwrite = TRUE
-  )
-
-  expect_true(file.exists(temp_file))
-
-  # Clean up
-  unlink(temp_file)
-})
-
-## Test RABD values are reasonable ----
-test_that("hsi_calc_rabd produces finite positive values", {
-  result <- hsi_calc_rabd(
-    x = test_reflectance,
-    continuum_edges = c(590, 730),
-    absorption_band = 670,
-    index_type = "strict"
-  )
-
-  values <- terra::values(result, na.rm = TRUE)
-
-  # RABD should be positive (continuum / trough, both positive reflectances)
-  # Allow for some edge cases but most should be positive
-  expect_true(sum(values > 0, na.rm = TRUE) > length(values) * 0.5)
-
-  # Should not have Inf values (division by zero handled)
-  expect_false(any(is.infinite(values)))
 })

@@ -4,9 +4,7 @@
 #'
 #' @param x A terra SpatRaster with hyperspectral data
 #' @param index_name Character. Name of calculated index. Default NULL
-#' @param na.rm Logical. Remove NA values when calculating (default: TRUE)
-#' @param cores positive integer. If cores > 1, a \pkg{parallel} package cluster
-#'   with that many cores is created and used. You can also supply a cluster object.
+#' @param na.rm Logical. Remove NA values when calculating (default: TRUE).
 #' @param filename Character. Output filename. Default "" keeps in memory
 #' @param overwrite Logical. Overwrite existing file (default: FALSE)
 #' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
@@ -43,7 +41,6 @@ hsi_calc_rsd <- function(
   x,
   index_name = NULL,
   na.rm = TRUE,
-  cores = 1,
   filename = "",
   overwrite = FALSE,
   ...
@@ -67,7 +64,6 @@ hsi_calc_rsd <- function(
     x,
     fun = "sd",
     na.rm = na.rm,
-    cores = cores,
     filename = filename,
     overwrite = overwrite,
     wopt = wopt

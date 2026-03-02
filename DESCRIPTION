@@ -1,15 +1,22 @@
 Package: HSItools
 Title: Process, Analyze and Visualize Hyperspectral Core Scanning Data
-Version: 0.4.0
+Version: 0.5.0
 Authors@R: c(
     person("Maurycy", "Żarczyński", , "maurycy.zarczynski@ug.edu.pl", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0003-2989-8152")),
     person("Nicholas", "McKay", , "nicholas.mckay@nau.edu", role = "aut",
            comment = c(ORCID = "0000-0003-3598-5113")),
     person("David", "Edge", , "david.edge@nau.edu", role = "aut",
-           comment = c(ORCID = "0000-0001-6938-2850"))
+           comment = c(ORCID = "0000-0001-6938-2850")),
+    person("Jakub", "Nowosad", role = "aut", comment = c(ORCID = "0000-0002-1057-3721"))
   )
-Description: A toolbox to process raw hyperspectral core scanning imaging (HSI) data. Allows normalization, filtering and visualization.
+Description: Tools for processing and analyzing hyperspectral imaging (HSI) 
+    data from line-scanning sensors. Provides radiometric calibration from 
+    raw captures to reflectance, spectral smoothing (median, Savitzky-Golay), 
+    continuum removal, calculation of spectral indices (RABD, RABA, NDI, 
+    ratio, difference), and extraction of spatial profiles and spectra. 
+    Designed for large datasets that exceed available memory, using 
+    file-backed raster processing via 'terra'.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -20,7 +27,10 @@ Suggests:
     knitr,
     rmarkdown,
     scales,
-    quarto
+    quarto,
+    mirai,
+    carrier (>= 0.3.0),
+    withr
 Config/testthat/edition: 3
 URL: https://github.com/mzarowka/HSItools
 BugReports: https://github.com/mzarowka/HSItools/issues
@@ -30,7 +40,7 @@ Imports:
     terra,
     tidyr,
     tidyterra,
-    purrr,
+    purrr (>= 1.1.0),
     cli,
     rlang,
     prospectr,

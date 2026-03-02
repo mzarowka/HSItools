@@ -7,7 +7,6 @@
 hsi_calc_remp(
   x,
   search_range = c(660, 680),
-  cores = 1,
   index_name = NULL,
   filename = "",
   overwrite = FALSE,
@@ -19,10 +18,7 @@ hsi_calc_remp(
 Calculate using \code{hsi_smooth_savgol(reflectance, m = 1)}}
 
 \item{search_range}{Numeric vector of length 2. Wavelength range to search
-for the red-edge minimum point. Default c(660, 680)}
-
-\item{cores}{Positive integer. If cores > 1, a \pkg{parallel} cluster with
-that many cores is created and used.}
+for the red-edge minimum point. Default c(660, 680).}
 
 \item{index_name}{Character. Name of calculated index. Default NULL}
 

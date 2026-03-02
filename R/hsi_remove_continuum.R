@@ -2,7 +2,6 @@
 #'
 #' @family HSI Transformations
 #' @param x A terra SpatRaster with hyperspectral data
-#' @param cores positive integer. If cores > 1, a \pkg{parallel} package cluster with that many cores is created and used. You can also supply a cluster object.
 #' @param filename Character. Output filename. Default "" keeps in memory
 #' @param overwrite Logical. Overwrite existing file (default: FALSE)
 #' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
@@ -39,7 +38,6 @@
 #' @export
 hsi_remove_continuum <- function(
   x,
-  cores = 1,
   filename = "",
   overwrite = FALSE,
   ...
@@ -112,7 +110,6 @@ hsi_remove_continuum <- function(
     fun = remove_continuum_fun,
     filename = filename,
     overwrite = overwrite,
-    cores = cores,
     wopt = wopt
   )
 

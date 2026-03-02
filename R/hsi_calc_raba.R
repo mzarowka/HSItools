@@ -5,7 +5,6 @@
 #' @param x A terra SpatRaster with hyperspectral data
 #' @param continuum_edges Numeric vector of length 2. Wavelength boundaries
 #'   (in nm) that define the continuum for the calculation window
-#' @param cores positive integer. If cores > 1, a \pkg{parallel} package cluster with that many cores is created and used. You can also supply a cluster object.
 #' @param index_name Character. Name of calculated RABA index. Default NULL
 #' @param filename Character. Output filename. Default "" keeps in memory
 #' @param overwrite Logical. Overwrite existing file (default: FALSE)
@@ -48,7 +47,6 @@
 #'   x = reflectance,
 #'   continuum_edges = c(650, 700),
 #'   index_name = "raba_650700",
-#'   cores = 4,
 #'   filename = "raba_output.tif",
 #'   overwrite = TRUE
 #' )
@@ -58,7 +56,6 @@
 hsi_calc_raba <- function(
   x,
   continuum_edges,
-  cores = 1,
   index_name = NULL,
   filename = "",
   overwrite = FALSE,
@@ -133,7 +130,6 @@ hsi_calc_raba <- function(
   result <- terra::app(
     x_range,
     fun = calc_raba_pixel,
-    cores = cores,
     filename = filename,
     overwrite = overwrite,
     wopt = wopt

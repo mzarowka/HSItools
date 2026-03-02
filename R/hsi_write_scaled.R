@@ -19,7 +19,7 @@
 #' so \code{\link[terra]{rast}} automatically returns float values on read —
 #' no manual rescaling required.
 #'
-#' Use \code{\link{hsi_check_reflectance}} to validate value ranges before writing.
+#' Use \code{hsi_check_reflectance()} to validate value ranges before writing.
 #'
 #' @return A terra SpatRaster
 #' @export

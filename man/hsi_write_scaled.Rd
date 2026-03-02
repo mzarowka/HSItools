@@ -31,7 +31,7 @@ The scale factor is embedded in GeoTIFF band metadata (GDAL scale/offset),
 so \code{\link[terra]{rast}} automatically returns float values on read —
 no manual rescaling required.
 
-Use \code{\link{hsi_check_reflectance}} to validate value ranges before writing.
+Use \code{hsi_check_reflectance()} to validate value ranges before writing.
 }
 \examples{
 \dontrun{
