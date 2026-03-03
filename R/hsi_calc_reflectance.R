@@ -151,20 +151,13 @@ hsi_calc_reflectance <- function(
   overwrite = FALSE,
   ...
 ) {
-  # Processing logic by Jakub Nowosad - add to contributors at some point.
   # Needs cleanup
   # IMPORTANT Needs to properly handle temporary files, otherwise it clogs up the drive almost imediately
 
   # Validate input
   check_spatraster(x)
-
-  # Validate input
   check_spatraster(whiteref)
-
-  # Validate input
   check_spatraster(darkref)
-
-  # Validate input
   check_numeric(tint, len = 2, positive = TRUE)
 
   # Check that all inputs have the same number of bands
@@ -209,7 +202,7 @@ hsi_calc_reflectance <- function(
   # Store user input in a spliceable list -> probably not needed
   wopt_user <- rlang::list2(...)
 
-  # # Named list with write options -> probably not needed
+  # Named list with write options -> probably not needed
   wopt_default <- list(
     # names = band_names
   )

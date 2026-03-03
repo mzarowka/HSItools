@@ -84,6 +84,8 @@ Other HSI Transformations:
 \code{\link{hsi_calc_rmedian}()},
 \code{\link{hsi_calc_rsd}()},
 \code{\link{hsi_calc_stretch}()},
+\code{\link{hsi_destripe_disagg}()},
+\code{\link{hsi_destripe_pmap}()},
 \code{\link{hsi_normalize}()},
 \code{\link{hsi_remove_continuum}()},
 \code{\link{hsi_smooth_median}()},
