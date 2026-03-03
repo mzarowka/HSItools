@@ -2,46 +2,46 @@
 #'
 #' @family HSI Transformations
 #'
-#' @param x A terra SpatRaster with hyperspectral data
+#' @param x A [`SpatRaster`][terra::SpatRaster-class] with hyperspectral data.
 #' @param filename Character. Output file path. Always writes to disk.
-#' @param scale_factor Numeric. Scale factor applied before writing.
-#'   Default 10000 gives 4 decimal places of precision. Values must not exceed 65535 / scale_factor.
-#' @param overwrite Logical. Overwrite existing file (default: FALSE)
-#' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
+#' @param scale_factor Numeric. Scale factor applied before writing. Default
+#'   `10000` gives 4 decimal places of precision.
+#' @param overwrite Logical. Overwrite existing file. Default `FALSE`.
+#' @param ... Additional arguments passed to [`terra::writeRaster()`].
+#'
+#' @returns A [`SpatRaster`][terra::SpatRaster-class] written to `filename`.
 #'
 #' @description
-#' Converts a float32 reflectance SpatRaster to uint16 by applying a scale
-#' factor and embedding scale metadata so \code{\link[terra]{rast}} reads back
-#' as float transparently. Reduces file size by ~50% before compression.
+#' Convert a float32 reflectance raster to uint16 by applying a scale factor
+#' and embedding scale metadata so [`terra::rast()`] reads back as float
+#' transparently. Reduces file size by approximately 50% before compression.
 #'
 #' @details
 #' The scale factor is embedded in GeoTIFF band metadata (GDAL scale/offset),
-#' so \code{\link[terra]{rast}} automatically returns float values on read —
-#' no manual rescaling required.
+#' so [`terra::rast()`] automatically returns float values on read — no manual
+#' rescaling required. Values must not exceed `65535 / scale_factor` or an
+#' error is raised. Use [`hsi_check_reflectance()`] to validate value ranges
+#' before writing.
 #'
-#' Use \code{hsi_check_reflectance()} to validate value ranges before writing.
-#'
-#' @return A terra SpatRaster
-#' @export
+#' uint16 quantization is only appropriate for sensors with sufficient SNR.
+#' VNIR sensors typically meet this threshold; SWIR sensors with lower SNR
+#' may lose meaningful signal in the quantization step and should be written
+#' as float32 instead.
 #'
 #' @examples
 #' \dontrun{
-#' # Load hyperspectral data
 #' x <- terra::rast("REFLECTANCE.tif")
 #'
-#' # Check before writing
-#' hsi_check_reflectance(x)
-#'
-#' # Write scaled
 #' hsi_write_scaled(
 #'   x,
 #'   filename = "REFLECTANCE_scaled.tif",
 #'   gdal = c("COMPRESS=DEFLATE", "PREDICTOR=2")
 #' )
 #'
-#' # Read back: terra applies scale automatically, returns float
 #' terra::rast("REFLECTANCE_scaled.tif")
 #' }
+#'
+#' @export
 hsi_write_scaled <- function(
   x,
   filename,
@@ -94,5 +94,5 @@ hsi_write_scaled <- function(
   )
 
   # Return
-  return(result)
+  result
 }

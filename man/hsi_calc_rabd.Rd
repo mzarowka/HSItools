@@ -16,55 +16,53 @@ hsi_calc_rabd(
 )
 }
 \arguments{
-\item{x}{A terra SpatRaster with hyperspectral data}
+\item{x}{A \code{\link[terra:SpatRaster-class]{SpatRaster}} with hyperspectral data.}
 
-\item{continuum_edges}{Numeric. Vector of two for the continuum anchor points}
+\item{continuum_edges}{Numeric vector of length 2. Continuum anchor wavelengths in nm.}
 
-\item{absorption_band}{Numeric Vector of wavelength(s) to look for trough (absorption feature location)}
+\item{absorption_band}{Numeric vector. Wavelength(s) in nm to search for
+trough (absorption feature). Single value for \code{"strict"} type.}
 
-\item{index_type}{Character. Type of RABD. One of:
+\item{index_type}{Character. Type of RABD index. One of:
 \describe{
-\item{"max"}{Flexibly find the lowest reflectance within trough range}
-\item{"strict"}{Use specific wavelength as trough}
-\item{"mid"}{Use midpoint between min and max trough wavelength}
+\item{\code{"max"}}{Flexibly find the lowest reflectance within the trough range.}
+\item{\code{"strict"}}{Use a specific wavelength as the trough.}
+\item{\code{"mid"}}{Use the midpoint between the min and max trough wavelength.}
 }}
 
-\item{index_name}{Character. Name of calculated RABD index. Default NULL.}
+\item{index_name}{Character. Name for the output layer. Default \code{NULL}.}
 
-\item{filename}{Character. Output filename. Default "" keeps in memory}
+\item{filename}{Character. Output filename. Default \code{""} keeps result in memory.}
 
-\item{overwrite}{Logical. Overwrite existing file (default: FALSE)}
+\item{overwrite}{Logical. Overwrite existing file. Default \code{FALSE}.}
 
-\item{...}{Additional arguments passed to \code{\link[terra]{writeRaster}}}
+\item{...}{Additional arguments passed to \code{\link[terra:writeRaster]{terra::writeRaster()}}.}
 }
 \value{
-A terra SpatRaster with RABD values
+A \code{\link[terra:SpatRaster-class]{SpatRaster}} with RABD values.
 }
 \description{
 Calculate Relative Absorption Band Depth (RABD)
 }
 \examples{
 \dontrun{
-# Load hyperspectral data
 x <- terra::rast("REFLECTANCE_testdata.tif")
 
-# Calculate RABDmax with flexible minimum between the 660 and 680 nm
 x_rabd <- hsi_calc_rabd(
- x,
- index_type = "max",
- continuum_edges = c(590, 730),
- absorption_band = 660:680
+  x,
+  continuum_edges = c(590, 730),
+  absorption_band = 660:680,
+  index_type = "max"
 )
 
-# Save to file, use fixed minimum and provide a name
 x_rabd <- hsi_calc_rabd(
- x,
- continuum_edges = c(590, 730),
- absorption_band = 673,
- index_type = "strict",
- index_name = "rabd673",
- filename = "output_rabd.tif",
- overwrite = TRUE
+  x,
+  continuum_edges = c(590, 730),
+  absorption_band = 673,
+  index_type = "strict",
+  index_name = "rabd673",
+  filename = "output_rabd.tif",
+  overwrite = TRUE
 )
 }
 
@@ -76,16 +74,17 @@ Other HSI Transformations:
 \code{\link{hsi_calc_raba}()},
 \code{\link{hsi_calc_ratio}()},
 \code{\link{hsi_calc_rcv}()},
+\code{\link{hsi_calc_reflectance}()},
 \code{\link{hsi_calc_remp}()},
 \code{\link{hsi_calc_rmean}()},
 \code{\link{hsi_calc_rmedian}()},
 \code{\link{hsi_calc_rsd}()},
 \code{\link{hsi_calc_stretch}()},
 \code{\link{hsi_destripe}()},
-\code{\link{hsi_normalize}()},
 \code{\link{hsi_remove_continuum}()},
 \code{\link{hsi_smooth_median}()},
 \code{\link{hsi_smooth_savgol}()},
+\code{\link{hsi_tiled}()},
 \code{\link{hsi_write_scaled}()}
 }
 \concept{HSI Transformations}

@@ -7,48 +7,33 @@
 hsi_calibration_from_dims(pixels, distance = 1000, units = "um")
 }
 \arguments{
-\item{pixels}{Numeric. Total number of pixels along the measured axis
-(single positive value).}
+\item{pixels}{Numeric. Total number of pixels along the measured axis.
+Single positive value.}
 
-\item{distance}{Numeric. Total physical distance corresponding to
-those pixels (single positive value).}
+\item{distance}{Numeric. Total physical distance corresponding to those
+pixels. Single positive value. Default \code{1000}.}
 
-\item{units}{Character. Units of the provided resolution.
-One of "um" (micrometers, default), "mm", or "cm".}
+\item{units}{Character. Units of the provided distance. One of \code{"um"}
+(micrometers), \code{"mm"}, or \code{"cm"}. Default \code{"um"}.}
 }
 \value{
-A named numeric: resolution in µm/px, named "um_per_px".
+A named numeric with resolution in µm/px, named \code{"um_per_px"}.
 }
 \description{
 Create a spatial calibration from total pixel count and total physical
 distance. Useful when scanner metadata provides the scan length and
-you know the image dimensions.
-}
-\details{
-The input SpatVector can be:
-\itemize{
-\item A line drawn along the reference
-\item Two points placed at the reference endpoints
-}
-
-CRS must be NULL because coordinates are in pixel space.
+the image dimensions are known.
 }
 \examples{
-\dontrun{
-# Scan was 150 mm, image has 2500 rows
-# Get calibration
 calibration <- hsi_calibration_from_dims(
   pixels = 2500,
   distance = 150,
-  units = "mm"
-)
+  units = "mm")
 
-# From a SpatRaster directly
-# Get SpatRaster
+\dontrun{
 raster <- terra::rast("scan.tif")
 
-# Get calibration
-cal <- hsi_calibration_from_dims(
+calibration <- hsi_calibration_from_dims(
   pixels = terra::nrow(raster),
   distance = 150,
   units = "mm"

@@ -4,15 +4,17 @@
 \alias{find_fixed_extent}
 \title{Find a fixed-width extent in the middle of a larger one}
 \usage{
-find_fixed_extent(extent, width)
+find_fixed_extent(e, width)
 }
 \arguments{
-\item{extent}{a terra SpatExtent in which to look, created with terra::ext()}
+\item{e}{A \code{\link[terra:SpatExtent-class]{SpatExtent}} in which to search.
+Created with \code{\link[terra:ext]{terra::ext()}}.}
 
-\item{width}{number of pixels of a new SpatExtent.}
+\item{width}{Numeric. Width in pixels of the new extent.}
 }
 \value{
-a terra SpatExtent centered within the original SpatExtent and of a given width.
+A \code{\link[terra:SpatExtent-class]{SpatExtent}} centered within \code{extent}
+and of the specified width.
 }
 \description{
 Find a fixed-width extent in the middle of a larger one

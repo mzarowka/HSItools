@@ -1,19 +1,18 @@
 #' Normalize hyperspectral raster
 #'
-#' @family HSI Transformations
-#' @param hsi_data A terra SpatRaster with hyperspectral sample data. Band names must be
-#'   numeric wavelengths in nm.
-#' @param whiteref A terra SpatRaster with hyperspectral white reference data. Band names must be
-#'   numeric wavelengths in nm.
-#' @param darkref A terra SpatRaster with hyperspectral dark reference data. Band names must be
-#'   numeric wavelengths in nm.
-#' @param tint A vector of two with integration times for white reference and sample data (in this order).
-#' @param in_memory Logical. Should processing be done in memory.
+#' @noRd
 #'
-#' @details
-#' Normalizes a SpatRaster in respect to white and dark references.
+#' @param hsi_data A [`SpatRaster`][terra::SpatRaster-class] with raw
+#'   hyperspectral sample data. Band names must be numeric wavelengths in nm.
+#' @param whiteref A [`SpatRaster`][terra::SpatRaster-class] with white
+#'   reference data. Must have the same bands and wavelengths as `hsi_data`.
+#' @param darkref  A [`SpatRaster`][terra::SpatRaster-class] with dark
+#'   reference data. Must have the same bands and wavelengths as `hsi_data`.
+#' @param tint Numeric vector of length 2. Integration times for white
+#'   reference and sample capture, in that order.
+#' @param in_memory Logical. Process entirely in RAM. Default `FALSE`.
 #'
-#' @return A temporary terra SpatRaster with normalized reflectance values.
+#' @returns A [`SpatRaster`][terra::SpatRaster-class] with normalized reflectance values.
 hsi_normalize <- function(
   hsi_data,
   whiteref,
@@ -79,18 +78,25 @@ hsi_normalize <- function(
 
 #' Hyperspectral reflectance raster
 #'
-#' @param x A terra SpatRaster with raw hyperspectral sample data. Band names
-#'   must be numeric wavelengths in nm
-#' @param whiteref A terra SpatRaster with hyperspectral white reference data.
-#'   Must have same bands and wavelengths as \code{x}
-#' @param darkref A terra SpatRaster with hyperspectral dark reference data.
-#'   Must have same bands and wavelengths as \code{x}
-#' @param tint Numeric vector of length 2. Integration times for white reference
-#'   and sample data (in this order). Default c(1, 1) assumes equal integration times
-#' @param in_memory Logical. Should processing be done in memory (default: FALSE). Consider size of data and system specs. If FALSE (default) it will write as many temporary files as there are layers in the data. If TRUE, it will process in RAM.
-#' @param filename Character. Output filename. Default "" keeps in memory
-#' @param overwrite Logical. Overwrite existing file (default: FALSE)
-#' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
+#' @family HSI Transformations
+#'
+#' @param x A [`SpatRaster`][terra::SpatRaster-class] with raw
+#'   hyperspectral sample data. Band names must be numeric wavelengths in nm.
+#' @param whiteref A [`SpatRaster`][terra::SpatRaster-class] with white
+#'   reference data. Must have the same bands and wavelengths as `x`.
+#' @param darkref A [`SpatRaster`][terra::SpatRaster-class] with dark
+#'   reference data. Must have the same bands and wavelengths as `x`.
+#' @param tint Numeric vector of length 2. Integration times for white
+#'   reference and sample capture, in that order. Default `c(1, 1)` assumes
+#'   equal integration times.
+#' @param in_memory Logical. Process entirely in RAM. Default `FALSE`.
+#'   Set `TRUE` only when data fits comfortably in available memory. When
+#'   `FALSE`, writes one temporary file per band.
+#' @param filename Character. Output filename. Default `""` keeps result in memory.
+#' @param overwrite Logical. Overwrite existing file. Default `FALSE`.
+#' @param ... Additional arguments passed to [`terra::writeRaster()`].
+#'
+#' @returns A [`SpatRaster`][terra::SpatRaster-class] with normalized reflectance values.
 #'
 #' @description
 #' Convert raw hyperspectral imaging data (digital numbers) to calibrated
@@ -98,45 +104,36 @@ hsi_normalize <- function(
 #' the essential first step in hyperspectral data processing.
 #'
 #' @details
-#' Reflectance calibration normalizes raw sensor values using reference
-#' measurements to produce comparable reflectance data.
+#' All three inputs must share the same spatial resolution, number of bands,
+#' wavelength labels, and compatible spatial extents. When reading `.raw` ESRI
+#' data, load with `terra::rast(x, noflip = TRUE)`.
 #'
-#' **Important**: All three inputs (sample, white reference, dark reference)
-#' must have:
-#' - Same spatial resolution
-#' - Same number of bands
-#' - Same wavelength labels
-#' - Compatible spatial extents (vertical stacking is allowed)
-#' - If reading .raw ESRI data use terra::rast(x, noflip = TRUE)
-#' - If you are using external white reference with different integration time, also use darkreference from the same session. Especially with SWIR use of darkref from actual data capture might lead to negative values where oversaturated darkref is higher than undersaturated whiteref
-#'
-#' @return A terra SpatRaster with normalized reflectance values.
+#' When using an external white reference captured at a different integration
+#' time, supply a dark reference from the same session. With SWIR data in
+#' particular, using a dark reference from a different capture can produce
+#' negative reflectance where an oversaturated dark reference exceeds the
+#' white reference signal.
 #'
 #' @examples
 #' \dontrun{
-#' # Load hyperspectral data
 #' x <- terra::rast("capture/testdata.tif")
 #' whiteref <- terra::rast("capture/WHITEREF_testdata.tif")
 #' darkref <- terra::rast("capture/DARKREF_testdata.tif")
 #'
-#' # Optionally crop to extent of choice
-#'
-#' # Calculate reflectance
 #' x_reflectance <- hsi_calc_reflectance(
-#'  x = x,
-#'  whiteref = whiteref,
-#'  darkref = darkref,
-#'  tint = c(1, 1)
+#'   x = x,
+#'   whiteref = whiteref,
+#'   darkref = darkref,
+#'   tint = c(1, 1)
 #' )
 #'
-#' # Save to file
 #' x_reflectance <- hsi_calc_reflectance(
-#'  x = x,
-#'  whiteref = whiteref,
-#'  darkref = darkref,
-#'  tint = c(1, 1),
-#'  filename = "output.tif",
-#'  overwrite = TRUE
+#'   x = x,
+#'   whiteref = whiteref,
+#'   darkref = darkref,
+#'   tint = c(1, 1),
+#'   filename = "output_reflectance.tif",
+#'   overwrite = TRUE
 #' )
 #' }
 #'
@@ -156,15 +153,22 @@ hsi_calc_reflectance <- function(
 
   # Validate input
   check_spatraster(x)
+
   check_spatraster(whiteref)
+
   check_spatraster(darkref)
+
+  # Validate tint
   check_numeric(tint, len = 2, positive = TRUE)
 
   # Check that all inputs have the same number of bands
   n_bands_x <- terra::nlyr(x)
+
   n_bands_white <- terra::nlyr(whiteref)
+
   n_bands_dark <- terra::nlyr(darkref)
 
+  # Check number of bands, must be equal in all inputs
   if (n_bands_x != n_bands_white || n_bands_x != n_bands_dark) {
     cli::cli_abort(
       c(
@@ -190,7 +194,9 @@ hsi_calc_reflectance <- function(
 
   # Check that band names match
   bands_x <- terra::names(x)
+
   bands_white <- terra::names(whiteref)
+
   bands_dark <- terra::names(darkref)
 
   if (!identical(bands_x, bands_white) || !identical(bands_x, bands_dark)) {
@@ -239,6 +245,6 @@ hsi_calc_reflectance <- function(
     )
   }
 
-  # Return SpatRaster
-  return(result)
+  # Return
+  result
 }

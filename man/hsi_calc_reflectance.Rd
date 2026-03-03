@@ -16,28 +16,31 @@ hsi_calc_reflectance(
 )
 }
 \arguments{
-\item{x}{A terra SpatRaster with raw hyperspectral sample data. Band names
-must be numeric wavelengths in nm}
+\item{x}{A \code{\link[terra:SpatRaster-class]{SpatRaster}} with raw
+hyperspectral sample data. Band names must be numeric wavelengths in nm.}
 
-\item{whiteref}{A terra SpatRaster with hyperspectral white reference data.
-Must have same bands and wavelengths as \code{x}}
+\item{whiteref}{A \code{\link[terra:SpatRaster-class]{SpatRaster}} with white
+reference data. Must have the same bands and wavelengths as \code{x}.}
 
-\item{darkref}{A terra SpatRaster with hyperspectral dark reference data.
-Must have same bands and wavelengths as \code{x}}
+\item{darkref}{A \code{\link[terra:SpatRaster-class]{SpatRaster}} with dark
+reference data. Must have the same bands and wavelengths as \code{x}.}
 
-\item{tint}{Numeric vector of length 2. Integration times for white reference
-and sample data (in this order). Default c(1, 1) assumes equal integration times}
+\item{tint}{Numeric vector of length 2. Integration times for white
+reference and sample capture, in that order. Default \code{c(1, 1)} assumes
+equal integration times.}
 
-\item{in_memory}{Logical. Should processing be done in memory (default: FALSE). Consider size of data and system specs. If FALSE (default) it will write as many temporary files as there are layers in the data. If TRUE, it will process in RAM.}
+\item{in_memory}{Logical. Process entirely in RAM. Default \code{FALSE}.
+Set \code{TRUE} only when data fits comfortably in available memory. When
+\code{FALSE}, writes one temporary file per band.}
 
-\item{filename}{Character. Output filename. Default "" keeps in memory}
+\item{filename}{Character. Output filename. Default \code{""} keeps result in memory.}
 
-\item{overwrite}{Logical. Overwrite existing file (default: FALSE)}
+\item{overwrite}{Logical. Overwrite existing file. Default \code{FALSE}.}
 
-\item{...}{Additional arguments passed to \code{\link[terra]{writeRaster}}}
+\item{...}{Additional arguments passed to \code{\link[terra:writeRaster]{terra::writeRaster()}}.}
 }
 \value{
-A terra SpatRaster with normalized reflectance values.
+A \code{\link[terra:SpatRaster-class]{SpatRaster}} with normalized reflectance values.
 }
 \description{
 Convert raw hyperspectral imaging data (digital numbers) to calibrated
@@ -45,46 +48,58 @@ reflectance values using white and dark reference measurements. This is
 the essential first step in hyperspectral data processing.
 }
 \details{
-Reflectance calibration normalizes raw sensor values using reference
-measurements to produce comparable reflectance data.
+All three inputs must share the same spatial resolution, number of bands,
+wavelength labels, and compatible spatial extents. When reading \code{.raw} ESRI
+data, load with \code{terra::rast(x, noflip = TRUE)}.
 
-\strong{Important}: All three inputs (sample, white reference, dark reference)
-must have:
-\itemize{
-\item Same spatial resolution
-\item Same number of bands
-\item Same wavelength labels
-\item Compatible spatial extents (vertical stacking is allowed)
-\item If reading .raw ESRI data use terra::rast(x, noflip = TRUE)
-\item If you are using external white reference with different integration time, also use darkreference from the same session. Especially with SWIR use of darkref from actual data capture might lead to negative values where oversaturated darkref is higher than undersaturated whiteref
-}
+When using an external white reference captured at a different integration
+time, supply a dark reference from the same session. With SWIR data in
+particular, using a dark reference from a different capture can produce
+negative reflectance where an oversaturated dark reference exceeds the
+white reference signal.
 }
 \examples{
 \dontrun{
-# Load hyperspectral data
 x <- terra::rast("capture/testdata.tif")
 whiteref <- terra::rast("capture/WHITEREF_testdata.tif")
 darkref <- terra::rast("capture/DARKREF_testdata.tif")
 
-# Optionally crop to extent of choice
-
-# Calculate reflectance
 x_reflectance <- hsi_calc_reflectance(
- x = x,
- whiteref = whiteref,
- darkref = darkref,
- tint = c(1, 1)
+  x = x,
+  whiteref = whiteref,
+  darkref = darkref,
+  tint = c(1, 1)
 )
 
-# Save to file
 x_reflectance <- hsi_calc_reflectance(
- x = x,
- whiteref = whiteref,
- darkref = darkref,
- tint = c(1, 1),
- filename = "output.tif",
- overwrite = TRUE
+  x = x,
+  whiteref = whiteref,
+  darkref = darkref,
+  tint = c(1, 1),
+  filename = "output_reflectance.tif",
+  overwrite = TRUE
 )
 }
 
 }
+\seealso{
+Other HSI Transformations: 
+\code{\link{hsi_calc_difference}()},
+\code{\link{hsi_calc_ndi}()},
+\code{\link{hsi_calc_raba}()},
+\code{\link{hsi_calc_rabd}()},
+\code{\link{hsi_calc_ratio}()},
+\code{\link{hsi_calc_rcv}()},
+\code{\link{hsi_calc_remp}()},
+\code{\link{hsi_calc_rmean}()},
+\code{\link{hsi_calc_rmedian}()},
+\code{\link{hsi_calc_rsd}()},
+\code{\link{hsi_calc_stretch}()},
+\code{\link{hsi_destripe}()},
+\code{\link{hsi_remove_continuum}()},
+\code{\link{hsi_smooth_median}()},
+\code{\link{hsi_smooth_savgol}()},
+\code{\link{hsi_tiled}()},
+\code{\link{hsi_write_scaled}()}
+}
+\concept{HSI Transformations}

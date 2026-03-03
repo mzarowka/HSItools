@@ -7,17 +7,17 @@
 wavelength_sub(x, wavelength_tbl)
 }
 \arguments{
-\item{x}{A terra SpatRaster to be subset}
+\item{x}{A \code{\link[terra:SpatRaster-class]{SpatRaster}} with hyperspectral data.}
 
-\item{wavelength_tbl}{a tibble with wavelength positions from wavelength_position.}
+\item{wavelength_tbl}{A \link[tibble:tibble]{tibble} with wavelength positions
+as returned by \code{\link[=wavelength_position]{wavelength_position()}}.}
 }
 \value{
-SpatRaster subset to contain only required wavelengthl bands.
+A \code{\link[terra:SpatRaster-class]{SpatRaster}} subset to the bands at
+the positions in \code{wavelength_tbl}.
 }
 \description{
-Subset SpatRaster using wavelength (band) positions from a lookup table.
-
-subset SpatRaster with wavelength (bands) positions.
+Subset SpatRaster by wavelength
 }
 \seealso{
 Other Utilities: 

@@ -7,35 +7,33 @@
 hsi_subset(x, wavelength, filename = "", overwrite = FALSE, ...)
 }
 \arguments{
-\item{x}{A terra SpatRaster with hyperspectral data. Band names must be
-numeric wavelengths in nm.}
+\item{x}{A \code{\link[terra:SpatRaster-class]{SpatRaster}} with hyperspectral data.
+Band names must be numeric wavelengths in nm.}
 
-\item{wavelength}{Numeric. Wavelength(s) to extract. Nearest available
-band(s) will be selected.}
+\item{wavelength}{Numeric vector. Wavelength(s) to extract in nm. Nearest
+available band is selected for each value.}
 
-\item{filename}{Character. Output filename. Default "" keeps in memory}
+\item{filename}{Character. Output filename. Default \code{""} keeps result in memory.}
 
-\item{overwrite}{Logical. Overwrite existing file (default: FALSE)}
+\item{overwrite}{Logical. Overwrite existing file. Default \code{FALSE}.}
 
-\item{...}{Additional arguments passed to \code{\link[terra]{writeRaster}}}
+\item{...}{Additional arguments passed to \code{\link[terra:writeRaster]{terra::writeRaster()}}.}
 }
 \value{
-A terra SpatRaster subset to the requested wavelength(s)
+A \code{\link[terra:SpatRaster-class]{SpatRaster}} subset to the requested
+wavelength(s).
 }
 \description{
-Extract band(s) by wavelength value. Finds the nearest available band
-for each requested wavelength.
+Subset SpatRaster by wavelength
 }
 \examples{
 \dontrun{
-# Single band
 x |> hsi_subset(675)
 
-# Multiple bands
 x |> hsi_subset(c(650, 550, 450))
 
-# Derivative at specific wavelength
-x |> hsi_smooth_savgol(m = 1) |>
+x |>
+  hsi_smooth_savgol(m = 1) |>
   hsi_subset(675)
 }
 

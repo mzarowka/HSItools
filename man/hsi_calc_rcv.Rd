@@ -8,60 +8,43 @@ hsi_calc_rcv(
   x,
   index_name = NULL,
   na.rm = TRUE,
-  cores = 1,
   filename = "",
   overwrite = FALSE,
   ...
 )
 }
 \arguments{
-\item{x}{A terra SpatRaster with hyperspectral data}
+\item{x}{A \code{\link[terra:SpatRaster-class]{SpatRaster}} with hyperspectral data.}
 
-\item{index_name}{Character. Name of calculated index. Default NULL}
+\item{index_name}{Character. Name for the output layer. Default \code{NULL}.}
 
-\item{na.rm}{Logical. Remove NA values when calculating (default: TRUE)}
+\item{na.rm}{Logical. Remove \code{NA} values. Default \code{TRUE}.}
 
-\item{cores}{positive integer. If cores > 1, a \pkg{parallel} package cluster
-with that many cores is created and used. You can also supply a cluster object.}
+\item{filename}{Character. Output filename. Default \code{""} keeps result in memory.}
 
-\item{filename}{Character. Output filename. Default "" keeps in memory}
+\item{overwrite}{Logical. Overwrite existing file. Default \code{FALSE}.}
 
-\item{overwrite}{Logical. Overwrite existing file (default: FALSE)}
-
-\item{...}{Additional arguments passed to \code{\link[terra]{writeRaster}}}
+\item{...}{Additional arguments passed to \code{\link[terra:writeRaster]{terra::writeRaster()}}.}
 }
 \value{
-A terra SpatRaster with coefficient of variation values
+A \code{\link[terra:SpatRaster-class]{SpatRaster}} with coefficient of variation values.
 }
 \description{
-Calculate coefficient of variation (CV) of reflectance across all spectral
+Calculate the coefficient of variation (CV) of reflectance across all spectral
 bands for each pixel. CV is a standardized, dimensionless measure of spectral
 dispersion relative to mean brightness.
 }
 \details{
-Coefficient of variation is calculated as the ratio of standard deviation
-to mean reflectance (CV = sd / mean) for each pixel across all wavelengths.
-
-CV is useful for:
-\itemize{
-\item Identifying pixels with strong spectral features (absorption bands increase variability)
-\item Detecting spectrally mixed pixels
-\item Comparing spectral variability across areas with different overall brightness
-\item Quality assessment (high CV in dark areas may indicate noise)
-}
-
+CV is calculated as \code{sd / mean} for each pixel across all wavelengths.
 Unlike standard deviation alone, CV normalizes for brightness differences,
 making it comparable across pixels with different mean reflectance values.
 }
 \examples{
 \dontrun{
-# Load hyperspectral data
 x <- terra::rast("REFLECTANCE_testdata.tif")
 
-# Calculate coefficient of variation
 x_rcv <- hsi_calc_rcv(x)
 
-# Save to file with custom name
 x_rcv <- hsi_calc_rcv(
   x,
   index_name = "cv_reflectance",
@@ -72,8 +55,8 @@ x_rcv <- hsi_calc_rcv(
 
 }
 \seealso{
-\code{\link{hsi_calc_rsd}} for standard deviation,
-\code{\link{hsi_calc_rmean}} for mean reflectance
+\code{\link[=hsi_calc_rsd]{hsi_calc_rsd()}} for standard deviation,
+\code{\link[=hsi_calc_rmean]{hsi_calc_rmean()}} for mean reflectance.
 
 Other HSI Transformations: 
 \code{\link{hsi_calc_difference}()},
@@ -81,16 +64,17 @@ Other HSI Transformations:
 \code{\link{hsi_calc_raba}()},
 \code{\link{hsi_calc_rabd}()},
 \code{\link{hsi_calc_ratio}()},
+\code{\link{hsi_calc_reflectance}()},
 \code{\link{hsi_calc_remp}()},
 \code{\link{hsi_calc_rmean}()},
 \code{\link{hsi_calc_rmedian}()},
 \code{\link{hsi_calc_rsd}()},
 \code{\link{hsi_calc_stretch}()},
 \code{\link{hsi_destripe}()},
-\code{\link{hsi_normalize}()},
 \code{\link{hsi_remove_continuum}()},
 \code{\link{hsi_smooth_median}()},
 \code{\link{hsi_smooth_savgol}()},
+\code{\link{hsi_tiled}()},
 \code{\link{hsi_write_scaled}()}
 }
 \concept{HSI Transformations}

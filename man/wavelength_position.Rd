@@ -7,31 +7,29 @@
 wavelength_position(x, wavelength)
 }
 \arguments{
-\item{x}{A terra SpatRaster with hyperspectral data}
+\item{x}{A \code{\link[terra:SpatRaster-class]{SpatRaster}} with hyperspectral data.}
 
-\item{wavelength}{Numeric vector of desired wavelengths}
+\item{wavelength}{Numeric vector. Desired wavelengths in nm.}
 }
 \value{
-A tibble with columns:
-\itemize{
-\item \code{wavelength}: the requested wavelengths
-\item \code{position}: the corresponding band indices in the SpatRaster
-}
+A \link[tibble:tibble]{tibble} with columns:
+\item{wavelength}{Numeric. Requested wavelength in nm.}
+\item{position}{Integer. Corresponding band index in \code{x}.}
+\item{band_wavelength}{Numeric. Actual wavelength of the matched band in nm.}
 }
 \description{
-Find index position of the nearest wavelength (band) in the dataset
-by matching the smallest difference between requested and actual wavelengths.
-If multiple wavelengths map to the same band, only the last is kept.
+Find band index positions by matching requested wavelengths to the nearest
+available band. When multiple requested wavelengths resolve to the same band
+index, only the last is retained.
 }
 \examples{
 \dontrun{
-# Create example raster
 r <- terra::rast(nrows = 10, ncols = 10, nlyrs = 5)
 names(r) <- c("400", "500", "600", "700", "800")
 
-# Find positions
 wavelength_position(r, c(450, 650))
 }
+
 }
 \seealso{
 Other Utilities: 

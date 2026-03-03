@@ -2,22 +2,20 @@
 #'
 #' @family HSI Calibration
 #'
-#' @param resolution Numeric. Pixel size (single positive value).
-#' @param units Character. Units of the provided resolution.
-#'   One of "um" (micrometers, default), "mm", or "cm".
+#' @param resolution Numeric. Pixel size in the specified units. Single positive value.
+#' @param units Character. Units of the provided resolution. One of `"um"`
+#'   (micrometers), `"mm"`, or `"cm"`. Default `"um"`.
+#'
+#' @returns A named numeric with resolution in µm/px, named `"um_per_px"`.
 #'
 #' @description
-#' Create a spatial calibration when you know the pixel size directly.
+#' Create a spatial calibration when the pixel size is known directly.
 #' This is the simplest calibration path. The value is stored internally
 #' in micrometers per pixel.
 #'
-#' @return A named numeric: resolution in µm/px, named "um_per_px".
-#'
 #' @examples
-#' # With 60 µm per pixel
 #' calibration <- hsi_calibration_direct(60)
 #'
-#' # With 0.06 mm per pixel (so the same as above, but unit is different)
 #' calibration <- hsi_calibration_direct(0.06, units = "mm")
 #'
 #' @export

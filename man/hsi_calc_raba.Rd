@@ -79,16 +79,17 @@ Other HSI Transformations:
 \code{\link{hsi_calc_rabd}()},
 \code{\link{hsi_calc_ratio}()},
 \code{\link{hsi_calc_rcv}()},
+\code{\link{hsi_calc_reflectance}()},
 \code{\link{hsi_calc_remp}()},
 \code{\link{hsi_calc_rmean}()},
 \code{\link{hsi_calc_rmedian}()},
 \code{\link{hsi_calc_rsd}()},
 \code{\link{hsi_calc_stretch}()},
 \code{\link{hsi_destripe}()},
-\code{\link{hsi_normalize}()},
 \code{\link{hsi_remove_continuum}()},
 \code{\link{hsi_smooth_median}()},
 \code{\link{hsi_smooth_savgol}()},
+\code{\link{hsi_tiled}()},
 \code{\link{hsi_write_scaled}()}
 }
 \concept{HSI Transformations}

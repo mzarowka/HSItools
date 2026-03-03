@@ -7,41 +7,33 @@
 hsi_smooth_median(x, window = 3, filename = "", overwrite = FALSE, ...)
 }
 \arguments{
-\item{x}{A terra SpatRaster with hyperspectral data}
+\item{x}{A \code{\link[terra:SpatRaster-class]{SpatRaster}} with hyperspectral data.}
 
-\item{window}{Focal window size, must be odd (default: 3)}
+\item{window}{Positive odd integer. Focal window size. Default \code{3}.}
 
-\item{filename}{Character. Output filename. Default "" keeps in memory}
+\item{filename}{Character. Output filename. Default \code{""} keeps result in memory.}
 
-\item{overwrite}{Logical. Overwrite existing file (default: FALSE)}
+\item{overwrite}{Logical. Overwrite existing file. Default \code{FALSE}.}
 
-\item{...}{Additional arguments passed to \code{\link[terra]{writeRaster}}}
+\item{...}{Additional arguments passed to \code{\link[terra:writeRaster]{terra::writeRaster()}}.}
 }
 \value{
-A terra SpatRaster with median filtered values
+A \code{\link[terra:SpatRaster-class]{SpatRaster}} with median filtered values.
 }
 \description{
-Apply a focal (spatial) median filter to smooth hyperspectral data.
-The median filter finds the median value within a given window and assigns
-it to the pixel of interest, reducing noise while preserving edges.
-}
-\details{
-The focal median filter smoothes data by finding the median value within
-a given window and assigning its value to a pixel of interest.
+Focal raster smooth with a median
 }
 \examples{
 \dontrun{
-# Load hyperspectral data
 x <- terra::rast("REFLECTANCE_testdata.tif")
 
-# Calculate medianm smooth reflectance with 3 × 3 window (default)
-x_median <- hsi_smooth_median(x)
+x_smooth_median <- hsi_smooth_median(x)
 
-# Save to file
-x_median <- hsi_smooth_median(
- x,
- filename = "output_median.tif",
- overwrite = TRUE)
+x_smooth_median <- hsi_smooth_median(
+  x,
+  filename = "output_median.tif",
+  overwrite = TRUE
+)
 }
 
 }
@@ -53,15 +45,16 @@ Other HSI Transformations:
 \code{\link{hsi_calc_rabd}()},
 \code{\link{hsi_calc_ratio}()},
 \code{\link{hsi_calc_rcv}()},
+\code{\link{hsi_calc_reflectance}()},
 \code{\link{hsi_calc_remp}()},
 \code{\link{hsi_calc_rmean}()},
 \code{\link{hsi_calc_rmedian}()},
 \code{\link{hsi_calc_rsd}()},
 \code{\link{hsi_calc_stretch}()},
 \code{\link{hsi_destripe}()},
-\code{\link{hsi_normalize}()},
 \code{\link{hsi_remove_continuum}()},
 \code{\link{hsi_smooth_savgol}()},
+\code{\link{hsi_tiled}()},
 \code{\link{hsi_write_scaled}()}
 }
 \concept{HSI Transformations}

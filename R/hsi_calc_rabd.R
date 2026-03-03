@@ -2,44 +2,42 @@
 #'
 #' @family HSI Transformations
 #'
-#' @param x A terra SpatRaster with hyperspectral data
-#' @param continuum_edges Numeric. Vector of two for the continuum anchor points
-#' @param absorption_band Numeric Vector of wavelength(s) to look for trough (absorption feature location)
-#' @param index_type Character. Type of RABD. One of:
-#'     \describe{
-#'     \item{"max"}{Flexibly find the lowest reflectance within trough range}
-#'     \item{"strict"}{Use specific wavelength as trough}
-#'     \item{"mid"}{Use midpoint between min and max trough wavelength}
+#' @param x A [`SpatRaster`][terra::SpatRaster-class] with hyperspectral data.
+#' @param continuum_edges Numeric vector of length 2. Continuum anchor wavelengths in nm.
+#' @param absorption_band Numeric vector. Wavelength(s) in nm to search for
+#'   trough (absorption feature). Single value for `"strict"` type.
+#' @param index_type Character. Type of RABD index. One of:
+#'   \describe{
+#'     \item{`"max"`}{Flexibly find the lowest reflectance within the trough range.}
+#'     \item{`"strict"`}{Use a specific wavelength as the trough.}
+#'     \item{`"mid"`}{Use the midpoint between the min and max trough wavelength.}
 #'   }
-#' @param index_name Character. Name of calculated RABD index. Default NULL.
-#' @param filename Character. Output filename. Default "" keeps in memory
-#' @param overwrite Logical. Overwrite existing file (default: FALSE)
-#' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
+#' @param index_name Character. Name for the output layer. Default `NULL`.
+#' @param filename Character. Output filename. Default `""` keeps result in memory.
+#' @param overwrite Logical. Overwrite existing file. Default `FALSE`.
+#' @param ... Additional arguments passed to [`terra::writeRaster()`].
 #'
-#' @return A terra SpatRaster with RABD values
+#' @returns A [`SpatRaster`][terra::SpatRaster-class] with RABD values.
 #'
 #' @examples
 #' \dontrun{
-#' # Load hyperspectral data
 #' x <- terra::rast("REFLECTANCE_testdata.tif")
 #'
-#' # Calculate RABDmax with flexible minimum between the 660 and 680 nm
 #' x_rabd <- hsi_calc_rabd(
-#'  x,
-#'  index_type = "max",
-#'  continuum_edges = c(590, 730),
-#'  absorption_band = 660:680
+#'   x,
+#'   continuum_edges = c(590, 730),
+#'   absorption_band = 660:680,
+#'   index_type = "max"
 #' )
 #'
-#' # Save to file, use fixed minimum and provide a name
 #' x_rabd <- hsi_calc_rabd(
-#'  x,
-#'  continuum_edges = c(590, 730),
-#'  absorption_band = 673,
-#'  index_type = "strict",
-#'  index_name = "rabd673",
-#'  filename = "output_rabd.tif",
-#'  overwrite = TRUE
+#'   x,
+#'   continuum_edges = c(590, 730),
+#'   absorption_band = 673,
+#'   index_type = "strict",
+#'   index_name = "rabd673",
+#'   filename = "output_rabd.tif",
+#'   overwrite = TRUE
 #' )
 #' }
 #'
@@ -201,9 +199,6 @@ hsi_calc_rabd <- function(
   ## Calculate RABD ----
   result <- numerator / trough_reflectance
 
-  # # If there are infinities coerce to 0
-  # result[is.infinite(result)] <- 0
-
   # Set name
   if (!is.null(index_name)) {
     names(result) <- index_name
@@ -222,5 +217,5 @@ hsi_calc_rabd <- function(
   }
 
   # Return raster
-  return(result)
+  result
 }

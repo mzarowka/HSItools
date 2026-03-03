@@ -1,40 +1,41 @@
 #' Remove continuum from hyperspectral data
 #'
 #' @family HSI Transformations
-#' @param x A terra SpatRaster with hyperspectral data
-#' @param filename Character. Output filename. Default "" keeps in memory
-#' @param overwrite Logical. Overwrite existing file (default: FALSE)
-#' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
+#'
+#' @param x A [`SpatRaster`][terra::SpatRaster-class] with hyperspectral data.
+#' @param filename Character. Output filename. Default `""` keeps result in memory.
+#' @param overwrite Logical. Overwrite existing file. Default `FALSE`.
+#' @param ... Additional arguments passed to [`terra::writeRaster()`].
+#'
+#' @returns A [`SpatRaster`][terra::SpatRaster-class] with continuum-removed values.
 #'
 #' @description
-#' Remove the spectral continuum from hyperspectral reflectance data to
-#' normalize spectra and highlight absorption features. The continuum represents
-#' the overall convex hull shape of the spectrum connecting local maxima.
+#' Normalize spectra by removing the spectral continuum to highlight absorption
+#' features. The continuum is the convex hull connecting local maxima across
+#' the spectrum. Requires the
+#' [`prospectr`](https://CRAN.R-project.org/package=prospectr) package.
 #'
 #' @details
-#' Continuum removal normalizes reflectance spectra to highlight absorption
-#' features by removing the overall spectral shape. The continuum is the
-#' convex hull that connects local maxima in the spectrum.
-#'
-#' Requires the \pkg{prospectr} package.
-#'
-#' @return A terra SpatRaster with continuum-removed values
+#' Output values are bounded `[0, 1]` by definition — each band is divided by
+#' its continuum value. `NA` values at spectral edges are expected and handled
+#' downstream. Computationally intensive; consider applying to subsets or
+#' regions of interest rather than full-resolution data. For full-raster
+#' processing, [`hsi_tiled()`] can distribute the workload across parallel
+#' workers.
 #'
 #' @examples
 #' \dontrun{
-#' # Load hyperspectral data
 #' x <- terra::rast("REFLECTANCE_testdata.tif")
 #'
-#' # Calculate continuum removed reflectance
 #' x_crem <- hsi_remove_continuum(x)
 #'
-#' # Save to file
-#' x_crem <- remove_continuum(
-#'  x,
-#'  filename = "output_crem.tif",
-#'  overwrite = TRUE)
+#' x_crem <- hsi_remove_continuum(
+#'   x,
+#'   filename = "output_crem.tif",
+#'   overwrite = TRUE
+#' )
 #' }
-#' 
+#'
 #' @export
 hsi_remove_continuum <- function(
   x,

@@ -7,55 +7,46 @@
 hsi_calibration_from_scale(x, distance = 10000, units = "um")
 }
 \arguments{
-\item{x}{A terra SpatVector representing a digitized scale reference.
-Must be either a line geometry or exactly 2 points. CRS must be NULL
-(pixel coordinates).}
+\item{x}{A \code{\link[terra:SpatVector-class]{SpatVector}} representing a digitized
+scale reference. Must be either a line geometry or exactly 2 points.
+CRS must be \code{NULL} (pixel coordinates).}
 
-\item{distance}{Numeric. Physical distance the reference represents
-(single positive value). Default is 1000 (µm) for 1 cm.}
+\item{distance}{Numeric. Physical distance the reference represents.
+Single positive value. Default \code{10000}.}
 
-\item{units}{Character. Units of the provided resolution.
-One of "um" (micrometers, default), "mm", or "cm".}
+\item{units}{Character. Units of the provided distance. One of \code{"um"}
+(micrometers), \code{"mm"}, or \code{"cm"}. Default \code{"um"}.}
 }
 \value{
-A named numeric: resolution in µm/px, named "um_per_px".
+A named numeric with resolution in µm/px, named \code{"um_per_px"}.
 }
 \description{
 Create a spatial calibration by measuring a known-length reference
-(e.g., scale bar, measuring tape) digitized in GIS software.
-The function calculates pixel distance from the geometry and derives
-resolution from the provided physical distance.
+digitized in GIS software. The function calculates pixel distance from
+the geometry and derives resolution from the provided physical distance.
 }
 \details{
-The input SpatVector can be:
-\itemize{
-\item A line drawn along the reference
-\item Two points placed at the reference endpoints
-}
-
-CRS must be NULL because coordinates are in pixel space.
+The input \code{\link[terra:SpatVector-class]{SpatVector}} can be a line drawn along
+the reference, or two points placed at the reference endpoints. CRS must be
+\code{NULL} because coordinates are in pixel space.
 }
 \examples{
 \dontrun{
-# From a digitized line along a 10 mm scale bar
-# Get the scale
 scale_line <- terra::vect("scale.gpkg", layer = "scale")
 
-# Get the calibration
 calibration <- hsi_calibration_from_scale(
   scale_line,
   distance = 10,
-  units = "mm")
+  units = "mm"
+)
 
-# From two points at scale bar endpoints
-# Get the scale
 scale_points <- terra::vect("points.gpkg", layer = "scale_points")
 
-# Get the calibration
 calibration <- hsi_calibration_from_scale(
-  scale_pts,
+  scale_points,
   distance = 10000,
-  units = "um")
+  units = "um"
+)
 }
 
 }

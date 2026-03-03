@@ -1,44 +1,54 @@
 #' Spectral raster smooth with a Savitzky-Golay filter
 #'
 #' @family HSI Transformations
-#' @param x A terra SpatRaster with hyperspectral data
-#' @param p Integer. Filter polynomial order (typically 2-4)
-#' @param n Integer. Filter length/window size (must be odd, typically 5-15)
-#' @param m Integer. Derivative order (0 = smoothing, 1 = first derivative, etc.)
-#' @param ts Numeric. Sampling interval for derivative calculations.
-#' @param filename Character. Output filename. Default "" keeps in memory
-#' @param overwrite Logical. Overwrite existing file (default: FALSE)
-#' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
+#'
+#' @param x A [`SpatRaster`][terra::SpatRaster-class] with hyperspectral data.
+#' @param p Integer. Filter polynomial order. Typically 2–4. Default `3`.
+#' @param n Positive odd integer. Filter window size. Must be odd and greater
+#'   than `p`. Typically 5–15. Default computed from `p`.
+#' @param m Integer. Derivative order. `0` for smoothing, `1` for first
+#'   derivative. Default `0`.
+#' @param ts Numeric. Sampling interval for derivative calculations. Default `1`.
+#' @param filename Character. Output filename. Default `""` keeps result in memory.
+#' @param overwrite Logical. Overwrite existing file. Default `FALSE`.
+#' @param ... Additional arguments passed to [`terra::writeRaster()`].
+#'
+#' @returns A [`SpatRaster`][terra::SpatRaster-class] with Savitzky-Golay
+#'   filtered values.
 #'
 #' @description
-#' Smooth hyperspectral data using a Savitzky-Golay filter via \code{\link[gsignal]{sgolayfilt}}.
-#' This filter fits successive sub-sets of adjacent data points with a low-degree polynomial
-#' by the method of linear least squares.
+#' Smooth hyperspectral data using a Savitzky-Golay filter via
+#' [`gsignal::sgolayfilt()`]. The filter fits successive subsets of adjacent
+#' data points with a low-degree polynomial by the method of linear least
+#' squares.
 #'
 #' @details
-#' The Savitzky-Golay filter is a spectral smoothing technique that preserves features
-#' of the spectral curve such as peak height and width, which are usually flattened
-#' by other smoothing methods. The filter works by fitting a polynomial of order \code{p}
-#' through a moving window of \code{n} points.
+#' The Savitzky-Golay filter preserves spectral features such as peak height
+#' and width that are typically flattened by other smoothing methods. The
+#' filter fits a polynomial of order `p` through a moving window of `n` points.
 #'
-#' Any pixels with NA values will result in function failure.
+#' Setting `m = 1` or `m = 2` computes the first or second derivative of the
+#' smoothed spectrum respectively; higher-order derivatives are also supported
+#' by increasing `m`. Note that edge bands equal to roughly half the window
+#' size are unreliable for derivatives — always compute on the full spectrum
+#' before subsetting to a wavelength range of interest.
 #'
-#' Requires the \pkg{gsignal} package.
+#' Pixels with `NA` values will cause the function to fail. For full-raster
+#' processing, [`hsi_tiled()`] can distribute the workload across parallel
+#' workers. Requires the
+#' [`gsignal`](https://CRAN.R-project.org/package=gsignal) package.
 #'
-#' @return A terra SpatRaster with Savitzky-Golay filtered values
 #' @examples
 #' \dontrun{
-#' # Load hyperspectral data
 #' x <- terra::rast("REFLECTANCE_testdata.tif")
 #'
-#' # Calculate continuum removed reflectance
 #' x_savgol <- hsi_smooth_savgol(x)
 #'
-#' # Save to file
 #' x_savgol <- hsi_smooth_savgol(
-#'  x,
-#'  filename = "output_savgol.tif",
-#'  overwrite = TRUE)
+#'   x,
+#'   filename = "output_savgol.tif",
+#'   overwrite = TRUE
+#' )
 #' }
 #'
 #' @export
@@ -109,6 +119,6 @@ hsi_smooth_savgol <- function(
     wopt = wopt
   )
 
-  # Return raster
-  return(result)
+  # Return
+  result
 }

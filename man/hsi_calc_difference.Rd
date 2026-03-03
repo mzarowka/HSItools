@@ -14,45 +14,38 @@ hsi_calc_difference(
 )
 }
 \arguments{
-\item{x}{A terra SpatRaster with hyperspectral data}
+\item{x}{A \code{\link[terra:SpatRaster-class]{SpatRaster}} with hyperspectral data.}
 
-\item{bands}{Numeric vector of length 2. The two wavelengths (in nm)
-to use for difference calculation}
+\item{bands}{Numeric vector of length 2. Wavelengths in nm.}
 
-\item{index_name}{Character. Name of calculated difference index. Default NULL}
+\item{index_name}{Character. Name for the output layer. Default \code{NULL}.}
 
-\item{filename}{Character. Output filename. Default "" keeps in memory}
+\item{filename}{Character. Output filename. Default \code{""} keeps result in memory.}
 
-\item{overwrite}{Logical. Overwrite existing file (default: FALSE)}
+\item{overwrite}{Logical. Overwrite existing file. Default \code{FALSE}.}
 
-\item{...}{Additional arguments passed to \code{\link[terra]{writeRaster}}}
+\item{...}{Additional arguments passed to \code{\link[terra:writeRaster]{terra::writeRaster()}}.}
 }
 \value{
-A terra SpatRaster with difference values
+A \code{\link[terra:SpatRaster-class]{SpatRaster}} with band difference values.
 }
 \description{
-Calculate a band difference index by subtracting reflectance at one wavelength
-from reflectance at another wavelength. Band differences can highlight
-spectral features and are commonly used to detect clay minerals, dust, and
-other sedimentary components.
+Calculate band difference
 }
 \examples{
 \dontrun{
-# Load hyperspectral data
 x <- terra::rast("REFLECTANCE_testdata.tif")
 
-# Calculate band difference between 620 and 680
-x_diff <- hsi_calc_difference(
+x_difference <- hsi_calc_difference(
   x,
   bands = c(620, 680)
 )
 
-# Save to file and provide a name
-x_diff <- hsi_calc_difference(
+x_difference <- hsi_calc_difference(
   x,
   bands = c(620, 680),
   index_name = "diff620680",
-  filename = "output_diff.tif",
+  filename = "output_difference.tif",
   overwrite = TRUE
 )
 }
@@ -65,16 +58,17 @@ Other HSI Transformations:
 \code{\link{hsi_calc_rabd}()},
 \code{\link{hsi_calc_ratio}()},
 \code{\link{hsi_calc_rcv}()},
+\code{\link{hsi_calc_reflectance}()},
 \code{\link{hsi_calc_remp}()},
 \code{\link{hsi_calc_rmean}()},
 \code{\link{hsi_calc_rmedian}()},
 \code{\link{hsi_calc_rsd}()},
 \code{\link{hsi_calc_stretch}()},
 \code{\link{hsi_destripe}()},
-\code{\link{hsi_normalize}()},
 \code{\link{hsi_remove_continuum}()},
 \code{\link{hsi_smooth_median}()},
 \code{\link{hsi_smooth_savgol}()},
+\code{\link{hsi_tiled}()},
 \code{\link{hsi_write_scaled}()}
 }
 \concept{HSI Transformations}

@@ -2,39 +2,29 @@
 #'
 #' @family HSI Transformations
 #'
-#' @param x A terra SpatRaster with hyperspectral data
-#' @param bands Numeric vector of length 2. The two wavelengths (in nm)
-#'   to use for difference calculation
-#' @param index_name Character. Name of calculated difference index. Default NULL
-#' @param filename Character. Output filename. Default "" keeps in memory
-#' @param overwrite Logical. Overwrite existing file (default: FALSE)
-#' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
+#' @param x A [`SpatRaster`][terra::SpatRaster-class] with hyperspectral data.
+#' @param bands Numeric vector of length 2. Wavelengths in nm.
+#' @param index_name Character. Name for the output layer. Default `NULL`.
+#' @param filename  Character. Output filename. Default `""` keeps result in memory.
+#' @param overwrite Logical. Overwrite existing file. Default `FALSE`.
+#' @param ... Additional arguments passed to [`terra::writeRaster()`].
 #'
-#' @description
-#' Calculate a band difference index by subtracting reflectance at one wavelength
-#' from reflectance at another wavelength. Band differences can highlight
-#' spectral features and are commonly used to detect clay minerals, dust, and
-#' other sedimentary components.
-#'
-#' @return A terra SpatRaster with difference values
+#' @returns A [`SpatRaster`][terra::SpatRaster-class] with band difference values.
 #'
 #' @examples
 #' \dontrun{
-#' # Load hyperspectral data
 #' x <- terra::rast("REFLECTANCE_testdata.tif")
 #'
-#' # Calculate band difference between 620 and 680
-#' x_diff <- hsi_calc_difference(
+#' x_difference <- hsi_calc_difference(
 #'   x,
 #'   bands = c(620, 680)
 #' )
 #'
-#' # Save to file and provide a name
-#' x_diff <- hsi_calc_difference(
+#' x_difference <- hsi_calc_difference(
 #'   x,
 #'   bands = c(620, 680),
 #'   index_name = "diff620680",
-#'   filename = "output_diff.tif",
+#'   filename = "output_difference.tif",
 #'   overwrite = TRUE
 #' )
 #' }
@@ -89,5 +79,5 @@ hsi_calc_difference <- function(
   }
 
   # Return
-  return(result)
+  result
 }

@@ -1,36 +1,26 @@
 #' Focal raster smooth with a median
 #'
 #' @family HSI Transformations
-#' @param x A terra SpatRaster with hyperspectral data
-#' @param window Focal window size, must be odd (default: 3)
-#' @param filename Character. Output filename. Default "" keeps in memory
-#' @param overwrite Logical. Overwrite existing file (default: FALSE)
-#' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
 #'
-#' @description
-#' Apply a focal (spatial) median filter to smooth hyperspectral data.
-#' The median filter finds the median value within a given window and assigns
-#' it to the pixel of interest, reducing noise while preserving edges.
+#' @param x A [`SpatRaster`][terra::SpatRaster-class] with hyperspectral data.
+#' @param window Positive odd integer. Focal window size. Default `3`.
+#' @param filename Character. Output filename. Default `""` keeps result in memory.
+#' @param overwrite Logical. Overwrite existing file. Default `FALSE`.
+#' @param ... Additional arguments passed to [`terra::writeRaster()`].
 #'
-#' @details
-#' The focal median filter smoothes data by finding the median value within
-#' a given window and assigning its value to a pixel of interest.
-#'
-#' @return A terra SpatRaster with median filtered values
+#' @returns A [`SpatRaster`][terra::SpatRaster-class] with median filtered values.
 #'
 #' @examples
 #' \dontrun{
-#' # Load hyperspectral data
 #' x <- terra::rast("REFLECTANCE_testdata.tif")
 #'
-#' # Calculate medianm smooth reflectance with 3 × 3 window (default)
-#' x_median <- hsi_smooth_median(x)
+#' x_smooth_median <- hsi_smooth_median(x)
 #'
-#' # Save to file
-#' x_median <- hsi_smooth_median(
-#'  x,
-#'  filename = "output_median.tif",
-#'  overwrite = TRUE)
+#' x_smooth_median <- hsi_smooth_median(
+#'   x,
+#'   filename = "output_median.tif",
+#'   overwrite = TRUE
+#' )
 #' }
 #'
 #' @export
@@ -72,6 +62,6 @@ hsi_smooth_median <- function(
     wopt = wopt
   )
 
-  # Return raster
-  return(result)
+  # Return
+  result
 }

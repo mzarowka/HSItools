@@ -7,50 +7,50 @@
 hsi_write_scaled(x, filename, scale_factor = 10000L, overwrite = FALSE, ...)
 }
 \arguments{
-\item{x}{A terra SpatRaster with hyperspectral data}
+\item{x}{A \code{\link[terra:SpatRaster-class]{SpatRaster}} with hyperspectral data.}
 
 \item{filename}{Character. Output file path. Always writes to disk.}
 
-\item{scale_factor}{Numeric. Scale factor applied before writing.
-Default 10000 gives 4 decimal places of precision. Values must not exceed 65535 / scale_factor.}
+\item{scale_factor}{Numeric. Scale factor applied before writing. Default
+\code{10000} gives 4 decimal places of precision.}
 
-\item{overwrite}{Logical. Overwrite existing file (default: FALSE)}
+\item{overwrite}{Logical. Overwrite existing file. Default \code{FALSE}.}
 
-\item{...}{Additional arguments passed to \code{\link[terra]{writeRaster}}}
+\item{...}{Additional arguments passed to \code{\link[terra:writeRaster]{terra::writeRaster()}}.}
 }
 \value{
-A terra SpatRaster
+A \code{\link[terra:SpatRaster-class]{SpatRaster}} written to \code{filename}.
 }
 \description{
-Converts a float32 reflectance SpatRaster to uint16 by applying a scale
-factor and embedding scale metadata so \code{\link[terra]{rast}} reads back
-as float transparently. Reduces file size by ~50\% before compression.
+Convert a float32 reflectance raster to uint16 by applying a scale factor
+and embedding scale metadata so \code{\link[terra:rast]{terra::rast()}} reads back as float
+transparently. Reduces file size by approximately 50\% before compression.
 }
 \details{
 The scale factor is embedded in GeoTIFF band metadata (GDAL scale/offset),
-so \code{\link[terra]{rast}} automatically returns float values on read —
-no manual rescaling required.
+so \code{\link[terra:rast]{terra::rast()}} automatically returns float values on read — no manual
+rescaling required. Values must not exceed \code{65535 / scale_factor} or an
+error is raised. Use \code{\link[=hsi_check_reflectance]{hsi_check_reflectance()}} to validate value ranges
+before writing.
 
-Use \code{hsi_check_reflectance()} to validate value ranges before writing.
+uint16 quantization is only appropriate for sensors with sufficient SNR.
+VNIR sensors typically meet this threshold; SWIR sensors with lower SNR
+may lose meaningful signal in the quantization step and should be written
+as float32 instead.
 }
 \examples{
 \dontrun{
-# Load hyperspectral data
 x <- terra::rast("REFLECTANCE.tif")
 
-# Check before writing
-hsi_check_reflectance(x)
-
-# Write scaled
 hsi_write_scaled(
   x,
   filename = "REFLECTANCE_scaled.tif",
   gdal = c("COMPRESS=DEFLATE", "PREDICTOR=2")
 )
 
-# Read back: terra applies scale automatically, returns float
 terra::rast("REFLECTANCE_scaled.tif")
 }
+
 }
 \seealso{
 Other HSI Transformations: 
@@ -60,15 +60,16 @@ Other HSI Transformations:
 \code{\link{hsi_calc_rabd}()},
 \code{\link{hsi_calc_ratio}()},
 \code{\link{hsi_calc_rcv}()},
+\code{\link{hsi_calc_reflectance}()},
 \code{\link{hsi_calc_remp}()},
 \code{\link{hsi_calc_rmean}()},
 \code{\link{hsi_calc_rmedian}()},
 \code{\link{hsi_calc_rsd}()},
 \code{\link{hsi_calc_stretch}()},
 \code{\link{hsi_destripe}()},
-\code{\link{hsi_normalize}()},
 \code{\link{hsi_remove_continuum}()},
 \code{\link{hsi_smooth_median}()},
-\code{\link{hsi_smooth_savgol}()}
+\code{\link{hsi_smooth_savgol}()},
+\code{\link{hsi_tiled}()}
 }
 \concept{HSI Transformations}

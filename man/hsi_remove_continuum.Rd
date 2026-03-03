@@ -7,42 +7,42 @@
 hsi_remove_continuum(x, filename = "", overwrite = FALSE, ...)
 }
 \arguments{
-\item{x}{A terra SpatRaster with hyperspectral data}
+\item{x}{A \code{\link[terra:SpatRaster-class]{SpatRaster}} with hyperspectral data.}
 
-\item{filename}{Character. Output filename. Default "" keeps in memory}
+\item{filename}{Character. Output filename. Default \code{""} keeps result in memory.}
 
-\item{overwrite}{Logical. Overwrite existing file (default: FALSE)}
+\item{overwrite}{Logical. Overwrite existing file. Default \code{FALSE}.}
 
-\item{...}{Additional arguments passed to \code{\link[terra]{writeRaster}}}
+\item{...}{Additional arguments passed to \code{\link[terra:writeRaster]{terra::writeRaster()}}.}
 }
 \value{
-A terra SpatRaster with continuum-removed values
+A \code{\link[terra:SpatRaster-class]{SpatRaster}} with continuum-removed values.
 }
 \description{
-Remove the spectral continuum from hyperspectral reflectance data to
-normalize spectra and highlight absorption features. The continuum represents
-the overall convex hull shape of the spectrum connecting local maxima.
+Normalize spectra by removing the spectral continuum to highlight absorption
+features. The continuum is the convex hull connecting local maxima across
+the spectrum. Requires the
+\href{https://CRAN.R-project.org/package=prospectr}{\code{prospectr}} package.
 }
 \details{
-Continuum removal normalizes reflectance spectra to highlight absorption
-features by removing the overall spectral shape. The continuum is the
-convex hull that connects local maxima in the spectrum.
-
-Requires the \pkg{prospectr} package.
+Output values are bounded \verb{[0, 1]} by definition — each band is divided by
+its continuum value. \code{NA} values at spectral edges are expected and handled
+downstream. Computationally intensive; consider applying to subsets or
+regions of interest rather than full-resolution data. For full-raster
+processing, \code{\link[=hsi_tiled]{hsi_tiled()}} can distribute the workload across parallel
+workers.
 }
 \examples{
 \dontrun{
-# Load hyperspectral data
 x <- terra::rast("REFLECTANCE_testdata.tif")
 
-# Calculate continuum removed reflectance
 x_crem <- hsi_remove_continuum(x)
 
-# Save to file
-x_crem <- remove_continuum(
- x,
- filename = "output_crem.tif",
- overwrite = TRUE)
+x_crem <- hsi_remove_continuum(
+  x,
+  filename = "output_crem.tif",
+  overwrite = TRUE
+)
 }
 
 }
@@ -54,15 +54,16 @@ Other HSI Transformations:
 \code{\link{hsi_calc_rabd}()},
 \code{\link{hsi_calc_ratio}()},
 \code{\link{hsi_calc_rcv}()},
+\code{\link{hsi_calc_reflectance}()},
 \code{\link{hsi_calc_remp}()},
 \code{\link{hsi_calc_rmean}()},
 \code{\link{hsi_calc_rmedian}()},
 \code{\link{hsi_calc_rsd}()},
 \code{\link{hsi_calc_stretch}()},
 \code{\link{hsi_destripe}()},
-\code{\link{hsi_normalize}()},
 \code{\link{hsi_smooth_median}()},
 \code{\link{hsi_smooth_savgol}()},
+\code{\link{hsi_tiled}()},
 \code{\link{hsi_write_scaled}()}
 }
 \concept{HSI Transformations}

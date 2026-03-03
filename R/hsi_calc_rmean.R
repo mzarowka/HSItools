@@ -2,33 +2,21 @@
 #'
 #' @family HSI Transformations
 #'
-#' @param x A terra SpatRaster with hyperspectral data
-#' @param index_name Character. Name of calculated index. Default NULL
-#' @param na.rm Logical. Remove NA values when calculating (default: TRUE).
-#' @param filename Character. Output filename. Default "" keeps in memory
-#' @param overwrite Logical. Overwrite existing file (default: FALSE)
-#' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
+#' @param x A [`SpatRaster`][terra::SpatRaster-class] with hyperspectral data.
+#' @param index_name Character. Name for the output layer. Default `NULL`.
+#' @param na.rm Logical. Remove `NA` values. Default `TRUE`.
+#' @param filename Character. Output filename. Default `""` keeps result in memory.
+#' @param overwrite Logical. Overwrite existing file. Default `FALSE`.
+#' @param ... Additional arguments passed to [`terra::writeRaster()`].
 #'
-#' @return A terra SpatRaster with mean reflectance values
-#'
-#' @description
-#' Calculate mean reflectance across all spectral bands for each pixel in a
-#' hyperspectral image. This provides a measure of overall brightness and can
-#' be useful for normalizing other spectral indices.
-#'
-#' @details
-#' Mean reflectance (Rmean) is calculated as the arithmetic mean of reflectance
-#' values across all wavelengths for each pixel.
+#' @returns A [`SpatRaster`][terra::SpatRaster-class] with mean reflectance values.
 #'
 #' @examples
 #' \dontrun{
-#' # Load hyperspectral data
 #' x <- terra::rast("REFLECTANCE_testdata.tif")
 #'
-#' # Calculate mean reflectance
 #' x_rmean <- hsi_calc_rmean(x)
 #'
-#' # Save to file and provide a name
 #' x_rmean <- hsi_calc_rmean(
 #'   x,
 #'   index_name = "mean_reflectance",
@@ -76,5 +64,5 @@ hsi_calc_rmean <- function(
   }
 
   # Return
-  return(result)
+  result
 }

@@ -14,40 +14,33 @@ hsi_calc_ndi(
 )
 }
 \arguments{
-\item{x}{A terra SpatRaster with hyperspectral data}
+\item{x}{A \code{\link[terra:SpatRaster-class]{SpatRaster}} with hyperspectral data.}
 
-\item{bands}{Numeric vector of length 2. The two wavelengths (in nm) to use
-for NDI calculation}
+\item{bands}{Numeric vector of length 2. Wavelengths in nm.}
 
-\item{index_name}{Character. Name of calculated ratio. Default NULL}
+\item{index_name}{Character. Name for the output layer. Default \code{NULL}.}
 
-\item{filename}{Character. Output filename. Default "" keeps in memory}
+\item{filename}{Character. Output filename. Default \code{""} keeps result in memory.}
 
-\item{overwrite}{Logical. Overwrite existing file (default: FALSE)}
+\item{overwrite}{Logical. Overwrite existing file. Default \code{FALSE}.}
 
-\item{...}{Additional arguments passed to \code{\link[terra]{writeRaster}}}
+\item{...}{Additional arguments passed to \code{\link[terra:writeRaster]{terra::writeRaster()}}.}
 }
 \value{
-A terra SpatRaster with NDI values
+A \code{\link[terra:SpatRaster-class]{SpatRaster}} with NDI values.
 }
 \description{
-Calculate a Normalized Difference Index (NDI), which normalizes the difference
-between two bands by their sum. This approach is widely used in remote sensing
-(e.g., NDVI, NDWI) as it reduces the effects of illumination and viewing
-geometry while highlighting spectral contrasts.
+Calculate normalized difference index (NDI)
 }
 \examples{
 \dontrun{
-# Load hyperspectral data
 x <- terra::rast("REFLECTANCE_testdata.tif")
 
-# Calculate NDI between 570 and 690
 x_ndi <- hsi_calc_ndi(
   x,
   bands = c(570, 690)
 )
 
-# Save to file and provide a name
 x_ndi <- hsi_calc_ndi(
   x,
   bands = c(570, 690),
@@ -65,16 +58,17 @@ Other HSI Transformations:
 \code{\link{hsi_calc_rabd}()},
 \code{\link{hsi_calc_ratio}()},
 \code{\link{hsi_calc_rcv}()},
+\code{\link{hsi_calc_reflectance}()},
 \code{\link{hsi_calc_remp}()},
 \code{\link{hsi_calc_rmean}()},
 \code{\link{hsi_calc_rmedian}()},
 \code{\link{hsi_calc_rsd}()},
 \code{\link{hsi_calc_stretch}()},
 \code{\link{hsi_destripe}()},
-\code{\link{hsi_normalize}()},
 \code{\link{hsi_remove_continuum}()},
 \code{\link{hsi_smooth_median}()},
 \code{\link{hsi_smooth_savgol}()},
+\code{\link{hsi_tiled}()},
 \code{\link{hsi_write_scaled}()}
 }
 \concept{HSI Transformations}

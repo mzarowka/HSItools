@@ -14,57 +14,53 @@ hsi_calc_remp(
 )
 }
 \arguments{
-\item{x}{A terra SpatRaster with first derivative of reflectance.
-Calculate using \code{hsi_smooth_savgol(reflectance, m = 1)}}
+\item{x}{A \code{\link[terra:SpatRaster-class]{SpatRaster}} with the first
+derivative of reflectance. Compute with \code{\link[=hsi_smooth_savgol]{hsi_smooth_savgol(x, m = 1)}}.}
 
-\item{search_range}{Numeric vector of length 2. Wavelength range to search
-for the red-edge minimum point. Default c(660, 680).}
+\item{search_range}{Numeric vector of length 2. Wavelength range in nm to
+search for the red-edge minimum point. Default \code{c(660, 680)}.}
 
-\item{index_name}{Character. Name of calculated index. Default NULL}
+\item{index_name}{Character. Name for the output layer. Default \code{NULL}.}
 
-\item{filename}{Character. Output filename. Default "" keeps in memory}
+\item{filename}{Character. Output filename. Default \code{""} keeps result in memory.}
 
-\item{overwrite}{Logical. Overwrite existing file (default: FALSE)}
+\item{overwrite}{Logical. Overwrite existing file. Default \code{FALSE}.}
 
-\item{...}{Additional arguments passed to \code{\link[terra]{writeRaster}}}
+\item{...}{Additional arguments passed to \code{\link[terra:writeRaster]{terra::writeRaster()}}.}
+
+\item{cores}{Positive integer. Number of parallel cores. Default \code{1}.}
 }
 \value{
-A terra SpatRaster with lambdaREMP values (wavelength in nm)
+A \code{\link[terra:SpatRaster-class]{SpatRaster}} with lambdaREMP values (wavelength in nm).
 }
 \description{
-Calculate lambda REMP (wavelength of the Red-Edge Minimum Point), which
-identifies the wavelength where the first derivative of reflectance equals
-zero, indicating maximum chlorophyll absorption.
+Calculate lambda REMP (Red-Edge Minimum Point), the wavelength at which the
+first derivative of reflectance crosses zero within a defined search range.
 }
 \details{
-Lambda REMP identifies the wavelength between approximately 660-680 nm where
-the first derivative of reflectance crosses from negative to positive
-(the inflection point where reflectance transitions from decreasing
-to increasing). This wavelength is sensitive to chlorophyll-a concentration.
+Lambda REMP is the inflection point where reflectance transitions from
+decreasing to increasing — typically between 660–680 nm — and is sensitive
+to chlorophyll-a concentration.
 
 The algorithm:
 \enumerate{
-\item Subsets derivative raster to the search range
-\item Identifies zero-crossings using \code{\link[gsignal]{zerocrossing}}
-\item Uses linear interpolation to find the exact wavelength where derivative = 0
-\item Falls back to wavelength nearest zero if no crossing is found
+\item Subsets the derivative raster to \code{search_range}.
+\item Identifies zero-crossings using \code{\link[gsignal:zerocrossing]{gsignal::zerocrossing()}}.
+\item Uses linear interpolation to find the exact wavelength where the
+derivative equals zero.
+\item Falls back to the wavelength nearest zero if no crossing is found.
 }
 }
 \examples{
 \dontrun{
-# Load hyperspectral data
 x <- terra::rast("REFLECTANCE_testdata.tif")
 
-# Calculate first derivative (do once, reuse)
 x_deriv <- hsi_smooth_savgol(x, m = 1)
 
-# Calculate lambda REMP
 x_remp <- hsi_calc_remp(x_deriv)
 
-# Custom search range
 x_remp <- hsi_calc_remp(x_deriv, search_range = c(665, 690))
 
-# Save to file
 x_remp <- hsi_calc_remp(
   x_deriv,
   index_name = "remp",
@@ -81,8 +77,8 @@ hyperspectral imaging of sediment cores. Limnology and Oceanography:
 Methods 21, 703-717. \doi{10.1002/lom3.10576}
 }
 \seealso{
-\code{\link{hsi_smooth_savgol}} for calculating the derivative input,
-\code{\link{hsi_subset_range}} for wavelength range extraction
+\code{\link[=hsi_smooth_savgol]{hsi_smooth_savgol()}} for computing the derivative input,
+\code{\link[=hsi_subset_range]{hsi_subset_range()}} for wavelength range extraction.
 
 Other HSI Transformations: 
 \code{\link{hsi_calc_difference}()},
@@ -91,15 +87,16 @@ Other HSI Transformations:
 \code{\link{hsi_calc_rabd}()},
 \code{\link{hsi_calc_ratio}()},
 \code{\link{hsi_calc_rcv}()},
+\code{\link{hsi_calc_reflectance}()},
 \code{\link{hsi_calc_rmean}()},
 \code{\link{hsi_calc_rmedian}()},
 \code{\link{hsi_calc_rsd}()},
 \code{\link{hsi_calc_stretch}()},
 \code{\link{hsi_destripe}()},
-\code{\link{hsi_normalize}()},
 \code{\link{hsi_remove_continuum}()},
 \code{\link{hsi_smooth_median}()},
 \code{\link{hsi_smooth_savgol}()},
+\code{\link{hsi_tiled}()},
 \code{\link{hsi_write_scaled}()}
 }
 \concept{HSI Transformations}

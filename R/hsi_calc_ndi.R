@@ -2,34 +2,24 @@
 #'
 #' @family HSI Transformations
 #'
-#' @param x A terra SpatRaster with hyperspectral data
-#' @param bands Numeric vector of length 2. The two wavelengths (in nm) to use
-#'   for NDI calculation
-#' @param index_name Character. Name of calculated ratio. Default NULL
-#' @param filename Character. Output filename. Default "" keeps in memory
-#' @param overwrite Logical. Overwrite existing file (default: FALSE)
-#' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
+#' @param x A [`SpatRaster`][terra::SpatRaster-class] with hyperspectral data.
+#' @param bands Numeric vector of length 2. Wavelengths in nm.
+#' @param index_name Character. Name for the output layer. Default `NULL`.
+#' @param filename Character. Output filename. Default `""` keeps result in memory.
+#' @param overwrite Logical. Overwrite existing file. Default `FALSE`.
+#' @param ... Additional arguments passed to [`terra::writeRaster()`].
 #'
-#' @description
-#' Calculate a Normalized Difference Index (NDI), which normalizes the difference
-#' between two bands by their sum. This approach is widely used in remote sensing
-#' (e.g., NDVI, NDWI) as it reduces the effects of illumination and viewing
-#' geometry while highlighting spectral contrasts.
-#'
-#' @return A terra SpatRaster with NDI values
+#' @returns A [`SpatRaster`][terra::SpatRaster-class] with NDI values.
 #'
 #' @examples
 #' \dontrun{
-#' # Load hyperspectral data
 #' x <- terra::rast("REFLECTANCE_testdata.tif")
 #'
-#' # Calculate NDI between 570 and 690
 #' x_ndi <- hsi_calc_ndi(
 #'   x,
 #'   bands = c(570, 690)
 #' )
 #'
-#' # Save to file and provide a name
 #' x_ndi <- hsi_calc_ndi(
 #'   x,
 #'   bands = c(570, 690),
@@ -93,5 +83,5 @@ hsi_calc_ndi <- function(
   }
 
   # Return
-  return(result)
+  result
 }

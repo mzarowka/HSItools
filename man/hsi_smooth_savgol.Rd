@@ -16,53 +16,61 @@ hsi_smooth_savgol(
 )
 }
 \arguments{
-\item{x}{A terra SpatRaster with hyperspectral data}
+\item{x}{A \code{\link[terra:SpatRaster-class]{SpatRaster}} with hyperspectral data.}
 
-\item{p}{Integer. Filter polynomial order (typically 2-4)}
+\item{p}{Integer. Filter polynomial order. Typically 2–4. Default \code{3}.}
 
-\item{n}{Integer. Filter length/window size (must be odd, typically 5-15)}
+\item{n}{Positive odd integer. Filter window size. Must be odd and greater
+than \code{p}. Typically 5–15. Default computed from \code{p}.}
 
-\item{m}{Integer. Derivative order (0 = smoothing, 1 = first derivative, etc.)}
+\item{m}{Integer. Derivative order. \code{0} for smoothing, \code{1} for first
+derivative. Default \code{0}.}
 
-\item{ts}{Numeric. Sampling interval for derivative calculations.}
+\item{ts}{Numeric. Sampling interval for derivative calculations. Default \code{1}.}
 
-\item{filename}{Character. Output filename. Default "" keeps in memory}
+\item{filename}{Character. Output filename. Default \code{""} keeps result in memory.}
 
-\item{overwrite}{Logical. Overwrite existing file (default: FALSE)}
+\item{overwrite}{Logical. Overwrite existing file. Default \code{FALSE}.}
 
-\item{...}{Additional arguments passed to \code{\link[terra]{writeRaster}}}
+\item{...}{Additional arguments passed to \code{\link[terra:writeRaster]{terra::writeRaster()}}.}
 }
 \value{
-A terra SpatRaster with Savitzky-Golay filtered values
+A \code{\link[terra:SpatRaster-class]{SpatRaster}} with Savitzky-Golay
+filtered values.
 }
 \description{
-Smooth hyperspectral data using a Savitzky-Golay filter via \code{\link[gsignal]{sgolayfilt}}.
-This filter fits successive sub-sets of adjacent data points with a low-degree polynomial
-by the method of linear least squares.
+Smooth hyperspectral data using a Savitzky-Golay filter via
+\code{\link[gsignal:sgolayfilt]{gsignal::sgolayfilt()}}. The filter fits successive subsets of adjacent
+data points with a low-degree polynomial by the method of linear least
+squares.
 }
 \details{
-The Savitzky-Golay filter is a spectral smoothing technique that preserves features
-of the spectral curve such as peak height and width, which are usually flattened
-by other smoothing methods. The filter works by fitting a polynomial of order \code{p}
-through a moving window of \code{n} points.
+The Savitzky-Golay filter preserves spectral features such as peak height
+and width that are typically flattened by other smoothing methods. The
+filter fits a polynomial of order \code{p} through a moving window of \code{n} points.
 
-Any pixels with NA values will result in function failure.
+Setting \code{m = 1} or \code{m = 2} computes the first or second derivative of the
+smoothed spectrum respectively; higher-order derivatives are also supported
+by increasing \code{m}. Note that edge bands equal to roughly half the window
+size are unreliable for derivatives — always compute on the full spectrum
+before subsetting to a wavelength range of interest.
 
-Requires the \pkg{gsignal} package.
+Pixels with \code{NA} values will cause the function to fail. For full-raster
+processing, \code{\link[=hsi_tiled]{hsi_tiled()}} can distribute the workload across parallel
+workers. Requires the
+\href{https://CRAN.R-project.org/package=gsignal}{\code{gsignal}} package.
 }
 \examples{
 \dontrun{
-# Load hyperspectral data
 x <- terra::rast("REFLECTANCE_testdata.tif")
 
-# Calculate continuum removed reflectance
 x_savgol <- hsi_smooth_savgol(x)
 
-# Save to file
 x_savgol <- hsi_smooth_savgol(
- x,
- filename = "output_savgol.tif",
- overwrite = TRUE)
+  x,
+  filename = "output_savgol.tif",
+  overwrite = TRUE
+)
 }
 
 }
@@ -74,15 +82,16 @@ Other HSI Transformations:
 \code{\link{hsi_calc_rabd}()},
 \code{\link{hsi_calc_ratio}()},
 \code{\link{hsi_calc_rcv}()},
+\code{\link{hsi_calc_reflectance}()},
 \code{\link{hsi_calc_remp}()},
 \code{\link{hsi_calc_rmean}()},
 \code{\link{hsi_calc_rmedian}()},
 \code{\link{hsi_calc_rsd}()},
 \code{\link{hsi_calc_stretch}()},
 \code{\link{hsi_destripe}()},
-\code{\link{hsi_normalize}()},
 \code{\link{hsi_remove_continuum}()},
 \code{\link{hsi_smooth_median}()},
+\code{\link{hsi_tiled}()},
 \code{\link{hsi_write_scaled}()}
 }
 \concept{HSI Transformations}

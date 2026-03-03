@@ -14,39 +14,30 @@ hsi_calc_rmean(
 )
 }
 \arguments{
-\item{x}{A terra SpatRaster with hyperspectral data}
+\item{x}{A \code{\link[terra:SpatRaster-class]{SpatRaster}} with hyperspectral data.}
 
-\item{index_name}{Character. Name of calculated index. Default NULL}
+\item{index_name}{Character. Name for the output layer. Default \code{NULL}.}
 
-\item{na.rm}{Logical. Remove NA values when calculating (default: TRUE).}
+\item{na.rm}{Logical. Remove \code{NA} values. Default \code{TRUE}.}
 
-\item{filename}{Character. Output filename. Default "" keeps in memory}
+\item{filename}{Character. Output filename. Default \code{""} keeps result in memory.}
 
-\item{overwrite}{Logical. Overwrite existing file (default: FALSE)}
+\item{overwrite}{Logical. Overwrite existing file. Default \code{FALSE}.}
 
-\item{...}{Additional arguments passed to \code{\link[terra]{writeRaster}}}
+\item{...}{Additional arguments passed to \code{\link[terra:writeRaster]{terra::writeRaster()}}.}
 }
 \value{
-A terra SpatRaster with mean reflectance values
+A \code{\link[terra:SpatRaster-class]{SpatRaster}} with mean reflectance values.
 }
 \description{
-Calculate mean reflectance across all spectral bands for each pixel in a
-hyperspectral image. This provides a measure of overall brightness and can
-be useful for normalizing other spectral indices.
-}
-\details{
-Mean reflectance (Rmean) is calculated as the arithmetic mean of reflectance
-values across all wavelengths for each pixel.
+Calculate mean reflectance (Rmean)
 }
 \examples{
 \dontrun{
-# Load hyperspectral data
 x <- terra::rast("REFLECTANCE_testdata.tif")
 
-# Calculate mean reflectance
 x_rmean <- hsi_calc_rmean(x)
 
-# Save to file and provide a name
 x_rmean <- hsi_calc_rmean(
   x,
   index_name = "mean_reflectance",
@@ -64,15 +55,16 @@ Other HSI Transformations:
 \code{\link{hsi_calc_rabd}()},
 \code{\link{hsi_calc_ratio}()},
 \code{\link{hsi_calc_rcv}()},
+\code{\link{hsi_calc_reflectance}()},
 \code{\link{hsi_calc_remp}()},
 \code{\link{hsi_calc_rmedian}()},
 \code{\link{hsi_calc_rsd}()},
 \code{\link{hsi_calc_stretch}()},
 \code{\link{hsi_destripe}()},
-\code{\link{hsi_normalize}()},
 \code{\link{hsi_remove_continuum}()},
 \code{\link{hsi_smooth_median}()},
 \code{\link{hsi_smooth_savgol}()},
+\code{\link{hsi_tiled}()},
 \code{\link{hsi_write_scaled}()}
 }
 \concept{HSI Transformations}

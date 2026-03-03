@@ -1,31 +1,32 @@
-#' Process files in tiles
+#' Process a SpatRaster in parallel tiles
 #'
-#' @param fun A function to apply to each tile. Must be provided as an anonymous
-#'   function with explicit namespace, e.g. \code{\(tile) HSItools::hsi_smooth_savgol(tile, p = 3, n = 17)}.
-#'   Only suitable for per-pixel functions with no spatial neighbourhood dependency.
-#'   All parameters must be baked into the lambda directly as literal values —
-#'   do not pass variables from the calling environment as they will not be
-#'   visible to parallel workers.
-#' @param x A terra SpatRaster with hyperspectral data.
-#' @param n_tiles Positive integer or length-2 integer vector. Number of tiles
-#'   to split \code{x} into. A single integer creates row strips e.g. \code{60}.
-#'   A length-2 vector creates a 2D tile grid e.g. \code{c(8, 8)}.
-#'   For best performance, match to the number of available \code{mirai} daemons.
-#' @param filename Character. Output filename. Default \code{""} keeps result in memory.
-#' @param overwrite Logical. Overwrite existing file (default: \code{FALSE}).
+#' @family HSI Transformations
 #'
-#' @returns A terra SpatRaster, merged from processed tiles.
+#' @param fun Function. Applied to each tile. Must be written as an anonymous
+#'   function with explicit `HSItools::` namespacing, e.g.
+#'   `\(tile) HSItools::hsi_smooth_savgol(tile, p = 3, n = 17)`. Only suitable
+#'   for per-pixel operations with no spatial neighbourhood dependency. All
+#'   parameters must be supplied as literal values — variables from the calling
+#'   environment are not visible to parallel workers.
+#' @param x A [`SpatRaster`][terra::SpatRaster-class] with hyperspectral data.
+#' @param n_tiles Integer or integer vector of length 1 or 2. Number of tiles
+#'   to split `x` into. A single integer creates row strips (e.g. `60`). A
+#'   length-2 vector creates a 2D tile grid (e.g. `c(8, 8)`). For best
+#'   performance, match to the number of available `mirai` daemons.
+#' @param filename Character. Output filename. Default `""` keeps result in memory.
+#' @param overwrite Logical. Overwrite existing file. Default `FALSE`.
 #'
-#' @details Parallelism is provided by \pkg{purrr} and \pkg{mirai}. Daemons must be set
-#' by the user before calling this function via \code{mirai::daemons(n)}.
-#' If no daemons are set, processing falls back to sequential automatically.
-#' Intermediate tiles are written to a temporary directory and cleaned up
-#' automatically on exit, even if the function errors.
+#' @returns A [`SpatRaster`][terra::SpatRaster-class] merged from processed tiles.
 #'
-#' @export
+#' @details
+#' Parallelism is provided by [`purrr::in_parallel()`] and [`mirai::daemons()`].
+#' Daemons must be initialised by the caller before invoking this function via
+#' `mirai::daemons(n)`. If no daemons are active, processing falls back to
+#' sequential automatically. Intermediate tiles are written to a temporary
+#' directory and cleaned up on exit, even if the function errors.
+#'
 #' @examples
 #' \dontrun{
-#' # Set up parallel workers
 #' mirai::daemons(30)
 #'
 #' # Good: literal values baked into the lambda
@@ -37,7 +38,7 @@
 #'   overwrite = TRUE
 #' )
 #'
-#' # Bad: variables from calling environment, not visible to workers
+#' # Bad: variables from calling environment are not visible to workers
 #' p <- 3
 #' n <- 17
 #' hsi_tiled(
@@ -46,9 +47,10 @@
 #'   n_tiles = 30
 #' )
 #'
-#' # Shut down workers
 #' mirai::daemons(0)
 #' }
+#'
+#' @export
 hsi_tiled <- function(
   fun,
   x,
@@ -101,6 +103,6 @@ hsi_tiled <- function(
     # Merge tiles
     terra::merge(filename = filename, overwrite = overwrite)
 
-  # Return SpatRaster
+  # Return
   raster
 }

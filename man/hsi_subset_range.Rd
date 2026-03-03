@@ -7,37 +7,33 @@
 hsi_subset_range(x, from, to, filename = "", overwrite = FALSE, ...)
 }
 \arguments{
-\item{x}{A terra SpatRaster with hyperspectral data. Band names must be
-numeric wavelengths in nm.}
+\item{x}{A \code{\link[terra:SpatRaster-class]{SpatRaster}} with hyperspectral data.
+Band names must be numeric wavelengths in nm.}
 
-\item{from}{Numeric. Start wavelength of range (inclusive)}
+\item{from}{Numeric. Start wavelength of the range in nm, inclusive.}
 
-\item{to}{Numeric. End wavelength of range (inclusive)}
+\item{to}{Numeric. End wavelength of the range in nm, inclusive.}
 
-\item{filename}{Character. Output filename. Default "" keeps in memory}
+\item{filename}{Character. Output filename. Default \code{""} keeps result in memory.}
 
-\item{overwrite}{Logical. Overwrite existing file (default: FALSE)}
+\item{overwrite}{Logical. Overwrite existing file. Default \code{FALSE}.}
 
-\item{...}{Additional arguments passed to \code{\link[terra]{writeRaster}}}
+\item{...}{Additional arguments passed to \code{\link[terra:writeRaster]{terra::writeRaster()}}.}
 }
 \value{
-A terra SpatRaster with all bands within the specified range
+A \code{\link[terra:SpatRaster-class]{SpatRaster}} with all bands within
+the specified wavelength range.
 }
 \description{
-Extract all bands within a wavelength range. Both boundaries are inclusive.
+Subset SpatRaster by wavelength range
 }
 \examples{
 \dontrun{
-# Extract chlorophyll absorption region
 x |> hsi_subset_range(from = 660, to = 680)
 
-# Derivative in red-edge region
 x |>
   hsi_smooth_savgol(m = 1) |>
   hsi_subset_range(from = 680, to = 750)
-
-# VNIR only
-x |> hsi_subset_range(from = 400, to = 1000)
 }
 
 }

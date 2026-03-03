@@ -2,34 +2,24 @@
 #'
 #' @family HSI Transformations
 #'
-#' @param x A terra SpatRaster with hyperspectral data
-#' @param bands Numeric vector of length 2. The two wavelengths (in nm)
-#'   to use for ratio calculation
-#' @param index_name Character. Name of calculated ratio. Default NULL
-#' @param filename Character. Output filename. Default "" keeps in memory
-#' @param overwrite Logical. Overwrite existing file (default: FALSE)
-#' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
+#' @param x A [`SpatRaster`][terra::SpatRaster-class] with hyperspectral data.
+#' @param bands Numeric vector of length 2. Wavelengths in nm.
+#' @param index_name Character. Name for the output layer. Default `NULL`.
+#' @param filename Character. Output filename. Default `""` keeps result in memory.
+#' @param overwrite Logical. Overwrite existing file. Default `FALSE`.
+#' @param ... Additional arguments passed to [`terra::writeRaster()`].
 #'
-#' @description
-#' Calculate a band ratio index by dividing reflectance at one wavelength by
-#' reflectance at another wavelength. Band ratios are commonly used to
-#' normalize spectral data and highlight specific features such as clay
-#' minerals or dust content.
-#'
-#' @return A terra SpatRaster with ratio values
+#' @returns A [`SpatRaster`][terra::SpatRaster-class] with band ratio values.
 #'
 #' @examples
 #' \dontrun{
-#' # Load hyperspectral data
 #' x <- terra::rast("REFLECTANCE_testdata.tif")
 #'
-#' # Calculate band ratio between 570 and 690
 #' x_ratio <- hsi_calc_ratio(
 #'   x,
 #'   bands = c(570, 690)
 #' )
 #'
-#' # Save to file and provide a name
 #' x_ratio <- hsi_calc_ratio(
 #'   x,
 #'   bands = c(570, 690),
@@ -89,5 +79,5 @@ hsi_calc_ratio <- function(
   }
 
   # Return
-  return(result)
+  result
 }

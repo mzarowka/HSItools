@@ -1,28 +1,29 @@
 #' Find position of selected wavelengths
 #'
 #' @family Utilities
-#' @param x A terra SpatRaster with hyperspectral data
-#' @param wavelength Numeric vector of desired wavelengths
 #'
-#' @return A tibble with columns:
-#'   - `wavelength`: the requested wavelengths
-#'   - `position`: the corresponding band indices in the SpatRaster
+#' @param x A [`SpatRaster`][terra::SpatRaster-class] with hyperspectral data.
+#' @param wavelength Numeric vector. Desired wavelengths in nm.
 #'
-#' @export
+#' @returns A [tibble][tibble::tibble] with columns:
+#'   \item{wavelength}{Numeric. Requested wavelength in nm.}
+#'   \item{position}{Integer. Corresponding band index in `x`.}
+#'   \item{band_wavelength}{Numeric. Actual wavelength of the matched band in nm.}
 #'
-#' @description Find index position of the nearest wavelength (band) in the dataset
-#' by matching the smallest difference between requested and actual wavelengths.
-#' If multiple wavelengths map to the same band, only the last is kept.
+#' @description
+#' Find band index positions by matching requested wavelengths to the nearest
+#' available band. When multiple requested wavelengths resolve to the same band
+#' index, only the last is retained.
 #'
 #' @examples
 #' \dontrun{
-#' # Create example raster
 #' r <- terra::rast(nrows = 10, ncols = 10, nlyrs = 5)
 #' names(r) <- c("400", "500", "600", "700", "800")
 #'
-#' # Find positions
 #' wavelength_position(r, c(450, 650))
 #' }
+#'
+#' @export
 wavelength_position <- function(
   x,
   wavelength
@@ -56,32 +57,28 @@ wavelength_position <- function(
     # Keep last observation if there are duplicates
     dplyr::slice_tail(by = "position")
 
-  # Return values
-  return(wavelength_table)
+  # Return
+  wavelength_table
 }
-
 
 #' Subset SpatRaster by wavelength
 #'
 #' @family Utilities
 #'
-#' @param x A terra SpatRaster to be subset
-#' @param wavelength_tbl a tibble with wavelength positions from wavelength_position.
+#' @param x A [`SpatRaster`][terra::SpatRaster-class] with hyperspectral data.
+#' @param wavelength_tbl A [tibble][tibble::tibble] with wavelength positions
+#'   as returned by [`wavelength_position()`].
 #'
-#' @return SpatRaster subset to contain only required wavelengthl bands.
+#' @returns A [`SpatRaster`][terra::SpatRaster-class] subset to the bands at
+#'   the positions in `wavelength_tbl`.
+#'
 #' @export
-#'
-#' @description Subset SpatRaster using wavelength (band) positions from a lookup table.
-#'
-#' @description subset SpatRaster with wavelength (bands) positions.
 wavelength_sub <- function(
   x,
   wavelength_tbl
 ) {
-  # Check if correct class is supplied.
-  if (!inherits(x, what = "SpatRaster")) {
-    cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
-  }
+  # Validate input
+  check_spatraster(x)
 
   # Validate input
   if (!inherits(wavelength_tbl, "data.frame")) {
@@ -97,7 +94,7 @@ wavelength_sub <- function(
   raster <- terra::subset(x, position)
 
   # Return
-  return(raster)
+  raster
 }
 
 #' Merge SpatRasters in a stratigraphic order
@@ -148,62 +145,63 @@ merge_rasters <- function(x, y, filename = "") {
 #' Find a fixed-width extent in the middle of a larger one
 #'
 #' @family Utilities
-#' @param extent a terra SpatExtent in which to look, created with terra::ext()
-#' @param width number of pixels of a new SpatExtent.
 #'
-#' @return a terra SpatExtent centered within the original SpatExtent and of a given width.
+#' @param e A [`SpatExtent`][terra::SpatExtent-class] in which to search.
+#'   Created with [`terra::ext()`].
+#' @param width Numeric. Width in pixels of the new extent.
+#'
+#' @returns A [`SpatExtent`][terra::SpatExtent-class] centered within `extent`
+#'   and of the specified width.
+#'
 #' @export
-find_fixed_extent <- function(extent, width) {
-  # Check if correct class is supplied.
+find_fixed_extent <- function(e, width) {
   # Validate input
-  if (!inherits(extent, "SpatExtent")) {
-    cli::cli_abort("Input {.arg extent} must be a terra SpatExtent.")
+  if (!inherits(e, "SpatExtent")) {
+    cli::cli_abort("Input {.arg e} must be a terra SpatExtent.")
   }
 
+  # Validate input
+  check_numeric(width, len = 1, positive = TRUE)
+
   # Get mid point
-  middle_point <- terra::round((terra::xmax(extent) - terra::xmin(extent)) / 2)
+  middle_point <- terra::round((terra::xmax(e) - terra::xmin(e)) / 2)
 
   # New xmin
-  ext.xmin <- terra::xmin(extent) + middle_point - (width / 2)
+  ext.xmin <- terra::xmin(e) + middle_point - (width / 2)
 
   # New xmax
-  ext.xmax <- terra::xmin(extent) + middle_point + (width / 2)
+  ext.xmax <- terra::xmin(e) + middle_point + (width / 2)
 
   # Update extent
-  extent <- terra::ext(ext.xmin, ext.xmax, extent[3], extent[4])
+  e <- terra::ext(ext.xmin, ext.xmax, e[3], e[4])
 
   # Return
-  return(extent)
+  e
 }
 
 #' Subset SpatRaster by wavelength
 #'
 #' @family Utilities
 #'
-#' @param x A terra SpatRaster with hyperspectral data. Band names must be
-#'   numeric wavelengths in nm.
-#' @param wavelength Numeric. Wavelength(s) to extract. Nearest available
-#'   band(s) will be selected.
-#' @param filename Character. Output filename. Default "" keeps in memory
-#' @param overwrite Logical. Overwrite existing file (default: FALSE)
-#' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
+#' @param x A [`SpatRaster`][terra::SpatRaster-class] with hyperspectral data.
+#'   Band names must be numeric wavelengths in nm.
+#' @param wavelength Numeric vector. Wavelength(s) to extract in nm. Nearest
+#'   available band is selected for each value.
+#' @param filename Character. Output filename. Default `""` keeps result in memory.
+#' @param overwrite Logical. Overwrite existing file. Default `FALSE`.
+#' @param ... Additional arguments passed to [`terra::writeRaster()`].
 #'
-#' @return A terra SpatRaster subset to the requested wavelength(s)
-#'
-#' @description
-#' Extract band(s) by wavelength value. Finds the nearest available band
-#' for each requested wavelength.
+#' @returns A [`SpatRaster`][terra::SpatRaster-class] subset to the requested
+#'   wavelength(s).
 #'
 #' @examples
 #' \dontrun{
-#' # Single band
 #' x |> hsi_subset(675)
 #'
-#' # Multiple bands
 #' x |> hsi_subset(c(650, 550, 450))
 #'
-#' # Derivative at specific wavelength
-#' x |> hsi_smooth_savgol(m = 1) |>
+#' x |>
+#'   hsi_smooth_savgol(m = 1) |>
 #'   hsi_subset(675)
 #' }
 #'
@@ -239,38 +237,31 @@ hsi_subset <- function(
   }
 
   # Return
-  return(result)
+  result
 }
 
 #' Subset SpatRaster by wavelength range
 #'
 #' @family Utilities
 #'
-#' @param x A terra SpatRaster with hyperspectral data. Band names must be
-#'   numeric wavelengths in nm.
-#' @param from Numeric. Start wavelength of range (inclusive)
-#' @param to Numeric. End wavelength of range (inclusive)
-#' @param filename Character. Output filename. Default "" keeps in memory
-#' @param overwrite Logical. Overwrite existing file (default: FALSE)
-#' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
+#' @param x A [`SpatRaster`][terra::SpatRaster-class] with hyperspectral data.
+#'   Band names must be numeric wavelengths in nm.
+#' @param from Numeric. Start wavelength of the range in nm, inclusive.
+#' @param to Numeric. End wavelength of the range in nm, inclusive.
+#' @param filename Character. Output filename. Default `""` keeps result in memory.
+#' @param overwrite Logical. Overwrite existing file. Default `FALSE`.
+#' @param ... Additional arguments passed to [`terra::writeRaster()`].
 #'
-#' @return A terra SpatRaster with all bands within the specified range
-#'
-#' @description
-#' Extract all bands within a wavelength range. Both boundaries are inclusive.
+#' @returns A [`SpatRaster`][terra::SpatRaster-class] with all bands within
+#'   the specified wavelength range.
 #'
 #' @examples
 #' \dontrun{
-#' # Extract chlorophyll absorption region
 #' x |> hsi_subset_range(from = 660, to = 680)
 #'
-#' # Derivative in red-edge region
 #' x |>
 #'   hsi_smooth_savgol(m = 1) |>
 #'   hsi_subset_range(from = 680, to = 750)
-#'
-#' # VNIR only
-#' x |> hsi_subset_range(from = 400, to = 1000)
 #' }
 #'
 #' @export
@@ -283,17 +274,13 @@ hsi_subset_range <- function(
   ...
 ) {
   # Validate input
-  if (!inherits(x, "SpatRaster")) {
-    cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
-  }
+  check_spatraster(x)
 
-  if (!is.numeric(from) || length(from) != 1) {
-    cli::cli_abort("{.arg from} must be a single numeric value.")
-  }
+  # Validate input
+  check_numeric(from, len = 1, positive = TRUE)
 
-  if (!is.numeric(to) || length(to) != 1) {
-    cli::cli_abort("{.arg to} must be a single numeric value.")
-  }
+  # Validate input
+  check_numeric(to, len = 1, positive = TRUE)
 
   # Get wavelengths from band names
   wavelengths <- as.numeric(terra::names(x))
@@ -335,15 +322,14 @@ hsi_subset_range <- function(
     )
   }
 
-  # Return the result
-  return(result)
+  # Return
+  result
 }
-
 
 #' Convert units to micrometers
 #'
 #' @param value Numeric. Value to convert.
-#' @param from Character. Source units.
+#' @param from Character. Source units. One of `"um"`, `"mm"`, or `"cm"`.
 #'
 #' @returns Numeric. Value in micrometers.
 #'
@@ -370,8 +356,8 @@ to_um <- function(value, from) {
 
 #' Convert micrometers to target units
 #'
-#' @param value Numeric. Value to convert.
-#' @param to Character. Target units.
+#' @param value Numeric. Value in micrometers.
+#' @param to Character. Target units. One of `"um"`, `"mm"`, or `"cm"`.
 #'
 #' @returns Numeric. Value in target units.
 #'

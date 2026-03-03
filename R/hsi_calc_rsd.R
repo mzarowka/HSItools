@@ -2,32 +2,21 @@
 #'
 #' @family HSI Transformations
 #'
-#' @param x A terra SpatRaster with hyperspectral data
-#' @param index_name Character. Name of calculated index. Default NULL
-#' @param na.rm Logical. Remove NA values when calculating (default: TRUE).
-#' @param filename Character. Output filename. Default "" keeps in memory
-#' @param overwrite Logical. Overwrite existing file (default: FALSE)
-#' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
+#' @param x A [`SpatRaster`][terra::SpatRaster-class] with hyperspectral data.
+#' @param index_name Character. Name for the output layer. Default `NULL`.
+#' @param na.rm Logical. Remove `NA` values. Default `TRUE`.
+#' @param filename Character. Output filename. Default `""` keeps result in memory.
+#' @param overwrite Logical. Overwrite existing file. Default `FALSE`.
+#' @param ... Additional arguments passed to [`terra::writeRaster()`].
 #'
-#' @return A terra SpatRaster with reflectance standard deviation values
-#'
-#' @description
-#' Calculate standard deviation of reflectance across all spectral bands for each pixel in a
-#' hyperspectral image. This provides a measure of overall spectral heterogeneity.
-#'
-#' @details
-#' Standard deviation of reflectance (Rsd) is calculated as the standard deviation of reflectance
-#' values across all wavelengths for each pixel.
+#' @returns A [`SpatRaster`][terra::SpatRaster-class] with reflectance standard deviation values.
 #'
 #' @examples
 #' \dontrun{
-#' # Load hyperspectral data
 #' x <- terra::rast("REFLECTANCE_testdata.tif")
 #'
-#' # Calculate standard deviation of reflectance
 #' x_rsd <- hsi_calc_rsd(x)
 #'
-#' # Save to file
 #' x_rsd <- hsi_calc_rsd(
 #'   x,
 #'   index_name = "sd_reflectance",
@@ -75,5 +64,5 @@ hsi_calc_rsd <- function(
   }
 
   # Return
-  return(result)
+  result
 }

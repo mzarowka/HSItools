@@ -1,46 +1,40 @@
-#' Stretch and optionally save full RGB preview of SpatRaster
-#'
-#' Performs stretching on selected bands from a hyperspectral SpatRaster.
-#' Supports both predefined band combinations and custom wavelength selection.
+#' Stretch selected bands to an RGB preview
 #'
 #' @family HSI Transformations
 #'
-#' @param x A terra SpatRaster with hyperspectral data. Band names must be
-#'   numeric wavelengths in nm.
-#' @param type Character or numeric. Either a predefined band combination
-#'   ("RGB", "CIR", "NIR", "SWIR") or a numeric vector of exactly 3
-#'   wavelengths in nm (e.g., c(400, 500, 600))
-#' @param tol Numeric. Tolerance for band selection in nm (default: 25)
-#' @param histeq Logical. If TRUE histogram equalization is used instead of
-#'   linear stretch (default: FALSE)
-#' @param filename Character. Output filename. Default "" keeps in memory
-#' @param overwrite Logical. Overwrite existing file (default: FALSE)
-#' @param ... Additional arguments passed to \code{\link[terra]{writeRaster}}
+#' @param x A [`SpatRaster`][terra::SpatRaster-class] with hyperspectral data.
+#'   Band names must be numeric wavelengths in nm.
+#' @param type Character or numeric. A predefined band combination
+#'   (`"RGB"`, `"CIR"`, `"NIR"`, `"SWIR"`) or a numeric vector of exactly 3
+#'   wavelengths in nm.
+#' @param tol Numeric. Wavelength tolerance for band matching in nm. Default `25`.
+#' @param histeq Logical. Use histogram equalization instead of linear stretch. Default `FALSE`.
+#' @param filename Character. Output filename. Default `""` keeps result in memory.
+#' @param overwrite Logical. Overwrite existing file. Default `FALSE`.
+#' @param ... Additional arguments passed to [`terra::writeRaster()`].
 #'
-#' @return A SpatRaster with 3 bands after stretching
+#' @returns A [`SpatRaster`][terra::SpatRaster-class] with 3 stretched bands.
+#'
+#' @description
+#' Subset a hyperspectral raster to three bands and apply a linear or
+#' histogram-equalized stretch. Supports predefined band combinations and
+#' custom wavelength selection.
 #'
 #' @examples
 #' \dontrun{
-#' # Load hyperspectral data
 #' x <- terra::rast("REFLECTANCE_testdata.tif")
 #'
-#' # Using predefined band combination of RGB c(650, 550, 450)
-#' x_rgb <- hsi_calc_stretch(
-#'  x,
-#'  type = "RGB")
+#' x_stretch <- hsi_calc_stretch(x, type = "RGB")
 #'
-#' # Using custom wavelengths
-#' x_rgb_custom <- hsi_calc_stretch(
-#'  x,
-#'  type = c(400, 500, 600))
+#' x_stretch <- hsi_calc_stretch(x, type = c(400, 500, 600))
 #'
-#' # Save to file with histogram equalization
-#'  x_rgb <- hsi_calc_stretch(
-#'  x,
-#'  type = "CIR",
-#'  histeq = TRUE,
-#'  filename = "output_cir.tif",
-#'  overwrite = TRUE)
+#' x_stretch <- hsi_calc_stretch(
+#'   x,
+#'   type = "CIR",
+#'   histeq = TRUE,
+#'   filename = "output_stretch.tif",
+#'   overwrite = TRUE
+#' )
 #' }
 #'
 #' @export
@@ -145,6 +139,6 @@ hsi_calc_stretch <- function(
     names(result) <- band_names
   }
 
-  # Return stretched SpatRaster
-  return(result)
+  # Return
+  result
 }

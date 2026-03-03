@@ -1,10 +1,12 @@
 #' Check if input is a SpatRaster
 #'
-#' @param x Object to check
-#' @param arg Argument name for error message (auto-detected)
-#' @param call Environment for error reporting (auto-detected)
+#' @param x Object to check.
+#' @param arg Argument name for error messages. Auto-detected via
+#'   [rlang::caller_arg()].
+#' @param call Environment for error reporting. Auto-detected via
+#'   [rlang::caller_env()].
 #'
-#' @return Invisible x if valid, otherwise aborts
+#' @returns Invisible `x` if valid, otherwise aborts.
 #' @noRd
 check_spatraster <- function(
   x,
@@ -24,11 +26,13 @@ check_spatraster <- function(
 
 #' Check if input is a SpatVector
 #'
-#' @param x Object to check
-#' @param arg Argument name for error message (auto-detected)
-#' @param call Environment for error reporting (auto-detected)
+#' @param x Object to check.
+#' @param arg Argument name for error messages. Auto-detected via
+#'   [rlang::caller_arg()].
+#' @param call Environment for error reporting. Auto-detected via
+#'   [rlang::caller_env()].
 #'
-#' @return Invisible x if valid, otherwise aborts
+#' @returns Invisible `x` if valid, otherwise aborts.
 #' @noRd
 check_spatvector <- function(
   x,
@@ -48,14 +52,16 @@ check_spatvector <- function(
 
 #' Check if input is numeric with optional constraints
 #'
-#' @param x Object to check
-#' @param len Expected length (NULL to skip check)
-#' @param positive Must all values be positive? (FALSE to skip check)
-#' @param odd Must value be odd? For window sizes (FALSE to skip check)
-#' @param arg Argument name for error message (auto-detected)
-#' @param call Environment for error reporting (auto-detected)
+#' @param x Object to check.
+#' @param len Integer. Expected length. `NULL` skips the check.
+#' @param positive Logical. Must all values be positive. Default `FALSE`.
+#' @param odd Logical. Must value be odd (for window sizes). Default `FALSE`.
+#' @param arg Argument name for error messages. Auto-detected via
+#'   [rlang::caller_arg()].
+#' @param call Environment for error reporting. Auto-detected via
+#'   [rlang::caller_env()].
 #'
-#' @return Invisible x if valid, otherwise aborts
+#' @returns Invisible `x` if valid, otherwise aborts.
 #' @noRd
 check_numeric <- function(
   x,
@@ -103,14 +109,11 @@ check_numeric <- function(
 
 #' Check and extract wavelengths from SpatRaster band names
 #'
-#' Validates that band names can be converted to numeric wavelengths
-#' and returns them. This both validates AND provides the wavelengths
-#' for further use.
+#' @param x A [`SpatRaster`][terra::SpatRaster-class], assumed already validated.
+#' @param call Environment for error reporting. Auto-detected via
+#'   [rlang::caller_env()].
 #'
-#' @param x A SpatRaster (assumed already validated)
-#' @param call Environment for error reporting (auto-detected)
-#'
-#' @return Numeric vector of wavelengths if valid, otherwise aborts
+#' @returns Numeric vector of wavelengths if valid, otherwise aborts.
 #' @noRd
 check_wavelengths <- function(
   x,
@@ -132,15 +135,16 @@ check_wavelengths <- function(
   wavelengths
 }
 
-#' Check if SpatVector has allowed geometry type
+#' Check if SpatVector has an allowed geometry type
 #'
-#' @param x SpatVector to check (assumed already validated as SpatVector)
-#' @param allowed Character vector of allowed geometry types
-#'   (e.g., c("points", "lines"))
-#' @param arg Argument name for error message (auto-detected)
-#' @param call Environment for error reporting (auto-detected)
+#' @param x A [`SpatVector`][terra::SpatVector-class], assumed already validated.
+#' @param allowed Character vector. Allowed geometry types.
+#' @param arg Argument name for error messages. Auto-detected via
+#'   [rlang::caller_arg()].
+#' @param call Environment for error reporting. Auto-detected via
+#'   [rlang::caller_env()].
 #'
-#' @return Invisible x if valid, otherwise aborts
+#' @returns Invisible `x` if valid, otherwise aborts.
 #' @noRd
 check_geom_type <- function(
   x,
@@ -163,12 +167,14 @@ check_geom_type <- function(
 
 #' Check if value is one of allowed choices
 #'
-#' @param x Value to check
-#' @param choices Character vector of allowed values
-#' @param arg Argument name for error message (auto-detected)
-#' @param call Environment for error reporting (auto-detected)
+#' @param x Value to check.
+#' @param choices Character vector. Allowed values.
+#' @param arg Argument name for error messages. Auto-detected via
+#'   [rlang::caller_arg()].
+#' @param call Environment for error reporting. Auto-detected via
+#'   [rlang::caller_env()].
 #'
-#' @return Invisible x if valid, otherwise aborts
+#' @returns Invisible `x` if valid, otherwise aborts.
 #' @noRd
 check_one_of <- function(
   x,
@@ -187,14 +193,17 @@ check_one_of <- function(
   invisible(x)
 }
 
-#' Check if object has required columns/attributes
+#' Check if object has required columns or attributes
 #'
-#' @param x Object to check (SpatVector, data.frame, or tibble)
-#' @param cols Character vector of required column names
-#' @param arg Argument name for error message (auto-detected)
-#' @param call Environment for error reporting (auto-detected)
+#' @param x Object to check. A [`SpatVector`][terra::SpatVector-class],
+#'   `data.frame`, or tibble.
+#' @param cols Character vector. Required column names.
+#' @param arg Argument name for error messages. Auto-detected via
+#'   [rlang::caller_arg()].
+#' @param call Environment for error reporting. Auto-detected via
+#'   [rlang::caller_env()].
 #'
-#' @return Invisible x if valid, otherwise aborts
+#' @returns Invisible `x` if valid, otherwise aborts.
 #' @noRd
 check_has_cols <- function(
   x,
@@ -228,13 +237,16 @@ check_has_cols <- function(
   invisible(x)
 }
 
-#' Check if SpatVector or SpatRaster has no CRS (pixel coordinates)
+#' Check if SpatVector or SpatRaster has no CRS
 #'
-#' @param x SpatVector or SpatRaster to check
-#' @param arg Argument name for error message (auto-detected)
-#' @param call Environment for error reporting (auto-detected)
+#' @param x A [`SpatVector`][terra::SpatVector-class] or
+#'   [`SpatRaster`][terra::SpatRaster-class] to check.
+#' @param arg Argument name for error messages. Auto-detected via
+#'   [rlang::caller_arg()].
+#' @param call Environment for error reporting. Auto-detected via
+#'   [rlang::caller_env()].
 #'
-#' @return Invisible x if valid, otherwise aborts
+#' @returns Invisible `x` if valid, otherwise aborts.
 #' @noRd
 check_crs_null <- function(
   x,
@@ -259,12 +271,14 @@ check_crs_null <- function(
 
 #' Check if list has required elements
 #'
-#' @param x List to check
-#' @param elements Character vector of required element names
-#' @param arg Argument name for error message (auto-detected)
-#' @param call Environment for error reporting (auto-detected)
+#' @param x List to check.
+#' @param elements Character vector. Required element names.
+#' @param arg Argument name for error messages. Auto-detected via
+#'   [rlang::caller_arg()].
+#' @param call Environment for error reporting. Auto-detected via
+#'   [rlang::caller_env()].
 #'
-#' @return Invisible x if valid, otherwise aborts
+#' @returns Invisible `x` if valid, otherwise aborts.
 #' @noRd
 check_list_has <- function(
   x,

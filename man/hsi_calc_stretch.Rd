@@ -2,7 +2,7 @@
 % Please edit documentation in R/hsi_calc_stretch.R
 \name{hsi_calc_stretch}
 \alias{hsi_calc_stretch}
-\title{Stretch and optionally save full RGB preview of SpatRaster}
+\title{Stretch selected bands to an RGB preview}
 \usage{
 hsi_calc_stretch(
   x,
@@ -15,53 +15,46 @@ hsi_calc_stretch(
 )
 }
 \arguments{
-\item{x}{A terra SpatRaster with hyperspectral data. Band names must be
-numeric wavelengths in nm.}
+\item{x}{A \code{\link[terra:SpatRaster-class]{SpatRaster}} with hyperspectral data.
+Band names must be numeric wavelengths in nm.}
 
-\item{type}{Character or numeric. Either a predefined band combination
-("RGB", "CIR", "NIR", "SWIR") or a numeric vector of exactly 3
-wavelengths in nm (e.g., c(400, 500, 600))}
+\item{type}{Character or numeric. A predefined band combination
+(\code{"RGB"}, \code{"CIR"}, \code{"NIR"}, \code{"SWIR"}) or a numeric vector of exactly 3
+wavelengths in nm.}
 
-\item{tol}{Numeric. Tolerance for band selection in nm (default: 25)}
+\item{tol}{Numeric. Wavelength tolerance for band matching in nm. Default \code{25}.}
 
-\item{histeq}{Logical. If TRUE histogram equalization is used instead of
-linear stretch (default: FALSE)}
+\item{histeq}{Logical. Use histogram equalization instead of linear stretch. Default \code{FALSE}.}
 
-\item{filename}{Character. Output filename. Default "" keeps in memory}
+\item{filename}{Character. Output filename. Default \code{""} keeps result in memory.}
 
-\item{overwrite}{Logical. Overwrite existing file (default: FALSE)}
+\item{overwrite}{Logical. Overwrite existing file. Default \code{FALSE}.}
 
-\item{...}{Additional arguments passed to \code{\link[terra]{writeRaster}}}
+\item{...}{Additional arguments passed to \code{\link[terra:writeRaster]{terra::writeRaster()}}.}
 }
 \value{
-A SpatRaster with 3 bands after stretching
+A \code{\link[terra:SpatRaster-class]{SpatRaster}} with 3 stretched bands.
 }
 \description{
-Performs stretching on selected bands from a hyperspectral SpatRaster.
-Supports both predefined band combinations and custom wavelength selection.
+Subset a hyperspectral raster to three bands and apply a linear or
+histogram-equalized stretch. Supports predefined band combinations and
+custom wavelength selection.
 }
 \examples{
 \dontrun{
-# Load hyperspectral data
 x <- terra::rast("REFLECTANCE_testdata.tif")
 
-# Using predefined band combination of RGB c(650, 550, 450)
-x_rgb <- hsi_calc_stretch(
- x,
- type = "RGB")
+x_stretch <- hsi_calc_stretch(x, type = "RGB")
 
-# Using custom wavelengths
-x_rgb_custom <- hsi_calc_stretch(
- x,
- type = c(400, 500, 600))
+x_stretch <- hsi_calc_stretch(x, type = c(400, 500, 600))
 
-# Save to file with histogram equalization
- x_rgb <- hsi_calc_stretch(
- x,
- type = "CIR",
- histeq = TRUE,
- filename = "output_cir.tif",
- overwrite = TRUE)
+x_stretch <- hsi_calc_stretch(
+  x,
+  type = "CIR",
+  histeq = TRUE,
+  filename = "output_stretch.tif",
+  overwrite = TRUE
+)
 }
 
 }
@@ -73,15 +66,16 @@ Other HSI Transformations:
 \code{\link{hsi_calc_rabd}()},
 \code{\link{hsi_calc_ratio}()},
 \code{\link{hsi_calc_rcv}()},
+\code{\link{hsi_calc_reflectance}()},
 \code{\link{hsi_calc_remp}()},
 \code{\link{hsi_calc_rmean}()},
 \code{\link{hsi_calc_rmedian}()},
 \code{\link{hsi_calc_rsd}()},
 \code{\link{hsi_destripe}()},
-\code{\link{hsi_normalize}()},
 \code{\link{hsi_remove_continuum}()},
 \code{\link{hsi_smooth_median}()},
 \code{\link{hsi_smooth_savgol}()},
+\code{\link{hsi_tiled}()},
 \code{\link{hsi_write_scaled}()}
 }
 \concept{HSI Transformations}
