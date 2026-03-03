@@ -78,7 +78,7 @@ hsi_destripe <- function(
   )
 
   # Global reference: median of column medians, per band
-  glob_median <- terra::global(col_medians_raster, median)[[1]]
+  glob_median <- terra::global(col_medians_raster, stats::median)[[1]]
 
   # Apply multiplicative correction
   result <- x / col_medians_full * glob_median
