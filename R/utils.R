@@ -381,3 +381,24 @@ from_um <- function(value, to) {
   # Return
   value
 }
+
+#' Strip CRS from a SpatRaster or SpatVector
+#'
+#' @param x A [`SpatRaster`][terra::SpatRaster-class] or
+#'   [`SpatVector`][terra::SpatVector-class] from which to remove the CRS.
+#'
+#' @returns `x` with CRS set to `""`.
+#'
+#' @noRd
+hsi_drop_crs <- function(x) {
+  # Validate inputs
+  if (!inherits(x, c("SpatRaster", "SpatVector"))) {
+    cli::cli_abort("{.arg x} is a neither SpatRaster nor a SpatVector.")
+  }
+
+  # Strip CRS
+  terra::crs(x) <- ""
+
+  # Return
+  x
+}
