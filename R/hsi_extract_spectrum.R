@@ -2,42 +2,38 @@
 #'
 #' @family HSI Extraction
 #'
-#' @param x A terra SpatRaster with hyperspectral data. Band names must be
-#'   numeric wavelengths in nm.
-#' @param fun Character. Aggregation function passed to \code{\link[terra]{aggregate}}.
-#'   Default "mean". Other \pkg{terra} functions are also supported
+#' @param x A [`SpatRaster`][terra::SpatRaster-class] with hyperspectral data.
+#'   Band names must be numeric wavelengths in nm.
+#' @param fun Character. Aggregation function passed to [`terra::aggregate()`].
+#'   Default `"mean"`. Other [`terra`][terra::terra-package] summary functions
+#'   are also supported.
 #'
-#' @return A tibble with columns:
-#'   \item{wavelength}{Numeric. Wavelength in nm}
-#'   \item{value}{Numeric. Aggregated reflectance value}
+#' @returns A [tibble][tibble::tibble] with columns:
+#'   \item{wavelength}{Numeric. Wavelength in nm.}
+#'   \item{value}{Numeric. Aggregated reflectance value.}
 #'
 #' @description
 #' Aggregate a hyperspectral raster to a single spectrum representing the
-#' average (or other summary) across all pixels. Useful for examining
+#' mean (or other summary) across all pixels. Useful for examining
 #' representative spectral signatures of regions of interest.
 #'
 #' @details
-#' The function aggregates all pixels in the input raster using the specified
-#' function, returning one value per wavelength band. If you need a spectrum
-#' from a specific region, crop the raster first with \code{\link[terra]{crop}}.
+#' Returns one value per wavelength band. To extract a spectrum from a
+#' specific region, crop the raster first with [`terra::crop()`].
 #'
 #' @seealso
-#' \code{\link{hsi_extract_profile}} for extracting values along an axis.
+#' [`hsi_extract_profile()`] for extracting values along a spatial axis.
 #'
 #' @examples
 #' \dontrun{
-#' # Load hyperspectral data
 #' x <- terra::rast("REFLECTANCE_testdata.tif")
 #'
-#' # Extract mean spectrum from full raster
 #' spectrum <- hsi_extract_spectrum(x)
 #'
-#' # Extract from specific region
 #' spectrum_roi <- x |>
 #'   terra::crop(my_extent) |>
 #'   hsi_extract_spectrum()
 #'
-#' # Use median instead of mean
 #' spectrum_median <- hsi_extract_spectrum(x, fun = "median")
 #' }
 #'

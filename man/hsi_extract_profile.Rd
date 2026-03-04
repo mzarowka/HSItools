@@ -7,70 +7,58 @@
 hsi_extract_profile(x, direction = "vertical", fun = "mean")
 }
 \arguments{
-\item{x}{A terra SpatRaster with single or multiple bands}
+\item{x}{A \code{\link[terra:SpatRaster-class]{SpatRaster}} with single or multiple bands.}
 
 \item{direction}{Character. Direction of profile extraction. Either
-"vertical" (default, profile along Y-axis) or "horizontal" (profile along X-axis)}
+\code{"vertical"} (profile along Y-axis) or \code{"horizontal"} (profile along
+X-axis). Default \code{"vertical"}.}
 
-\item{fun}{Character. Aggregation function passed to \code{\link[terra]{aggregate}}.
-Default "mean". Use "modal" for categorical/classified data.}
+\item{fun}{Character. Aggregation function passed to \code{\link[terra:aggregate]{terra::aggregate()}}.
+Default \code{"mean"}. Use \code{"modal"} for categorical data.}
 }
 \value{
-A tibble with columns:
-\item{position}{Numeric. Pixel coordinate along the profile axis}
-\item{...}{Additional columns, one per input band, named after band names}
+A \link[tibble:tibble]{tibble} with columns:
+\item{position}{Numeric. Pixel coordinate along the profile axis.}
+\item{...}{One column per input band, named after band names.}
 }
 \description{
 Aggregate a raster perpendicular to the specified direction, producing a
-1D profile of values. Commonly used for extracting downcore profiles from
-sediment core scans.
+1D profile of values along the chosen axis.
 }
 \details{
-The function aggregates pixels perpendicular to the profile direction:
+Aggregation direction:
 \itemize{
-\item \code{"vertical"}: aggregates across columns (X), returns profile along rows (Y)
-\item \code{"horizontal"}: aggregates across rows (Y), returns profile along columns (X)
+\item \code{"vertical"}: aggregates across columns (X), returns profile along rows (Y).
+\item \code{"horizontal"}: aggregates across rows (Y), returns profile along columns (X).
 }
 
-For classified/categorical rasters, use \code{fun = "modal"} to get the most
-frequent class at each position.
-
-If you need a profile from a specific region, crop the raster first with
-\code{\link[terra]{crop}}. To convert pixel positions to real-world units,
-use \code{\link{hsi_pixels_to_units}} afterward.
+To extract a profile from a specific region, crop the raster first with
+\code{\link[terra:crop]{terra::crop()}}. To convert pixel positions to physical units, pass the
+result to \code{\link[=hsi_pixels_to_units]{hsi_pixels_to_units()}}.
 }
 \examples{
 \dontrun{
-# Load calculated index
 x <- terra::rast("RABD_index.tif")
 
-# Extract vertical profile (downcore)
 profile <- hsi_extract_profile(x)
 
-# Extract from specific region
 profile_roi <- x |>
   terra::crop(my_extent) |>
   hsi_extract_profile()
 
-# Horizontal profile
 profile_h <- hsi_extract_profile(x, direction = "horizontal")
 
-# Multi-band input returns one column per band
 multi <- terra::rast(c("RABD.tif", "RABA.tif"))
 profiles <- hsi_extract_profile(multi)
 
-# For classified raster, use modal
-# Load calculated index
 x_class <- terra::rast("classified.tif")
-
-# Extract vertical profile (downcore)
-profile_class <- hsi_extract_profile(classification, fun = "modal")
+profile_class <- hsi_extract_profile(x_class, fun = "modal")
 }
 
 }
 \seealso{
-\code{\link{hsi_extract_spectrum}} for extracting averaged spectra,
-\code{\link{hsi_pixels_to_units}} for converting positions to depth units
+\code{\link[=hsi_extract_spectrum]{hsi_extract_spectrum()}} for extracting an averaged spectrum,
+\code{\link[=hsi_pixels_to_units]{hsi_pixels_to_units()}} for converting positions to depth units.
 
 Other HSI Extraction: 
 \code{\link{hsi_extract_spectrum}()}

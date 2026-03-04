@@ -7,47 +7,43 @@
 hsi_extract_spectrum(x, fun = "mean")
 }
 \arguments{
-\item{x}{A terra SpatRaster with hyperspectral data. Band names must be
-numeric wavelengths in nm.}
+\item{x}{A \code{\link[terra:SpatRaster-class]{SpatRaster}} with hyperspectral data.
+Band names must be numeric wavelengths in nm.}
 
-\item{fun}{Character. Aggregation function passed to \code{\link[terra]{aggregate}}.
-Default "mean". Other \pkg{terra} functions are also supported}
+\item{fun}{Character. Aggregation function passed to \code{\link[terra:aggregate]{terra::aggregate()}}.
+Default \code{"mean"}. Other \code{\link[terra:terra-package]{terra}} summary functions
+are also supported.}
 }
 \value{
-A tibble with columns:
-\item{wavelength}{Numeric. Wavelength in nm}
-\item{value}{Numeric. Aggregated reflectance value}
+A \link[tibble:tibble]{tibble} with columns:
+\item{wavelength}{Numeric. Wavelength in nm.}
+\item{value}{Numeric. Aggregated reflectance value.}
 }
 \description{
 Aggregate a hyperspectral raster to a single spectrum representing the
-average (or other summary) across all pixels. Useful for examining
+mean (or other summary) across all pixels. Useful for examining
 representative spectral signatures of regions of interest.
 }
 \details{
-The function aggregates all pixels in the input raster using the specified
-function, returning one value per wavelength band. If you need a spectrum
-from a specific region, crop the raster first with \code{\link[terra]{crop}}.
+Returns one value per wavelength band. To extract a spectrum from a
+specific region, crop the raster first with \code{\link[terra:crop]{terra::crop()}}.
 }
 \examples{
 \dontrun{
-# Load hyperspectral data
 x <- terra::rast("REFLECTANCE_testdata.tif")
 
-# Extract mean spectrum from full raster
 spectrum <- hsi_extract_spectrum(x)
 
-# Extract from specific region
 spectrum_roi <- x |>
   terra::crop(my_extent) |>
   hsi_extract_spectrum()
 
-# Use median instead of mean
 spectrum_median <- hsi_extract_spectrum(x, fun = "median")
 }
 
 }
 \seealso{
-\code{\link{hsi_extract_profile}} for extracting values along an axis.
+\code{\link[=hsi_extract_profile]{hsi_extract_profile()}} for extracting values along a spatial axis.
 
 Other HSI Extraction: 
 \code{\link{hsi_extract_profile}()}
