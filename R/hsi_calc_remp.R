@@ -6,7 +6,6 @@
 #'   derivative of reflectance. Compute with [`hsi_smooth_savgol(x, m = 1)`][hsi_smooth_savgol].
 #' @param search_range Numeric vector of length 2. Wavelength range in nm to
 #'   search for the red-edge minimum point. Default `c(660, 680)`.
-#' @param cores Positive integer. Number of parallel cores. Default `1`.
 #' @param index_name Character. Name for the output layer. Default `NULL`.
 #' @param filename Character. Output filename. Default `""` keeps result in memory.
 #' @param overwrite Logical. Overwrite existing file. Default `FALSE`.
