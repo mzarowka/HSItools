@@ -74,8 +74,8 @@ hsi_extract_spectrum <- function(
       values_to = "value"
     ) |>
     # Ensure tibble
-    dplyr::tibble()
+    tibble::as_tibble()
 
   # Return
-  return(spectrum)
+  spectrum
 }

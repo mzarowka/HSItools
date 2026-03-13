@@ -2,64 +2,85 @@
 #'
 #' @family HSI Extraction
 #'
-#' @param x A [`SpatRaster`][terra::SpatRaster-class] with single or multiple bands.
-#' @param direction Character. Direction of profile extraction. Either
-#'   `"vertical"` (profile along Y-axis) or `"horizontal"` (profile along
-#'   X-axis). Default `"vertical"`.
-#' @param fun Character. Aggregation function passed to [`terra::aggregate()`].
+#' @param x         A [`SpatRaster`][terra::SpatRaster-class] with hyperspectral data.
+#' @param fun       Character. Aggregation function passed to [`terra::aggregate()`].
 #'   Default `"mean"`. Use `"modal"` for categorical data.
+#' @param direction Character. Direction of profile extraction. Either `"vertical"`
+#'   (aggregates across columns, profile along rows) or `"horizontal"` (aggregates
+#'   across rows, profile along columns). Default `"vertical"`.
+#' @param na.rm     Logical. Remove `NA` values. Default `TRUE`.
+#' @param y         A [`SpatRaster`][terra::SpatRaster-class] with layers `row_um`
+#'   and `col_um`, as produced by [`hsi_calc_coords()`] or [`hsi_shift_coords()`].
+#'   When provided, the `position` column is expressed in µm rather than pixel
+#'   coordinates. Default `NULL`.
 #'
 #' @returns A [tibble][tibble::tibble] with columns:
-#'   \item{position}{Numeric. Pixel coordinate along the profile axis.}
-#'   \item{...}{One column per input band, named after band names.}
-#'
-#' @description
-#' Aggregate a raster perpendicular to the specified direction, producing a
-#' 1D profile of values along the chosen axis.
+#'   \item{position}{Numeric. Position along the profile axis, in pixel coordinates
+#'     or µm when `y` is supplied.}
+#'   \item{...}{One column per input layer, named after band names.}
 #'
 #' @details
-#' Aggregation direction:
-#' - `"vertical"`: aggregates across columns (X), returns profile along rows (Y).
-#' - `"horizontal"`: aggregates across rows (Y), returns profile along columns (X).
+#' Aggregation is performed perpendicular to the profile direction using
+#' [`terra::aggregate()`]. Crop `x` with [`terra::crop()`] before calling this
+#' function to restrict extraction to a region of interest.
 #'
-#' To extract a profile from a specific region, crop the raster first with
-#' [`terra::crop()`]. To convert pixel positions to physical units, pass the
-#' result to [`hsi_pixels_to_units()`].
+#' When `y` is provided, the relevant coordinate layer (`row_um` for vertical,
+#' `col_um` for horizontal) is aggregated with `fun = "mean"` independently of
+#' `fun`, as physical position is a geometric property not a statistical summary.
+#'
+#' Band names conflicting with reserved column names (`"x"`, `"y"`,
+#' `"position"`) are prefixed with `"band_"` and a warning is emitted.
 #'
 #' @seealso
-#' [`hsi_extract_spectrum()`] for extracting an averaged spectrum,
-#' [`hsi_pixels_to_units()`] for converting positions to depth units.
+#' [`hsi_extract_spectrum()`] for extracting an averaged spectrum.
+#' [`hsi_calc_coords()`] and [`hsi_shift_coords()`] to produce the coordinate
+#' raster passed to `y`.
 #'
 #' @examples
 #' \dontrun{
 #' x <- terra::rast("RABD_index.tif")
+#' um <- hsi_calibration_from_dims(scan_length_um = 50000, n_pixels = 1000)
 #'
-#' profile <- hsi_extract_profile(x)
+#' # Pixel-space profile
+#' x_profile <- hsi_extract_profile(x)
 #'
-#' profile_roi <- x |>
+#' # Physical-space profile
+#' x_coords <- hsi_calc_coords(x, um_per_pixel = um)
+#' x_profile <- hsi_extract_profile(x, y = x_coords)
+#'
+#' # Shifted origin
+#' ref <- terra::vect(matrix(c(1001.5, 2007.5), ncol = 2), type = "points")
+#' x_coords_shifted <- hsi_shift_coords(x_coords, reference = ref)
+#' x_profile <- hsi_extract_profile(x, y = x_coords_shifted)
+#'
+#' # Region of interest
+#' x_profile <- x |>
 #'   terra::crop(my_extent) |>
-#'   hsi_extract_profile()
+#'   hsi_extract_profile(y = x_coords)
 #'
-#' profile_h <- hsi_extract_profile(x, direction = "horizontal")
+#' # Horizontal profile
+#' x_profile <- hsi_extract_profile(x, direction = "horizontal", y = x_coords)
 #'
-#' multi <- terra::rast(c("RABD.tif", "RABA.tif"))
-#' profiles <- hsi_extract_profile(multi)
-#'
+#' # Classified raster
 #' x_class <- terra::rast("classified.tif")
-#' profile_class <- hsi_extract_profile(x_class, fun = "modal")
+#' x_profile <- hsi_extract_profile(x_class, fun = "modal")
 #' }
 #'
 #' @export
 hsi_extract_profile <- function(
   x,
+  fun = "mean",
   direction = "vertical",
-  fun = "mean"
+  na.rm = TRUE,
+  y = NULL
 ) {
   # Validate input
   check_spatraster(x)
 
-  # Validate direction
-  direction <- match.arg(direction, c("vertical", "horizontal"))
+  check_crs_null(x)
+
+  # Check alowed direction types
+  check_one_of(direction, c("vertical", "horizontal"))
 
   # Get band names and check for conflicts with coordinate columns
   band_names <- terra::names(x)
@@ -87,31 +108,71 @@ hsi_extract_profile <- function(
   # Set aggregation factor based on direction
   if (direction == "vertical") {
     # Aggregate across columns, keep rows
-    agg_fact <- c(1, terra::ncol(x))
+    agg_factor <- c(1, terra::ncol(x))
+
+    # Set positioning column
     position_col <- "y"
   } else {
     # Aggregate across rows, keep columns
-    agg_fact <- c(terra::nrow(x), 1)
+    agg_factor <- c(terra::nrow(x), 1)
+
+    # Set positioning column
     position_col <- "x"
   }
 
-  # Aggregate perpendicular to profile direction
-  profile <- terra::aggregate(
+  # Aggregate x perpendicular to profile direction
+  x_agg <- terra::aggregate(
     x,
-    fact = agg_fact,
+    fact = agg_factor,
     fun = fun,
-    na.rm = TRUE
+    na.rm = na.rm
   ) |>
     # Coerce to data frame with coordinates
     terra::as.data.frame(xy = TRUE) |>
-    # To tibble
-    dplyr::tibble() |>
     # Select position and all band columns
     dplyr::select(
       position = dplyr::all_of(position_col),
       dplyr::all_of(band_names)
+    ) |>
+    # Coerce tibble
+    tibble::as_tibble()
+
+  # Aggregate y perpendicular to profile direction
+  if (!is.null(y)) {
+    # Validate input
+    check_spatraster(y)
+
+    check_crs_null(y)
+
+    # Validate SpatRaster layers
+    check_list_has(
+      terra::as.list(y) |> stats::setNames(terra::names(y)),
+      elements = c("row_um", "col_um")
     )
 
+    # Subset y
+    if (direction == "vertical") {
+      lyr <- "row_um"
+    } else {
+      lyr <- "col_um"
+    }
+
+    y_agg <- y |>
+      terra::subset(lyr) |>
+      terra::aggregate(
+        fact = agg_factor,
+        fun = "mean",
+        na.rm = na.rm
+      ) |>
+      # Coerce to data frame with coordinates
+      terra::as.data.frame(xy = TRUE) |>
+      # Pull position as a vector
+      dplyr::pull(lyr)
+
+    x_agg <- x_agg |>
+      dplyr::mutate(position = y_agg)
+  }
+
   # Return
-  profile
+  x_agg
 }

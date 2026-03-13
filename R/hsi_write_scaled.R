@@ -20,8 +20,7 @@
 #' The scale factor is embedded in GeoTIFF band metadata (GDAL scale/offset),
 #' so [`terra::rast()`] automatically returns float values on read — no manual
 #' rescaling required. Values must not exceed `65535 / scale_factor` or an
-#' error is raised. Use [`hsi_check_reflectance()`] to validate value ranges
-#' before writing.
+#' error is raised.
 #'
 #' uint16 quantization is only appropriate for sensors with sufficient SNR.
 #' VNIR sensors typically meet this threshold; SWIR sensors with lower SNR

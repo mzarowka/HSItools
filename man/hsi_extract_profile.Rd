@@ -4,61 +4,87 @@
 \alias{hsi_extract_profile}
 \title{Extract value profile along an axis}
 \usage{
-hsi_extract_profile(x, direction = "vertical", fun = "mean")
+hsi_extract_profile(
+  x,
+  fun = "mean",
+  direction = "vertical",
+  na.rm = TRUE,
+  y = NULL
+)
 }
 \arguments{
-\item{x}{A \code{\link[terra:SpatRaster-class]{SpatRaster}} with single or multiple bands.}
-
-\item{direction}{Character. Direction of profile extraction. Either
-\code{"vertical"} (profile along Y-axis) or \code{"horizontal"} (profile along
-X-axis). Default \code{"vertical"}.}
+\item{x}{A \code{\link[terra:SpatRaster-class]{SpatRaster}} with hyperspectral data.}
 
 \item{fun}{Character. Aggregation function passed to \code{\link[terra:aggregate]{terra::aggregate()}}.
 Default \code{"mean"}. Use \code{"modal"} for categorical data.}
+
+\item{direction}{Character. Direction of profile extraction. Either \code{"vertical"}
+(aggregates across columns, profile along rows) or \code{"horizontal"} (aggregates
+across rows, profile along columns). Default \code{"vertical"}.}
+
+\item{na.rm}{Logical. Remove \code{NA} values. Default \code{TRUE}.}
+
+\item{y}{A \code{\link[terra:SpatRaster-class]{SpatRaster}} with layers \code{row_um}
+and \code{col_um}, as produced by \code{\link[=hsi_calc_coords]{hsi_calc_coords()}} or \code{\link[=hsi_shift_coords]{hsi_shift_coords()}}.
+When provided, the \code{position} column is expressed in µm rather than pixel
+coordinates. Default \code{NULL}.}
 }
 \value{
 A \link[tibble:tibble]{tibble} with columns:
-\item{position}{Numeric. Pixel coordinate along the profile axis.}
-\item{...}{One column per input band, named after band names.}
+\item{position}{Numeric. Position along the profile axis, in pixel coordinates
+or µm when \code{y} is supplied.}
+\item{...}{One column per input layer, named after band names.}
 }
 \description{
-Aggregate a raster perpendicular to the specified direction, producing a
-1D profile of values along the chosen axis.
+Extract value profile along an axis
 }
 \details{
-Aggregation direction:
-\itemize{
-\item \code{"vertical"}: aggregates across columns (X), returns profile along rows (Y).
-\item \code{"horizontal"}: aggregates across rows (Y), returns profile along columns (X).
-}
+Aggregation is performed perpendicular to the profile direction using
+\code{\link[terra:aggregate]{terra::aggregate()}}. Crop \code{x} with \code{\link[terra:crop]{terra::crop()}} before calling this
+function to restrict extraction to a region of interest.
 
-To extract a profile from a specific region, crop the raster first with
-\code{\link[terra:crop]{terra::crop()}}. To convert pixel positions to physical units, pass the
-result to \code{\link[=hsi_pixels_to_units]{hsi_pixels_to_units()}}.
+When \code{y} is provided, the relevant coordinate layer (\code{row_um} for vertical,
+\code{col_um} for horizontal) is aggregated with \code{fun = "mean"} independently of
+\code{fun}, as physical position is a geometric property not a statistical summary.
+
+Band names conflicting with reserved column names (\code{"x"}, \code{"y"},
+\code{"position"}) are prefixed with \code{"band_"} and a warning is emitted.
 }
 \examples{
 \dontrun{
 x <- terra::rast("RABD_index.tif")
+um <- hsi_calibration_from_dims(scan_length_um = 50000, n_pixels = 1000)
 
-profile <- hsi_extract_profile(x)
+# Pixel-space profile
+x_profile <- hsi_extract_profile(x)
 
-profile_roi <- x |>
+# Physical-space profile
+x_coords <- hsi_calc_coords(x, um_per_pixel = um)
+x_profile <- hsi_extract_profile(x, y = x_coords)
+
+# Shifted origin
+ref <- terra::vect(matrix(c(1001.5, 2007.5), ncol = 2), type = "points")
+x_coords_shifted <- hsi_shift_coords(x_coords, reference = ref)
+x_profile <- hsi_extract_profile(x, y = x_coords_shifted)
+
+# Region of interest
+x_profile <- x |>
   terra::crop(my_extent) |>
-  hsi_extract_profile()
+  hsi_extract_profile(y = x_coords)
 
-profile_h <- hsi_extract_profile(x, direction = "horizontal")
+# Horizontal profile
+x_profile <- hsi_extract_profile(x, direction = "horizontal", y = x_coords)
 
-multi <- terra::rast(c("RABD.tif", "RABA.tif"))
-profiles <- hsi_extract_profile(multi)
-
+# Classified raster
 x_class <- terra::rast("classified.tif")
-profile_class <- hsi_extract_profile(x_class, fun = "modal")
+x_profile <- hsi_extract_profile(x_class, fun = "modal")
 }
 
 }
 \seealso{
-\code{\link[=hsi_extract_spectrum]{hsi_extract_spectrum()}} for extracting an averaged spectrum,
-\code{\link[=hsi_pixels_to_units]{hsi_pixels_to_units()}} for converting positions to depth units.
+\code{\link[=hsi_extract_spectrum]{hsi_extract_spectrum()}} for extracting an averaged spectrum.
+\code{\link[=hsi_calc_coords]{hsi_calc_coords()}} and \code{\link[=hsi_shift_coords]{hsi_shift_coords()}} to produce the coordinate
+raster passed to \code{y}.
 
 Other HSI Extraction: 
 \code{\link{hsi_extract_spectrum}()}
