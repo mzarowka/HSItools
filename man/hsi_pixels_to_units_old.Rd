@@ -57,6 +57,7 @@ sample_pos <- hsi_pixels_to_units(pixel_values, calibration, target = "sample")
 \code{\link{hsi_spatial_calibration}} for creating calibration object
 
 Other HSI Calibration: 
+\code{\link{hsi_calc_coords}()},
 \code{\link{hsi_calibration_direct}()},
 \code{\link{hsi_calibration_from_dims}()},
 \code{\link{hsi_calibration_from_scale}()},

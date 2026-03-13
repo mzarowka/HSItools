@@ -28,6 +28,7 @@ calibration <- hsi_calibration_direct(0.06, units = "mm")
 }
 \seealso{
 Other HSI Calibration: 
+\code{\link{hsi_calc_coords}()},
 \code{\link{hsi_calibration_from_dims}()},
 \code{\link{hsi_calibration_from_scale}()},
 \code{\link{hsi_ends}()},

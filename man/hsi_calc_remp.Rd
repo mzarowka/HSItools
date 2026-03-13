@@ -27,8 +27,6 @@ search for the red-edge minimum point. Default \code{c(660, 680)}.}
 \item{overwrite}{Logical. Overwrite existing file. Default \code{FALSE}.}
 
 \item{...}{Additional arguments passed to \code{\link[terra:writeRaster]{terra::writeRaster()}}.}
-
-\item{cores}{Positive integer. Number of parallel cores. Default \code{1}.}
 }
 \value{
 A \code{\link[terra:SpatRaster-class]{SpatRaster}} with lambdaREMP values (wavelength in nm).
