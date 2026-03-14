@@ -10,7 +10,6 @@
 #'   reference data. Must have the same bands and wavelengths as `hsi_data`.
 #' @param tint Numeric vector of length 2. Integration times for white
 #'   reference and sample capture, in that order.
-#' @param in_memory Logical. Process entirely in RAM. Default `FALSE`.
 #'
 #' @returns A [`SpatRaster`][terra::SpatRaster-class] with normalized reflectance values.
 hsi_normalize <- function(
@@ -18,7 +17,7 @@ hsi_normalize <- function(
   whiteref,
   darkref,
   tint,
-  in_memory = FALSE
+  filename = ""
 ) {
   # Get the average value of the white reference for each column
   whiteref_onecol_raster <- terra::aggregate(
@@ -49,6 +48,7 @@ hsi_normalize <- function(
   # Subtract the dark reference from the white reference for each column
   denominator <- whiteref_onecol_vector - darkref_onecol_vector
 
+  # Calculate tint fraction
   f_tint <- tint[1] / tint[2]
 
   # Divide the numerator by the denominator for each column and multiply by the tint factor
@@ -57,23 +57,11 @@ hsi_normalize <- function(
   # Set the result to NA if the denominator is lower than 0
   result[is.na(result) | result < 0] <- 0
 
-  # Create a temporary raster to store the result
-  if (!in_memory) {
-    result <- terra::init(
-      hsi_data,
-      t(result),
-      filename = tempfile(fileext = ".tif"),
-      wopt = list(gdal = c("COMPRESS=NONE"))
-    )
-  } else {
-    result <- terra::init(
-      hsi_data,
-      t(result)
-    )
-  }
+  # Create temporary SpatRaster with results
+  result <- terra::init(hsi_data, t(result), filename = filename)
 
-  # Return SpatRaster
-  return(result)
+  # Return result
+  result
 }
 
 #' Hyperspectral reflectance raster
@@ -148,17 +136,13 @@ hsi_calc_reflectance <- function(
   overwrite = FALSE,
   ...
 ) {
-  # Needs cleanup
-  # IMPORTANT Needs to properly handle temporary files, otherwise it clogs up the drive almost imediately
-
-  # Validate input
+  # Validate inputs
   check_spatraster(x)
 
   check_spatraster(whiteref)
 
   check_spatraster(darkref)
 
-  # Validate tint
   check_numeric(tint, len = 2, positive = TRUE)
 
   # Check that all inputs have the same number of bands
@@ -181,63 +165,96 @@ hsi_calc_reflectance <- function(
   }
 
   # Validate band names are numeric wavelengths
-  wavelengths <- suppressWarnings(as.numeric(terra::names(x)))
+  wavelengths <- suppressWarnings(as.numeric(names(x)))
 
   if (all(is.na(wavelengths))) {
     cli::cli_abort(
       c(
         "Band names cannot be converted to numeric wavelengths.",
-        "i" = "Band names are: {.val {head(terra::names(x), 5)}}..."
+        "i" = "Band names are: {.val {head(names(x), 5)}}..."
       )
     )
   }
 
   # Check that band names match
-  bands_x <- terra::names(x)
+  bands_x <- names(x)
 
-  bands_white <- terra::names(whiteref)
+  bands_white <- names(whiteref)
 
-  bands_dark <- terra::names(darkref)
+  bands_dark <- names(darkref)
 
   if (!identical(bands_x, bands_white) || !identical(bands_x, bands_dark)) {
-    cli::cli_alert_warning(
+    cli::cli_warn(
       "Band names don't match across inputs. Proceeding with band-by-band processing."
     )
   }
 
-  # Store user input in a spliceable list -> probably not needed
+  # Build write options
   wopt_user <- rlang::list2(...)
 
-  # Named list with write options -> probably not needed
-  wopt_default <- list(
-    # names = band_names
-  )
+  wopt_default <- list(names = names(x))
 
-  # # Splice wopt defaults with user input if any -> probably not needed
   wopt <- purrr::list_modify(wopt_default, !!!wopt_user)
 
+  # File handling logic
+  if (in_memory) {
+    # Generate all needed empty paths
+    temp_paths <- rep("", terra::nlyr(x))
+  } else if (filename != "") {
+    # If working with files and writing to file
+    # Create self-destructing tempdir
+    temp_dir <- withr::local_tempdir()
+
+    # Generate all needed file paths
+    temp_paths <- file.path(
+      temp_dir,
+      paste0("band_", seq_len(terra::nlyr(x)), ".tif")
+    )
+  } else {
+    # If working with files and not writing to file
+    # An exception to the withr rule: when in_memory = FALSE and no filename is
+    # provided, the temp files ARE the backing storage of the returned SpatRaster
+    # and cannot be cleaned up before the caller is done with the object.
+    # withr::local_tempdir() would delete them on function exit, orphaning the
+    # SpatRaster. Plain tempfile() is intentional here.
+    temp_dir <- tempfile()
+    dir.create(temp_dir)
+
+    temp_paths <- file.path(
+      temp_dir,
+      paste0("band_", seq_len(terra::nlyr(x)), ".tif")
+    )
+
+    cli::cli_warn(
+      c(
+        "{.arg in_memory} is {.val FALSE} but no {.arg filename} was provided.",
+        "i" = "Temporary files will not be cleaned up until the R session ends. Files might persist."
+      )
+    )
+  }
+
   # Perform normalization
-  # In memory
   result <- list(
     hsi_data = terra::as.list(x),
     whiteref = terra::as.list(whiteref),
     darkref = terra::as.list(darkref),
-    tint = list(tint)
+    tint = list(tint),
+    filename = temp_paths
   ) |>
-    purrr::pmap(\(hsi_data, whiteref, darkref, tint) {
+    purrr::pmap(\(hsi_data, whiteref, darkref, tint, filename) {
       hsi_normalize(
         hsi_data = hsi_data,
         whiteref = whiteref,
         darkref = darkref,
         tint = tint,
-        in_memory = in_memory
+        filename = filename
       )
     }) |>
     terra::rast()
 
-  # If saving to file, pass to writeRaster with user options
+  # Write to file
   if (filename != "") {
-    terra::writeRaster(
+    result <- terra::writeRaster(
       result,
       filename = filename,
       overwrite = overwrite,
@@ -245,6 +262,6 @@ hsi_calc_reflectance <- function(
     )
   }
 
-  # Return
+  # Return result
   result
 }

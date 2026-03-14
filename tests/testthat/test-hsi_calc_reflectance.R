@@ -41,16 +41,6 @@ test_that("hsi_calc_reflectance returns a SpatRaster", {
   result <- hsi_calc_reflectance(
     x = test_x,
     whiteref = test_whiteref,
-    darkref = test_darkref
-  )
-
-  expect_s4_class(result, "SpatRaster")
-})
-
-test_that("hsi_calc_reflectance with in_memory = TRUE returns a SpatRaster", {
-  result <- hsi_calc_reflectance(
-    x = test_x,
-    whiteref = test_whiteref,
     darkref = test_darkref,
     in_memory = TRUE
   )
@@ -64,7 +54,8 @@ test_that("hsi_calc_reflectance preserves number of layers", {
   result <- hsi_calc_reflectance(
     x = test_x,
     whiteref = test_whiteref,
-    darkref = test_darkref
+    darkref = test_darkref,
+    in_memory = TRUE
   )
 
   expect_equal(terra::nlyr(result), terra::nlyr(test_x))
@@ -74,7 +65,8 @@ test_that("hsi_calc_reflectance preserves spatial dimensions", {
   result <- hsi_calc_reflectance(
     x = test_x,
     whiteref = test_whiteref,
-    darkref = test_darkref
+    darkref = test_darkref,
+    in_memory = TRUE
   )
 
   expect_equal(terra::nrow(result), terra::nrow(test_x))
@@ -87,10 +79,11 @@ test_that("hsi_calc_reflectance preserves band names from x", {
   result <- hsi_calc_reflectance(
     x = test_x,
     whiteref = test_whiteref,
-    darkref = test_darkref
+    darkref = test_darkref,
+    in_memory = TRUE
   )
 
-  expect_equal(terra::names(result), terra::names(test_x))
+  expect_equal(names(result), names(test_x))
 })
 
 # ── Value sanity ─────────────────────────────────────────────────────────────
@@ -99,20 +92,6 @@ test_that("hsi_calc_reflectance matches reference fixture", {
   result <- hsi_calc_reflectance(
     x = test_x,
     whiteref = test_whiteref,
-    darkref = test_darkref
-  )
-
-  expect_equal(
-    terra::values(result),
-    terra::values(test_reflectance),
-    tolerance = 1e-6
-  )
-})
-
-test_that("hsi_calc_reflectance in_memory = TRUE matches fixture", {
-  result <- hsi_calc_reflectance(
-    x = test_x,
-    whiteref = test_whiteref,
     darkref = test_darkref,
     in_memory = TRUE
   )
@@ -120,28 +99,6 @@ test_that("hsi_calc_reflectance in_memory = TRUE matches fixture", {
   expect_equal(
     terra::values(result),
     terra::values(test_reflectance),
-    tolerance = 1e-6
-  )
-})
-
-test_that("hsi_calc_reflectance in_memory = TRUE and FALSE produce equivalent values", {
-  result_disk <- hsi_calc_reflectance(
-    x = test_x,
-    whiteref = test_whiteref,
-    darkref = test_darkref,
-    in_memory = FALSE
-  )
-
-  result_mem <- hsi_calc_reflectance(
-    x = test_x,
-    whiteref = test_whiteref,
-    darkref = test_darkref,
-    in_memory = TRUE
-  )
-
-  expect_equal(
-    terra::values(result_disk),
-    terra::values(result_mem),
     tolerance = 1e-6
   )
 })
@@ -153,14 +110,16 @@ test_that("hsi_calc_reflectance tint argument affects output values", {
     x = test_x,
     whiteref = test_whiteref,
     darkref = test_darkref,
-    tint = c(1, 1)
+    tint = c(1, 1),
+    in_memory = TRUE
   )
 
   result_scaled <- hsi_calc_reflectance(
     x = test_x,
     whiteref = test_whiteref,
     darkref = test_darkref,
-    tint = c(2, 1)
+    tint = c(2, 1),
+    in_memory = TRUE
   )
 
   expect_false(
@@ -175,13 +134,111 @@ test_that("hsi_calc_reflectance produces only finite values", {
   result <- hsi_calc_reflectance(
     x = test_x,
     whiteref = test_whiteref,
-    darkref = test_darkref
+    darkref = test_darkref,
+    in_memory = TRUE
   )
 
   values <- terra::values(result, na.rm = TRUE)
 
   expect_false(any(is.infinite(values)))
   expect_false(any(is.nan(values)))
+})
+
+# ── Memory and file handling ──────────────────────────────────────────────────
+# Exercises all four combinations of in_memory and filename.
+
+test_that("hsi_calc_reflectance in_memory = TRUE, filename = '' returns SpatRaster", {
+  result <- hsi_calc_reflectance(
+    x = test_x,
+    whiteref = test_whiteref,
+    darkref = test_darkref,
+    in_memory = TRUE
+  )
+
+  expect_s4_class(result, "SpatRaster")
+})
+
+test_that("hsi_calc_reflectance in_memory = TRUE, filename provided writes file and returns SpatRaster", {
+  temp_file <- tempfile(fileext = ".tif")
+
+  result <- hsi_calc_reflectance(
+    x = test_x,
+    whiteref = test_whiteref,
+    darkref = test_darkref,
+    in_memory = TRUE,
+    filename = temp_file,
+    overwrite = TRUE
+  )
+
+  expect_s4_class(result, "SpatRaster")
+  expect_true(file.exists(temp_file))
+
+  unlink(temp_file)
+})
+
+test_that("hsi_calc_reflectance in_memory = FALSE, filename provided writes file and returns SpatRaster", {
+  # withr::local_tempdir() manages per-band intermediates; they are cleaned
+  # up automatically when the function exits because the final result is
+  # committed to filename before exit.
+  temp_file <- tempfile(fileext = ".tif")
+
+  result <- hsi_calc_reflectance(
+    x = test_x,
+    whiteref = test_whiteref,
+    darkref = test_darkref,
+    in_memory = FALSE,
+    filename = temp_file,
+    overwrite = TRUE
+  )
+
+  expect_s4_class(result, "SpatRaster")
+  expect_true(file.exists(temp_file))
+
+  unlink(temp_file)
+})
+
+test_that("hsi_calc_reflectance in_memory = FALSE, filename = '' warns and returns SpatRaster", {
+  # Per-band temp files are the backing store of the returned SpatRaster
+  # and cannot be cleaned up automatically — a warning is emitted.
+  expect_warning(
+    result <- hsi_calc_reflectance(
+      x = test_x,
+      whiteref = test_whiteref,
+      darkref = test_darkref,
+      in_memory = FALSE
+    ),
+    "Temporary files will not be cleaned up"
+  )
+
+  expect_s4_class(result, "SpatRaster")
+})
+
+test_that("hsi_calc_reflectance in_memory = TRUE and FALSE produce equivalent values", {
+  result_mem <- hsi_calc_reflectance(
+    x = test_x,
+    whiteref = test_whiteref,
+    darkref = test_darkref,
+    in_memory = TRUE
+  )
+
+  temp_file <- tempfile(fileext = ".tif")
+
+  result_disk <- hsi_calc_reflectance(
+    x = test_x,
+    whiteref = test_whiteref,
+    darkref = test_darkref,
+    in_memory = FALSE,
+    filename = temp_file,
+    overwrite = TRUE
+  )
+
+  expect_equal(
+    terra::values(result_mem),
+    terra::values(result_disk),
+    tolerance = 1e-6
+  )
+
+  unlink(temp_file)
 })
 
 # ── File writing ─────────────────────────────────────────────────────────────
@@ -193,6 +250,7 @@ test_that("hsi_calc_reflectance writes to file when filename provided", {
     x = test_x,
     whiteref = test_whiteref,
     darkref = test_darkref,
+    in_memory = TRUE,
     filename = temp_file,
     overwrite = TRUE
   )
@@ -210,6 +268,7 @@ test_that("hsi_calc_reflectance errors when file exists and overwrite = FALSE", 
     x = test_x,
     whiteref = test_whiteref,
     darkref = test_darkref,
+    in_memory = TRUE,
     filename = temp_file,
     overwrite = TRUE
   )
@@ -219,6 +278,7 @@ test_that("hsi_calc_reflectance errors when file exists and overwrite = FALSE", 
       x = test_x,
       whiteref = test_whiteref,
       darkref = test_darkref,
+      in_memory = TRUE,
       filename = temp_file,
       overwrite = FALSE
     )
