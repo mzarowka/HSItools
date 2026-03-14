@@ -46,10 +46,15 @@ library(HSItools)
 # Basic functionality is beeing rewritten now
 ```
 
-Maurycy Żarczyński is founded by the Polish National Agency for Academic
-Exchange (BPN/BEK/2021/1/00133).
+This work is supported by the National Science Centre, Poland, under
+research project „Exploring methods of hyperspectral imaging of lake
+sediments: proxy development and calibration” (2023/51/D/ST10/00801),
+and previously by the Polish National Agency for Academic Exchange
+(BPN/BEK/2021/1/00133).
 
-<figure>
-<img src="man/figures/nawa_logo.png" width="192" alt="NAWA logo" />
-<figcaption aria-hidden="true">NAWA logo</figcaption>
-</figure>
+<img src="man/figures\logo-poziom-en.png"
+data-fig-alt="National Science Centre, Poland logo" width="319" />
+
+<img src="man/figures/nawa_logo.png"
+data-fig-alt="Polish National Agency for Academic Exchange logo"
+width="192" />
