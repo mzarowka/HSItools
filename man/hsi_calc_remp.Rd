@@ -79,6 +79,7 @@ Methods 21, 703-717. \doi{10.1002/lom3.10576}
 \code{\link[=hsi_subset_range]{hsi_subset_range()}} for wavelength range extraction.
 
 Other HSI Transformations: 
+\code{\link{hsi_apply_mnf}()},
 \code{\link{hsi_calc_difference}()},
 \code{\link{hsi_calc_mnf}()},
 \code{\link{hsi_calc_ndi}()},

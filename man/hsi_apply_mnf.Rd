@@ -2,29 +2,85 @@
 % Please edit documentation in R/hsi_apply_mnf.R
 \name{hsi_apply_mnf}
 \alias{hsi_apply_mnf}
-\title{Apply MNF transformation to SpatRaster}
+\title{Apply Minimum Noise Fraction transformation to a SpatRaster}
 \usage{
 hsi_apply_mnf(x, fit, n = NULL, filename = "", overwrite = FALSE, ...)
 }
 \arguments{
-\item{x}{sr}
+\item{x}{A \code{\link[terra:SpatRaster-class]{SpatRaster}} with hyperspectral data.}
 
-\item{fit}{mnf object}
+\item{fit}{An object of class \code{mnf} as returned by
+\code{\link[=hsi_calc_mnf]{hsi_calc_mnf()}}.}
 
-\item{n}{number of components}
+\item{n}{Positive integer. Number of signal-rich MNF components to retain.
+Inspect \code{fit$values} to choose. Default \code{NULL}.}
 
-\item{filename}{filename}
+\item{filename}{Character. Output filename. Default \code{""} keeps result in memory.}
 
-\item{overwrite}{overwrite}
+\item{overwrite}{Logical. Overwrite existing file. Default \code{FALSE}.}
 
-\item{...}{other}
+\item{...}{Additional arguments passed to \code{\link[terra:writeRaster]{terra::writeRaster()}}.}
 }
 \value{
-spatraster
+A \code{\link[terra:SpatRaster-class]{SpatRaster}} with \code{n} MNF component layers.
 }
 \description{
-Apply MNF transformation to SpatRaster
+Apply Minimum Noise Fraction transformation to a SpatRaster
+}
+\details{
+MNF components are ordered by decreasing noise fraction: the first component
+carries the most noise and the last carries the most signal. \code{n} selects the
+signal-rich tail, so the output layer \code{MNF_1} always corresponds to the most
+signal-rich component regardless of the total number of components computed.
+The internal index reversal is hidden from the user.
+
+\code{x} is used only as a spatial template (extent, CRS, resolution). Its band
+count is irrelevant — only cell count must match \code{nrow(fit$x)}.
+
+Separating \code{\link[=hsi_calc_mnf]{hsi_calc_mnf()}} from \code{hsi_apply_mnf()} means the expensive
+eigen decomposition runs once; \code{hsi_apply_mnf()} can be called repeatedly
+with different values of \code{n} without recomputing the transform.
 }
 \examples{
-will do
+\dontrun{
+x <- terra::rast("REFLECTANCE_testdata.tif")
+fit <- hsi_calc_mnf(x)
+fit$values
+
+x_mnf <- hsi_apply_mnf(x, fit = fit, n = 10L)
+
+x_mnf <- hsi_apply_mnf(
+  x,
+  fit = fit,
+  n = 10L,
+  filename = "output_mnf.tif",
+  overwrite = TRUE
+)
 }
+
+}
+\seealso{
+\code{\link[=hsi_calc_mnf]{hsi_calc_mnf()}}
+
+Other HSI Transformations: 
+\code{\link{hsi_calc_difference}()},
+\code{\link{hsi_calc_mnf}()},
+\code{\link{hsi_calc_ndi}()},
+\code{\link{hsi_calc_raba}()},
+\code{\link{hsi_calc_rabd}()},
+\code{\link{hsi_calc_ratio}()},
+\code{\link{hsi_calc_rcv}()},
+\code{\link{hsi_calc_reflectance}()},
+\code{\link{hsi_calc_remp}()},
+\code{\link{hsi_calc_rmean}()},
+\code{\link{hsi_calc_rmedian}()},
+\code{\link{hsi_calc_rsd}()},
+\code{\link{hsi_calc_stretch}()},
+\code{\link{hsi_destripe}()},
+\code{\link{hsi_remove_continuum}()},
+\code{\link{hsi_smooth_median}()},
+\code{\link{hsi_smooth_savgol}()},
+\code{\link{hsi_tiled}()},
+\code{\link{hsi_write_scaled}()}
+}
+\concept{HSI Transformations}

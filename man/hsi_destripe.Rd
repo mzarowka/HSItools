@@ -59,6 +59,7 @@ x_destripe <- hsi_destripe(
 \code{\link[=hsi_smooth_median]{hsi_smooth_median()}} for the following pipeline step.
 
 Other HSI Transformations: 
+\code{\link{hsi_apply_mnf}()},
 \code{\link{hsi_calc_difference}()},
 \code{\link{hsi_calc_mnf}()},
 \code{\link{hsi_calc_ndi}()},

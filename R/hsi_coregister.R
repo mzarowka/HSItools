@@ -78,7 +78,7 @@ hsi_coregister <- function(
   # Check for collinear GCPs
   if (qr(cbind(1, gcp$source_x, gcp$source_y))$rank < 3) {
     cli::cli_abort(
-      "GCPs are collinear — affine transform cannot be fit."
+      "GCPs are collinear and affine transform cannot be fit."
     )
   }
 

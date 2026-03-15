@@ -67,6 +67,7 @@ x_mnf <- hsi_calc_mnf(x, trim = 8L)
 \code{\link[=hsi_apply_mnf]{hsi_apply_mnf()}}, \code{\link[spacetime:mnf]{spacetime::mnf()}}
 
 Other HSI Transformations: 
+\code{\link{hsi_apply_mnf}()},
 \code{\link{hsi_calc_difference}()},
 \code{\link{hsi_calc_ndi}()},
 \code{\link{hsi_calc_raba}()},

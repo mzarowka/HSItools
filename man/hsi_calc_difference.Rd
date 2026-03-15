@@ -53,6 +53,7 @@ x_difference <- hsi_calc_difference(
 }
 \seealso{
 Other HSI Transformations: 
+\code{\link{hsi_apply_mnf}()},
 \code{\link{hsi_calc_mnf}()},
 \code{\link{hsi_calc_ndi}()},
 \code{\link{hsi_calc_raba}()},

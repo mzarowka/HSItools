@@ -67,7 +67,7 @@ hsi_check_gcp <- function(
   # Check for collinear GCPs
   if (qr(cbind(1, x$source_x, x$source_y))$rank < 3) {
     cli::cli_abort(
-      "GCPs are collinear — affine transform cannot be fit."
+      "GCPs are collinear and affine transform cannot be fit."
     )
   }
 
@@ -85,9 +85,9 @@ hsi_check_gcp <- function(
   # Residuals tibble (compare where point was and where it was predicted to be)
   residuals <- x |>
     dplyr::mutate(
-      residual_x = target_x - predicted_x,
-      residual_y = target_y - predicted_y,
-      residual_total = sqrt(residual_x^2 + residual_y^2)
+      residual_x = .data$target_x - predicted_x,
+      residual_y = .data$target_y - predicted_y,
+      residual_total = sqrt(.data$residual_x^2 + .data$residual_y^2)
     )
 
   # RMSE (root mean square error)
@@ -111,3 +111,8 @@ hsi_check_gcp <- function(
     n_gcps = nrow(x)
   )
 }
+
+# Possible fixes for warnings?
+# https://stackoverflow.com/questions/79487505/how-to-resolve-no-visible-global-binding-for-variable-for-column-name-in-dplyr
+# https://cran.r-project.org/web/packages/dplyr/vignettes/in-packages.html
+# if residuals is quoted, then one of tests fails.
