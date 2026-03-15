@@ -23,9 +23,9 @@ Can composite line profiles and SpatRasters
 }
 \seealso{
 Other Plotting: 
-\code{\link{hsi_plot_color}()},
 \code{\link{hsi_plot_profile}()},
-\code{\link{hsi_plot_raster}()},
+\code{\link{hsi_plot_spatraster}()},
+\code{\link{hsi_plot_spatraster_rgb}()},
 \code{\link{hsi_plot_spectrum}()},
 \code{\link{plot_raster_overlay}()}
 }

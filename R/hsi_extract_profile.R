@@ -2,14 +2,14 @@
 #'
 #' @family HSI Extraction
 #'
-#' @param x         A [`SpatRaster`][terra::SpatRaster-class] with hyperspectral data.
-#' @param fun       Character. Aggregation function passed to [`terra::aggregate()`].
+#' @param x A [`SpatRaster`][terra::SpatRaster-class] with hyperspectral data.
+#' @param fun Character. Aggregation function passed to [`terra::aggregate()`].
 #'   Default `"mean"`. Use `"modal"` for categorical data.
 #' @param direction Character. Direction of profile extraction. Either `"vertical"`
 #'   (aggregates across columns, profile along rows) or `"horizontal"` (aggregates
 #'   across rows, profile along columns). Default `"vertical"`.
-#' @param na.rm     Logical. Remove `NA` values. Default `TRUE`.
-#' @param y         A [`SpatRaster`][terra::SpatRaster-class] with layers `row_um`
+#' @param na.rm Logical. Remove `NA` values. Default `TRUE`.
+#' @param y A [`SpatRaster`][terra::SpatRaster-class] with layers `row_um`
 #'   and `col_um`, as produced by [`hsi_calc_coords()`] or [`hsi_shift_coords()`].
 #'   When provided, the `position` column is expressed in µm rather than pixel
 #'   coordinates. Default `NULL`.
