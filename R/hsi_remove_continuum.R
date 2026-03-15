@@ -46,19 +46,14 @@ hsi_remove_continuum <- function(
   # Validate input
   check_spatraster(x)
 
+  # Validate required packages
+  rlang::check_installed("prospectr")
+
   # Validate if it is possible to remove the continuum
   if (terra::nlyr(x) < 3) {
     cli::cli_abort(
       "Input raster must have at least 3 bands for continuum removal.",
       i = "Current raster has {terra::nlyr(x)} band{?s}."
-    )
-  }
-
-  # Validate required packages
-  if (!requireNamespace("prospectr", quietly = TRUE)) {
-    cli::cli_abort(
-      "Package {.pkg prospectr} is required for continuum removal.",
-      "i" = "Install with: {.code utils::install.packages('prospectr')}"
     )
   }
 

@@ -50,6 +50,7 @@ x_rsd <- hsi_calc_rsd(
 \seealso{
 Other HSI Transformations: 
 \code{\link{hsi_calc_difference}()},
+\code{\link{hsi_calc_mnf}()},
 \code{\link{hsi_calc_ndi}()},
 \code{\link{hsi_calc_raba}()},
 \code{\link{hsi_calc_rabd}()},

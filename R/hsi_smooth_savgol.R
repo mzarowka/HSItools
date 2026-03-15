@@ -65,13 +65,8 @@ hsi_smooth_savgol <- function(
   # Validate input
   check_spatraster(x)
 
-  # Check if gsignal is available
-  if (!requireNamespace("gsignal", quietly = TRUE)) {
-    cli::cli_abort(
-      "Package {.pkg gsignal} is required for Savitzky-Golay filtering.",
-      "i" = "Install with: {.code install.packages('gsignal')}"
-    )
-  }
+  # Validate required packages
+  rlang::check_installed("gsignal")
 
   # Filter polynomial order (typically 2-4)
   if (p >= n) {
