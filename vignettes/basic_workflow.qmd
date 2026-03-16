@@ -23,9 +23,9 @@ Typically, you need to calculate reflectance from raw data captured during the s
 
 First, locate your data. Because no assumptions about directory structure are made, you can use external white and dark reference files in this step. This is useful when, for example, high exposure time during the scan led to overexposure of your white reference and you need to substitute an external one.
 
-If you're reading data from ENVI .raw files, it may be important to use `noflip = TRUE` in your `terra::rast()` call, otherwise files will be flipped vertically.
+If you are reading data from ENVI `.raw` files, it may be important to use `noflip = TRUE` in your `terra::rast()` call, otherwise files will be flipped vertically.
 
-Our test dataset is a tiny 9 by 9 pixel subset of HSI data from the Hyperspectral Imaging Laboratory in Gdańsk.
+Our test dataset is a 9 × 9 pixel, 101-band subset of HSI data (517–772 nm) from the Hyperspectral Imaging Laboratory in Gdańsk.
 
 ```{r}
 # Read in captured data and references
@@ -51,9 +51,9 @@ data <- list(
 )
 ```
 
-With this data you are ready to calculate reflectance, a fraction between 0 and 1 representing "complete" darkness and whiteness. You can control integration times for your specimen and white reference with the `tint` argument, which defaults to `c(1, 1)`, assuming both use the same integration time. If you are using external references with different integration times, adjust accordingly; the white reference integration time always comes first. Importantly, we're also scaling the dark reference values, which could be really important for lower singal to noise ratio (SNR) systems, such as SWIR cameras.
+With this data you are ready to calculate reflectance: a fraction between 0 and 1 representing complete darkness and whiteness. You can control integration times for your specimen and white reference with the `tint` argument, which defaults to `c(1, 1)`, assuming both use the same integration time. If you are using external references captured at different integration times, adjust accordingly; the white reference integration time always comes first. Importantly, dark reference values are scaled by the integration time ratio before subtraction, which is critical for low signal-to-noise ratio (SNR) systems such as SWIR cameras.
 
-You can also control whether processing should be done in memory or not. The default produces as many temporary files as there are layers in the SpatRaster. If your system has sufficient RAM, you can speed up computation by processing in memory. Finally, you can write your result to file or keep it in memory. If you process on disk it makes sense to also write your result to disk. In this instance {\[withr\]https://cran.r-project.org/package=withr} takes care of temporary files, and removes them once function finishes. If you decide to calculate using temporary files and store result in memory, ordinary temp file is used and might not be cleaned automatically.
+You can also control whether processing should be done in memory or not. With the default `in_memory = FALSE`, {[withr](https://cran.r-project.org/package=withr)} manages temporary files and removes them once the function finishes. Finally, you can write the result to a permanent file via `filename`, or keep it in memory.
 
 ```{r}
 # Calculate with defaults: temporary files, result in memory
@@ -71,7 +71,7 @@ r2 <- HSItools::hsi_calc_reflectance(
   in_memory = TRUE
 )
 
-# Calculate in memory and write to file
+# Calculate in memory and write to a permanent file
 r3 <- HSItools::hsi_calc_reflectance(
   x = data$x,
   whiteref = data$whiteref,
@@ -84,58 +84,50 @@ r3 <- HSItools::hsi_calc_reflectance(
 terra::all.equal(r1, r2)
 ```
 
-# Quantizing
-
-High resolution (spatial and spectral) camera, especially VNIR, could produce large reflectance files, once we step out of DN (digital number) integer space into floating point numbers. This kind of data can be stored as a "scalled" or "quantized" version, where data is multiplied by a known factor allowing for storage of floats as integers. This reduces the filesize often by more than 50%. A tradeoff is lower precission of restored data. {terra} reads quantized data easily. This approach is suitable for cameras with high SNR. Do not attempt to quantize low SNR data like current generation SWIR sensors.
-
-```{r}
-r4 <- HSItools::hsi_write_scaled(
-  x = r3,
-  filename = tempfile(fileext = ".tif"),
-  overwrite = TRUE
-)
-```
-
 # Smoothing: spatial
 
-Next, apply a spatial filter such as a simple median to remove outliers. The default window size is 3 by 3. As always, you can write to file.
+Before working in the spectral dimension, apply a spatial median filter to remove outlier pixels. The default window size is 3 × 3. As always, you can write the result to a file.
 
 ```{r}
-r5 <- HSItools::hsi_smooth_median(x = r4)
+r4 <- HSItools::hsi_smooth_median(x = r3)
 ```
 
 # Smoothing: spectral
 
-With data smoothed across the spatial dimension, there should be no NAs in the spectral series. Now you can apply a Savitzky-Golay filter to smooth the reflectance spectrum in each pixel. Several arguments are available to control the smoothing parameters. The function uses the {[gsignal](https://CRAN.R-project.org/package=gsignal)} implementation.
+With data smoothed across the spatial dimension there should be no `NA` values in the spectral series. You can now apply a Savitzky-Golay filter to smooth the reflectance spectrum in each pixel. Several arguments are available to control the filter parameters. The function uses the {[gsignal](https://CRAN.R-project.org/package=gsignal)} implementation.
 
 ```{r}
-r6 <- HSItools::hsi_smooth_savgol(x = r5)
+r5 <- HSItools::hsi_smooth_savgol(x = r4)
 ```
 
-You might be interested also in calculating a derivatives of reflectance. It is easily done by changing the derivative order in the same function. For a 1st derivative, set m = 1.
+## Derivatives
+
+Derivatives of reflectance are useful for enhancing subtle spectral features and are calculated in the same function by changing the derivative order. A first derivative emphasises the rate of change in reflectance across wavelengths and can reveal absorption features that are difficult to detect in the raw spectrum. Set `m = 1` for a first derivative.
+
+Note that edge effects at the first and last few bands (roughly equal to half the filter window width) produce unreliable derivative values. It is best to calculate derivatives on the full spectrum and subset afterwards.
 
 ```{r}
 r_derivative <- HSItools::hsi_smooth_savgol(
-  x = r5,
+  x = r4,
   m = 1
 )
 ```
 
 # Continuum removal
 
-Smoothed data can be enhanced by removing the continuum. This corrects for the inherent tendency in spectral data to slope toward one edge of the sensing range. This is a computationally intensive function, so consider using it on subsets or regions of interest (ROI) rather than full-resolution data. The function uses the {[prospectr](https://CRAN.R-project.org/package=prospectr)} implementation.
+Smoothed data can be enhanced further by removing the continuum, the convex hull of the spectrum. This corrects for the broad slope inherent in most hyperspectral data, isolating individual absorption features and making them more comparable across pixels and samples. The function uses the {[prospectr](https://CRAN.R-project.org/package=prospectr)} implementation.
+
+Continuum removal is computationally intensive. Consider applying it to subsets or regions of interest rather than full-resolution data.
 
 ```{r}
-r7 <- r6 |>
-  HSItools::hsi_remove_continuum()
+r6 <- HSItools::hsi_remove_continuum(x = r5)
 ```
 
 # Workflow
 
-With {HSItools} and {terra} it is easy to pipe operations into a single workflow. You can write to file at any point.
+With {HSItools} and {terra} it is straightforward to pipe operations into a single workflow. You can write to a permanent file at any step by passing a `filename` argument.
 
 ```{r}
-# Calculate reflectance
 r <- HSItools::hsi_calc_reflectance(
   x = data$x,
   whiteref = data$whiteref,
@@ -144,28 +136,28 @@ r <- HSItools::hsi_calc_reflectance(
 ) |>
   # Smooth spatially
   HSItools::hsi_smooth_median() |>
-  # Smooth spectrally and write intermediate result
+  # Smooth spectrally and write an intermediate checkpoint
   HSItools::hsi_smooth_savgol(filename = tempfile(fileext = ".tif")) |>
-  # Optionally remove continuum
+  # Remove continuum
   HSItools::hsi_remove_continuum()
 ```
 
-# Tilled processing
+# Tiled processing
 
-If your computer offers multiple cores you can use this to apply pixel-wise operations in parallel. We're using lambda notation to pass the functions. You also need to specify the arguments.
+If your computer has multiple cores you can apply pixel-wise operations in parallel using `hsi_tiled()`. Workers are managed by {[mirai](https://CRAN.R-project.org/package=mirai)}.
 
 ::: {.callout-caution appearance="minimal"}
-Tilled processing produces reliable results only for operations that work on a single pixel basis. Spatial operation, like median, should never be run this way.
+Tiled processing produces reliable results only for operations that work on a single-pixel basis. Spatial operations such as the median filter must never be run this way, as tiles do not share border information.
 :::
 
 ```{r}
 library(mirai)
-# Set number of parallel workers, never set it equal to max number of available cores. Use max n-1.
-cores <- 2
 
+# Set number of parallel workers.
+# Reserve at least one core for the main process.
+cores <- 2
 mirai::daemons(cores)
 ```
-
 
 ```{r}
 r <- HSItools::hsi_calc_reflectance(
@@ -174,19 +166,44 @@ r <- HSItools::hsi_calc_reflectance(
   darkref = data$darkref,
   in_memory = TRUE
 ) |>
-  # Smooth spatially - no tiling
+  # Smooth spatially — no tiling
   HSItools::hsi_smooth_median() |>
-  # Smooth spectrally and write intermediate result - you can use tiling
+  # Smooth spectrally — tiling is safe here
   HSItools::hsi_tiled(
     fun = \(tile) HSItools::hsi_smooth_savgol(tile),
     n_tiles = cores,
     filename = tempfile(fileext = ".tif"),
     overwrite = TRUE
   ) |>
+  # Remove continuum — tiling is safe here
   HSItools::hsi_tiled(
     fun = \(tile) HSItools::hsi_remove_continuum(tile),
     n_tiles = cores,
     filename = tempfile(fileext = ".tif"),
     overwrite = TRUE
   )
+
+# Shut down workers when done
+mirai::daemons(0)
+```
+
+# Storage: quantizing
+
+High spatial and spectral resolution cameras, especially VNIR, produce large reflectance files once data moves from integer DN space into floating-point numbers. One way to reduce file size is to store a *quantized* version: values are multiplied by a known scale factor and stored as integers, then divided back on read. This typically reduces file size by more than 50%.
+
+{terra} reads quantized files transparently. The tradeoff is slightly reduced precision of the restored values, which is generally acceptable for high-SNR sensors.
+
+::: {.callout-warning appearance="minimal"}
+Do not quantize low-SNR data such as current-generation SWIR sensors. Quantization discards the fine floating-point differences that carry meaningful signal in noisy data.
+:::
+
+`hsi_write_scaled()` is a write-primary function: it encodes `x` to disk and returns the original object invisibly so it can sit in a pipeline without
+printing. Continue processing from the object you passed in, not from the return value.
+
+```{r}
+HSItools::hsi_write_scaled(
+  x = r,
+  filename = tempfile(fileext = ".tif"),
+  overwrite = TRUE
+)
 ```
