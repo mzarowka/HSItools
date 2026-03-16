@@ -108,7 +108,12 @@ hsi_smooth_savgol <- function(
   # Apply Savitzky-Golay filter
   result <- terra::app(
     x,
-    fun = \(x) gsignal::sgolayfilt(as.vector(x), p = p, n = n, m = m, ts = ts),
+    fun = \(x) {
+      if (anyNA(x)) {
+        return(rep(NA_real_, length(x)))
+      }
+      gsignal::sgolayfilt(as.vector(x), p = p, n = n, m = m, ts = ts)
+    },
     filename = filename,
     overwrite = overwrite,
     wopt = wopt
