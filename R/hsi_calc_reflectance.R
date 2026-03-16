@@ -46,7 +46,7 @@ hsi_normalize <- function(
 
   # Subtract the dark reference from the capture matrix for each column
   dark_scaled <- darkref_onecol_vector * (tint[2] / tint[1])
-  numerator <- sweep(hsi_data_matrix, 2, darkref_onecol_vector, FUN = "-")
+  numerator <- sweep(hsi_data_matrix, 2, dark_scaled, FUN = "-")
 
   # Subtract the dark reference from the white reference for each column
   denominator <- whiteref_onecol_vector - darkref_onecol_vector
