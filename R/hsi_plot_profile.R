@@ -1,105 +1,86 @@
-#' Line plots of calculated proxies series
+#' Plot a depth profile
 #'
 #' @family Plotting
-#' @param x a SpatRaster with calculated hyperspectral indices and RGB layers.
-#' @param index a character indicating hyperspectral index layer to plot.
-#' @param calibration result of pixel_to_distance or actual call to pixel_to_distance with appropriate input.
-#' @param ... additional arguments.
 #'
-#' @importFrom rlang .data
+#' @param x A [tibble][tibble::tibble] with columns `position` and exactly one
+#'   value column, as produced by [`hsi_extract_profile()`].
+#' @param physical Logical. When `TRUE`, negates x-axis tick labels to display
+#'   positive physical distances. Set `TRUE` when `x` was extracted with a
+#'   coordinate raster supplied to [`hsi_extract_profile()`]. Default `FALSE`.
 #'
-#' @return line plot with of selected hyperspectral index.
+#' @returns A [`ggplot2::ggplot`] object. Extend with `+` to add labels,
+#'   themes, or colour scales.
+#'
+#' @details
+#' Produces a minimal stratigraphic profile plot. Position is mapped to the
+#' x-axis as the independent variable — ensuring that stats like
+#' [`ggplot2::geom_smooth()`] work correctly — then [`ggplot2::coord_flip()`]
+#' rotates the plot so that depth runs top-to-bottom visually.
+#' [`ggplot2::scale_x_reverse()`] places shallow positions at the top.
+#'
+#' When `physical = TRUE`, `labels = \(i) -i` is applied to
+#' [`ggplot2::scale_x_reverse()`] to strip the negation introduced by the
+#' coordinate system, so that axes read as positive physical distances.
+#' When `physical = FALSE`, ggplot2 default labels are used, showing pixel
+#' coordinates or raw position values.
+#'
+#' The returned ggplot carries no theme or axis labels — add these with `+`
+#' using standard ggplot2 conventions.
+#'
+#' @seealso
+#' [`hsi_extract_profile()`] to produce the input tibble.
+#' [`hsi_plot_spectrum()`] for spectral plots.
+#' [`hsi_plot_spatraster()`] for spatial raster maps.
+#'
+#' @examples
+#' \dontrun{
+#' x <- terra::rast("RABD_testdata.tif") |> terra::subset(1)
+#' x_profile <- hsi_extract_profile(x)
+#'
+#' # Quick pixel-space profile
+#' x_plot <- hsi_plot_profile(x_profile)
+#'
+#' # Physical-space profile
+#' um <- hsi_calibration_from_dims(scan_length_um = 50000, n_pixels = 1000)
+#' x_coords <- hsi_calc_coords(x, um_per_pixel = um)
+#' x_profile <- hsi_extract_profile(x, y = x_coords)
+#' x_plot <- hsi_plot_profile(x_profile, physical = TRUE)
+#'
+#' # Add labels and theme with ggplot2
+#' x_plot +
+#'   ggplot2::labs(x = "Depth (mm)", y = "RABD") +
+#'   ggplot2::theme_minimal()
+#' }
+#'
 #' @export
 hsi_plot_profile <- function(
   x,
-  index,
-  calibration = NULL,
-  ...
+  physical = FALSE
 ) {
-  # Logic should be as follow:
-  # Calculate index - user
-  # Extract profile - user
-  # Plot profile - user
+  # Validate inputs
+  if (!inherits(x, "data.frame")) {
+    cli::cli_abort(
+      "{.arg x} is a {.class {class(x)}} not a data frame or tibble"
+    )
+  }
 
-  # # Validate input
-  # check_spatraster(x)
+  var_name <- setdiff(names(x), "position")
 
-  # if (!inherits(index, what = "character")) {
-  #   rlang::abort(message = "Supplied index name is not a character.")
-  # }
+  if (length(var_name) != 1) {
+    cli::cli_abort(
+      "{.arg x} must have exactly one value column beside {.val position}, not {.val {length(var_name)}}."
+    )
+  }
 
-  # # Subset SpatRaster
-  # hsi_layer <- x |>
-  #   terra::subset(index)
+  # Create ggplot object
+  result <- ggplot2::ggplot(data = x) +
+    ggplot2::aes(x = .data$position, y = .data[[var_name]]) +
+    ggplot2::geom_line() +
+    ggplot2::scale_x_reverse(
+      labels = if (physical) \(i) -i else ggplot2::waiver()
+    ) +
+    ggplot2::coord_flip()
 
-  # # Proxy name
-  # proxy_name <- rlang::as_label(rlang::enquo(index))
-
-  # if (is.null(calibration)) {
-  #   # Create a plot
-  #   plot <- data |>
-  #     # Pass to plot
-  #     ggplot2::ggplot() +
-  #     # Add aes
-  #     ggplot2::aes(
-  #       x = .data$proxy,
-  #       y = .data$y
-  #     ) +
-  #     # Add geom
-  #     ggplot2::geom_path() +
-  #     # Modify theme
-  #     ggplot2::theme(
-  #       panel.background = ggplot2::element_blank(),
-  #       axis.line = ggplot2::element_line(color = "black"),
-  #       panel.border = ggplot2::element_rect(color = "black", fill = NA),
-  #       legend.text.position = "bottom"
-  #     ) +
-  #     # Add labels
-  #     ggplot2::labs(
-  #       x = proxy_name,
-  #       y = "Depth (px)"
-  #     )
-  # } else {
-  #   # Create a plot
-  #   plot <- data |>
-  #     # Pass to plot
-  #     ggplot2::ggplot() +
-  #     # Add aes
-  #     ggplot2::aes(
-  #       x = .data$proxy,
-  #       y = .data$y
-  #     ) +
-  #     # Add geom
-  #     ggplot2::geom_path() +
-  #     # Modify Y scale
-  #     ggplot2::scale_y_continuous(
-  #       labels = \(i) {
-  #         format(
-  #           terra::round(
-  #             -1 *
-  #               i *
-  #               calibration$pixel_ratio +
-  #               calibration$distance -
-  #               calibration$point_zero
-  #           )
-  #         )
-  #       },
-  #       breaks = scales::breaks_pretty()
-  #     ) +
-  #     # Modify theme
-  #     ggplot2::theme(
-  #       panel.background = ggplot2::element_blank(),
-  #       axis.line = ggplot2::element_line(color = "black"),
-  #       panel.border = ggplot2::element_rect(color = "black", fill = NA),
-  #       legend.text.position = "bottom"
-  #     ) +
-  #     # Add labels
-  #     ggplot2::labs(
-  #       x = proxy_name,
-  #       y = "Depth (mm)"
-  #     )
-  # }
-
-  # # Return plot as an object
-  # return(plot)
+  # Return result
+  result
 }
