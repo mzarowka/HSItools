@@ -1,3 +1,5 @@
+# HSItools 0.5.2
+
 # HSItools 0.5.1
 
 # HSItools 0.5.0
