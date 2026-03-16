@@ -2,63 +2,48 @@
 % Please edit documentation in R/hsi_plot_spatraster.R
 \name{hsi_plot_spatraster}
 \alias{hsi_plot_spatraster}
-\title{Plot a single-layer SpatRaster with physical spatial coordinates}
+\title{Plot a single-layer SpatRaster}
 \usage{
-hsi_plot_spatraster(x, y = NULL, units = "mm")
+hsi_plot_spatraster(x, physical = FALSE)
 }
 \arguments{
 \item{x}{A \code{\link[terra:SpatRaster-class]{SpatRaster}} with hyperspectral data.
 Must be single-layer.}
 
-\item{y}{A \code{\link[terra:SpatRaster-class]{SpatRaster}} with physical coordinate
-layers \code{row_um} and \code{col_um}, as produced by \code{\link[=hsi_calc_coords]{hsi_calc_coords()}} or
-\code{\link[=hsi_shift_coords]{hsi_shift_coords()}}. Must have the same number of rows and columns as
-\code{x}. Default \code{NULL} plots in pixel coordinates.}
-
-\item{units}{Character. Display units for axis labels. One of \code{"um"},
-\code{"mm"}, or \code{"cm"}. Default \code{"mm"}.}
+\item{physical}{Logical. When \code{TRUE}, negates y-axis tick labels to display
+positive physical distances. Set \code{TRUE} when \code{x} has been processed by
+\code{\link[=hsi_set_physical_extent]{hsi_set_physical_extent()}}. Default \code{FALSE}.}
 }
 \value{
 A \code{\link[ggplot2:ggplot]{ggplot2::ggplot}} object. Extend with \code{+} to add labels,
 themes, or colour scales.
 }
 \description{
-Plot a single-layer SpatRaster with physical spatial coordinates
+Plot a single-layer SpatRaster
 }
 \details{
-When \code{y} is supplied, the function replaces the spatial extent of a deep
-copy of \code{x} with a physically calibrated extent derived from \code{y}. This
-means axis tick positions are genuine physical coordinates, not pixel
-indices relabelled after the fact. \code{\link[ggplot2:coord_fixed]{ggplot2::coord_fixed()}} is applied
-so that one unit on the x-axis equals one unit on the y-axis, preserving
-the true aspect ratio of the scan.
+Produces a minimal raster map with a fixed aspect ratio and no axis
+expansion. The returned ggplot carries no theme, colour scale, or axis
+labels — add these with \code{+} using standard ggplot2 conventions.
 
-Terra uses a y-up convention: \code{ymax} corresponds to row 1 and \code{ymin} to
-the last row. Because depth increases downward in sediment core scans, the
-row coordinate is negated when building the extent — \code{ymin} receives
-\code{-max(row_um)} and \code{ymax} receives \code{-min(row_um)}. This satisfies terra's
-requirement that \code{ymin < ymax} while placing shallow positions at the top
-of the plot. \code{\link[ggplot2:scale_continuous]{ggplot2::scale_y_continuous()}} with \verb{labels = \\(i) -i}
-then strips the negation from the displayed tick labels so that axes read
-as positive physical distances.
-
-\code{\link[terra:deepcopy]{terra::deepcopy()}} is used to ensure the caller's raster is never
-mutated, since terra's C++ backend can share object state across R names.
-
-The returned ggplot carries no theme, colour scale, or axis labels — add
-these with \code{+} using standard ggplot2 conventions.
+When \code{physical = TRUE}, \code{\link[ggplot2:scale_continuous]{ggplot2::scale_y_continuous()}} applies
+\verb{labels = \\(i) -i} to strip the negation introduced by
+\code{\link[=hsi_set_physical_extent]{hsi_set_physical_extent()}}, so that axes read as positive physical
+distances. When \code{physical = FALSE}, ggplot2 default labels are used,
+showing pixel coordinates.
 }
 \examples{
 \dontrun{
-x <- terra::rast("RABD_testdata.tif") |> terra::subset(1)
-um <- hsi_calibration_from_dims(scan_length_um = 50000, n_pixels = 1000)
-x_coords <- hsi_calc_coords(x, um_per_pixel = um)
+x <- terra::rast("REFLECTANCE_testdata.tif") |> terra::subset(1)
 
-# Pixel-space plot
+# Quick pixel-space plot
 x_spatraster <- hsi_plot_spatraster(x)
 
-# Physical-space plot in mm
-x_spatraster <- hsi_plot_spatraster(x, y = x_coords)
+# Physical-space plot after extent assignment
+um <- hsi_calibration_from_dims(scan_length_um = 50000, n_pixels = 1000)
+x_coords <- hsi_calc_coords(x, um_per_pixel = um)
+x_physical <- hsi_set_physical_extent(x, y = x_coords, units = "mm")
+x_spatraster <- hsi_plot_spatraster(x_physical, physical = TRUE)
 
 # Add labels and theme with ggplot2
 x_spatraster +
@@ -68,7 +53,9 @@ x_spatraster +
 
 }
 \seealso{
-\code{\link[=hsi_calc_coords]{hsi_calc_coords()}} and \code{\link[=hsi_shift_coords]{hsi_shift_coords()}} to produce \code{y}.
+\code{\link[=hsi_set_physical_extent]{hsi_set_physical_extent()}} to assign a physically calibrated extent
+before plotting.
+\code{\link[=hsi_plot_spatraster_rgb]{hsi_plot_spatraster_rgb()}} for three-layer RGB plots.
 \code{\link[=hsi_plot_profile]{hsi_plot_profile()}} for 1-D depth profiles.
 
 Other Plotting: 

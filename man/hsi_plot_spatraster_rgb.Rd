@@ -2,91 +2,72 @@
 % Please edit documentation in R/hsi_plot_spatraster_rgb.R
 \name{hsi_plot_spatraster_rgb}
 \alias{hsi_plot_spatraster_rgb}
-\title{Plot a three layer (pseudo)RGB SpatRaster with physical spatial coordinates}
+\title{Plot a three-layer pseudoRGB SpatRaster}
 \usage{
-hsi_plot_spatraster_rgb(
-  x,
-  y = NULL,
-  stretch = FALSE,
-  histeq = FALSE,
-  bylayer = FALSE,
-  units = "mm"
-)
+hsi_plot_spatraster_rgb(x, physical = FALSE, stretch = NULL)
 }
 \arguments{
 \item{x}{A \code{\link[terra:SpatRaster-class]{SpatRaster}} with hyperspectral data.
 Must have exactly three layers.}
 
-\item{y}{A \code{\link[terra:SpatRaster-class]{SpatRaster}} with physical coordinate
-layers \code{row_um} and \code{col_um}, as produced by \code{\link[=hsi_calc_coords]{hsi_calc_coords()}} or
-\code{\link[=hsi_shift_coords]{hsi_shift_coords()}}. Must have the same number of rows and columns as
-\code{x}. Default \code{NULL} plots in pixel coordinates.}
+\item{physical}{Logical. When \code{TRUE}, negates y-axis tick labels to display
+positive physical distances. Set \code{TRUE} when \code{x} has been processed by
+\code{\link[=hsi_set_physical_extent]{hsi_set_physical_extent()}}. Default \code{FALSE}.}
 
-\item{stretch}{Logical. Apply stretch to scale values to 0–255 before
-rendering. Default \code{FALSE}.}
-
-\item{histeq}{Logical. Use histogram equalization instead of linear
-stretch. Only used when \code{stretch = TRUE}. Default \code{FALSE}.}
-
-\item{bylayer}{Logical. Apply stretch per layer independently. When
-\code{FALSE} all three layers are stretched together, preserving relative
-brightness between channels. Only used when \code{stretch = TRUE}.
-Default \code{FALSE}.}
-
-\item{units}{Character. Display units for axis labels. One of \code{"um"},
-\code{"mm"}, or \code{"cm"}. Default \code{"mm"}.}
+\item{stretch}{Character. Contrast stretch applied before rendering. One of
+\code{NULL} (no stretch), \code{"lin"} (linear, using 2nd and 98th percentiles), or
+\code{"hist"} (histogram equalization). Passed to
+\code{\link[tidyterra:geom_spatraster_rgb]{tidyterra::geom_spatraster_rgb()}}. Default \code{NULL}.}
 }
 \value{
 A \code{\link[ggplot2:ggplot]{ggplot2::ggplot}} object. Extend with \code{+} to add labels,
 themes, or colour scales.
 }
 \description{
-Plot a three layer (pseudo)RGB SpatRaster with physical spatial coordinates
+Plot a three-layer pseudoRGB SpatRaster
 }
 \details{
-When \code{y} is supplied, the function replaces the spatial extent of a deep
-copy of \code{x} with a physically calibrated extent derived from \code{y}. This
-means axis tick positions are genuine physical coordinates, not pixel
-indices relabelled after the fact. \code{\link[ggplot2:coord_fixed]{ggplot2::coord_fixed()}} is applied
-so that one unit on the x-axis equals one unit on the y-axis, preserving
-the true aspect ratio of the scan.
-
-Terra uses a y-up convention: \code{ymax} corresponds to row 1 and \code{ymin} to
-the last row. Because depth increases downward in sediment core scans, the
-row coordinate is negated when building the extent — \code{ymin} receives
-\code{-max(row_um)} and \code{ymax} receives \code{-min(row_um)}. This satisfies terra's
-requirement that \code{ymin < ymax} while placing shallow positions at the top
-of the plot. \code{\link[ggplot2:scale_continuous]{ggplot2::scale_y_continuous()}} with \verb{labels = \\(i) -i}
-then strips the negation from the displayed tick labels so that axes read
-as positive physical distances.
-
-\code{\link[terra:deepcopy]{terra::deepcopy()}} is used to ensure the caller's raster is never
-mutated, since terra's C++ backend can share object state across R names.
-
-The returned ggplot carries no theme, colour scale, or axis labels — add
+Produces a minimal RGB raster map with a fixed aspect ratio and no axis
+expansion. The returned ggplot carries no theme or axis labels — add
 these with \code{+} using standard ggplot2 conventions.
+
+When \code{physical = TRUE}, \code{\link[ggplot2:scale_continuous]{ggplot2::scale_y_continuous()}} applies
+\verb{labels = \\(i) -i} to strip the negation introduced by
+\code{\link[=hsi_set_physical_extent]{hsi_set_physical_extent()}}, so that axes read as positive physical
+distances. When \code{physical = FALSE}, ggplot2 default labels are used,
+showing pixel coordinates.
+
+Layers are mapped to red, green, and blue channels in band order (1, 2, 3).
+Any three-band combination can be used — RGB, CIR, SWIR false colour, or
+any other composite.
 }
 \examples{
 \dontrun{
-x <- terra::rast("RABD_testdata.tif") |> terra::subset(1)
+x <- terra::rast("REFLECTANCE_testdata.tif") |> terra::subset(1:3)
+
+# Quick pixel-space RGB plot
+x_rgb <- hsi_plot_spatraster_rgb(x)
+
+# With linear stretch
+x_rgb <- hsi_plot_spatraster_rgb(x, stretch = "lin")
+
+# Physical-space plot after extent assignment
 um <- hsi_calibration_from_dims(scan_length_um = 50000, n_pixels = 1000)
 x_coords <- hsi_calc_coords(x, um_per_pixel = um)
-
-# Pixel-space plot
-x_spatraster <- hsi_plot_spatraster_rgb(x)
-
-# Physical-space plot in mm
-x_spatraster <- hsi_plot_spatraster_rgb(x, y = x_coords)
+x_physical <- hsi_set_physical_extent(x, y = x_coords, units = "mm")
+x_rgb <- hsi_plot_spatraster_rgb(x_physical, physical = TRUE)
 
 # Add labels and theme with ggplot2
-x_spatraster +
-  ggplot2::labs(x = "Width (mm)", y = "Depth (mm)", fill = "RABD") +
+x_rgb +
+  ggplot2::labs(x = "Width (mm)", y = "Depth (mm)") +
   ggplot2::theme_minimal()
 }
 
 }
 \seealso{
-\code{\link[=hsi_calc_coords]{hsi_calc_coords()}} and \code{\link[=hsi_shift_coords]{hsi_shift_coords()}} to produce \code{y}.
+\code{\link[=hsi_set_physical_extent]{hsi_set_physical_extent()}} to assign a physically calibrated extent
+before plotting.
+\code{\link[=hsi_plot_spatraster]{hsi_plot_spatraster()}} for single-layer plots.
 \code{\link[=hsi_plot_profile]{hsi_plot_profile()}} for 1-D depth profiles.
 
 Other Plotting: 

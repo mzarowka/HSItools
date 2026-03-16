@@ -1,57 +1,45 @@
-#' Plot a single-layer SpatRaster with physical spatial coordinates
+#' Plot a single-layer SpatRaster
 #'
 #' @family Plotting
 #'
 #' @param x A [`SpatRaster`][terra::SpatRaster-class] with hyperspectral data.
 #'   Must be single-layer.
-#' @param y A [`SpatRaster`][terra::SpatRaster-class] with physical coordinate
-#'   layers `row_um` and `col_um`, as produced by [`hsi_calc_coords()`] or
-#'   [`hsi_shift_coords()`]. Must have the same number of rows and columns as
-#'   `x`. Default `NULL` plots in pixel coordinates.
-#' @param units Character. Display units for axis labels. One of `"um"`,
-#'   `"mm"`, or `"cm"`. Default `"mm"`.
+#' @param physical Logical. When `TRUE`, negates y-axis tick labels to display
+#'   positive physical distances. Set `TRUE` when `x` has been processed by
+#'   [`hsi_set_physical_extent()`]. Default `FALSE`.
 #'
 #' @returns A [`ggplot2::ggplot`] object. Extend with `+` to add labels,
 #'   themes, or colour scales.
 #'
 #' @details
-#' When `y` is supplied, the function replaces the spatial extent of a deep
-#' copy of `x` with a physically calibrated extent derived from `y`. This
-#' means axis tick positions are genuine physical coordinates, not pixel
-#' indices relabelled after the fact. [`ggplot2::coord_fixed()`] is applied
-#' so that one unit on the x-axis equals one unit on the y-axis, preserving
-#' the true aspect ratio of the scan.
+#' Produces a minimal raster map with a fixed aspect ratio and no axis
+#' expansion. The returned ggplot carries no theme, colour scale, or axis
+#' labels — add these with `+` using standard ggplot2 conventions.
 #'
-#' Terra uses a y-up convention: `ymax` corresponds to row 1 and `ymin` to
-#' the last row. Because depth increases downward in sediment core scans, the
-#' row coordinate is negated when building the extent — `ymin` receives
-#' `-max(row_um)` and `ymax` receives `-min(row_um)`. This satisfies terra's
-#' requirement that `ymin < ymax` while placing shallow positions at the top
-#' of the plot. [`ggplot2::scale_y_continuous()`] with `labels = \(i) -i`
-#' then strips the negation from the displayed tick labels so that axes read
-#' as positive physical distances.
-#'
-#' [`terra::deepcopy()`] is used to ensure the caller's raster is never
-#' mutated, since terra's C++ backend can share object state across R names.
-#'
-#' The returned ggplot carries no theme, colour scale, or axis labels — add
-#' these with `+` using standard ggplot2 conventions.
+#' When `physical = TRUE`, [`ggplot2::scale_y_continuous()`] applies
+#' `labels = \(i) -i` to strip the negation introduced by
+#' [`hsi_set_physical_extent()`], so that axes read as positive physical
+#' distances. When `physical = FALSE`, ggplot2 default labels are used,
+#' showing pixel coordinates.
 #'
 #' @seealso
-#' [`hsi_calc_coords()`] and [`hsi_shift_coords()`] to produce `y`.
+#' [`hsi_set_physical_extent()`] to assign a physically calibrated extent
+#' before plotting.
+#' [`hsi_plot_spatraster_rgb()`] for three-layer RGB plots.
 #' [`hsi_plot_profile()`] for 1-D depth profiles.
 #'
 #' @examples
 #' \dontrun{
-#' x <- terra::rast("RABD_testdata.tif") |> terra::subset(1)
-#' um <- hsi_calibration_from_dims(scan_length_um = 50000, n_pixels = 1000)
-#' x_coords <- hsi_calc_coords(x, um_per_pixel = um)
+#' x <- terra::rast("REFLECTANCE_testdata.tif") |> terra::subset(1)
 #'
-#' # Pixel-space plot
+#' # Quick pixel-space plot
 #' x_spatraster <- hsi_plot_spatraster(x)
 #'
-#' # Physical-space plot in mm
-#' x_spatraster <- hsi_plot_spatraster(x, y = x_coords)
+#' # Physical-space plot after extent assignment
+#' um <- hsi_calibration_from_dims(scan_length_um = 50000, n_pixels = 1000)
+#' x_coords <- hsi_calc_coords(x, um_per_pixel = um)
+#' x_physical <- hsi_set_physical_extent(x, y = x_coords, units = "mm")
+#' x_spatraster <- hsi_plot_spatraster(x_physical, physical = TRUE)
 #'
 #' # Add labels and theme with ggplot2
 #' x_spatraster +
@@ -62,8 +50,7 @@
 #' @export
 hsi_plot_spatraster <- function(
   x,
-  y = NULL,
-  units = "mm"
+  physical = FALSE
 ) {
   # Validate inputs
   check_spatraster(x)
@@ -76,51 +63,13 @@ hsi_plot_spatraster <- function(
 
   check_crs_null(x)
 
-  if (!is.null(y)) {
-    check_spatraster(y)
-
-    check_crs_null(y)
-
-    check_list_has(
-      terra::as.list(y) |> stats::setNames(terra::names(y)),
-      elements = c("row_um", "col_um")
-    )
-
-    if (terra::nrow(x) != terra::nrow(y) || terra::ncol(x) != terra::ncol(y)) {
-      cli::cli_abort(c(
-        "{.arg x} has different dimensions than {.arg y}.",
-        "i" = "{.arg x} extent has {.val {terra::nrow(x)}} rows and {.val {terra::ncol(x)}} cols, while {.arg y} extent has {.val {terra::nrow(y)}} rows and {.val {terra::ncol(y)}} cols."
-      ))
-    }
-  }
-
-  check_one_of(units, choices = c("um", "mm", "cm"))
-
-  # Get multiplier
-  multiplier <- list(um = 1, mm = 0.001, cm = 0.0001) |>
-    purrr::pluck(units)
-
-  # Create a deep copy of x
-  x_deep <- terra::deepcopy(x)
-
-  # Conditional extent translation
-  if (!is.null(y)) {
-    # Create a new extent from y SpatRaster
-    # Real world units grow the opposite way to terra cells
-    e <- terra::ext(
-      terra::minmax(y)["min", "col_um"] * multiplier,
-      terra::minmax(y)["max", "col_um"] * multiplier,
-      -terra::minmax(y)["max", "row_um"] * multiplier,
-      -terra::minmax(y)["min", "row_um"] * multiplier
-    )
-
-    terra::ext(x_deep) <- e
-  }
+  # Create labelling function
+  label_fun <- if (physical) \(i) -i else ggplot2::waiver()
 
   # Create ggplot and tidyterra object
   result <- ggplot2::ggplot() +
-    tidyterra::geom_spatraster(data = x_deep) +
-    ggplot2::scale_y_continuous(labels = \(i) -i) +
+    tidyterra::geom_spatraster(data = x) +
+    ggplot2::scale_y_continuous(labels = label_fun) +
     ggplot2::coord_fixed(expand = FALSE)
 
   # Return result

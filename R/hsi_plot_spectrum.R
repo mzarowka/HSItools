@@ -4,8 +4,6 @@
 #' @param x Reflectance SpatRaster.
 #' @param ... other arguments.
 #'
-#' @importFrom rlang .data
-#'
 #' @return line plot with of selected hyperspectral index.
 #' @export
 hsi_plot_spectrum <- function(
