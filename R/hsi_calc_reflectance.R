@@ -9,7 +9,9 @@
 #' @param darkref  A [`SpatRaster`][terra::SpatRaster-class] with dark
 #'   reference data. Must have the same bands and wavelengths as `hsi_data`.
 #' @param tint Numeric vector of length 2. Integration times for white
-#'   reference and sample capture, in that order.
+#'   reference and sample capture, in that order. The ratio `tint[2] / tint[1]`
+#'   scales the dark reference before numerator subtraction to account for
+#'   additional dark current accumulated during the longer specimen exposure.
 #'
 #' @returns A [`SpatRaster`][terra::SpatRaster-class] with normalized reflectance values.
 hsi_normalize <- function(
@@ -43,6 +45,7 @@ hsi_normalize <- function(
   hsi_data_matrix <- terra::as.matrix(hsi_data, wide = TRUE)
 
   # Subtract the dark reference from the capture matrix for each column
+  dark_scaled <- darkref_onecol_vector * (tint[2] / tint[1])
   numerator <- sweep(hsi_data_matrix, 2, darkref_onecol_vector, FUN = "-")
 
   # Subtract the dark reference from the white reference for each column
