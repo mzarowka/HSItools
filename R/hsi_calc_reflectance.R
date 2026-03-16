@@ -58,7 +58,7 @@ hsi_normalize <- function(
   result <- sweep(numerator, 2, denominator, "/") * f_tint
 
   # Set the result to NA if the denominator is lower than 0
-  result[is.na(result) | result < 0] <- 0
+  result[denominator <= 0] <- NA
 
   # Create temporary SpatRaster with results
   result <- terra::init(hsi_data, t(result), filename = filename)

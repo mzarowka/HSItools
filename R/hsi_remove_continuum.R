@@ -85,19 +85,34 @@ hsi_remove_continuum <- function(
   # Continuum removal function
   remove_continuum_fun <- function(x) {
     # Skip NA values
-    if (anyNA(x)) {
+    if (anyNA(x) || all(x == 0)) {
       return(rep(NA_real_, length(x)))
     }
 
-    # For a single pixel, transpose the data structure
-    X_matrix <- matrix(x, nrow = 1) # 1 sample (pixel) with multiple wavelengths as columns
+    # Some degenerate spectra like cracks can slip up
+    tryCatch(
+      {
+        # For a single pixel, transpose the data structure
+        # 1 sample (pixel) with multiple wavelengths as columns
+        X_matrix <- matrix(x, nrow = 1)
 
-    # Apply continuum removal - expects wavelengths and reflectance values
-    # Note: prospectr::continuumRemoval returns only the CR values
-    cr_result <- prospectr::continuumRemoval(X = X_matrix, wav = wavelengths)
+        # Apply continuum removal - expects wavelengths and reflectance values
+        # Note: prospectr::continuumRemoval returns only the CR values
+        as.vector(prospectr::continuumRemoval(X = X_matrix, wav = wavelengths))
+      },
+      # Catch error
+      error = \(e) rep(NA_real_, length(x))
+    )
 
-    # Return
-    return(as.vector(cr_result))
+    # # For a single pixel, transpose the data structure
+    # X_matrix <- matrix(x, nrow = 1) # 1 sample (pixel) with multiple wavelengths as columns
+
+    # # Apply continuum removal - expects wavelengths and reflectance values
+    # # Note: prospectr::continuumRemoval returns only the CR values
+    # cr_result <- prospectr::continuumRemoval(X = X_matrix, wav = wavelengths)
+
+    # # Return
+    # return(as.vector(cr_result))
   }
 
   # Apply function over entire SpatRaster
