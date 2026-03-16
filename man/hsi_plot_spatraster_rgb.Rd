@@ -74,7 +74,6 @@ Other Plotting:
 \code{\link{hsi_plot_profile}()},
 \code{\link{hsi_plot_spatraster}()},
 \code{\link{hsi_plot_spectrum}()},
-\code{\link{plot_composite}()},
-\code{\link{plot_raster_overlay}()}
+\code{\link{plot_composite}()}
 }
 \concept{Plotting}

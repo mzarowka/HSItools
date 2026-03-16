@@ -42,6 +42,8 @@
 #' hsi_check_gcp(cleaned)
 #' }
 #'
+#' @importFrom rlang .data
+#' 
 #' @export
 hsi_check_gcp <- function(
   x,

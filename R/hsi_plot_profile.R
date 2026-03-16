@@ -51,6 +51,8 @@
 #'   ggplot2::labs(x = "Depth (mm)", y = "RABD") +
 #'   ggplot2::theme_minimal()
 #' }
+#' 
+#' @importFrom rlang .data
 #'
 #' @export
 hsi_plot_profile <- function(

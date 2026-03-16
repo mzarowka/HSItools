@@ -31,6 +31,8 @@
 #'   ggplot2::theme_minimal()
 #' }
 #'
+#' @importFrom rlang .data
+#' 
 #' @export
 hsi_plot_spectrum <- function(
   x
