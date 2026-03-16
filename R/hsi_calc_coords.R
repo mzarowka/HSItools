@@ -31,7 +31,7 @@
 #' @examples
 #' \dontrun{
 #' x <- terra::rast("REFLECTANCE_testdata.tif")
-#' um <- hsi_calibration_from_dims(scan_length_um = 50000, n_pixels = 1000)
+#' um <- hsi_calibration_from_dims(pixels = 50000, distance = 10000)
 #' x_coords <- hsi_calc_coords(x, um_per_pixel = um)
 #' x_coords <- hsi_calc_coords(
 #'   x,
@@ -81,7 +81,7 @@ hsi_calc_coords <- function(
 
   # Write to file if requested
   if (filename != "") {
-    terra::writeRaster(
+    result <- terra::writeRaster(
       result,
       filename = filename,
       overwrite = overwrite,
