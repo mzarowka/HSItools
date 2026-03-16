@@ -8,11 +8,13 @@
 #'
 #' @return a plot.
 #' @export
-plot_composite <- function(
+hsi_plot_composite <- function(
   x,
   plots,
   ...
 ) {
+  # TODO: experimental fun, needs a proper refactor
+  
   # Validate input
   check_spatraster(x)
 
@@ -32,5 +34,5 @@ plot_composite <- function(
     )
 
   # Return plot as an object
-  return(plot)
+  plot
 }

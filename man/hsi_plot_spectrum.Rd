@@ -42,9 +42,9 @@ x_plot +
 \code{\link[=hsi_plot_profile]{hsi_plot_profile()}} for 1-D depth profiles.
 
 Other Plotting: 
+\code{\link{hsi_plot_composite}()},
 \code{\link{hsi_plot_profile}()},
 \code{\link{hsi_plot_spatraster}()},
-\code{\link{hsi_plot_spatraster_rgb}()},
-\code{\link{plot_composite}()}
+\code{\link{hsi_plot_spatraster_rgb}()}
 }
 \concept{Plotting}

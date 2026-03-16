@@ -59,9 +59,9 @@ before plotting.
 \code{\link[=hsi_plot_profile]{hsi_plot_profile()}} for 1-D depth profiles.
 
 Other Plotting: 
+\code{\link{hsi_plot_composite}()},
 \code{\link{hsi_plot_profile}()},
 \code{\link{hsi_plot_spatraster_rgb}()},
-\code{\link{hsi_plot_spectrum}()},
-\code{\link{plot_composite}()}
+\code{\link{hsi_plot_spectrum}()}
 }
 \concept{Plotting}

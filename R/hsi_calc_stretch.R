@@ -84,13 +84,8 @@ hsi_calc_stretch <- function(
   # Band names should always be the wavelengths (as character)
   band_names <- as.character(spectra)
 
-  # Validate tolerance
-  if (!is.numeric(tol) || length(tol) != 1 || tol < 0) {
-    cli::cli_abort("{.arg tol} must be a single non-negative numeric value.")
-  }
-
   # Check if all required bands exist
-  available_bands <- as.numeric(terra::names(x))
+  available_bands <- as.numeric(names(x))
 
   # Check each band individually
   band_exists <- purrr::map_lgl(spectra, \(target_wl) {
@@ -108,35 +103,36 @@ hsi_calc_stretch <- function(
     )
   }
 
-  # Find band positions and subset
-  band_positions <- HSItools::wavelength_position(
-    x,
-    wavelength = spectra
+  # Store user input in a spliceable list
+  wopt_user <- rlang::list2(...)
+
+  # Named list with write options
+  wopt_default <- list(
+    names = band_names
   )
 
-  selected_bands <- HSItools::wavelength_sub(
-    x = x,
-    wavelength_tbl = band_positions
-  )
+  # Splice wopt defaults with user input if any
+  wopt <- purrr::list_modify(wopt_default, !!!wopt_user)
+
+  # Subset SpatRaster
+  selected_bands <- hsi_subset(x, spectra)
 
   # Perform stretching
+  result <- terra::stretch(
+    selected_bands,
+    histeq = histeq
+  )
+
+  names(result) <- band_names
+
+  # Write to file if requested
   if (filename != "") {
-    # If saving to file, pass writeRaster options
-    result <- terra::stretch(
+    result <- terra::writeRaster(
       selected_bands,
-      histeq = histeq,
       filename = filename,
       overwrite = overwrite,
-      names = band_names,
-      ...
+      wopt = wopt
     )
-  } else {
-    # If keeping in memory
-    result <- terra::stretch(
-      selected_bands,
-      histeq = histeq
-    )
-    names(result) <- band_names
   }
 
   # Return

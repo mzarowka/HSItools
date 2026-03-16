@@ -1,40 +1,58 @@
-#' Write HSI reflectance raster as scaled uint16 GeoTIFF
+#' Write HSI reflectance raster as a scaled integer or float GeoTIFF
 #'
 #' @family HSI Transformations
 #'
 #' @param x A [`SpatRaster`][terra::SpatRaster-class] with hyperspectral data.
 #' @param filename Character. Output file path. Always writes to disk.
 #' @param scale_factor Numeric. Scale factor applied before writing. Default
-#'   `10000` gives 4 decimal places of precision.
+#'   `10000` gives 4 decimal places of precision. Ignored for float datatypes.
+#' @param datatype Character. Output datatype. One of `"INT1U"`, `"INT2U"`,
+#'   `"INT2S"`, `"INT4U"`, `"INT4S"`, `"FLT4S"`, `"FLT8S"`. Default `"INT2U"`.
+#'   Integer types apply `scale_factor` and are range-checked before writing.
+#'   Float types write values as-is with no scaling or range validation.
+#'   Use `"FLT4S"` for sensors with low SNR such as SWIR.
 #' @param overwrite Logical. Overwrite existing file. Default `FALSE`.
 #' @param ... Additional arguments passed to [`terra::writeRaster()`].
 #'
-#' @returns A [`SpatRaster`][terra::SpatRaster-class] written to `filename`.
+#' @returns A [`SpatRaster`][terra::SpatRaster-class] with values written to `filename`.
 #'
 #' @description
-#' Convert a float32 reflectance raster to uint16 by applying a scale factor
-#' and embedding scale metadata so [`terra::rast()`] reads back as float
-#' transparently. Reduces file size by approximately 50% before compression.
+#' Write a reflectance raster to a GeoTIFF, optionally scaling float values to
+#' an integer datatype. The scale factor is embedded in GeoTIFF band metadata
+#' so [`terra::rast()`] reads back float values transparently — no manual
+#' rescaling required.
 #'
 #' @details
-#' The scale factor is embedded in GeoTIFF band metadata (GDAL scale/offset),
-#' so [`terra::rast()`] automatically returns float values on read — no manual
-#' rescaling required. Values must not exceed `65535 / scale_factor` or an
-#' error is raised.
+#' For integer datatypes, values are multiplied by `scale_factor` before
+#' writing and the reciprocal is stored as GDAL scale metadata. An error is
+#' raised if any value exceeds the maximum storable value for the chosen
+#' datatype at the given scale factor. Integer storage reduces file size by
+#' approximately 50% relative to float32 before compression.
 #'
-#' uint16 quantization is only appropriate for sensors with sufficient SNR.
-#' VNIR sensors typically meet this threshold; SWIR sensors with lower SNR
-#' may lose meaningful signal in the quantization step and should be written
-#' as float32 instead.
+#' For float datatypes (`"FLT4S"`, `"FLT8S"`), `scale_factor` has no effect
+#' and no range validation is performed.
+#'
+#' Choose the datatype based on sensor characteristics. VNIR sensors with high
+#' SNR are well suited to `"INT2U"` at the default scale factor. Sensors with
+#' lower SNR, such as SWIR, should use `"FLT4S"` to avoid quantization
+#' degrading meaningful signal.
 #'
 #' @examples
 #' \dontrun{
 #' x <- terra::rast("REFLECTANCE.tif")
 #'
-#' hsi_write_scaled(
+#' # Default: scaled uint16 for VNIR
+#' x_scaled <- hsi_write_scaled(
 #'   x,
 #'   filename = "REFLECTANCE_scaled.tif",
 #'   gdal = c("COMPRESS=DEFLATE", "PREDICTOR=2")
+#' )
+#'
+#' # Float32 for SWIR
+#' x_scaled <- hsi_write_scaled(
+#'   x,
+#'   filename = "REFLECTANCE_swir.tif",
+#'   datatype = "FLT4S"
 #' )
 #'
 #' terra::rast("REFLECTANCE_scaled.tif")
@@ -46,29 +64,41 @@ hsi_write_scaled <- function(
   filename,
   scale_factor = 10000L,
   overwrite = FALSE,
+  datatype = "INT2U",
   ...
 ) {
-  # Validate input
+  # Validate inputs
   check_spatraster(x)
 
-  # Validate scale factor
   check_numeric(scale_factor, len = 1, positive = TRUE)
 
-  # Check values fit within uint16 at given scale factor
-  uint16_max_value <- 65535 / scale_factor
+  check_one_of(
+    datatype,
+    choices = c("INT1U", "INT2S", "INT2U", "INT4S", "INT4U", "FLT4S", "FLT8S")
+  )
 
-  # Check max value in a SpatRaster
-  global_max <- terra::global(x, fun = "max", na.rm = TRUE) |>
-    dplyr::pull("max") |>
-    max(na.rm = TRUE)
+  # Maximum storable value per integer datatype
+  datatype_max <- c(
+    INT1U = 255,
+    INT2U = 65535,
+    INT2S = 32767,
+    INT4U = 4294967295,
+    INT4S = 2147483647
+  )
 
-  # Validate agains uint16 max available space
-  if (global_max > uint16_max_value) {
-    cli::cli_abort(c(
-      "Maximum value {.val {round(global_max, 4)}} exceeds uint16 capacity \\
-      at scale factor {.val {scale_factor}} (max storable: {.val {uint16_max_value}}).",
-      "i" = "Run {.fn hsi_check_reflectance} before writing."
-    ))
+  # Only validate range for integers (floats have no meaningful ceiling)
+  if (datatype %in% names(datatype_max)) {
+    max_storable <- datatype_max[[datatype]] / scale_factor
+
+    global_max <- terra::global(x, fun = "max", na.rm = TRUE) |>
+      dplyr::pull("max") |>
+      max(na.rm = TRUE)
+
+    if (global_max > max_storable) {
+      cli::cli_abort(c(
+        "Maximum value {.val {round(global_max, 4)}} exceeds {.val {datatype}} capacity at scale factor {.val {scale_factor}} (max storable: {.val {max_storable}})."
+      ))
+    }
   }
 
   # Store user input in a spliceable list
@@ -76,7 +106,7 @@ hsi_write_scaled <- function(
 
   # Named list with write options
   wopt_default <- list(
-    datatype = "INT2U",
+    datatype = datatype,
     scale = 1 / scale_factor,
     offset = 0
   )
@@ -93,5 +123,5 @@ hsi_write_scaled <- function(
   )
 
   # Return
-  result
+  invisible(result)
 }

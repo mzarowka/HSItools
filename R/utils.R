@@ -62,8 +62,8 @@ wavelength_position <- function(
 }
 
 #' Subset SpatRaster by wavelength
-#'
-#' @family Utilities
+#' 
+#' @noRd
 #'
 #' @param x A [`SpatRaster`][terra::SpatRaster-class] with hyperspectral data.
 #' @param wavelength_tbl A [tibble][tibble::tibble] with wavelength positions
@@ -72,7 +72,6 @@ wavelength_position <- function(
 #' @returns A [`SpatRaster`][terra::SpatRaster-class] subset to the bands at
 #'   the positions in `wavelength_tbl`.
 #'
-#' @export
 wavelength_sub <- function(
   x,
   wavelength_tbl
@@ -103,10 +102,20 @@ wavelength_sub <- function(
 #' @param x a terra SpatRaster. First in the sequence.
 #' @param y a terra SpatRaster. Second in the sequence.
 #' @param filename Character. Output filename. Default "" keeps in memory
+#' @param overwrite Logical
+#' @param ... further passed to writeRaster
 #'
 #' @return a terra SpatRaster. Merged inputs.
 #' @export
-merge_rasters <- function(x, y, filename = "") {
+hsi_merge_rasters <- function(
+  x,
+  y,
+  filename = "",
+  overwrite = FALSE,
+  ...
+) {
+  # TODO experimental fun, needs a proper refactor
+
   # Validate input
   if (!inherits(x, "SpatRaster")) {
     cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
@@ -142,7 +151,7 @@ merge_rasters <- function(x, y, filename = "") {
   return(raster)
 }
 
-#' Find a fixed-width extent in the middle of a larger one
+#' Find a fixed-width extent
 #'
 #' @family Utilities
 #'
@@ -154,11 +163,12 @@ merge_rasters <- function(x, y, filename = "") {
 #'   and of the specified width.
 #'
 #' @export
-find_fixed_extent <- function(e, width) {
+hsi_find_extent <- function(e, width) {
   # Validate input
   if (!inherits(e, "SpatExtent")) {
     cli::cli_abort("Input {.arg e} must be a terra SpatExtent.")
   }
+  # TODO, probably can work with real world units once SpatRaster is calibrated?
 
   # Validate input
   check_numeric(width, len = 1, positive = TRUE)

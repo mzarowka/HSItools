@@ -2,9 +2,16 @@
 % Please edit documentation in R/hsi_write_scaled.R
 \name{hsi_write_scaled}
 \alias{hsi_write_scaled}
-\title{Write HSI reflectance raster as scaled uint16 GeoTIFF}
+\title{Write HSI reflectance raster as a scaled integer or float GeoTIFF}
 \usage{
-hsi_write_scaled(x, filename, scale_factor = 10000L, overwrite = FALSE, ...)
+hsi_write_scaled(
+  x,
+  filename,
+  scale_factor = 10000L,
+  overwrite = FALSE,
+  datatype = "INT2U",
+  ...
+)
 }
 \arguments{
 \item{x}{A \code{\link[terra:SpatRaster-class]{SpatRaster}} with hyperspectral data.}
@@ -12,39 +19,58 @@ hsi_write_scaled(x, filename, scale_factor = 10000L, overwrite = FALSE, ...)
 \item{filename}{Character. Output file path. Always writes to disk.}
 
 \item{scale_factor}{Numeric. Scale factor applied before writing. Default
-\code{10000} gives 4 decimal places of precision.}
+\code{10000} gives 4 decimal places of precision. Ignored for float datatypes.}
 
 \item{overwrite}{Logical. Overwrite existing file. Default \code{FALSE}.}
+
+\item{datatype}{Character. Output datatype. One of \code{"INT1U"}, \code{"INT2U"},
+\code{"INT2S"}, \code{"INT4U"}, \code{"INT4S"}, \code{"FLT4S"}, \code{"FLT8S"}. Default \code{"INT2U"}.
+Integer types apply \code{scale_factor} and are range-checked before writing.
+Float types write values as-is with no scaling or range validation.
+Use \code{"FLT4S"} for sensors with low SNR such as SWIR.}
 
 \item{...}{Additional arguments passed to \code{\link[terra:writeRaster]{terra::writeRaster()}}.}
 }
 \value{
-A \code{\link[terra:SpatRaster-class]{SpatRaster}} written to \code{filename}.
+A \code{\link[terra:SpatRaster-class]{SpatRaster}} with values written to \code{filename}.
 }
 \description{
-Convert a float32 reflectance raster to uint16 by applying a scale factor
-and embedding scale metadata so \code{\link[terra:rast]{terra::rast()}} reads back as float
-transparently. Reduces file size by approximately 50\% before compression.
+Write a reflectance raster to a GeoTIFF, optionally scaling float values to
+an integer datatype. The scale factor is embedded in GeoTIFF band metadata
+so \code{\link[terra:rast]{terra::rast()}} reads back float values transparently — no manual
+rescaling required.
 }
 \details{
-The scale factor is embedded in GeoTIFF band metadata (GDAL scale/offset),
-so \code{\link[terra:rast]{terra::rast()}} automatically returns float values on read — no manual
-rescaling required. Values must not exceed \code{65535 / scale_factor} or an
-error is raised.
+For integer datatypes, values are multiplied by \code{scale_factor} before
+writing and the reciprocal is stored as GDAL scale metadata. An error is
+raised if any value exceeds the maximum storable value for the chosen
+datatype at the given scale factor. Integer storage reduces file size by
+approximately 50\% relative to float32 before compression.
 
-uint16 quantization is only appropriate for sensors with sufficient SNR.
-VNIR sensors typically meet this threshold; SWIR sensors with lower SNR
-may lose meaningful signal in the quantization step and should be written
-as float32 instead.
+For float datatypes (\code{"FLT4S"}, \code{"FLT8S"}), \code{scale_factor} has no effect
+and no range validation is performed.
+
+Choose the datatype based on sensor characteristics. VNIR sensors with high
+SNR are well suited to \code{"INT2U"} at the default scale factor. Sensors with
+lower SNR, such as SWIR, should use \code{"FLT4S"} to avoid quantization
+degrading meaningful signal.
 }
 \examples{
 \dontrun{
 x <- terra::rast("REFLECTANCE.tif")
 
-hsi_write_scaled(
+# Default: scaled uint16 for VNIR
+x_scaled <- hsi_write_scaled(
   x,
   filename = "REFLECTANCE_scaled.tif",
   gdal = c("COMPRESS=DEFLATE", "PREDICTOR=2")
+)
+
+# Float32 for SWIR
+x_scaled <- hsi_write_scaled(
+  x,
+  filename = "REFLECTANCE_swir.tif",
+  datatype = "FLT4S"
 )
 
 terra::rast("REFLECTANCE_scaled.tif")
