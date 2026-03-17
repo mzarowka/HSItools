@@ -19,7 +19,7 @@ Hyperspectral imaging data is, by definition, spatial. However, typically there 
 
 # Getting the units
 
-To express HSI data in real world units we need, at the very minimum, to know real world resolution. Internally, we use micrometers per pixel througouth the HSItools package and offer options to convert to mm and cm. We also offer three complementary ways to get and store real world resolution. We assume throughout the workflow, that pixels are square.
+To express HSI data in real world units we need, at the very minimum, to know real world resolution. Internally, we use micrometers per pixel throughout the HSItools package and offer options to convert to mm and cm. We also offer three complementary ways to get and store real world resolution. We assume throughout the workflow, that pixels are square.
 
 ## Known resolution
 
@@ -33,7 +33,7 @@ um
 
 ## Digitized scale
 
-If there is a vertical or horizontal measure scanned along the specimen it is easy to digitize it and use as a reference. Simply read your digitized data as a `terra` SpatVector pointing to a line or two-point feature and provide lenght that was read out. Importantly, be sure that the CRS is NULL.
+If there is a vertical or horizontal measure scanned along the specimen it is easy to digitize it and use as a reference. Simply read your digitized data as a `terra` SpatVector pointing to a line or two-point feature and provide length that was read out. Importantly, be sure that the CRS is NULL.
 
 ```{r}
 # Construct SpatVector by hand
@@ -55,7 +55,7 @@ um
 
 ## Known dimensions
 
-If you known the exact scan length that was used in the controlling software, you can use it as a robust reference. We use known scan length and number of rows in a SpatRaster to calculate resolution. This requires that that kind of metadata is written down, but ensures very good resolution estimate.
+If you know the exact scan length that was used in the controlling software, you can use it as a robust reference. We use known scan length and number of rows in a SpatRaster to calculate resolution. This requires that kind of metadata is written down, but ensures very good resolution estimate.
 
 ```{r}
 r <- terra::rast(
@@ -71,3 +71,7 @@ um <- HSItools::hsi_calibration_from_dims(
   units = "um"
 )
 ```
+
+# Building a coordinate raster
+
+# Anchoring to a reference point
