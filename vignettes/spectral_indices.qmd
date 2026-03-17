@@ -1,0 +1,32 @@
+---
+title: "Spectral indices"
+vignette: >
+  %\VignetteIndexEntry{spectral_indices}
+  %\VignetteEngine{quarto::html}
+  %\VignetteEncoding{UTF-8}
+knitr:
+  opts_chunk:
+    collapse: true
+    comment: '#>'
+---
+
+```{r}
+#| label: setup
+library(HSItools)
+```
+
+# Spectral indices library
+
+HSItools includes a built-in catalogue of spectral indices drawn from the literature. It is a practical starting point for common sediment proxies, not a comprehensive literature review.
+
+```{r}
+# Show tibble
+HSItools::spectral_indices
+```
+
+You can filter by `proxy_type` to see what is available for a given calculation method:
+
+```{r}
+HSItools::spectral_indices |>
+  dplyr::filter(proxy_type == "rabd")
+```
