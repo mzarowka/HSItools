@@ -3,7 +3,7 @@
 \docType{data}
 \name{spectral_indices}
 \alias{spectral_indices}
-\title{Preset proxy definitions}
+\title{Preset spectral indices definitions}
 \format{
 \subsection{\code{spectral_indices}}{
 
@@ -29,7 +29,7 @@ per-entry citations.
 spectral_indices
 }
 \description{
-Preset proxy definitions
+Preset spectral indices definitions
 }
 \details{
 Each row maps directly to a single function call. Columns correspond to
