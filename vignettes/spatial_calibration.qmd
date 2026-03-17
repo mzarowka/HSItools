@@ -1,0 +1,18 @@
+---
+title: "spatial_calibration"
+vignette: >
+  %\VignetteIndexEntry{spatial_calibration}
+  %\VignetteEngine{quarto::html}
+  %\VignetteEncoding{UTF-8}
+knitr:
+  opts_chunk:
+    collapse: true
+    comment: '#>'
+---
+
+```{r}
+#| label: setup
+library(HSItools)
+```
+
+Hyperspectral imaging data is, by definition, spatial. Hovewer, typically there is no easy and immediate anchor to real world units. Most of the time ENVI or GeoTIFF

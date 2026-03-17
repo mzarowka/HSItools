@@ -128,7 +128,7 @@ hsi_calc_stretch <- function(
   # Write to file if requested
   if (filename != "") {
     result <- terra::writeRaster(
-      selected_bands,
+      result,
       filename = filename,
       overwrite = overwrite,
       wopt = wopt
