@@ -2,23 +2,26 @@
 #'
 #' @noRd
 #'
-#' @param hsi_data A [`SpatRaster`][terra::SpatRaster-class] with raw
-#'   hyperspectral sample data. Band names must be numeric wavelengths in nm.
-#' @param whiteref A [`SpatRaster`][terra::SpatRaster-class] with white
-#'   reference data. Must have the same bands and wavelengths as `hsi_data`.
-#' @param darkref  A [`SpatRaster`][terra::SpatRaster-class] with dark
-#'   reference data. Must have the same bands and wavelengths as `hsi_data`.
-#' @param tint Numeric vector of length 2. Integration times for white
-#'   reference and sample capture, in that order. The ratio `tint[2] / tint[1]`
-#'   scales the dark reference before numerator subtraction to account for
-#'   additional dark current accumulated during the longer specimen exposure.
+#' @param specimen A [`SpatRaster`][terra::SpatRaster-class] with a single band
+#'   of raw hyperspectral sample data.
+#' @param whiteref A [`SpatRaster`][terra::SpatRaster-class] with a single band
+#'   of white reference data.
+#' @param darkref_num A [`SpatRaster`][terra::SpatRaster-class] with a single
+#'   band of dark reference data for the numerator subtraction (specimen side).
+#'   Already scaled by the caller if needed.
+#' @param darkref_den A [`SpatRaster`][terra::SpatRaster-class] with a single
+#'   band of dark reference data for the denominator subtraction (white
+#'   reference side).
+#' @param f_tint Numeric scalar. Integration time ratio `tint_white / tint_specimen`.
+#' @param filename Character. Output filename. Default `""` keeps result in memory.
 #'
 #' @returns A [`SpatRaster`][terra::SpatRaster-class] with normalized reflectance values.
 hsi_normalize <- function(
-  hsi_data,
+  specimen,
   whiteref,
-  darkref,
-  tint,
+  darkref_num,
+  darkref_den,
+  f_tint,
   filename = ""
 ) {
   # Get the average value of the white reference for each column
@@ -28,40 +31,46 @@ hsi_normalize <- function(
     fun = "mean"
   )
 
-  # Store it in a vector
+  # Store in a vector
   whiteref_onecol_vector <- as.vector(whiteref_onecol_raster)
 
-  # Get the average value of the dark reference for each column
-  darkref_onecol_raster <- terra::aggregate(
-    darkref,
-    fact = c(terra::nrow(darkref), 1),
+  # Get the average value of the numerator dark reference for each column
+  darknum_onecol_raster <- terra::aggregate(
+    darkref_num,
+    fact = c(terra::nrow(darkref_num), 1),
     fun = "mean"
   )
 
-  # Store it in a vector
-  darkref_onecol_vector <- as.vector(darkref_onecol_raster)
+  # Store in a vector
+  darknum_onecol_vector <- as.vector(darknum_onecol_raster)
+
+  # Get the average value of the denominator dark reference for each column
+  darkden_onecol_raster <- terra::aggregate(
+    darkref_den,
+    fact = c(terra::nrow(darkref_den), 1),
+    fun = "mean"
+  )
+
+  # Store in a vector
+  darkden_onecol_vector <- as.vector(darkden_onecol_raster)
 
   # Convert the raster to a matrix
-  hsi_data_matrix <- terra::as.matrix(hsi_data, wide = TRUE)
+  specimen_matrix <- terra::as.matrix(specimen, wide = TRUE)
 
-  # Subtract the dark reference from the capture matrix for each column
-  dark_scaled <- darkref_onecol_vector * (tint[2] / tint[1])
-  numerator <- sweep(hsi_data_matrix, 2, dark_scaled, FUN = "-")
+  # Subtract numerator dark from specimen
+  numerator <- sweep(specimen_matrix, 2, darknum_onecol_vector, FUN = "-")
 
-  # Subtract the dark reference from the white reference for each column
-  denominator <- whiteref_onecol_vector - darkref_onecol_vector
+  # Subtract denominator dark from white reference
+  denominator <- whiteref_onecol_vector - darkden_onecol_vector
 
-  # Calculate tint fraction
-  f_tint <- tint[1] / tint[2]
-
-  # Divide the numerator by the denominator for each column and multiply by the tint factor
+  # Divide and apply integration time correction
   result <- sweep(numerator, 2, denominator, "/") * f_tint
 
-  # Set the result to NA if the denominator is lower than 0
+  # Set the result to NA if the denominator is zero or negative
   result[, denominator <= 0] <- NA
 
   # Create temporary SpatRaster with results
-  result <- terra::init(hsi_data, t(result), filename = filename)
+  result <- terra::init(specimen, t(result), filename = filename)
 
   # Return result
   result
@@ -76,9 +85,14 @@ hsi_normalize <- function(
 #' @param whiteref A [`SpatRaster`][terra::SpatRaster-class] with white
 #'   reference data. Must have the same bands and wavelengths as `x`.
 #' @param darkref A [`SpatRaster`][terra::SpatRaster-class] with dark
-#'   reference data. Must have the same bands and wavelengths as `x`.
+#'   reference data from the white reference session. Must have the same bands
+#'   and wavelengths as `x`.
+#' @param darkspec A [`SpatRaster`][terra::SpatRaster-class] with dark
+#'   reference data from the specimen session. Default `NULL`. Required for
+#'   dual-exposure workflows where `tint` values differ. When `NULL` and
+#'   `tint = c(1, 1)`, a single dark reference is sufficient.
 #' @param tint Numeric vector of length 2. Integration times for white
-#'   reference and sample capture, in that order. Default `c(1, 1)` assumes
+#'   reference and specimen capture, in that order. Default `c(1, 1)` assumes
 #'   equal integration times.
 #' @param in_memory Logical. Process entirely in RAM. Default `FALSE`.
 #'   Set `TRUE` only when data fits comfortably in available memory. When
@@ -95,15 +109,41 @@ hsi_normalize <- function(
 #' the essential first step in hyperspectral data processing.
 #'
 #' @details
-#' All three inputs must share the same spatial resolution, number of bands,
+#' All inputs must share the same spatial resolution, number of bands,
 #' wavelength labels, and compatible spatial extents. When reading `.raw` ESRI
 #' data, load with `terra::rast(x, noflip = TRUE)`.
 #'
-#' When using an external white reference captured at a different integration
-#' time, supply a dark reference from the same session. With SWIR data in
-#' particular, using a dark reference from a different capture can produce
-#' negative reflectance where an oversaturated dark reference exceeds the
-#' white reference signal.
+#' Three calibration paths are supported:
+#'
+#' **Single session** (`darkspec = NULL`, `tint = c(1, 1)`): specimen, white
+#' reference, and dark reference all share the same integration time. No
+#' scaling is needed. This is the simplest workflow and produces correct
+#' reflectance, though signal-to-noise is lower than with a dual-exposure
+#' strategy.
+#'
+#' **Matched darks** (`darkspec` provided): a dual-exposure workflow where the
+#' specimen is overexposed relative to the white reference to maximise signal.
+#' Each subtraction uses the dark reference captured at the matching
+#' integration time. This is the recommended approach for dual-exposure
+#' scanning. For example, Lumo Scanner always captures a dark reference per session, so
+#' matched darks should be available for all standard workflows.
+#'
+#' \deqn{R(\lambda) = \frac{specimen - dark_{specimen}}{white - dark_{white}}
+#'   \times \frac{t_{white}}{t_{specimen}}}
+#'
+#' **Scaled dark** (`darkspec = NULL`, `tint` values differ): fallback for
+#' dual-exposure workflows when only the white-session dark reference is
+#' available. The dark reference is scaled by the integration time ratio
+#' before numerator subtraction. This assumes dark current scales linearly
+#' with integration time. In practice, some detectors (SWIR) have a large
+#' fixed-pattern noise component that does not scale with exposure time.
+#' Scaling overestimates the specimen dark current, producing severely
+#' degraded reflectance — often negative across entire spectra. Use only as
+#' a last resort.
+#'
+#' \deqn{R(\lambda) = \frac{specimen - dark_{white} \times
+#'   \frac{t_{specimen}}{t_{white}}}{white - dark_{white}} \times
+#'   \frac{t_{white}}{t_{specimen}}}
 #'
 #' @examples
 #' \dontrun{
@@ -111,18 +151,30 @@ hsi_normalize <- function(
 #' whiteref <- terra::rast("capture/WHITEREF_testdata.tif")
 #' darkref <- terra::rast("capture/DARKREF_testdata.tif")
 #'
+#' # Path 1: single session, equal integration times
 #' x_reflectance <- hsi_calc_reflectance(
 #'   x = x,
 #'   whiteref = whiteref,
-#'   darkref = darkref,
-#'   tint = c(1, 1)
+#'   darkref = darkref
 #' )
+#'
+#' # Path 2a: matched darks (recommended)
+#' darkspec <- terra::rast("specimen/DARKREF_testdata.tif")
 #'
 #' x_reflectance <- hsi_calc_reflectance(
 #'   x = x,
 #'   whiteref = whiteref,
 #'   darkref = darkref,
-#'   tint = c(1, 1),
+#'   darkspec = darkspec,
+#'   tint = c(3, 9)
+#' )
+#'
+#' # Path 2b: scaled dark (single dark, different integration times)
+#' x_reflectance <- hsi_calc_reflectance(
+#'   x = x,
+#'   whiteref = whiteref,
+#'   darkref = darkref,
+#'   tint = c(3, 9),
 #'   filename = "output_reflectance.tif",
 #'   overwrite = TRUE
 #' )
@@ -133,6 +185,7 @@ hsi_calc_reflectance <- function(
   x,
   whiteref,
   darkref,
+  darkspec = NULL,
   tint = c(1, 1),
   in_memory = FALSE,
   filename = "",
@@ -167,6 +220,23 @@ hsi_calc_reflectance <- function(
     )
   }
 
+  # Validate darkspec if provided
+  if (!is.null(darkspec)) {
+    check_spatraster(darkspec)
+
+    n_bands_darkspec <- terra::nlyr(darkspec)
+
+    if (n_bands_x != n_bands_darkspec) {
+      cli::cli_abort(
+        c(
+          "Specimen dark reference must have the same number of bands as {.arg x}.",
+          "x" = "Sample: {n_bands_x} band{?s}",
+          "x" = "Specimen dark reference: {n_bands_darkspec} band{?s}"
+        )
+      )
+    }
+  }
+
   # Validate band names are numeric wavelengths
   wavelengths <- suppressWarnings(as.numeric(names(x)))
 
@@ -191,6 +261,28 @@ hsi_calc_reflectance <- function(
       "Band names don't match across inputs. Proceeding with band-by-band processing."
     )
   }
+
+  # Route dark reference for numerator subtraction
+  if (!is.null(darkspec)) {
+    # Path 2a: matched darks — no scaling needed
+    darkref_num_list <- terra::as.list(darkspec)
+    dark_scale <- 1
+  } else {
+    # Path 1 or 2b: single dark for both
+    darkref_num_list <- terra::as.list(darkref)
+    dark_scale <- tint[2] / tint[1]
+
+    if (dark_scale != 1) {
+      cli::cli_warn(
+        c(
+          "Scaling dark reference by integration time ratio ({.val {dark_scale}}).",
+          "i" = "For best accuracy, provide {.arg darkspec} from the specimen session."
+        )
+      )
+    }
+  }
+
+  f_tint <- tint[1] / tint[2]
 
   # Build write options
   wopt_user <- rlang::list2(...)
@@ -238,18 +330,24 @@ hsi_calc_reflectance <- function(
 
   # Perform normalization
   result <- list(
-    hsi_data = terra::as.list(x),
+    specimen = terra::as.list(x),
     whiteref = terra::as.list(whiteref),
-    darkref = terra::as.list(darkref),
-    tint = list(tint),
+    darkref_num = darkref_num_list,
+    darkref_den = terra::as.list(darkref),
     filename = temp_paths
   ) |>
-    purrr::pmap(\(hsi_data, whiteref, darkref, tint, filename) {
+    purrr::pmap(\(specimen, whiteref, darkref_num, darkref_den, filename) {
+      # Scale numerator dark per-band if needed (path 2b)
+      if (dark_scale != 1) {
+        darkref_num <- darkref_num * dark_scale
+      }
+
       hsi_normalize(
-        hsi_data = hsi_data,
+        specimen = specimen,
         whiteref = whiteref,
-        darkref = darkref,
-        tint = tint,
+        darkref_num = darkref_num,
+        darkref_den = darkref_den,
+        f_tint = f_tint,
         filename = filename
       )
     }) |>

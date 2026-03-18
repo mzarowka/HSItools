@@ -4,7 +4,9 @@
 #   - Output dimensions and band names match x
 #   - in_memory = TRUE and FALSE produce equivalent values
 #   - tint argument affects output (integration time scaling is exercised)
-#   - All three SpatRaster inputs are validated independently
+#   - darkspec enables matched dark subtraction (recommended for dual-exposure)
+#   - Scaled dark path emits a warning when tint values differ
+#   - All SpatRaster inputs are validated independently
 
 ## Setup ----
 test_x <- terra::rast(
@@ -104,8 +106,8 @@ test_that("hsi_calc_reflectance matches reference fixture", {
 })
 
 test_that("hsi_calc_reflectance tint argument affects output values", {
-  # tint = c(2, 1) scales the dark reference differently for the white
-  # reference denominator; result must differ from the default c(1, 1)
+  # tint = c(2, 1) triggers the scaling path — suppress the expected warning
+  # since this test is about values differing, not the warning itself
   result_default <- hsi_calc_reflectance(
     x = test_x,
     whiteref = test_whiteref,
@@ -114,12 +116,14 @@ test_that("hsi_calc_reflectance tint argument affects output values", {
     in_memory = TRUE
   )
 
-  result_scaled <- hsi_calc_reflectance(
-    x = test_x,
-    whiteref = test_whiteref,
-    darkref = test_darkref,
-    tint = c(2, 1),
-    in_memory = TRUE
+  result_scaled <- suppressWarnings(
+    hsi_calc_reflectance(
+      x = test_x,
+      whiteref = test_whiteref,
+      darkref = test_darkref,
+      tint = c(2, 1),
+      in_memory = TRUE
+    )
   )
 
   expect_false(
@@ -142,6 +146,105 @@ test_that("hsi_calc_reflectance produces only finite values", {
 
   expect_false(any(is.infinite(values)))
   expect_false(any(is.nan(values)))
+})
+
+test_that("hsi_calc_reflectance darkspec produces different values than scaled path", {
+  # Using darkref as darkspec here — the values will differ from the scaling
+
+  # path because scaling multiplies darkref by tint[2]/tint[1] before
+  # subtraction, while the matched path uses it unscaled
+  result_matched <- hsi_calc_reflectance(
+    x = test_x,
+    whiteref = test_whiteref,
+    darkref = test_darkref,
+    darkspec = test_darkref,
+    tint = c(1, 2),
+    in_memory = TRUE
+  )
+
+  result_scaled <- suppressWarnings(
+    hsi_calc_reflectance(
+      x = test_x,
+      whiteref = test_whiteref,
+      darkref = test_darkref,
+      tint = c(1, 2),
+      in_memory = TRUE
+    )
+  )
+
+  expect_false(
+    isTRUE(all.equal(
+      terra::values(result_matched),
+      terra::values(result_scaled)
+    ))
+  )
+})
+
+test_that("hsi_calc_reflectance with darkspec and equal tint matches single-session path", {
+  # When darkspec is the same raster as darkref and tint = c(1, 1),
+  # matched and single-session paths are algebraically identical
+  result_single <- hsi_calc_reflectance(
+    x = test_x,
+    whiteref = test_whiteref,
+    darkref = test_darkref,
+    in_memory = TRUE
+  )
+
+  result_matched <- hsi_calc_reflectance(
+    x = test_x,
+    whiteref = test_whiteref,
+    darkref = test_darkref,
+    darkspec = test_darkref,
+    tint = c(1, 1),
+    in_memory = TRUE
+  )
+
+  expect_equal(
+    terra::values(result_single),
+    terra::values(result_matched),
+    tolerance = 1e-6
+  )
+})
+
+# ── Warnings ─────────────────────────────────────────────────────────────────
+
+test_that("hsi_calc_reflectance warns when scaling dark without darkspec", {
+  expect_warning(
+    hsi_calc_reflectance(
+      x = test_x,
+      whiteref = test_whiteref,
+      darkref = test_darkref,
+      tint = c(1, 2),
+      in_memory = TRUE
+    ),
+    "Scaling dark reference"
+  )
+})
+
+test_that("hsi_calc_reflectance does not warn when darkspec provided with differing tint", {
+  # Matched darks — no scaling, no warning
+  expect_no_warning(
+    hsi_calc_reflectance(
+      x = test_x,
+      whiteref = test_whiteref,
+      darkref = test_darkref,
+      darkspec = test_darkref,
+      tint = c(1, 2),
+      in_memory = TRUE
+    )
+  )
+})
+
+test_that("hsi_calc_reflectance does not warn when tint values are equal", {
+  # Single-session path — no scaling, no warning
+  expect_no_warning(
+    hsi_calc_reflectance(
+      x = test_x,
+      whiteref = test_whiteref,
+      darkref = test_darkref,
+      in_memory = TRUE
+    )
+  )
 })
 
 # ── Memory and file handling ──────────────────────────────────────────────────
@@ -319,6 +422,17 @@ test_that("hsi_calc_reflectance errors with non-SpatRaster darkref", {
   )
 })
 
+test_that("hsi_calc_reflectance errors with non-SpatRaster darkspec", {
+  expect_error(
+    hsi_calc_reflectance(
+      x = test_x,
+      whiteref = test_whiteref,
+      darkref = test_darkref,
+      darkspec = "not a raster"
+    )
+  )
+})
+
 test_that("hsi_calc_reflectance errors when band counts differ", {
   # Subset whiteref to fewer bands than x
   whiteref_short <- terra::subset(test_whiteref, 1:10)
@@ -328,6 +442,20 @@ test_that("hsi_calc_reflectance errors when band counts differ", {
       x = test_x,
       whiteref = whiteref_short,
       darkref = test_darkref
+    ),
+    "same number of bands"
+  )
+})
+
+test_that("hsi_calc_reflectance errors when darkspec band count differs", {
+  darkspec_short <- terra::subset(test_darkref, 1:10)
+
+  expect_error(
+    hsi_calc_reflectance(
+      x = test_x,
+      whiteref = test_whiteref,
+      darkref = test_darkref,
+      darkspec = darkspec_short
     ),
     "same number of bands"
   )

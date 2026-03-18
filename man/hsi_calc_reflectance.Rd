@@ -8,6 +8,7 @@ hsi_calc_reflectance(
   x,
   whiteref,
   darkref,
+  darkspec = NULL,
   tint = c(1, 1),
   in_memory = FALSE,
   filename = "",
@@ -23,10 +24,16 @@ hyperspectral sample data. Band names must be numeric wavelengths in nm.}
 reference data. Must have the same bands and wavelengths as \code{x}.}
 
 \item{darkref}{A \code{\link[terra:SpatRaster-class]{SpatRaster}} with dark
-reference data. Must have the same bands and wavelengths as \code{x}.}
+reference data from the white reference session. Must have the same bands
+and wavelengths as \code{x}.}
+
+\item{darkspec}{A \code{\link[terra:SpatRaster-class]{SpatRaster}} with dark
+reference data from the specimen session. Default \code{NULL}. Required for
+dual-exposure workflows where \code{tint} values differ. When \code{NULL} and
+\code{tint = c(1, 1)}, a single dark reference is sufficient.}
 
 \item{tint}{Numeric vector of length 2. Integration times for white
-reference and sample capture, in that order. Default \code{c(1, 1)} assumes
+reference and specimen capture, in that order. Default \code{c(1, 1)} assumes
 equal integration times.}
 
 \item{in_memory}{Logical. Process entirely in RAM. Default \code{FALSE}.
@@ -48,15 +55,41 @@ reflectance values using white and dark reference measurements. This is
 the essential first step in hyperspectral data processing.
 }
 \details{
-All three inputs must share the same spatial resolution, number of bands,
+All inputs must share the same spatial resolution, number of bands,
 wavelength labels, and compatible spatial extents. When reading \code{.raw} ESRI
 data, load with \code{terra::rast(x, noflip = TRUE)}.
 
-When using an external white reference captured at a different integration
-time, supply a dark reference from the same session. With SWIR data in
-particular, using a dark reference from a different capture can produce
-negative reflectance where an oversaturated dark reference exceeds the
-white reference signal.
+Three calibration paths are supported:
+
+\strong{Single session} (\code{darkspec = NULL}, \code{tint = c(1, 1)}): specimen, white
+reference, and dark reference all share the same integration time. No
+scaling is needed. This is the simplest workflow and produces correct
+reflectance, though signal-to-noise is lower than with a dual-exposure
+strategy.
+
+\strong{Matched darks} (\code{darkspec} provided): a dual-exposure workflow where the
+specimen is overexposed relative to the white reference to maximise signal.
+Each subtraction uses the dark reference captured at the matching
+integration time. This is the recommended approach for dual-exposure
+scanning. For example, Lumo Scanner always captures a dark reference per session, so
+matched darks should be available for all standard workflows.
+
+\deqn{R(\lambda) = \frac{specimen - dark_{specimen}}{white - dark_{white}}
+  \times \frac{t_{white}}{t_{specimen}}}
+
+\strong{Scaled dark} (\code{darkspec = NULL}, \code{tint} values differ): fallback for
+dual-exposure workflows when only the white-session dark reference is
+available. The dark reference is scaled by the integration time ratio
+before numerator subtraction. This assumes dark current scales linearly
+with integration time. In practice, some detectors (SWIR) have a large
+fixed-pattern noise component that does not scale with exposure time.
+Scaling overestimates the specimen dark current, producing severely
+degraded reflectance — often negative across entire spectra. Use only as
+a last resort.
+
+\deqn{R(\lambda) = \frac{specimen - dark_{white} \times
+  \frac{t_{specimen}}{t_{white}}}{white - dark_{white}} \times
+  \frac{t_{white}}{t_{specimen}}}
 }
 \examples{
 \dontrun{
@@ -64,18 +97,30 @@ x <- terra::rast("capture/testdata.tif")
 whiteref <- terra::rast("capture/WHITEREF_testdata.tif")
 darkref <- terra::rast("capture/DARKREF_testdata.tif")
 
+# Path 1: single session, equal integration times
 x_reflectance <- hsi_calc_reflectance(
   x = x,
   whiteref = whiteref,
-  darkref = darkref,
-  tint = c(1, 1)
+  darkref = darkref
 )
+
+# Path 2a: matched darks (recommended)
+darkspec <- terra::rast("specimen/DARKREF_testdata.tif")
 
 x_reflectance <- hsi_calc_reflectance(
   x = x,
   whiteref = whiteref,
   darkref = darkref,
-  tint = c(1, 1),
+  darkspec = darkspec,
+  tint = c(3, 9)
+)
+
+# Path 2b: scaled dark (single dark, different integration times)
+x_reflectance <- hsi_calc_reflectance(
+  x = x,
+  whiteref = whiteref,
+  darkref = darkref,
+  tint = c(3, 9),
   filename = "output_reflectance.tif",
   overwrite = TRUE
 )
