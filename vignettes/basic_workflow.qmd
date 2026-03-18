@@ -21,9 +21,7 @@ library(HSItools)
 
 Typically, you need to calculate reflectance from raw data captured during the scan. HSItools makes this straightforward using a combination of {[terra](https://CRAN.R-project.org/package=terra)} and {HSItools} functions.
 
-First, locate your data. Because no assumptions about directory structure are made, you can use external white and dark reference files in this step. This is useful when, for example, high exposure time during the scan led to overexposure of your white reference and you need to substitute an external one.
-
-If you are reading data from ENVI `.raw` files, it may be important to use `noflip = TRUE` in your `terra::rast()` call, otherwise files will be flipped vertically.
+First, locate your data. Because no assumptions about directory structure are made, you can use external white and dark reference files in this step. If you are reading data from ENVI `.raw` files, it may be important to use `noflip = TRUE` in your `terra::rast()` call, otherwise files will be flipped vertically.
 
 Our test dataset is a 9 × 9 pixel, 101-band subset of HSI data (517–772 nm) from the Hyperspectral Imaging Laboratory in Gdańsk.
 
@@ -51,28 +49,71 @@ data <- list(
 )
 ```
 
-With this data you are ready to calculate reflectance: a fraction between 0 and 1 representing complete darkness and whiteness. You can control integration times for your specimen and white reference with the `tint` argument, which defaults to `c(1, 1)`, assuming both use the same integration time. If you are using external references captured at different integration times, adjust accordingly; the white reference integration time always comes first. Importantly, dark reference values are scaled by the integration time ratio before subtraction, which is critical for low signal-to-noise ratio (SNR) systems such as SWIR cameras.
+Reflectance is a fraction representing the proportion of light reflected by the specimen relative to the white reference. The `tint` argument controls the integration times for white reference and specimen capture, in that order. The default `c(1, 1)` assumes both use the same integration time.
 
-You can also control whether processing should be done in memory or not. With the default `in_memory = FALSE`, {[withr](https://cran.r-project.org/package=withr)} manages temporary files and removes them once the function finishes. Finally, you can write the result to a permanent file via `filename`, or keep it in memory.
+## Three calibration paths
+
+`hsi_calc_reflectance()` supports three calibration paths depending on your scanning workflow.
+
+**Single session** is the simplest case: specimen, white reference, and dark reference all share the same integration time. No scaling is needed. This produces correct reflectance, though signal-to-noise is lower than with a dual-exposure strategy that overexposes the specimen to maximise signal.
 
 ```{r}
-# Calculate with defaults: temporary files, result in memory
+# Single session: equal integration times (default)
 r1 <- HSItools::hsi_calc_reflectance(
-  x = data$x,
-  whiteref = data$whiteref,
-  darkref = data$darkref
-)
-
-# Calculate entirely in memory
-r2 <- HSItools::hsi_calc_reflectance(
   x = data$x,
   whiteref = data$whiteref,
   darkref = data$darkref,
   in_memory = TRUE
 )
+```
+
+**Matched darks** is the recommended approach for dual-exposure workflows where the specimen is scanned at a higher integration time than the white reference. Each dark subtraction uses the dark reference captured at the matching integration time. For example Lumo Scanner always captures a dark reference per session, so both are always available.
+
+```{r}
+#| eval: false
+# Matched darks: recommended for dual-exposure scanning
+r2 <- HSItools::hsi_calc_reflectance(
+  x = data$x,
+  whiteref = data$whiteref,
+  darkref = data$darkref,
+  darkspec = data$darkspec,
+  tint = c(3, 9),
+  in_memory = TRUE
+)
+```
+
+**Scaled dark** is a fallback for dual-exposure workflows when only the white-session dark reference is available. The dark reference is scaled by the integration time ratio before subtraction in the numerator. A warning is emitted when this path is active.
+
+::: {.callout-warning appearance="minimal"}
+Dark current scaling assumes linear scaling with integration time. In practice, numerous detectors (especially SWIR) have a large fixed-pattern noise component that does not scale with exposure time. Scaling overestimates the specimen dark current, producing severely degraded SWIR reflectance which is often negative across entire spectra. For VNIR the effect is smaller in absolute terms but we found that it introduces a systematic spectral tilt that biases indices comparing blue and NIR bands. Always prefer matched darks.
+:::
+
+```{r}
+#| eval: false
+# Scaled dark: fallback, not recommended
+r3 <- HSItools::hsi_calc_reflectance(
+  x = data$x,
+  whiteref = data$whiteref,
+  darkref = data$darkref,
+  tint = c(3, 9),
+  in_memory = TRUE
+)
+```
+
+## Memory and file handling
+
+You can control whether processing is done in memory or not. With the default `in_memory = FALSE`, {[withr](https://cran.r-project.org/package=withr)} manages temporary files and removes them once the function finishes. You can write the result to a permanent file via `filename`, or keep it in memory.
+
+```{r}
+# Calculate with defaults: temporary files, result in memory
+r4 <- HSItools::hsi_calc_reflectance(
+  x = data$x,
+  whiteref = data$whiteref,
+  darkref = data$darkref
+)
 
 # Calculate in memory and write to a permanent file
-r3 <- HSItools::hsi_calc_reflectance(
+r5 <- HSItools::hsi_calc_reflectance(
   x = data$x,
   whiteref = data$whiteref,
   darkref = data$darkref,
@@ -81,7 +122,7 @@ r3 <- HSItools::hsi_calc_reflectance(
 )
 
 # Results should be nearly identical, differing only at distant decimal places
-terra::all.equal(r1, r2)
+terra::all.equal(r1, r4)
 ```
 
 # Smoothing: spatial
@@ -89,7 +130,7 @@ terra::all.equal(r1, r2)
 Before working in the spectral dimension, apply a spatial median filter to remove outlier pixels. The default window size is 3 × 3. As always, you can write the result to a file.
 
 ```{r}
-r4 <- HSItools::hsi_smooth_median(x = r3)
+r6 <- HSItools::hsi_smooth_median(x = r5)
 ```
 
 # Smoothing: spectral
@@ -97,7 +138,7 @@ r4 <- HSItools::hsi_smooth_median(x = r3)
 With data smoothed across the spatial dimension there should be no `NA` values in the spectral series. You can now apply a Savitzky-Golay filter to smooth the reflectance spectrum in each pixel. Several arguments are available to control the filter parameters. The function uses the {[gsignal](https://CRAN.R-project.org/package=gsignal)} implementation.
 
 ```{r}
-r5 <- HSItools::hsi_smooth_savgol(x = r4)
+r7 <- HSItools::hsi_smooth_savgol(x = r6)
 ```
 
 ## Derivatives
@@ -108,7 +149,7 @@ Note that edge effects at the first and last few bands (roughly equal to half th
 
 ```{r}
 r_derivative <- HSItools::hsi_smooth_savgol(
-  x = r4,
+  x = r6,
   m = 1
 )
 ```
@@ -120,7 +161,7 @@ Smoothed data can be enhanced further by removing the continuum, the convex hull
 Continuum removal is computationally intensive. Consider applying it to subsets or regions of interest rather than full-resolution data.
 
 ```{r}
-r6 <- HSItools::hsi_remove_continuum(x = r5)
+r8 <- HSItools::hsi_remove_continuum(x = r7)
 ```
 
 # Workflow
@@ -197,8 +238,7 @@ High spatial and spectral resolution cameras, especially VNIR, produce large ref
 Do not quantize low-SNR data such as current-generation SWIR sensors. Quantization discards the fine floating-point differences that carry meaningful signal in noisy data.
 :::
 
-`hsi_write_scaled()` is a write-primary function: it encodes `x` to disk and returns the original object invisibly so it can sit in a pipeline without
-printing. Continue processing from the object you passed in, not from the return value.
+`hsi_write_scaled()` is a write-primary function: it encodes `x` to disk and returns the original object invisibly so it can sit in a pipeline without printing. Continue processing from the object you passed in, not from the return value.
 
 ```{r}
 HSItools::hsi_write_scaled(
