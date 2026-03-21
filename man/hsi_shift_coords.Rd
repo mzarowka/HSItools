@@ -39,10 +39,20 @@ column position in µm).
 Shift physical coordinate raster to a known reference position
 }
 \details{
-The shift is computed by extracting the \code{row_um} value at \code{reference} and
-subtracting \code{origin} from it. The resulting offset is applied to the entire
-\code{row_um} layer. Pixels above the reference point will hold negative values
-when \code{origin = 0}.
+The shift is computed by linearly estimating the \code{row_um} value at the
+\code{reference} point from the spatial resolution of the coordinate raster.
+This works even when the reference point falls outside the raster extent
+(e.g. a digitised point fractionally beyond the edge), because the
+relationship between pixel position and physical position is linear.
+
+The physical resolution (µm per pixel row) is derived from the first two
+row centres of \code{x}. The distance in pixels between cell 1 and \code{reference}
+is then multiplied by this resolution to estimate the \code{row_um} value at
+\code{reference}. The resulting offset (\code{estimated - origin}) is subtracted
+from the entire \code{row_um} layer.
+
+Pixels above the reference point will hold negative values when
+\code{origin = 0}.
 
 \code{reference} must share the same pixel coordinate space as \code{x} — no CRS is
 expected on either input. The point is typically digitised from the
