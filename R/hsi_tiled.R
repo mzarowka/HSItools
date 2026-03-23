@@ -13,7 +13,10 @@
 #'   to split `x` into. A single integer creates row strips (e.g. `60`). A
 #'   length-2 vector creates a 2D tile grid (e.g. `c(8, 8)`). For best
 #'   performance, match to the number of available `mirai` daemons.
-#' @param filename Character. Output filename. Default `""` keeps result in memory.
+#' @param filename Character. Output filename. Default `""` writes the result
+#'   to a session-scoped temporary file and emits a warning. Providing a path
+#'   is strongly recommended. Unlike other `HSItools` functions, `filename = ""`
+#'   never keeps the result in memory — see Details.
 #' @param overwrite Logical. Overwrite existing file. Default `FALSE`.
 #'
 #' @returns A [`SpatRaster`][terra::SpatRaster-class] merged from processed tiles.
@@ -23,13 +26,22 @@
 #' Daemons must be initialised by the caller before invoking this function via
 #' `mirai::daemons(n)`. If no daemons are active, processing falls back to
 #' sequential automatically. Intermediate tiles are written to a temporary
-#' directory and cleaned up on exit, even if the function errors.
+#' directory managed by [`withr::local_tempdir()`] and cleaned up on exit,
+#' even if the function errors.
+#'
+#' **This function does not support in-memory processing.** [`terra::makeTiles()`]
+#' requires a filename and errors if one is not provided — tiles are always
+#' written to disk. As a consequence, the `in_memory` parameter present in
+#' other `HSItools` functions is intentionally absent here. The merged result
+#' is always file-backed: either the path supplied via `filename`, or a
+#' session-scoped temporary file when `filename = ""`. In the latter case a
+#' warning is emitted and the temporary file persists until the R session ends.
 #'
 #' @examples
 #' \dontrun{
 #' mirai::daemons(30)
 #'
-#' # Good: literal values baked into the lambda
+#' # Recommended: always provide a filename
 #' hsi_tiled(
 #'   fun = \(tile) HSItools::hsi_smooth_savgol(tile, p = 3, n = 17),
 #'   x = my_raster,
@@ -68,14 +80,14 @@ hsi_tiled <- function(
     )
   }
 
-  # Determine merge target path before any temp management
+  # Determine merge target path before any temp management.
   # Exception to the withr rule: when filename = "", the merge output IS the
   # backing store of the returned SpatRaster. withr::local_tempdir() would
   # delete it on function exit, orphaning the object. plain tempfile() is
   # intentional here — it persists for the session lifetime.
   # See hsi_calc_reflectance for reference.
   if (filename != "") {
-    merge_target <- filename
+    merge_target <- normalizePath(filename, mustWork = FALSE)
   } else {
     merge_target <- tempfile(fileext = ".tif")
     cli::cli_warn(
@@ -97,8 +109,8 @@ hsi_tiled <- function(
     filename = file.path(tmp_dir, "tile_.tif")
   )
 
-  # Create merged SpatRaster
-  raster <- tile_paths |>
+  # Process tiles, merge, write explicitly, and rast from written file
+  tile_paths |>
     purrr::map(
       purrr::in_parallel(
         \(path) {
@@ -113,12 +125,19 @@ hsi_tiled <- function(
         fun = fun
       )
     ) |>
+    # Create SpatRaster
     purrr::map(\(path) terra::rast(path)) |>
-    # Create SpatRaster Collection
+    # Create SparRaster Collection
     terra::sprc() |>
-    # Merge tiles into single SpatRaster
-    terra::merge(filename = merge_target, overwrite = overwrite)
+    # Merge SpatRasters
+    terra::merge() |>
+    # Write to file
+    terra::writeRaster(filename = merge_target, overwrite = overwrite)
+
+  # Rasterize back from written file, dropping all references to temp tiles
+  # before withr cleans up tmp_dir
+  result <- terra::rast(merge_target)
 
   # Return
-  raster
+  result
 }
