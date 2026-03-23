@@ -68,7 +68,26 @@ hsi_tiled <- function(
     )
   }
 
-  # Create a self-cleanin tempdir
+  # Determine merge target path before any temp management
+  # Exception to the withr rule: when filename = "", the merge output IS the
+  # backing store of the returned SpatRaster. withr::local_tempdir() would
+  # delete it on function exit, orphaning the object. plain tempfile() is
+  # intentional here — it persists for the session lifetime.
+  # See hsi_calc_reflectance for reference.
+  if (filename != "") {
+    merge_target <- filename
+  } else {
+    merge_target <- tempfile(fileext = ".tif")
+    cli::cli_warn(
+      c(
+        "No {.arg filename} provided.",
+        "i" = "Result is backed by a temporary file that will persist until the R session ends.",
+        "i" = "Provide {.arg filename} to write to a permanent location."
+      )
+    )
+  }
+
+  # Create a self-cleaning tempdir for intermediate tiles only
   tmp_dir <- withr::local_tempdir()
 
   # Create tiles
@@ -78,30 +97,27 @@ hsi_tiled <- function(
     filename = file.path(tmp_dir, "tile_.tif")
   )
 
+  # Create merged SpatRaster
   raster <- tile_paths |>
     purrr::map(
       purrr::in_parallel(
         \(path) {
-          # Create path for result tile
           out_path <- file.path(
             dirname(path),
             paste0("result_", basename(path))
           )
-          # Apply function, write result separately
           fun(terra::rast(path)) |>
             terra::writeRaster(filename = out_path, overwrite = TRUE)
           out_path
         },
-        # Self contained, carry fun into worker namespace
         fun = fun
       )
     ) |>
-    # Read all tiles into a list
     purrr::map(\(path) terra::rast(path)) |>
-    # Create a SpatRaster Collection
+    # Create SpatRaster Collection
     terra::sprc() |>
-    # Merge tiles
-    terra::merge(filename = filename, overwrite = overwrite)
+    # Merge tiles into single SpatRaster
+    terra::merge(filename = merge_target, overwrite = overwrite)
 
   # Return
   raster
