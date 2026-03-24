@@ -21,7 +21,10 @@ to split \code{x} into. A single integer creates row strips (e.g. \code{60}). A
 length-2 vector creates a 2D tile grid (e.g. \code{c(8, 8)}). For best
 performance, match to the number of available \code{mirai} daemons.}
 
-\item{filename}{Character. Output filename. Default \code{""} keeps result in memory.}
+\item{filename}{Character. Output filename. Default \code{""} writes the result
+to a session-scoped temporary file and emits a warning. Providing a path
+is strongly recommended. Unlike other \code{HSItools} functions, \code{filename = ""}
+never keeps the result in memory — see Details.}
 
 \item{overwrite}{Logical. Overwrite existing file. Default \code{FALSE}.}
 }
@@ -36,13 +39,22 @@ Parallelism is provided by \code{\link[purrr:in_parallel]{purrr::in_parallel()}}
 Daemons must be initialised by the caller before invoking this function via
 \code{mirai::daemons(n)}. If no daemons are active, processing falls back to
 sequential automatically. Intermediate tiles are written to a temporary
-directory and cleaned up on exit, even if the function errors.
+directory managed by \code{\link[withr:with_tempfile]{withr::local_tempdir()}} and cleaned up on exit,
+even if the function errors.
+
+\strong{This function does not support in-memory processing.} \code{\link[terra:makeTiles]{terra::makeTiles()}}
+requires a filename and errors if one is not provided — tiles are always
+written to disk. As a consequence, the \code{in_memory} parameter present in
+other \code{HSItools} functions is intentionally absent here. The merged result
+is always file-backed: either the path supplied via \code{filename}, or a
+session-scoped temporary file when \code{filename = ""}. In the latter case a
+warning is emitted and the temporary file persists until the R session ends.
 }
 \examples{
 \dontrun{
 mirai::daemons(30)
 
-# Good: literal values baked into the lambda
+# Recommended: always provide a filename
 hsi_tiled(
   fun = \(tile) HSItools::hsi_smooth_savgol(tile, p = 3, n = 17),
   x = my_raster,

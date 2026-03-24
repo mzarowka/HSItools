@@ -23,11 +23,15 @@ test_reflectance <- terra::rast(
 test_that("hsi_tiled returns a SpatRaster", {
   skip_if_tiled_unavailable()
 
+  temp_file <- withr::local_tempfile(fileext = ".tif")
+
   result <- with(mirai::daemons(2), {
     hsi_tiled(
       fun = \(tile) HSItools::hsi_calc_rmean(tile),
       x = test_reflectance,
-      n_tiles = 4
+      n_tiles = 4,
+      filename = temp_file,
+      overwrite = TRUE
     )
   })
 
@@ -39,11 +43,15 @@ test_that("hsi_tiled returns a SpatRaster", {
 test_that("hsi_tiled preserves spatial dimensions", {
   skip_if_tiled_unavailable()
 
+  temp_file <- withr::local_tempfile(fileext = ".tif")
+
   result <- with(mirai::daemons(2), {
     hsi_tiled(
       fun = \(tile) HSItools::hsi_calc_rmean(tile),
       x = test_reflectance,
-      n_tiles = 4
+      n_tiles = 4,
+      filename = temp_file,
+      overwrite = TRUE
     )
   })
 
@@ -54,11 +62,15 @@ test_that("hsi_tiled preserves spatial dimensions", {
 test_that("hsi_tiled works with 2D tile specification", {
   skip_if_tiled_unavailable()
 
+  temp_file <- withr::local_tempfile(fileext = ".tif")
+
   result <- with(mirai::daemons(2), {
     hsi_tiled(
       fun = \(tile) HSItools::hsi_calc_rmean(tile),
       x = test_reflectance,
-      n_tiles = c(2, 2)
+      n_tiles = c(2, 2),
+      filename = temp_file,
+      overwrite = TRUE
     )
   })
 
@@ -72,13 +84,17 @@ test_that("hsi_tiled works with 2D tile specification", {
 test_that("hsi_tiled produces same values as sequential execution", {
   skip_if_tiled_unavailable()
 
+  temp_file <- withr::local_tempfile(fileext = ".tif")
+
   sequential <- hsi_calc_rmean(x = test_reflectance)
 
   tiled <- with(mirai::daemons(2), {
     hsi_tiled(
       fun = \(tile) HSItools::hsi_calc_rmean(tile),
       x = test_reflectance,
-      n_tiles = 4
+      n_tiles = 4,
+      filename = temp_file,
+      overwrite = TRUE
     )
   })
 
@@ -94,7 +110,7 @@ test_that("hsi_tiled produces same values as sequential execution", {
 test_that("hsi_tiled writes to file when filename provided", {
   skip_if_tiled_unavailable()
 
-  temp_file <- tempfile(fileext = ".tif")
+  temp_file <- withr::local_tempfile(fileext = ".tif")
 
   with(mirai::daemons(2), {
     hsi_tiled(
@@ -107,14 +123,12 @@ test_that("hsi_tiled writes to file when filename provided", {
   })
 
   expect_true(file.exists(temp_file))
-
-  unlink(temp_file)
 })
 
 test_that("hsi_tiled errors when file exists and overwrite = FALSE", {
   skip_if_tiled_unavailable()
 
-  temp_file <- tempfile(fileext = ".tif")
+  temp_file <- withr::local_tempfile(fileext = ".tif")
 
   with(mirai::daemons(2), {
     hsi_tiled(
@@ -137,8 +151,6 @@ test_that("hsi_tiled errors when file exists and overwrite = FALSE", {
       )
     })
   )
-
-  unlink(temp_file)
 })
 
 # ── Input validation ─────────────────────────────────────────────────────────
