@@ -10,7 +10,7 @@
 #'   environment are not visible to parallel workers.
 #' @param x A [`SpatRaster`][terra::SpatRaster-class] with hyperspectral data.
 #' @param n_tiles Integer or integer vector of length 1 or 2. Number of tiles
-#'   to split `x` into. A single integer creates row strips (e.g. `60`). A
+#'   to split `x` into. A single integer creates row strips (e.g. `30`). A
 #'   length-2 vector creates a 2D tile grid (e.g. `c(8, 8)`). For best
 #'   performance, match to the number of available `mirai` daemons.
 #' @param filename Character. Output filename. Default `""` writes the result
@@ -18,16 +18,14 @@
 #'   is strongly recommended. Unlike other `HSItools` functions, `filename = ""`
 #'   never keeps the result in memory — see Details.
 #' @param overwrite Logical. Overwrite existing file. Default `FALSE`.
+#' @param ... Additional arguments passed to [`terra::writeRaster()`].
 #'
 #' @returns A [`SpatRaster`][terra::SpatRaster-class] merged from processed tiles.
 #'
 #' @details
-#' Parallelism is provided by [`purrr::in_parallel()`] and [`mirai::daemons()`].
+#' Parallelism is provided by [`mirai::mirai_map()`] and [`mirai::daemons()`].
 #' Daemons must be initialised by the caller before invoking this function via
-#' `mirai::daemons(n)`. If no daemons are active, processing falls back to
-#' sequential automatically. Intermediate tiles are written to a temporary
-#' directory managed by [`withr::local_tempdir()`] and cleaned up on exit,
-#' even if the function errors.
+#' `mirai::daemons(n)`. If no daemons are active, the function errors.
 #'
 #' **This function does not support in-memory processing.** [`terra::makeTiles()`]
 #' requires a filename and errors if one is not provided — tiles are always
@@ -36,6 +34,11 @@
 #' is always file-backed: either the path supplied via `filename`, or a
 #' session-scoped temporary file when `filename = ""`. In the latter case a
 #' warning is emitted and the temporary file persists until the R session ends.
+#'
+#' Intermediate tiles are written to a session-scoped temporary directory that
+#' is not cleaned up on function exit. This is intentional: persistent `mirai`
+#' daemon processes may hold open GDAL file handles to tile files after the
+#' function returns, and premature cleanup causes access violations on Windows.
 #'
 #' @examples
 #' \dontrun{
@@ -68,24 +71,24 @@ hsi_tiled <- function(
   x,
   n_tiles,
   filename = "",
-  overwrite = FALSE
+  overwrite = FALSE,
+  ...
 ) {
   # Validate inputs
   check_spatraster(x)
+  rlang::check_installed("mirai", reason = "to use `hsi_tiled()`.")
 
-  # This validator should accept either 1 integer for rows only, or c(x, y) for nrows, ncols or 2D
   if (!length(n_tiles) %in% c(1, 2)) {
     cli::cli_abort(
       "{.arg n_tiles} must be a single integer or a vector of length 2 {.code c(nrow, ncol)}."
     )
   }
 
-  # Determine merge target path before any temp management.
-  # Exception to the withr rule: when filename = "", the merge output IS the
-  # backing store of the returned SpatRaster. withr::local_tempdir() would
-  # delete it on function exit, orphaning the object. plain tempfile() is
-  # intentional here — it persists for the session lifetime.
-  # See hsi_calc_reflectance for reference.
+  # Determine merge target path.
+  # Exception to the withr rule: the merge output IS the backing store of the
+  # returned SpatRaster. withr::local_tempdir() would delete it on function
+  # exit, orphaning the object. Plain tempfile() is intentional here — it
+  # persists for the session lifetime. See hsi_calc_reflectance for reference.
   if (filename != "") {
     merge_target <- normalizePath(filename, mustWork = FALSE)
   } else {
@@ -99,45 +102,70 @@ hsi_tiled <- function(
     )
   }
 
-  # Create a self-cleaning tempdir for intermediate tiles only
-  tmp_dir <- withr::local_tempdir()
+  # Capture writeRaster options before mirai_map
+  wopt_user <- rlang::list2(...)
+
+  # Session-lifetime temp dir for tiles.
+  # Exception to the withr rule: daemon processes may hold open GDAL handles
+  # after this function returns. See hsi_calc_reflectance for same pattern.
+  tmp_dir <- tempfile()
+  dir.create(tmp_dir)
+
+  # Convert n_tiles (desired count) to rows/cols per tile for makeTiles.
+  # makeTiles interprets y as rows-per-tile, not tile count.
+  if (length(n_tiles) == 1) {
+    n_tiles <- c(n_tiles, 1L)
+  }
+
+  tile_size <- c(
+    ceiling(terra::nrow(x) / n_tiles[1]),
+    ceiling(terra::ncol(x) / n_tiles[2])
+  )
 
   # Create tiles
   tile_paths <- terra::makeTiles(
     x,
-    y = n_tiles,
+    y = tile_size,
     filename = file.path(tmp_dir, "tile_.tif")
   )
 
-  # Process tiles, merge, write explicitly, and rast from written file
-  tile_paths |>
-    purrr::map(
-      purrr::in_parallel(
-        \(path) {
-          out_path <- file.path(
-            dirname(path),
-            paste0("result_", basename(path))
-          )
-          fun(terra::rast(path)) |>
-            terra::writeRaster(filename = out_path, overwrite = TRUE)
-          out_path
-        },
-        fun = fun
+  # Process tiles in parallel
+  result_paths <- mirai::mirai_map(
+    tile_paths,
+    \(path, fun) {
+      out_path <- file.path(
+        dirname(path),
+        paste0("result_", basename(path))
       )
-    ) |>
-    # Create SpatRaster
-    purrr::map(\(path) terra::rast(path)) |>
-    # Create SparRaster Collection
-    terra::sprc() |>
-    # Merge SpatRasters
-    terra::merge() |>
-    # Write to file
-    terra::writeRaster(filename = merge_target, overwrite = overwrite)
+      fun(terra::rast(path)) |>
+        terra::writeRaster(filename = out_path, overwrite = TRUE)
+      out_path
+    },
+    .args = list(fun = fun)
+  )[] |>
+    unlist()
 
-  # Rasterize back from written file, dropping all references to temp tiles
-  # before withr cleans up tmp_dir
-  result <- terra::rast(merge_target)
+  # Build write options from a result tile — fun determines output structure
+  result_names <- names(terra::rast(result_paths[[1]]))
+  wopt_default <- list(names = result_names)
+  wopt <- purrr::list_modify(wopt_default, !!!wopt_user)
 
-  # Return
-  result
+  # Build VRT mosaic and write final output
+  terra::vrt(
+    result_paths,
+    filename = normalizePath(
+      file.path(tmp_dir, "mosaic.vrt"),
+      mustWork = FALSE
+    ),
+    overwrite = TRUE
+  ) |>
+    terra::writeRaster(
+      filename = merge_target,
+      overwrite = overwrite,
+      wopt = wopt,
+      gdal = "BIGTIFF=YES"
+    )
+
+  # Return result
+  terra::rast(merge_target)
 }

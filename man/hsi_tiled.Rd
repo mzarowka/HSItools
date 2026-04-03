@@ -4,7 +4,7 @@
 \alias{hsi_tiled}
 \title{Process a SpatRaster in parallel tiles}
 \usage{
-hsi_tiled(fun, x, n_tiles, filename = "", overwrite = FALSE)
+hsi_tiled(fun, x, n_tiles, filename = "", overwrite = FALSE, ...)
 }
 \arguments{
 \item{fun}{Function. Applied to each tile. Must be written as an anonymous
@@ -17,7 +17,7 @@ environment are not visible to parallel workers.}
 \item{x}{A \code{\link[terra:SpatRaster-class]{SpatRaster}} with hyperspectral data.}
 
 \item{n_tiles}{Integer or integer vector of length 1 or 2. Number of tiles
-to split \code{x} into. A single integer creates row strips (e.g. \code{60}). A
+to split \code{x} into. A single integer creates row strips (e.g. \code{30}). A
 length-2 vector creates a 2D tile grid (e.g. \code{c(8, 8)}). For best
 performance, match to the number of available \code{mirai} daemons.}
 
@@ -27,6 +27,8 @@ is strongly recommended. Unlike other \code{HSItools} functions, \code{filename 
 never keeps the result in memory — see Details.}
 
 \item{overwrite}{Logical. Overwrite existing file. Default \code{FALSE}.}
+
+\item{...}{Additional arguments passed to \code{\link[terra:writeRaster]{terra::writeRaster()}}.}
 }
 \value{
 A \code{\link[terra:SpatRaster-class]{SpatRaster}} merged from processed tiles.
@@ -35,12 +37,9 @@ A \code{\link[terra:SpatRaster-class]{SpatRaster}} merged from processed tiles.
 Process a SpatRaster in parallel tiles
 }
 \details{
-Parallelism is provided by \code{\link[purrr:in_parallel]{purrr::in_parallel()}} and \code{\link[mirai:daemons]{mirai::daemons()}}.
+Parallelism is provided by \code{\link[mirai:mirai_map]{mirai::mirai_map()}} and \code{\link[mirai:daemons]{mirai::daemons()}}.
 Daemons must be initialised by the caller before invoking this function via
-\code{mirai::daemons(n)}. If no daemons are active, processing falls back to
-sequential automatically. Intermediate tiles are written to a temporary
-directory managed by \code{\link[withr:with_tempfile]{withr::local_tempdir()}} and cleaned up on exit,
-even if the function errors.
+\code{mirai::daemons(n)}. If no daemons are active, the function errors.
 
 \strong{This function does not support in-memory processing.} \code{\link[terra:makeTiles]{terra::makeTiles()}}
 requires a filename and errors if one is not provided — tiles are always
@@ -49,6 +48,11 @@ other \code{HSItools} functions is intentionally absent here. The merged result
 is always file-backed: either the path supplied via \code{filename}, or a
 session-scoped temporary file when \code{filename = ""}. In the latter case a
 warning is emitted and the temporary file persists until the R session ends.
+
+Intermediate tiles are written to a session-scoped temporary directory that
+is not cleaned up on function exit. This is intentional: persistent \code{mirai}
+daemon processes may hold open GDAL file handles to tile files after the
+function returns, and premature cleanup causes access violations on Windows.
 }
 \examples{
 \dontrun{

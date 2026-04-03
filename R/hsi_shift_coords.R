@@ -102,27 +102,34 @@ hsi_shift_coords <- function(
   # Splice wopt defaults with user input if any
   wopt <- purrr::list_modify(wopt_default, !!!wopt_user)
 
-  # Get cell centres for first two rows
+  # Extract row_um at first two row centres
   cell1 <- terra::xyFromCell(x, 1)
   cell2 <- terra::xyFromCell(x, terra::ncol(x) + 1)
 
-  # Compute physical resolution in row_um units per pixel row
-  um_per_pixel <- terra::extract(x$row_um, cell2)[[2]] -
-    terra::extract(x$row_um, cell1)[[2]]
+  row_um_1 <- terra::extract(x$row_um, cell1)[["row_um"]]
+  row_um_2 <- terra::extract(x$row_um, cell2)[["row_um"]]
 
-  # Compute distance from cell 1 to reference point in pixel rows
-  point_y <- terra::geom(reference)[, "y"]
-  dist_pixels <- (cell1[2] - point_y) / terra::res(x)[2]
+  # Physical resolution: µm per pixel row
+  um_per_pixel <- row_um_2 - row_um_1
 
-  # Estimate row_um value at reference point by linear extrapolation
-  estimated <- terra::extract(x$row_um, cell1)[[2]] +
-    dist_pixels * um_per_pixel
+  # Distance from cell 1 to reference in pixel rows
+  ref_y <- terra::geom(reference)[, "y"]
+  dist_pixels <- (cell1[, "y"] - ref_y) / terra::res(x)[2]
 
-  # Find shift value from estimated position and known origin
-  shift <- estimated - origin
+  # Estimate row_um at reference by linear extrapolation
+  estimated <- row_um_1 + dist_pixels * um_per_pixel
 
-  # Calculate shifted row_um SpatRaster
-  x$row_um <- x$row_um - shift
+  # Validate extrapolation
+  if (is.na(estimated)) {
+    cli::cli_abort(c(
+      "Could not estimate {.field row_um} at {.arg reference}.",
+      "i" = "Extent of {.arg x}: {.val {as.vector(terra::ext(x))}}.",
+      "i" = "Coordinates of {.arg reference}: {.val {as.vector(terra::geom(reference)[, c('x', 'y')])}}."
+    ))
+  }
+
+  # Shift row_um to place reference at origin
+  x$row_um <- x$row_um - (estimated - origin)
 
   names(x) <- c("row_um", "col_um")
 

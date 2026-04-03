@@ -129,15 +129,15 @@ hsi_extract_profile <- function(
   ) |>
     # Coerce to data frame with coordinates
     terra::as.data.frame(xy = TRUE) |>
-    # Select position and all band columns
+    # Keep terra coordinate as join key (rename deferred)
     dplyr::select(
-      position = dplyr::all_of(position_col),
+      dplyr::all_of(position_col),
       dplyr::all_of(band_names)
     ) |>
     # Coerce tibble
     tibble::as_tibble()
 
-  # Aggregate y perpendicular to profile direction
+  # Replace pixel position with physical coordinates
   if (!is.null(y)) {
     # Validate input
     check_spatraster(y)
@@ -166,13 +166,23 @@ hsi_extract_profile <- function(
       ) |>
       # Coerce to data frame with coordinates
       terra::as.data.frame(xy = TRUE) |>
-      # Pull position as a vector
-      dplyr::pull(lyr)
+      # Keep terra coordinate as join key plus physical position
+      dplyr::select(
+        dplyr::all_of(position_col),
+        position = dplyr::all_of(lyr)
+      ) |>
+      # Coerce tibble
+      tibble::as_tibble()
 
     x_agg <- x_agg |>
-      dplyr::mutate(position = y_agg)
+      dplyr::left_join(y_agg, by = position_col) |>
+      dplyr::select(-dplyr::all_of(position_col))
+  } else {
+    # No physical coords — rename terra coordinate to position
+    x_agg <- x_agg |>
+      dplyr::rename(position = dplyr::all_of(position_col))
   }
 
-  # Return
+  # Return result
   x_agg
 }
