@@ -74,4 +74,15 @@ um <- HSItools::hsi_calibration_from_dims(
 
 # Building a coordinate raster
 
+An important step, and also data which is "free of charge" is building a `SpatRaster` that holds in its cells simple information about real world coordinates. This is an opitnionated framework, where we construct a `SpatRaster` that has two layers (bands). The first one is `"row_um"` and stores Y-axis position, the second one is `"col_um"` and stores X-axis. This provides both an interesting dataset, and a lookup table for other spatial data.
+
 # Anchoring to a reference point
+
+Often, the extent of a captured specimen does not reflect the ture origin, or a reference point anchored at some position along the Y-axis. For example, sediment core scanning often calls for specific point to represent real zero depth. For this, you can provide a point within a `SpatRaster` extent and use it as spatial anchor. By default we treat this as a point equal to zero, but any other value in real world units can be provided.
+
+# Shifting extent
+
+Once coordinate SpatRasters are available, either plain coordinates or anchored, they can be used to change the SpatExtent of a SpatRaster of choice.
+This operation, and further, downstream operations need to be done in concert. Maning, for example, cropping has to be applied to both SpatRasters so they keep their reference frame.
+
+# Shifting SpatRaster
