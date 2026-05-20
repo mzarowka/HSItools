@@ -4,20 +4,15 @@
 \alias{hsi_plot_spatraster_rgb}
 \title{Plot a three-layer pseudoRGB SpatRaster}
 \usage{
-hsi_plot_spatraster_rgb(x, physical = FALSE, stretch = NULL)
+hsi_plot_spatraster_rgb(x, stretch = NULL)
 }
 \arguments{
 \item{x}{A \code{\link[terra:SpatRaster-class]{SpatRaster}} with hyperspectral data.
 Must have exactly three layers.}
 
-\item{physical}{Logical. When \code{TRUE}, negates y-axis tick labels to display
-positive physical distances. Set \code{TRUE} when \code{x} has been processed by
-\code{\link[=hsi_set_physical_extent]{hsi_set_physical_extent()}}. Default \code{FALSE}.}
-
 \item{stretch}{Character. Contrast stretch applied before rendering. One of
-\code{NULL} (no stretch), \code{"lin"} (linear, using 2nd and 98th percentiles), or
-\code{"hist"} (histogram equalization). Passed to
-\code{\link[tidyterra:geom_spatraster_rgb]{tidyterra::geom_spatraster_rgb()}}. Default \code{NULL}.}
+\code{NULL} (no stretch), \code{"lin"} (linear stretch via \code{terra::stretch()}), or
+\code{"hist"} (histogram equalization via \code{terra::stretch()}). Default \code{NULL}.}
 }
 \value{
 A \code{\link[ggplot2:ggplot]{ggplot2::ggplot}} object. Extend with \code{+} to add labels,
@@ -31,11 +26,12 @@ Produces a minimal RGB raster map with a fixed aspect ratio and no axis
 expansion. The returned ggplot carries no theme or axis labels — add
 these with \code{+} using standard ggplot2 conventions.
 
-When \code{physical = TRUE}, \code{\link[ggplot2:scale_continuous]{ggplot2::scale_y_continuous()}} applies
-\verb{labels = \\(i) -i} to strip the negation introduced by
-\code{\link[=hsi_set_physical_extent]{hsi_set_physical_extent()}}, so that axes read as positive physical
-distances. When \code{physical = FALSE}, ggplot2 default labels are used,
-showing pixel coordinates.
+When raster unit metadata is present, the y-axis tick labels include the
+unit suffix such as \code{0 cm} or \code{1.5 cm}. If no unit metadata exists,
+ggplot2 default labels are used, showing pixel coordinates.
+
+This is a temporary workaround that avoids tidyterra and plots the RGB raster
+directly with \code{\link[ggplot2:geom_raster]{ggplot2::geom_raster()}}.
 
 Layers are mapped to red, green, and blue channels in band order (1, 2, 3).
 Any three-band combination can be used — RGB, CIR, SWIR false colour, or
@@ -51,22 +47,20 @@ x_rgb <- hsi_plot_spatraster_rgb(x)
 # With linear stretch
 x_rgb <- hsi_plot_spatraster_rgb(x, stretch = "lin")
 
-# Physical-space plot after extent assignment
+# Physical-space plot after calibration
 um <- hsi_calibration_from_dims(scan_length_um = 50000, n_pixels = 1000)
-x_coords <- hsi_calc_coords(x, um_per_pixel = um)
-x_physical <- hsi_set_physical_extent(x, y = x_coords, units = "mm")
-x_rgb <- hsi_plot_spatraster_rgb(x_physical, physical = TRUE)
+ref <- terra::vect(matrix(c(1001.5, 2007.5), ncol = 2), type = "points")
+x_physical <- hsi_calibrate_raster(x, reference = ref, um_per_pixel = um)
+x_rgb <- hsi_plot_spatraster_rgb(x_physical)
 
 # Add labels and theme with ggplot2
 x_rgb +
-  ggplot2::labs(x = "Width (mm)", y = "Depth (mm)") +
+  ggplot2::labs(x = "Width (cm)", y = "Depth (cm)") +
   ggplot2::theme_minimal()
 }
 
 }
 \seealso{
-\code{\link[=hsi_set_physical_extent]{hsi_set_physical_extent()}} to assign a physically calibrated extent
-before plotting.
 \code{\link[=hsi_plot_spatraster]{hsi_plot_spatraster()}} for single-layer plots.
 \code{\link[=hsi_plot_profile]{hsi_plot_profile()}} for 1-D depth profiles.
 

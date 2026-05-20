@@ -44,6 +44,7 @@ calibration <- hsi_calibration_from_dims(
 \seealso{
 Other HSI Calibration: 
 \code{\link{hsi_calc_coords}()},
+\code{\link{hsi_calibrate_raster}()},
 \code{\link{hsi_calibration_direct}()},
 \code{\link{hsi_calibration_from_scale}()},
 \code{\link{hsi_drop_crs}()},

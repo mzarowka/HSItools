@@ -4,9 +4,8 @@
 #'
 #' @param x A [tibble][tibble::tibble] with columns `position` and exactly one
 #'   value column, as produced by [`hsi_extract_profile()`].
-#' @param physical Logical. When `TRUE`, negates x-axis tick labels to display
-#'   positive physical distances. Set `TRUE` when `x` was extracted with a
-#'   coordinate raster supplied to [`hsi_extract_profile()`]. Default `FALSE`.
+#' @param x A [tibble][tibble::tibble] with columns `position` and exactly one
+#'   value column, as produced by [`hsi_extract_profile()`].
 #'
 #' @returns A [`ggplot2::ggplot`] object. Extend with `+` to add labels,
 #'   themes, or colour scales.
@@ -18,11 +17,9 @@
 #' rotates the plot so that depth runs top-to-bottom visually.
 #' [`ggplot2::scale_x_reverse()`] places shallow positions at the top.
 #'
-#' When `physical = TRUE`, `labels = \(i) -i` is applied to
-#' [`ggplot2::scale_x_reverse()`] to strip the negation introduced by the
-#' coordinate system, so that axes read as positive physical distances.
-#' When `physical = FALSE`, ggplot2 default labels are used, showing pixel
-#' coordinates or raw position values.
+#' When profile unit metadata is present, tick labels include the unit suffix
+#' such as `0 mm` or `1.5 cm`. If no unit metadata exists, ggplot2 default
+#' labels are used, showing pixel coordinates or raw position values.
 #'
 #' The returned ggplot carries no theme or axis labels — add these with `+`
 #' using standard ggplot2 conventions.
@@ -42,23 +39,21 @@
 #'
 #' # Physical-space profile
 #' um <- hsi_calibration_from_dims(scan_length_um = 50000, n_pixels = 1000)
-#' x_coords <- hsi_calc_coords(x, um_per_pixel = um)
-#' x_profile <- hsi_extract_profile(x, y = x_coords)
-#' x_plot <- hsi_plot_profile(x_profile, physical = TRUE)
+#' ref <- terra::vect(matrix(c(1001.5, 2007.5), ncol = 2), type = "points")
+#' x_cal <- hsi_calibrate_raster(x, reference = ref, um_per_pixel = um)
+#' x_profile <- hsi_extract_profile(x_cal)
+#' x_plot <- hsi_plot_profile(x_profile)
 #'
 #' # Add labels and theme with ggplot2
 #' x_plot +
-#'   ggplot2::labs(x = "Depth (mm)", y = "RABD") +
+#'   ggplot2::labs(x = "Depth (cm)", y = "RABD") +
 #'   ggplot2::theme_minimal()
 #' }
 #' 
 #' @importFrom rlang .data
 #'
 #' @export
-hsi_plot_profile <- function(
-  x,
-  physical = FALSE
-) {
+hsi_plot_profile <- function(x) {
   # Validate inputs
   if (!inherits(x, "data.frame")) {
     cli::cli_abort(
@@ -74,12 +69,14 @@ hsi_plot_profile <- function(
     )
   }
 
+  units <- attr(x, "hsi_units", exact = TRUE)
+
   # Create ggplot object
   result <- ggplot2::ggplot(data = x) +
     ggplot2::aes(x = .data$position, y = .data[[var_name]]) +
     ggplot2::geom_line() +
     ggplot2::scale_x_reverse(
-      labels = if (physical) \(i) -i else ggplot2::waiver()
+      labels = if (!is.null(units)) hsi_unit_label_fun(units) else ggplot2::waiver()
     ) +
     ggplot2::coord_flip()
 
