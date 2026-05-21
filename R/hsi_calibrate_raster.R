@@ -31,19 +31,7 @@
 #'
 #' @examples
 #' \dontrun{
-#' raster <- terra::rast("capture.tif")
-#' reference <- terra::vect(matrix(c(1000, 2000), ncol = 2), type = "points")
-#' reference <- hsi_drop_crs(reference)
-#' scale_line <- terra::vect(matrix(c(1000, 2000, 1010, 2000), ncol = 2, byrow = TRUE), type = "lines")
-#' scale_line <- hsi_drop_crs(scale_line)
-#' calibration <- hsi_calibration_from_scale(scale_line, distance = 10, units = "mm")
-#'
-#' raster_physical <- hsi_calibrate_raster(
-#'   raster,
-#'   reference = reference,
-#'   um_per_pixel = calibration,
-#'   origin = 0,
-#'   units = "cm"
+#' # toDo
 #' )
 #' }
 #'
@@ -84,9 +72,11 @@ hsi_calibrate_raster <- function(
 	y_min <- -(origin + (nrow - ref_y) * pixel_size)
 	y_max <- -(origin + (1 - ref_y) * pixel_size)
 
+  # Create a copy of the input raster with the new extent.
 	result <- terra::deepcopy(raster)
 	terra::ext(result) <- terra::ext(x_min, x_max, y_min, y_max)
 
+  # Add units metadata to the raster.
 	tags <- terra::metags(result)
 	if (is.data.frame(tags) && nrow(tags) > 0) {
 		tags <- tags[tags$name != "hsi_units", , drop = FALSE]
@@ -96,12 +86,10 @@ hsi_calibrate_raster <- function(
 		data.frame(
 			name = "hsi_units",
 			value = units,
-			domain = "",
-			stringsAsFactors = FALSE
+			domain = ""
 		)
 	)
 	terra::metags(result) <- tags
-	attr(result, "hsi_units") <- units
 
 	return(result)
 }

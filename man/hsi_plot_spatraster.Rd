@@ -9,7 +9,6 @@ hsi_plot_spatraster(x)
 \arguments{
 \item{x}{A \code{\link[terra:SpatRaster-class]{SpatRaster}} with hyperspectral data.
 Must be single-layer.}
-
 }
 \value{
 A \code{\link[ggplot2:ggplot]{ggplot2::ggplot}} object. Extend with \code{+} to add labels,
@@ -23,11 +22,9 @@ Produces a minimal raster map with a fixed aspect ratio and no axis
 expansion. The returned ggplot carries no theme, colour scale, or axis
 labels — add these with \code{+} using standard ggplot2 conventions.
 
-When raster unit metadata is present, the plot uses
-\code{\link[ggplot2:scale_continuous]{ggplot2::scale_y_reverse()}} and
-unit-aware labels such as \code{0 cm} or \code{1.5 cm}, so that depth
-increases downward like the profile plot. If no unit metadata exists,
-ggplot2 default labels are used, showing pixel coordinates.
+When raster unit metadata is present, the y-axis tick labels include the
+unit suffix such as \verb{0 cm} or \verb{1.5 cm}. If no unit metadata exists, ggplot2
+default labels are used, showing pixel coordinates.
 }
 \examples{
 \dontrun{

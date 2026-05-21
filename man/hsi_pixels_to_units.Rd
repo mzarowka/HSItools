@@ -77,13 +77,10 @@ hsi_pixels_to_units(c(0, 10, 20), calibration, units = "mm")
 \code{\link{hsi_calibration_from_dims}} for creating calibration objects
 
 Other HSI Calibration: 
-\code{\link{hsi_calc_coords}()},
 \code{\link{hsi_calibrate_raster}()},
 \code{\link{hsi_calibration_direct}()},
 \code{\link{hsi_calibration_from_dims}()},
 \code{\link{hsi_calibration_from_scale}()},
-\code{\link{hsi_drop_crs}()},
-\code{\link{hsi_set_physical_extent}()},
-\code{\link{hsi_shift_coords}()}
+\code{\link{hsi_drop_crs}()}
 }
 \concept{HSI Calibration}

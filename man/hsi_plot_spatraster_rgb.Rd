@@ -27,13 +27,8 @@ expansion. The returned ggplot carries no theme or axis labels — add
 these with \code{+} using standard ggplot2 conventions.
 
 When raster unit metadata is present, the y-axis tick labels include the
-unit suffix such as \code{0 cm} or \code{1.5 cm}. If no unit metadata exists,
-ggplot2 default labels are used, showing pixel coordinates.
-
-This is a temporary workaround that avoids tidyterra and plots the RGB raster
-directly with \code{\link[ggplot2:geom_raster]{ggplot2::geom_raster()}}.
-
-Layers are mapped to red, green, and blue channels in band order (1, 2, 3).
+unit suffix such as \verb{0 cm} or \verb{1.5 cm}. If no unit metadata exists, ggplot2
+default labels are used, showing pixel coordinates.
 Any three-band combination can be used — RGB, CIR, SWIR false colour, or
 any other composite.
 }

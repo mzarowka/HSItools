@@ -19,11 +19,6 @@
 #' When raster unit metadata is present, the y-axis tick labels include the
 #' unit suffix such as `0 cm` or `1.5 cm`. If no unit metadata exists, ggplot2
 #' default labels are used, showing pixel coordinates.
-#'
-#' This is a temporary workaround that avoids tidyterra and plots the RGB
-#' raster directly with [`ggplot2::geom_raster()`].
-#'
-#' Layers are mapped to red, green, and blue channels in band order (1, 2, 3).
 #' Any three-band combination can be used — RGB, CIR, SWIR false colour, or
 #' any other composite.
 #'
@@ -79,37 +74,18 @@ hsi_plot_spatraster_rgb <- function(
     )
   }
 
-  raster_df <- terra::as.data.frame(x, xy = TRUE, na.rm = FALSE)
-  band_names <- terra::names(x)[1:3]
+  x_rgb <- terra::colorize(
+    x,
+    to = "col",
+    stretch = if (is.null(stretch)) NULL else stretch
+  )
 
-  to_unit_rgb <- function(v) {
-    if (all(is.na(v))) {
-      return(v)
-    }
-
-    rng <- range(v, na.rm = TRUE, finite = TRUE)
-
-    if (rng[1] >= 0 && rng[2] <= 1) {
-      return(v)
-    }
-
-    if (rng[1] >= 0 && rng[2] <= 255) {
-      return(v / 255)
-    }
-
-    scales::rescale(v, to = c(0, 1), from = rng)
-  }
-
-  r <- to_unit_rgb(raster_df[[band_names[1]]])
-  g <- to_unit_rgb(raster_df[[band_names[2]]])
-  b <- to_unit_rgb(raster_df[[band_names[3]]])
-
-  raster_df$fill <- grDevices::rgb(r, g, b, maxColorValue = 1)
-
-  ggplot2::ggplot(raster_df) +
-    ggplot2::aes(x = .data$x, y = .data$y, fill = .data$fill) +
+  plot <- ggplot2::ggplot(x_rgb, ggplot2::aes(x, y, fill = value), pivot = TRUE) +
     ggplot2::geom_raster() +
     ggplot2::scale_fill_identity() +
-    ggplot2::scale_y_continuous(labels = label_fun) +
-    ggplot2::coord_fixed(expand = FALSE)
+    ggplot2::coord_fixed(expand = FALSE) +
+    ggplot2::scale_y_reverse(labels = label_fun) +
+    ggplot2::labs(x = "", y = "")
+
+  plot
 }

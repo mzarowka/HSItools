@@ -2,9 +2,9 @@
 #'
 #' @noRd
 hsi_get_units <- function(x) {
-  units <- attr(x, "hsi_units", exact = TRUE)
+  units <- NULL
 
-  if (is.null(units) && inherits(x, "SpatRaster")) {
+  if (inherits(x, "SpatRaster")) {
     tags <- terra::metags(x, name = "hsi_units")
 
     if (inherits(tags, "data.frame") && nrow(tags) > 0) {

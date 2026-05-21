@@ -4,8 +4,6 @@
 #'
 #' @param x A [tibble][tibble::tibble] with columns `position` and exactly one
 #'   value column, as produced by [`hsi_extract_profile()`].
-#' @param x A [tibble][tibble::tibble] with columns `position` and exactly one
-#'   value column, as produced by [`hsi_extract_profile()`].
 #'
 #' @returns A [`ggplot2::ggplot`] object. Extend with `+` to add labels,
 #'   themes, or colour scales.

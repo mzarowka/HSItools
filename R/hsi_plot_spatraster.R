@@ -17,8 +17,6 @@
 #' unit suffix such as `0 cm` or `1.5 cm`. If no unit metadata exists, ggplot2
 #' default labels are used, showing pixel coordinates.
 #'
-#' This is a temporary workaround that avoids tidyterra and plots the raster
-#' directly with [`ggplot2::geom_raster()`].
 #'
 #' @seealso
 #' [`hsi_plot_spatraster_rgb()`] for three-layer RGB plots.
@@ -59,15 +57,12 @@ hsi_plot_spatraster <- function(x) {
   units <- hsi_get_units(x)
   label_fun <- if (!is.null(units)) hsi_unit_label_fun(units) else ggplot2::waiver()
 
-  band_name <- terra::names(x)[1]
-  raster_df <- terra::as.data.frame(x, xy = TRUE, na.rm = FALSE)
-  names(raster_df)[names(raster_df) == band_name] <- "value"
 
-  ggplot2::ggplot(raster_df) +
-    ggplot2::aes(x = .data$x, y = .data$y, fill = .data$value) +
+  ggplot2::ggplot(x, ggplot2::aes(x, y, z = value, fill = value), pivot = TRUE) +
     ggplot2::geom_raster() +
     ggplot2::scale_fill_viridis_c() +
+    ggplot2::labs(x = "", y = "") +
     ggplot2::scale_y_reverse(labels = label_fun) +
-    ggplot2::labs(x = NULL, y = NULL) +
     ggplot2::coord_fixed(expand = FALSE)
+
 }

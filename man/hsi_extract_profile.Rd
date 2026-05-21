@@ -25,14 +25,13 @@ across rows, profile along columns). Default \code{"vertical"}.}
 \item{na.rm}{Logical. Remove \code{NA} values. Default \code{TRUE}.}
 
 \item{y}{A \code{\link[terra:SpatRaster-class]{SpatRaster}} with layers \code{row_um}
-and \code{col_um}, as produced by \code{\link[=hsi_calc_coords]{hsi_calc_coords()}} or \code{\link[=hsi_shift_coords]{hsi_shift_coords()}}.
-When provided, the \code{position} column is expressed in µm rather than pixel
-coordinates. Default \code{NULL}.}
+and \code{col_um}. When provided, the \code{position} column is expressed in physical
+units rather than pixel coordinates. Default \code{NULL}.}
 }
 \value{
 A \link[tibble:tibble]{tibble} with columns:
 \item{position}{Numeric. Position along the profile axis, in pixel coordinates
-or µm when \code{y} is supplied.}
+or physical units when \code{y} is supplied or \code{x} carries unit metadata.}
 \item{...}{One column per input layer, named after band names.}
 }
 \description{
@@ -59,21 +58,17 @@ um <- hsi_calibration_from_dims(scan_length_um = 50000, n_pixels = 1000)
 x_profile <- hsi_extract_profile(x)
 
 # Physical-space profile
-x_coords <- hsi_calc_coords(x, um_per_pixel = um)
-x_profile <- hsi_extract_profile(x, y = x_coords)
-
-# Shifted origin
 ref <- terra::vect(matrix(c(1001.5, 2007.5), ncol = 2), type = "points")
-x_coords_shifted <- hsi_shift_coords(x_coords, reference = ref)
-x_profile <- hsi_extract_profile(x, y = x_coords_shifted)
+x_cal <- hsi_calibrate_raster(x, reference = ref, um_per_pixel = um)
+x_profile <- hsi_extract_profile(x_cal)
 
 # Region of interest
 x_profile <- x |>
   terra::crop(my_extent) |>
-  hsi_extract_profile(y = x_coords)
+  hsi_extract_profile()
 
 # Horizontal profile
-x_profile <- hsi_extract_profile(x, direction = "horizontal", y = x_coords)
+x_profile <- hsi_extract_profile(x_cal, direction = "horizontal")
 
 # Classified raster
 x_class <- terra::rast("classified.tif")
@@ -83,8 +78,6 @@ x_profile <- hsi_extract_profile(x_class, fun = "modal")
 }
 \seealso{
 \code{\link[=hsi_extract_spectrum]{hsi_extract_spectrum()}} for extracting an averaged spectrum.
-\code{\link[=hsi_calc_coords]{hsi_calc_coords()}} and \code{\link[=hsi_shift_coords]{hsi_shift_coords()}} to produce the coordinate
-raster passed to \code{y}.
 
 Other HSI Extraction: 
 \code{\link{hsi_extract_spectrum}()}
