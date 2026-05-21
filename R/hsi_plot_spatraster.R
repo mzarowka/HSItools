@@ -57,7 +57,6 @@ hsi_plot_spatraster <- function(x) {
   units <- hsi_get_units(x)
   label_fun <- if (!is.null(units)) hsi_unit_label_fun(units) else ggplot2::waiver()
 
-
   ggplot2::ggplot(x, ggplot2::aes(x, y, z = value, fill = value), pivot = TRUE) +
     ggplot2::geom_raster() +
     ggplot2::scale_fill_viridis_c() +

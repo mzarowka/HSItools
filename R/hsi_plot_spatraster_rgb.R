@@ -67,13 +67,6 @@ hsi_plot_spatraster_rgb <- function(
   units <- hsi_get_units(x)
   label_fun <- if (!is.null(units)) hsi_unit_label_fun(units) else ggplot2::waiver()
 
-  if (!is.null(stretch)) {
-    x <- terra::stretch(
-      x,
-      histeq = identical(stretch, "hist")
-    )
-  }
-
   x_rgb <- terra::colorize(
     x,
     to = "col",
