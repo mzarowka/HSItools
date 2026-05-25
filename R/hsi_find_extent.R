@@ -26,7 +26,7 @@
 #' Reduce `width` or adjust the reference points to fit within `x`.
 #'
 #' @seealso
-#' [`hsi_set_physical_extent()`] to assign physical units to a raster extent.
+#' [`hsi_calibrate_raster()`] to assign physical units to a raster extent.
 #'
 #' @examples
 #' \dontrun{

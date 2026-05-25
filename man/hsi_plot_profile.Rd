@@ -4,15 +4,11 @@
 \alias{hsi_plot_profile}
 \title{Plot a depth profile}
 \usage{
-hsi_plot_profile(x, physical = FALSE)
+hsi_plot_profile(x)
 }
 \arguments{
 \item{x}{A \link[tibble:tibble]{tibble} with columns \code{position} and exactly one
 value column, as produced by \code{\link[=hsi_extract_profile]{hsi_extract_profile()}}.}
-
-\item{physical}{Logical. When \code{TRUE}, negates x-axis tick labels to display
-positive physical distances. Set \code{TRUE} when \code{x} was extracted with a
-coordinate raster supplied to \code{\link[=hsi_extract_profile]{hsi_extract_profile()}}. Default \code{FALSE}.}
 }
 \value{
 A \code{\link[ggplot2:ggplot]{ggplot2::ggplot}} object. Extend with \code{+} to add labels,
@@ -28,11 +24,9 @@ x-axis as the independent variable — ensuring that stats like
 rotates the plot so that depth runs top-to-bottom visually.
 \code{\link[ggplot2:scale_continuous]{ggplot2::scale_x_reverse()}} places shallow positions at the top.
 
-When \code{physical = TRUE}, \verb{labels = \\(i) -i} is applied to
-\code{\link[ggplot2:scale_continuous]{ggplot2::scale_x_reverse()}} to strip the negation introduced by the
-coordinate system, so that axes read as positive physical distances.
-When \code{physical = FALSE}, ggplot2 default labels are used, showing pixel
-coordinates or raw position values.
+When profile unit metadata is present, tick labels include the unit suffix
+such as \verb{0 mm} or \verb{1.5 cm}. If no unit metadata exists, ggplot2 default
+labels are used, showing pixel coordinates or raw position values.
 
 The returned ggplot carries no theme or axis labels — add these with \code{+}
 using standard ggplot2 conventions.
@@ -47,13 +41,14 @@ x_plot <- hsi_plot_profile(x_profile)
 
 # Physical-space profile
 um <- hsi_calibration_from_dims(scan_length_um = 50000, n_pixels = 1000)
-x_coords <- hsi_calc_coords(x, um_per_pixel = um)
-x_profile <- hsi_extract_profile(x, y = x_coords)
-x_plot <- hsi_plot_profile(x_profile, physical = TRUE)
+ref <- terra::vect(matrix(c(1001.5, 2007.5), ncol = 2), type = "points")
+x_cal <- hsi_calibrate_raster(x, reference = ref, um_per_pixel = um)
+x_profile <- hsi_extract_profile(x_cal)
+x_plot <- hsi_plot_profile(x_profile)
 
 # Add labels and theme with ggplot2
 x_plot +
-  ggplot2::labs(x = "Depth (mm)", y = "RABD") +
+  ggplot2::labs(x = "Depth (cm)", y = "RABD") +
   ggplot2::theme_minimal()
 }
 

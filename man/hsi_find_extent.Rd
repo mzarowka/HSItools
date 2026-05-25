@@ -71,7 +71,7 @@ x_extent <- hsi_find_extent(
 
 }
 \seealso{
-\code{\link[=hsi_set_physical_extent]{hsi_set_physical_extent()}} to assign physical units to a raster extent.
+\code{\link[=hsi_calibrate_raster]{hsi_calibrate_raster()}} to assign physical units to a raster extent.
 
 Other Utilities: 
 \code{\link{hsi_bind_rows}()},

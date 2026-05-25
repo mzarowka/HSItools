@@ -10,13 +10,12 @@
 #'   across rows, profile along columns). Default `"vertical"`.
 #' @param na.rm Logical. Remove `NA` values. Default `TRUE`.
 #' @param y A [`SpatRaster`][terra::SpatRaster-class] with layers `row_um`
-#'   and `col_um`, as produced by [`hsi_calc_coords()`] or [`hsi_shift_coords()`].
-#'   When provided, the `position` column is expressed in µm rather than pixel
-#'   coordinates. Default `NULL`.
+#'   and `col_um`. When provided, the `position` column is expressed in physical
+#'   units rather than pixel coordinates. Default `NULL`.
 #'
 #' @returns A [tibble][tibble::tibble] with columns:
 #'   \item{position}{Numeric. Position along the profile axis, in pixel coordinates
-#'     or µm when `y` is supplied.}
+#'     or physical units when `y` is supplied or `x` carries unit metadata.}
 #'   \item{...}{One column per input layer, named after band names.}
 #'
 #' @details
@@ -33,8 +32,6 @@
 #'
 #' @seealso
 #' [`hsi_extract_spectrum()`] for extracting an averaged spectrum.
-#' [`hsi_calc_coords()`] and [`hsi_shift_coords()`] to produce the coordinate
-#' raster passed to `y`.
 #'
 #' @examples
 #' \dontrun{
@@ -45,21 +42,17 @@
 #' x_profile <- hsi_extract_profile(x)
 #'
 #' # Physical-space profile
-#' x_coords <- hsi_calc_coords(x, um_per_pixel = um)
-#' x_profile <- hsi_extract_profile(x, y = x_coords)
-#'
-#' # Shifted origin
 #' ref <- terra::vect(matrix(c(1001.5, 2007.5), ncol = 2), type = "points")
-#' x_coords_shifted <- hsi_shift_coords(x_coords, reference = ref)
-#' x_profile <- hsi_extract_profile(x, y = x_coords_shifted)
+#' x_cal <- hsi_calibrate_raster(x, reference = ref, um_per_pixel = um)
+#' x_profile <- hsi_extract_profile(x_cal)
 #'
 #' # Region of interest
 #' x_profile <- x |>
 #'   terra::crop(my_extent) |>
-#'   hsi_extract_profile(y = x_coords)
+#'   hsi_extract_profile()
 #'
 #' # Horizontal profile
-#' x_profile <- hsi_extract_profile(x, direction = "horizontal", y = x_coords)
+#' x_profile <- hsi_extract_profile(x_cal, direction = "horizontal")
 #'
 #' # Classified raster
 #' x_class <- terra::rast("classified.tif")
@@ -182,6 +175,13 @@ hsi_extract_profile <- function(
     x_agg <- x_agg |>
       dplyr::rename(position = dplyr::all_of(position_col))
   }
+
+  units <- hsi_get_units(y)
+  if (is.null(units)) {
+    units <- hsi_get_units(x)
+  }
+
+  attr(x_agg, "hsi_units") <- units
 
   # Return result
   x_agg
