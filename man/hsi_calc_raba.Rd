@@ -73,25 +73,25 @@ x_raba <- hsi_calc_raba(
 \seealso{
 \code{\link{hsi_calc_rabd}} for single-point absorption depth
 
-Other HSI Transformations: 
-\code{\link{hsi_apply_mnf}()},
-\code{\link{hsi_calc_difference}()},
-\code{\link{hsi_calc_mnf}()},
-\code{\link{hsi_calc_ndi}()},
-\code{\link{hsi_calc_rabd}()},
-\code{\link{hsi_calc_ratio}()},
-\code{\link{hsi_calc_rcv}()},
-\code{\link{hsi_calc_reflectance}()},
-\code{\link{hsi_calc_remp}()},
-\code{\link{hsi_calc_rmean}()},
-\code{\link{hsi_calc_rmedian}()},
-\code{\link{hsi_calc_rsd}()},
-\code{\link{hsi_calc_stretch}()},
-\code{\link{hsi_destripe}()},
-\code{\link{hsi_remove_continuum}()},
-\code{\link{hsi_smooth_median}()},
-\code{\link{hsi_smooth_savgol}()},
-\code{\link{hsi_tiled}()},
-\code{\link{hsi_write_scaled}()}
+Other HSI Transformations:
+\code{\link[=hsi_apply_mnf]{hsi_apply_mnf()}},
+\code{\link[=hsi_calc_difference]{hsi_calc_difference()}},
+\code{\link[=hsi_calc_mnf]{hsi_calc_mnf()}},
+\code{\link[=hsi_calc_ndi]{hsi_calc_ndi()}},
+\code{\link[=hsi_calc_rabd]{hsi_calc_rabd()}},
+\code{\link[=hsi_calc_ratio]{hsi_calc_ratio()}},
+\code{\link[=hsi_calc_rcv]{hsi_calc_rcv()}},
+\code{\link[=hsi_calc_reflectance]{hsi_calc_reflectance()}},
+\code{\link[=hsi_calc_remp]{hsi_calc_remp()}},
+\code{\link[=hsi_calc_rmean]{hsi_calc_rmean()}},
+\code{\link[=hsi_calc_rmedian]{hsi_calc_rmedian()}},
+\code{\link[=hsi_calc_rsd]{hsi_calc_rsd()}},
+\code{\link[=hsi_calc_stretch]{hsi_calc_stretch()}},
+\code{\link[=hsi_destripe]{hsi_destripe()}},
+\code{\link[=hsi_remove_continuum]{hsi_remove_continuum()}},
+\code{\link[=hsi_smooth_median]{hsi_smooth_median()}},
+\code{\link[=hsi_smooth_savgol]{hsi_smooth_savgol()}},
+\code{\link[=hsi_tiled]{hsi_tiled()}},
+\code{\link[=hsi_write_scaled]{hsi_write_scaled()}}
 }
 \concept{HSI Transformations}

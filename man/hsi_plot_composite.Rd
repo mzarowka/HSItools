@@ -22,10 +22,10 @@ Composite hyperspectral indices plots
 Can composite line profiles and SpatRasters
 }
 \seealso{
-Other Plotting: 
-\code{\link{hsi_plot_profile}()},
-\code{\link{hsi_plot_spatraster}()},
-\code{\link{hsi_plot_spatraster_rgb}()},
-\code{\link{hsi_plot_spectrum}()}
+Other Plotting:
+\code{\link[=hsi_plot_profile]{hsi_plot_profile()}},
+\code{\link[=hsi_plot_raster]{hsi_plot_raster()}},
+\code{\link[=hsi_plot_raster_rgb]{hsi_plot_raster_rgb()}},
+\code{\link[=hsi_plot_spectrum]{hsi_plot_spectrum()}}
 }
 \concept{Plotting}

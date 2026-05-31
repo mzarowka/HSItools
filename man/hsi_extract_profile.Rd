@@ -79,7 +79,7 @@ x_profile <- hsi_extract_profile(x_class, fun = "modal")
 \seealso{
 \code{\link[=hsi_extract_spectrum]{hsi_extract_spectrum()}} for extracting an averaged spectrum.
 
-Other HSI Extraction: 
-\code{\link{hsi_extract_spectrum}()}
+Other HSI Extraction:
+\code{\link[=hsi_extract_spectrum]{hsi_extract_spectrum()}}
 }
 \concept{HSI Extraction}

@@ -49,11 +49,11 @@ anchored to \code{reference} at \code{origin}.
 \code{\link[=hsi_calibration_from_dims]{hsi_calibration_from_dims()}} for obtaining \code{um_per_pixel}.
 \code{\link[=hsi_pixels_to_units]{hsi_pixels_to_units()}} for direct conversion of pixel positions.
 
-Other HSI Calibration: 
-\code{\link{hsi_calibration_direct}()},
-\code{\link{hsi_calibration_from_dims}()},
-\code{\link{hsi_calibration_from_scale}()},
-\code{\link{hsi_drop_crs}()},
-\code{\link{hsi_pixels_to_units}()}
+Other HSI Calibration:
+\code{\link[=hsi_calibration_direct]{hsi_calibration_direct()}},
+\code{\link[=hsi_calibration_from_dims]{hsi_calibration_from_dims()}},
+\code{\link[=hsi_calibration_from_scale]{hsi_calibration_from_scale()}},
+\code{\link[=hsi_drop_crs]{hsi_drop_crs()}},
+\code{\link[=hsi_pixels_to_units]{hsi_pixels_to_units()}}
 }
 \concept{HSI Calibration}

@@ -45,7 +45,7 @@ spectrum_median <- hsi_extract_spectrum(x, fun = "median")
 \seealso{
 \code{\link[=hsi_extract_profile]{hsi_extract_profile()}} for extracting values along a spatial axis.
 
-Other HSI Extraction: 
-\code{\link{hsi_extract_profile}()}
+Other HSI Extraction:
+\code{\link[=hsi_extract_profile]{hsi_extract_profile()}}
 }
 \concept{HSI Extraction}

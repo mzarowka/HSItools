@@ -22,7 +22,7 @@ Produces a minimal stratigraphic profile plot. Position is mapped to the
 x-axis as the independent variable — ensuring that stats like
 \code{\link[ggplot2:geom_smooth]{ggplot2::geom_smooth()}} work correctly — then \code{\link[ggplot2:coord_flip]{ggplot2::coord_flip()}}
 rotates the plot so that depth runs top-to-bottom visually.
-\code{\link[ggplot2:scale_continuous]{ggplot2::scale_x_reverse()}} places shallow positions at the top.
+\code{\link[ggplot2:scale_x_reverse]{ggplot2::scale_x_reverse()}} places shallow positions at the top.
 
 When profile unit metadata is present, tick labels include the unit suffix
 such as \verb{0 mm} or \verb{1.5 cm}. If no unit metadata exists, ggplot2 default
@@ -56,12 +56,12 @@ x_plot +
 \seealso{
 \code{\link[=hsi_extract_profile]{hsi_extract_profile()}} to produce the input tibble.
 \code{\link[=hsi_plot_spectrum]{hsi_plot_spectrum()}} for spectral plots.
-\code{\link[=hsi_plot_spatraster]{hsi_plot_spatraster()}} for spatial raster maps.
+\code{\link[=hsi_plot_raster]{hsi_plot_raster()}} for spatial raster maps.
 
-Other Plotting: 
-\code{\link{hsi_plot_composite}()},
-\code{\link{hsi_plot_spatraster}()},
-\code{\link{hsi_plot_spatraster_rgb}()},
-\code{\link{hsi_plot_spectrum}()}
+Other Plotting:
+\code{\link[=hsi_plot_composite]{hsi_plot_composite()}},
+\code{\link[=hsi_plot_raster]{hsi_plot_raster()}},
+\code{\link[=hsi_plot_raster_rgb]{hsi_plot_raster_rgb()}},
+\code{\link[=hsi_plot_spectrum]{hsi_plot_spectrum()}}
 }
 \concept{Plotting}

@@ -73,18 +73,11 @@ x_extent <- hsi_find_extent(
 \seealso{
 \code{\link[=hsi_calibrate_raster]{hsi_calibrate_raster()}} to assign physical units to a raster extent.
 
-Other Utilities: 
-\code{\link{hsi_bind_rows}()},
-\code{\link{hsi_merge_rasters}()},
-\code{\link{hsi_subset}()},
-\code{\link{hsi_subset_range}()},
-\code{\link{wavelength_position}()}
-
-Other Utilities: 
-\code{\link{hsi_bind_rows}()},
-\code{\link{hsi_merge_rasters}()},
-\code{\link{hsi_subset}()},
-\code{\link{hsi_subset_range}()},
-\code{\link{wavelength_position}()}
+Other Utilities:
+\code{\link[=hsi_bind_rows]{hsi_bind_rows()}},
+\code{\link[=hsi_merge_rasters]{hsi_merge_rasters()}},
+\code{\link[=hsi_subset]{hsi_subset()}},
+\code{\link[=hsi_subset_range]{hsi_subset_range()}},
+\code{\link[=wavelength_position]{wavelength_position()}}
 }
 \concept{Utilities}

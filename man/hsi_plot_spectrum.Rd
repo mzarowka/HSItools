@@ -41,10 +41,10 @@ x_plot +
 \code{\link[=hsi_extract_spectrum]{hsi_extract_spectrum()}} to produce the input tibble.
 \code{\link[=hsi_plot_profile]{hsi_plot_profile()}} for 1-D depth profiles.
 
-Other Plotting: 
-\code{\link{hsi_plot_composite}()},
-\code{\link{hsi_plot_profile}()},
-\code{\link{hsi_plot_spatraster}()},
-\code{\link{hsi_plot_spatraster_rgb}()}
+Other Plotting:
+\code{\link[=hsi_plot_composite]{hsi_plot_composite()}},
+\code{\link[=hsi_plot_profile]{hsi_plot_profile()}},
+\code{\link[=hsi_plot_raster]{hsi_plot_raster()}},
+\code{\link[=hsi_plot_raster_rgb]{hsi_plot_raster_rgb()}}
 }
 \concept{Plotting}

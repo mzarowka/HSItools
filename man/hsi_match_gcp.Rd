@@ -46,8 +46,8 @@ matched <- hsi_match_gcp(swir_gcps, vnir_gcps)
 \code{\link[=hsi_check_gcp]{hsi_check_gcp()}} for assessing transformation quality,
 \code{\link[=hsi_coregister]{hsi_coregister()}} for warping.
 
-Other HSI Co-registration: 
-\code{\link{hsi_check_gcp}()},
-\code{\link{hsi_coregister}()}
+Other HSI Co-registration:
+\code{\link[=hsi_check_gcp]{hsi_check_gcp()}},
+\code{\link[=hsi_coregister]{hsi_coregister()}}
 }
 \concept{HSI Co-registration}

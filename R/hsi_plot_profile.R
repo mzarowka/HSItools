@@ -25,7 +25,7 @@
 #' @seealso
 #' [`hsi_extract_profile()`] to produce the input tibble.
 #' [`hsi_plot_spectrum()`] for spectral plots.
-#' [`hsi_plot_spatraster()`] for spatial raster maps.
+#' [`hsi_plot_raster()`] for spatial raster maps.
 #'
 #' @examples
 #' \dontrun{

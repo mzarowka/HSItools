@@ -24,11 +24,11 @@ a terra SpatRaster. Merged inputs.
 Merge SpatRasters in a stratigraphic order
 }
 \seealso{
-Other Utilities: 
-\code{\link{hsi_bind_rows}()},
-\code{\link{hsi_find_extent}()},
-\code{\link{hsi_subset}()},
-\code{\link{hsi_subset_range}()},
-\code{\link{wavelength_position}()}
+Other Utilities:
+\code{\link[=hsi_bind_rows]{hsi_bind_rows()}},
+\code{\link[=hsi_find_extent]{hsi_find_extent()}},
+\code{\link[=hsi_subset]{hsi_subset()}},
+\code{\link[=hsi_subset_range]{hsi_subset_range()}},
+\code{\link[=wavelength_position]{wavelength_position()}}
 }
 \concept{Utilities}

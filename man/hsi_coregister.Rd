@@ -64,8 +64,8 @@ x_coregistered <- hsi_coregister(
 \code{\link[=hsi_match_gcp]{hsi_match_gcp()}} for matching GCPs,
 \code{\link[=hsi_check_gcp]{hsi_check_gcp()}} for checking residuals first.
 
-Other HSI Co-registration: 
-\code{\link{hsi_check_gcp}()},
-\code{\link{hsi_match_gcp}()}
+Other HSI Co-registration:
+\code{\link[=hsi_check_gcp]{hsi_check_gcp()}},
+\code{\link[=hsi_match_gcp]{hsi_match_gcp()}}
 }
 \concept{HSI Co-registration}

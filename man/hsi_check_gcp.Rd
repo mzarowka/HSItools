@@ -50,8 +50,8 @@ hsi_check_gcp(cleaned)
 \code{\link[=hsi_match_gcp]{hsi_match_gcp()}} for preparing input,
 \code{\link[=hsi_coregister]{hsi_coregister()}} for applying the warp.
 
-Other HSI Co-registration: 
-\code{\link{hsi_coregister}()},
-\code{\link{hsi_match_gcp}()}
+Other HSI Co-registration:
+\code{\link[=hsi_coregister]{hsi_coregister()}},
+\code{\link[=hsi_match_gcp]{hsi_match_gcp()}}
 }
 \concept{HSI Co-registration}

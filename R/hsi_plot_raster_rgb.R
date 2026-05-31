@@ -23,7 +23,7 @@
 #' any other composite.
 #'
 #' @seealso
-#' [`hsi_plot_spatraster()`] for single-layer plots.
+#' [`hsi_plot_raster()`] for single-layer plots.
 #' [`hsi_plot_profile()`] for 1-D depth profiles.
 #'
 #' @examples
@@ -49,7 +49,7 @@
 #' }
 #'
 #' @export
-hsi_plot_spatraster_rgb <- function(
+hsi_plot_raster_rgb <- function(
   x,
   stretch = NULL
 ) {
@@ -65,7 +65,11 @@ hsi_plot_spatraster_rgb <- function(
   check_crs_null(x)
 
   units <- hsi_get_units(x)
-  label_fun <- if (!is.null(units)) hsi_unit_label_fun(units) else ggplot2::waiver()
+  label_fun <- if (!is.null(units)) {
+    hsi_unit_label_fun(units)
+  } else {
+    ggplot2::waiver()
+  }
 
   x_rgb <- terra::colorize(
     x,
@@ -73,7 +77,11 @@ hsi_plot_spatraster_rgb <- function(
     stretch = if (is.null(stretch)) NULL else stretch
   )
 
-  plot <- ggplot2::ggplot(x_rgb, ggplot2::aes(x, y, fill = value), pivot = TRUE) +
+  plot <- ggplot2::ggplot(
+    x_rgb,
+    ggplot2::aes(x, y, fill = value),
+    pivot = TRUE
+  ) +
     ggplot2::geom_raster() +
     ggplot2::scale_fill_identity() +
     ggplot2::coord_fixed(expand = FALSE) +
