@@ -28,10 +28,10 @@ calibration <- hsi_calibration_direct(0.06, units = "mm")
 }
 \seealso{
 Other HSI Calibration:
-\code{\link[=hsi_calibrate_raster]{hsi_calibrate_raster()}},
 \code{\link[=hsi_calibration_from_dims]{hsi_calibration_from_dims()}},
 \code{\link[=hsi_calibration_from_scale]{hsi_calibration_from_scale()}},
 \code{\link[=hsi_drop_crs]{hsi_drop_crs()}},
-\code{\link[=hsi_pixels_to_units]{hsi_pixels_to_units()}}
+\code{\link[=hsi_pixels_to_units]{hsi_pixels_to_units()}},
+\code{\link[=hsi_set_extent]{hsi_set_extent()}}
 }
 \concept{HSI Calibration}
