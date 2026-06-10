@@ -17,11 +17,20 @@
 #'
 #' @details
 #' Output values are bounded `[0, 1]` by definition — each band is divided by
-#' its continuum value. `NA` values at spectral edges are expected and handled
-#' downstream. Computationally intensive; consider applying to subsets or
-#' regions of interest rather than full-resolution data. For full-raster
-#' processing, [`hsi_tiled()`] can distribute the workload across parallel
-#' workers.
+#' its continuum value.
+#'
+#' Degenerate spectra for which no valid continuum exists (e.g. cracks,
+#' all-zero or constant spectra, pixels containing `NA`) return `NA` in all
+#' bands instead of aborting the computation. Inspect the `NA` pattern of the
+#' result if coverage looks unexpectedly sparse.
+#'
+#' Wavelengths are taken from band names. If band names cannot be converted
+#' to numeric wavelengths, band indices are used instead and a warning is
+#' issued.
+#'
+#' Computationally intensive; consider applying to subsets or regions of
+#' interest rather than full-resolution data. For full-raster processing,
+#' [`hsi_tiled()`] can distribute the workload across parallel workers.
 #'
 #' @examples
 #' \dontrun{
@@ -43,13 +52,11 @@ hsi_remove_continuum <- function(
   overwrite = FALSE,
   ...
 ) {
-  # Validate input
+  # Validate inputs
   check_spatraster(x)
 
-  # Validate required packages
   rlang::check_installed("prospectr")
 
-  # Validate if it is possible to remove the continuum
   if (terra::nlyr(x) < 3) {
     cli::cli_abort(
       "Input raster must have at least 3 bands for continuum removal.",
@@ -63,7 +70,7 @@ hsi_remove_continuum <- function(
   # Extract band names
   band_names <- terra::names(x)
 
-  # Named list with write options
+  # Build write options
   wopt_default <- list(
     names = band_names
   )
@@ -71,12 +78,11 @@ hsi_remove_continuum <- function(
   # Splice wopt defaults with user input if any
   wopt <- purrr::list_modify(wopt_default, !!!wopt_user)
 
-  # Get wavelengths
+  # Get wavelengths from band names, fall back to band indices
   wavelengths <- suppressWarnings(as.numeric(band_names))
 
-  # If wavelengths couldn't be converted, create a sequence
   if (all(is.na(wavelengths))) {
-    cli::cli_alert_warning(
+    cli::cli_warn(
       "Band names cannot be converted to wavelengths. Using band indices."
     )
     wavelengths <- seq_along(band_names)
@@ -84,35 +90,22 @@ hsi_remove_continuum <- function(
 
   # Continuum removal function
   remove_continuum_fun <- function(x) {
-    # Skip NA values
+    # Skip pixels with no valid continuum
     if (anyNA(x) || all(x == 0)) {
       return(rep(NA_real_, length(x)))
     }
 
-    # Some degenerate spectra like cracks can slip up
+    # Convex hull construction can fail on degenerate spectra (e.g. cracks).
+    # A per-pixel failure must not abort the whole computation, so map it to NA.
     tryCatch(
       {
-        # For a single pixel, transpose the data structure
-        # 1 sample (pixel) with multiple wavelengths as columns
+        # One pixel = one sample row, wavelengths as columns
         X_matrix <- matrix(x, nrow = 1)
 
-        # Apply continuum removal - expects wavelengths and reflectance values
-        # Note: prospectr::continuumRemoval returns only the CR values
         as.vector(prospectr::continuumRemoval(X = X_matrix, wav = wavelengths))
       },
-      # Catch error
       error = \(e) rep(NA_real_, length(x))
     )
-
-    # # For a single pixel, transpose the data structure
-    # X_matrix <- matrix(x, nrow = 1) # 1 sample (pixel) with multiple wavelengths as columns
-
-    # # Apply continuum removal - expects wavelengths and reflectance values
-    # # Note: prospectr::continuumRemoval returns only the CR values
-    # cr_result <- prospectr::continuumRemoval(X = X_matrix, wav = wavelengths)
-
-    # # Return
-    # return(as.vector(cr_result))
   }
 
   # Apply function over entire SpatRaster
@@ -124,6 +117,6 @@ hsi_remove_continuum <- function(
     wopt = wopt
   )
 
-  # Return SpatRaster
-  return(result)
+  # Return result
+  result
 }

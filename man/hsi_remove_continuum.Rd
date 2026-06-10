@@ -26,11 +26,20 @@ the spectrum. Requires the
 }
 \details{
 Output values are bounded \verb{[0, 1]} by definition — each band is divided by
-its continuum value. \code{NA} values at spectral edges are expected and handled
-downstream. Computationally intensive; consider applying to subsets or
-regions of interest rather than full-resolution data. For full-raster
-processing, \code{\link[=hsi_tiled]{hsi_tiled()}} can distribute the workload across parallel
-workers.
+its continuum value.
+
+Degenerate spectra for which no valid continuum exists (e.g. cracks,
+all-zero or constant spectra, pixels containing \code{NA}) return \code{NA} in all
+bands instead of aborting the computation. Inspect the \code{NA} pattern of the
+result if coverage looks unexpectedly sparse.
+
+Wavelengths are taken from band names. If band names cannot be converted
+to numeric wavelengths, band indices are used instead and a warning is
+issued.
+
+Computationally intensive; consider applying to subsets or regions of
+interest rather than full-resolution data. For full-raster processing,
+\code{\link[=hsi_tiled]{hsi_tiled()}} can distribute the workload across parallel workers.
 }
 \examples{
 \dontrun{
