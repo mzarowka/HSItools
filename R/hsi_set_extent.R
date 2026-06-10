@@ -1,4 +1,4 @@
-#' Calibrate a raster to physical units
+#' Set raster extent to physical units
 #'
 #' @family HSI Calibration
 #'
@@ -36,7 +36,7 @@
 #' }
 #'
 #' @export
-hsi_calibrate_raster <- function(
+hsi_set_extent <- function(
 	raster,
 	reference,
 	um_per_pixel,
@@ -72,11 +72,11 @@ hsi_calibrate_raster <- function(
 	y_min <- -(origin + (nrow - ref_y) * pixel_size)
 	y_max <- -(origin + (1 - ref_y) * pixel_size)
 
-  # Create a copy of the input raster with the new extent.
+	# Create a copy of the input raster with the new extent.
 	result <- terra::deepcopy(raster)
 	terra::ext(result) <- terra::ext(x_min, x_max, y_min, y_max)
 
-  # Add units metadata to the raster.
+	# Add units metadata to the raster.
 	tags <- terra::metags(result)
 	if (is.data.frame(tags) && nrow(tags) > 0) {
 		tags <- tags[tags$name != "hsi_units", , drop = FALSE]
