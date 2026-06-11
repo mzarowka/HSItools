@@ -54,9 +54,10 @@ Reduce \code{width} or adjust the reference points to fit within \code{x}.
 \examples{
 \dontrun{
 x <- terra::rast("REFLECTANCE_testdata.tif")
+
 ends <- terra::vect("spatials.gpkg", layer = "ends")
 
-x_extent <- hsi_find_extent(x, points = ends, width = 900)
+x_extent <- hsi_find_extent(x, points = ends, width = 100)
 x_cropped <- terra::crop(x, x_extent)
 
 x_extent <- hsi_find_extent(
@@ -68,12 +69,12 @@ x_extent <- hsi_find_extent(
   layer = "extent"
 )
 }
-
 }
 \seealso{
-\code{\link[=hsi_calibrate_raster]{hsi_calibrate_raster()}} to assign physical units to a raster extent.
+\code{\link[=hsi_set_extent]{hsi_set_extent()}} to assign physical units to a raster extent.
 
 Other Utilities:
+\code{\link[=hsi_bind_layers]{hsi_bind_layers()}},
 \code{\link[=hsi_bind_rows]{hsi_bind_rows()}},
 \code{\link[=hsi_merge_rasters]{hsi_merge_rasters()}},
 \code{\link[=hsi_subset]{hsi_subset()}},

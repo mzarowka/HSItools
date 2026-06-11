@@ -36,13 +36,22 @@ The calibration is linear: the raster grid is converted from pixels to
 physical units using the supplied micrometers-per-pixel ratio. The
 horizontal axis starts at the first cell centre, and the vertical axis is
 anchored to \code{reference} at \code{origin}.
+
+Importantly, at this stage, calibration metag does not carry forvard into
+analysis products. Calibrate immediate products, where real world units are necessary.
 }
 \examples{
 \dontrun{
-# toDo
-)
-}
+x <- terra::rast("REFLECTANCE_testdata.tif")
 
+# Anchor point in pixel space, e.g. the core top in the first column.
+reference <- terra::vect(cbind(1, terra::nrow(x)), type = "points")
+
+# 60 µm per pixel, supplied directly.
+um <- hsi_calibration_direct(60)
+
+x_cal <- hsi_set_extent(x, reference, um_per_pixel = um, units = "cm")
+}
 }
 \seealso{
 \code{\link[=hsi_calibration_from_scale]{hsi_calibration_from_scale()}}, \code{\link[=hsi_calibration_direct]{hsi_calibration_direct()}},

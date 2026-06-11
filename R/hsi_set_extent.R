@@ -24,6 +24,9 @@
 #' horizontal axis starts at the first cell centre, and the vertical axis is
 #' anchored to `reference` at `origin`.
 #'
+#' Importantly, at this stage, calibration metag does not carry forvard into
+#' analysis products. Calibrate immediate products, where real world units are necessary.
+#'
 #' @seealso
 #' [`hsi_calibration_from_scale()`], [`hsi_calibration_direct()`],
 #' [`hsi_calibration_from_dims()`] for obtaining `um_per_pixel`.
@@ -31,10 +34,16 @@
 #'
 #' @examples
 #' \dontrun{
-#' # toDo
-#' )
-#' }
+#' x <- terra::rast("REFLECTANCE_testdata.tif")
 #'
+#' # Anchor point in pixel space, e.g. the core top in the first column.
+#' reference <- terra::vect(cbind(1, terra::nrow(x)), type = "points")
+#'
+#' # 60 µm per pixel, supplied directly.
+#' um <- hsi_calibration_direct(60)
+#'
+#' x_cal <- hsi_set_extent(x, reference, um_per_pixel = um, units = "cm")
+#' }
 #' @export
 hsi_set_extent <- function(
 	raster,
@@ -43,22 +52,23 @@ hsi_set_extent <- function(
 	origin = 0,
 	units = "cm"
 ) {
-	HSItools:::check_spatraster(raster)
-	HSItools:::check_crs_null(raster)
+	# Validate inputs
+	check_spatraster(raster)
+	check_crs_null(raster)
 
-	HSItools:::check_spatvector(reference)
-	HSItools:::check_crs_null(reference)
-	HSItools:::check_geom_type(reference, allowed = "points")
+	check_spatvector(reference)
+	check_crs_null(reference)
+	check_geom_type(reference, allowed = "points")
 
 	if (terra::nrow(reference) != 1) {
 		cli::cli_abort("{.arg reference} must contain exactly one point.")
 	}
 
-	HSItools:::check_numeric(um_per_pixel, len = 1, positive = TRUE)
-	HSItools:::check_numeric(origin, len = 1)
-	HSItools:::check_one_of(units, choices = c("um", "mm", "cm"))
+	check_numeric(um_per_pixel, len = 1, positive = TRUE)
+	check_numeric(origin, len = 1)
+	check_one_of(units, choices = c("um", "mm", "cm"))
 
-	pixel_size <- HSItools:::from_um(um_per_pixel, to = units)
+	pixel_size <- from_um(um_per_pixel, to = units)
 
 	nrow <- terra::nrow(raster)
 	ncol <- terra::ncol(raster)
@@ -89,7 +99,10 @@ hsi_set_extent <- function(
 			domain = ""
 		)
 	)
+
+	# Set metags
 	terra::metags(result) <- tags
 
-	return(result)
+	# Return result
+	result
 }

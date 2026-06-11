@@ -26,14 +26,15 @@
 #' Reduce `width` or adjust the reference points to fit within `x`.
 #'
 #' @seealso
-#' [`hsi_calibrate_raster()`] to assign physical units to a raster extent.
+#' [`hsi_set_extent()`] to assign physical units to a raster extent.
 #'
 #' @examples
 #' \dontrun{
 #' x <- terra::rast("REFLECTANCE_testdata.tif")
+#'
 #' ends <- terra::vect("spatials.gpkg", layer = "ends")
 #'
-#' x_extent <- hsi_find_extent(x, points = ends, width = 900)
+#' x_extent <- hsi_find_extent(x, points = ends, width = 100)
 #' x_cropped <- terra::crop(x, x_extent)
 #'
 #' x_extent <- hsi_find_extent(
@@ -45,7 +46,6 @@
 #'   layer = "extent"
 #' )
 #' }
-#'
 #' @export
 hsi_find_extent <- function(
   x,
