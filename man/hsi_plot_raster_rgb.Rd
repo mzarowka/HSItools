@@ -26,6 +26,10 @@ Produces a minimal RGB raster map with a fixed aspect ratio and no axis
 expansion. The returned ggplot carries no theme or axis labels — add
 these with \code{+} using standard ggplot2 conventions.
 
+With \code{stretch = NULL}, cell values are taken as-is on a \verb{[0, 1]} scale
+(raw reflectance). Values outside this range require \code{stretch = "lin"} or
+\code{"hist"}, which rescale each layer to \verb{[0, 255]} before rendering.
+
 When raster unit metadata is present, the y-axis tick labels include the
 unit suffix such as \verb{0 cm} or \verb{1.5 cm}. If no unit metadata exists, ggplot2
 default labels are used, showing pixel coordinates.
@@ -37,16 +41,16 @@ any other composite.
 x <- terra::rast("REFLECTANCE_testdata.tif") |> terra::subset(1:3)
 
 # Quick pixel-space RGB plot
-x_rgb <- hsi_plot_spatraster_rgb(x)
+x_rgb <- hsi_plot_raster_rgb(x)
 
 # With linear stretch
-x_rgb <- hsi_plot_spatraster_rgb(x, stretch = "lin")
+x_rgb <- hsi_plot_raster_rgb(x, stretch = "lin")
 
 # Physical-space plot after calibration
 um <- hsi_calibration_from_dims(scan_length_um = 50000, n_pixels = 1000)
-ref <- terra::vect(matrix(c(1001.5, 2007.5), ncol = 2), type = "points")
-x_physical <- hsi_calibrate_raster(x, reference = ref, um_per_pixel = um)
-x_rgb <- hsi_plot_spatraster_rgb(x_physical)
+ref <- terra::vect(cbind(1, terra::nrow(x)), type = "points")
+x_physical <- hsi_set_extent(x, reference = ref, um_per_pixel = um)
+x_rgb <- hsi_plot_raster_rgb(x_physical)
 
 # Add labels and theme with ggplot2
 x_rgb +

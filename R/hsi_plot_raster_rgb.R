@@ -16,6 +16,10 @@
 #' expansion. The returned ggplot carries no theme or axis labels — add
 #' these with `+` using standard ggplot2 conventions.
 #'
+#' With `stretch = NULL`, cell values are taken as-is on a `[0, 1]` scale
+#' (raw reflectance). Values outside this range require `stretch = "lin"` or
+#' `"hist"`, which rescale each layer to `[0, 255]` before rendering.
+#'
 #' When raster unit metadata is present, the y-axis tick labels include the
 #' unit suffix such as `0 cm` or `1.5 cm`. If no unit metadata exists, ggplot2
 #' default labels are used, showing pixel coordinates.
@@ -31,16 +35,16 @@
 #' x <- terra::rast("REFLECTANCE_testdata.tif") |> terra::subset(1:3)
 #'
 #' # Quick pixel-space RGB plot
-#' x_rgb <- hsi_plot_spatraster_rgb(x)
+#' x_rgb <- hsi_plot_raster_rgb(x)
 #'
 #' # With linear stretch
-#' x_rgb <- hsi_plot_spatraster_rgb(x, stretch = "lin")
+#' x_rgb <- hsi_plot_raster_rgb(x, stretch = "lin")
 #'
 #' # Physical-space plot after calibration
 #' um <- hsi_calibration_from_dims(scan_length_um = 50000, n_pixels = 1000)
-#' ref <- terra::vect(matrix(c(1001.5, 2007.5), ncol = 2), type = "points")
-#' x_physical <- hsi_calibrate_raster(x, reference = ref, um_per_pixel = um)
-#' x_rgb <- hsi_plot_spatraster_rgb(x_physical)
+#' ref <- terra::vect(cbind(1, terra::nrow(x)), type = "points")
+#' x_physical <- hsi_set_extent(x, reference = ref, um_per_pixel = um)
+#' x_rgb <- hsi_plot_raster_rgb(x_physical)
 #'
 #' # Add labels and theme with ggplot2
 #' x_rgb +
@@ -71,17 +75,22 @@ hsi_plot_raster_rgb <- function(
     ggplot2::waiver()
   }
 
-  x_rgb <- terra::colorize(
-    x,
-    to = "col",
-    stretch = if (is.null(stretch)) NULL else stretch
+  x_plot <- switch(
+    stretch %||% "none",
+    none = x,
+    lin = terra::stretch(x),
+    hist = terra::stretch(x, histeq = TRUE, scale = 255)
   )
 
-  plot <- ggplot2::ggplot(
-    x_rgb,
-    ggplot2::aes(x, y, fill = value),
-    pivot = TRUE
-  ) +
+  max_col <- if (is.null(stretch)) 1 else 255
+
+  rgb_data <- tidyterra::fortify(x_plot) |>
+    rlang::set_names(c("x", "y", "red", "green", "blue")) |>
+    dplyr::mutate(
+      fill = grDevices::rgb(red, green, blue, maxColorValue = max_col)
+    )
+
+  plot <- ggplot2::ggplot(rgb_data, ggplot2::aes(x, y, fill = fill)) +
     ggplot2::geom_raster() +
     ggplot2::scale_fill_identity() +
     ggplot2::coord_fixed(expand = FALSE) +

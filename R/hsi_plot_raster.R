@@ -61,7 +61,7 @@ hsi_plot_raster <- function(x) {
     ggplot2::waiver()
   }
 
-  ggplot2::ggplot(
+  plot <- ggplot2::ggplot(
     x,
     ggplot2::aes(x, y, z = value, fill = value),
     pivot = TRUE
@@ -71,4 +71,6 @@ hsi_plot_raster <- function(x) {
     ggplot2::labs(x = "", y = "") +
     ggplot2::scale_y_reverse(labels = label_fun) +
     ggplot2::coord_fixed(expand = FALSE)
+
+  plot
 }
