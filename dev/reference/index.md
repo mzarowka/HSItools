@@ -23,7 +23,7 @@
 - [`hsi_calc_rcv()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_calc_rcv.md)
   : Calculate coefficient of variation of reflectance (Rcv)
 - [`hsi_calc_reflectance()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_calc_reflectance.md)
-  : Hyperspectral reflectance raster
+  : Calculate hyperspectral reflectance
 - [`hsi_calc_remp()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_calc_remp.md)
   : Calculate lambdaREMP
 - [`hsi_calc_rmean()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_calc_rmean.md)
@@ -45,6 +45,8 @@
   : Assess affine transformation quality from matched GCPs
 - [`hsi_coregister()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_coregister.md)
   : Co-register source raster to target raster grid
+- [`hsi_create_metadata()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_create_metadata.md)
+  : Create structured hyperspectral metadata
 - [`hsi_destripe()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_destripe.md)
   : Destripe hyperspectral raster
 - [`hsi_drop_crs()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_drop_crs.md)
