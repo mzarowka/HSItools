@@ -62,7 +62,7 @@ wavelength_position <- function(
 }
 
 #' Subset SpatRaster by wavelength
-#' 
+#'
 #' @noRd
 #'
 #' @param x A [`SpatRaster`][terra::SpatRaster-class] with hyperspectral data.
@@ -390,4 +390,82 @@ from_um <- function(value, to) {
 
   # Return
   value
+}
+
+#' Create structured hyperspectral metadata
+#'
+#' @param name
+#' @param sensor_type
+#' @param manufacturer
+#' @param nrow
+#' @param ncol
+#' @param nlyr
+#' @param xres
+#' @param yres
+#' @param et_target_ms
+#' @param et_white_ms
+#' @param target_start_mm
+#' @param target_stop_mm
+#' @param session_id
+#' @param wavelengths
+#' @param fwhm
+#'
+#' @returns
+#'
+#' @noRd
+new_hsi_metadata <- function(
+  name,
+  sensor_type = NULL,
+  manufacturer = NULL,
+  nrow = NULL,
+  ncol = NULL,
+  nlyr = NULL,
+  xres = NULL,
+  yres = NULL,
+  et_target_ms = NULL,
+  et_white_ms = NULL,
+  target_start_mm = NULL,
+  target_stop_mm = NULL,
+  session_id = NULL,
+  wavelengths = NULL,
+  fwhm = NULL
+) {
+  # Define list and class
+  structure(
+    list(
+      schema_version = "1.0.0",
+      name = name,
+      sensor_type = sensor_type,
+      manufacturer = manufacturer,
+      nrow = nrow,
+      ncol = ncol,
+      nlyr = nlyr,
+      xres = xres,
+      yres = yres,
+      et_target_ms = et_target_ms,
+      et_white_ms = et_white_ms,
+      target_start_mm = target_start_mm,
+      target_stop_mm = target_stop_mm,
+      session_id = session_id,
+      wavelengths = wavelengths,
+      fwhm = fwhm
+    ),
+    class = "hsi_metadata"
+  )
+}
+
+#' Validate structured hyperspectral metadata
+#'
+#' @param x
+#'
+#' @returns
+#'
+#' @noRd
+validate_hsi_metadata <- function(x) {
+  # Validate inputs
+  check_scalar_character(x$name, "name")
+  check_scalar_number(x$xres, "xres")
+
+  # Return result
+  invisible(x)
 }

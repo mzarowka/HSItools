@@ -76,7 +76,7 @@ hsi_normalize <- function(
   result
 }
 
-#' Hyperspectral reflectance raster
+#' Calculate hyperspectral reflectance
 #'
 #' @family HSI Transformations
 #'
@@ -95,13 +95,12 @@ hsi_normalize <- function(
 #'   reference and specimen capture, in that order. Default `c(1, 1)` assumes
 #'   equal integration times.
 #' @param in_memory Logical. Process entirely in RAM. Default `FALSE`.
-#'   Set `TRUE` only when data fits comfortably in available memory. When
-#'   `FALSE`, writes one temporary file per band.
+#'   Set `TRUE` only when data fits comfortably in available memory.
 #' @param filename Character. Output filename. Default `""` keeps result in memory.
 #' @param overwrite Logical. Overwrite existing file. Default `FALSE`.
 #' @param ... Additional arguments passed to [`terra::writeRaster()`].
 #'
-#' @returns A [`SpatRaster`][terra::SpatRaster-class] with normalized reflectance values.
+#' @returns A [`SpatRaster`][terra::SpatRaster-class] with reflectance values.
 #'
 #' @description
 #' Convert raw hyperspectral imaging data (digital numbers) to calibrated
@@ -125,8 +124,8 @@ hsi_normalize <- function(
 #' specimen is overexposed relative to the white reference to maximise signal.
 #' Each subtraction uses the dark reference captured at the matching
 #' integration time. This is the recommended approach for dual-exposure
-#' scanning. For example, Lumo Scanner always captures a dark reference per session, so
-#' matched darks should be available for all standard workflows.
+#' scanning. Many scanners capture a dark reference per session, so matched
+#' darks are typically available for standard workflows.
 #'
 #' \deqn{R(\lambda) = \frac{specimen - dark_{specimen}}{white - dark_{white}}
 #'   \times \frac{t_{white}}{t_{specimen}}}
@@ -135,7 +134,7 @@ hsi_normalize <- function(
 #' dual-exposure workflows when only the white-session dark reference is
 #' available. The dark reference is scaled by the integration time ratio
 #' before numerator subtraction. This assumes dark current scales linearly
-#' with integration time. In practice, some detectors (SWIR) have a large
+#' with integration time. In practice, some detectors have a large
 #' fixed-pattern noise component that does not scale with exposure time.
 #' Scaling overestimates the specimen dark current, producing severely
 #' degraded reflectance — often negative across entire spectra. Use only as

@@ -45,7 +45,7 @@ Imports:
     tidyterra,
     purrr (>= 1.1.0),
     cli,
-    rlang,
+    rlang (>= 1.2.0),
     prospectr,
     gsignal,
     withr,

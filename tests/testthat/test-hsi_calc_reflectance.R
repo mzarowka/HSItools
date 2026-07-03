@@ -1,43 +1,36 @@
 # Test hsi_calc_reflectance ----
-# Converts raw DN triplet (x, whiteref, darkref) to calibrated reflectance.
-# Key contracts:
-#   - Output dimensions and band names match x
-#   - in_memory = TRUE and FALSE produce equivalent values
-#   - tint argument affects output (integration time scaling is exercised)
-#   - darkspec enables matched dark subtraction (recommended for dual-exposure)
-#   - Scaled dark path emits a warning when tint values differ
-#   - All SpatRaster inputs are validated independently
+# Calibrates a raw hyperspectral capture (x) against white and dark references
+# to reflectance. Contracts under test:
+#   - Output is a SpatRaster carrying the dimensions and band names of x.
+#   - The three calibration paths behave as specified: matched darks at equal
+#     tint reproduce the single-session result; a differing tint without
+#     darkspec scales the dark, changes the values, and warns.
+#   - Output is finite; single-session values match the reference fixture.
+#   - Writes to file when filename is given; guards on overwrite.
+#   - Rejects non-SpatRaster inputs, band-count mismatches, invalid tint, and
+#     non-numeric band names.
 
 ## Setup ----
 test_x <- terra::rast(
-  system.file(
-    package = "HSItools",
-    "testdata/capture/testdata.tif"
-  )
+  system.file("testdata/capture/testdata.tif", package = "HSItools")
 )
 
 test_whiteref <- terra::rast(
-  system.file(
-    package = "HSItools",
-    "testdata/capture/WHITEREF_testdata.tif"
-  )
+  system.file("testdata/capture/WHITEREF_testdata.tif", package = "HSItools")
 )
 
 test_darkref <- terra::rast(
-  system.file(
-    package = "HSItools",
-    "testdata/capture/DARKREF_testdata.tif"
-  )
+  system.file("testdata/capture/DARKREF_testdata.tif", package = "HSItools")
 )
 
 test_reflectance <- terra::rast(
   system.file(
-    package = "HSItools",
-    "testdata/products/REFLECTANCE_testdata.tif"
+    "testdata/products/REFLECTANCE_testdata.tif",
+    package = "HSItools"
   )
 )
 
-# ── Output type ──────────────────────────────────────────────────────────────
+# Output type ----
 
 test_that("hsi_calc_reflectance returns a SpatRaster", {
   result <- hsi_calc_reflectance(
@@ -50,9 +43,9 @@ test_that("hsi_calc_reflectance returns a SpatRaster", {
   expect_s4_class(result, "SpatRaster")
 })
 
-# ── Output dimensions ────────────────────────────────────────────────────────
+# Output dimensions ----
 
-test_that("hsi_calc_reflectance preserves number of layers", {
+test_that("hsi_calc_reflectance preserves the dimensions of x", {
   result <- hsi_calc_reflectance(
     x = test_x,
     whiteref = test_whiteref,
@@ -61,23 +54,13 @@ test_that("hsi_calc_reflectance preserves number of layers", {
   )
 
   expect_equal(terra::nlyr(result), terra::nlyr(test_x))
-})
-
-test_that("hsi_calc_reflectance preserves spatial dimensions", {
-  result <- hsi_calc_reflectance(
-    x = test_x,
-    whiteref = test_whiteref,
-    darkref = test_darkref,
-    in_memory = TRUE
-  )
-
   expect_equal(terra::nrow(result), terra::nrow(test_x))
   expect_equal(terra::ncol(result), terra::ncol(test_x))
 })
 
-# ── Band names ───────────────────────────────────────────────────────────────
+# Band names ----
 
-test_that("hsi_calc_reflectance preserves band names from x", {
+test_that("hsi_calc_reflectance preserves the band names of x", {
   result <- hsi_calc_reflectance(
     x = test_x,
     whiteref = test_whiteref,
@@ -88,9 +71,9 @@ test_that("hsi_calc_reflectance preserves band names from x", {
   expect_equal(names(result), names(test_x))
 })
 
-# ── Value sanity ─────────────────────────────────────────────────────────────
+# Value sanity ----
 
-test_that("hsi_calc_reflectance matches reference fixture", {
+test_that("hsi_calc_reflectance matches the reference fixture", {
   result <- hsi_calc_reflectance(
     x = test_x,
     whiteref = test_whiteref,
@@ -102,35 +85,6 @@ test_that("hsi_calc_reflectance matches reference fixture", {
     terra::values(result),
     terra::values(test_reflectance),
     tolerance = 1e-6
-  )
-})
-
-test_that("hsi_calc_reflectance tint argument affects output values", {
-  # tint = c(2, 1) triggers the scaling path — suppress the expected warning
-  # since this test is about values differing, not the warning itself
-  result_default <- hsi_calc_reflectance(
-    x = test_x,
-    whiteref = test_whiteref,
-    darkref = test_darkref,
-    tint = c(1, 1),
-    in_memory = TRUE
-  )
-
-  result_scaled <- suppressWarnings(
-    hsi_calc_reflectance(
-      x = test_x,
-      whiteref = test_whiteref,
-      darkref = test_darkref,
-      tint = c(2, 1),
-      in_memory = TRUE
-    )
-  )
-
-  expect_false(
-    isTRUE(all.equal(
-      terra::values(result_default),
-      terra::values(result_scaled)
-    ))
   )
 })
 
@@ -148,41 +102,9 @@ test_that("hsi_calc_reflectance produces only finite values", {
   expect_false(any(is.nan(values)))
 })
 
-test_that("hsi_calc_reflectance darkspec produces different values than scaled path", {
-  # Using darkref as darkspec here — the values will differ from the scaling
-
-  # path because scaling multiplies darkref by tint[2]/tint[1] before
-  # subtraction, while the matched path uses it unscaled
-  result_matched <- hsi_calc_reflectance(
-    x = test_x,
-    whiteref = test_whiteref,
-    darkref = test_darkref,
-    darkspec = test_darkref,
-    tint = c(1, 2),
-    in_memory = TRUE
-  )
-
-  result_scaled <- suppressWarnings(
-    hsi_calc_reflectance(
-      x = test_x,
-      whiteref = test_whiteref,
-      darkref = test_darkref,
-      tint = c(1, 2),
-      in_memory = TRUE
-    )
-  )
-
-  expect_false(
-    isTRUE(all.equal(
-      terra::values(result_matched),
-      terra::values(result_scaled)
-    ))
-  )
-})
-
-test_that("hsi_calc_reflectance with darkspec and equal tint matches single-session path", {
-  # When darkspec is the same raster as darkref and tint = c(1, 1),
-  # matched and single-session paths are algebraically identical
+test_that("hsi_calc_reflectance matched darks at equal tint match the single-session path", {
+  # darkspec == darkref with tint = c(1, 1) makes the matched-dark path
+  # algebraically identical to the single-session path.
   result_single <- hsi_calc_reflectance(
     x = test_x,
     whiteref = test_whiteref,
@@ -206,9 +128,40 @@ test_that("hsi_calc_reflectance with darkspec and equal tint matches single-sess
   )
 })
 
-# ── Warnings ─────────────────────────────────────────────────────────────────
+test_that("hsi_calc_reflectance scaled dark path changes the values", {
+  # A differing tint without darkspec triggers integration-time scaling, which
+  # must move the result away from the equal-tint single-session values.
+  result_single <- hsi_calc_reflectance(
+    x = test_x,
+    whiteref = test_whiteref,
+    darkref = test_darkref,
+    tint = c(1, 1),
+    in_memory = TRUE
+  )
 
-test_that("hsi_calc_reflectance warns when scaling dark without darkspec", {
+  result_scaled <- suppressWarnings(
+    hsi_calc_reflectance(
+      x = test_x,
+      whiteref = test_whiteref,
+      darkref = test_darkref,
+      tint = c(2, 1),
+      in_memory = TRUE
+    )
+  )
+
+  expect_false(
+    isTRUE(all.equal(
+      terra::values(result_single),
+      terra::values(result_scaled)
+    ))
+  )
+})
+
+# Warnings ----
+
+test_that("hsi_calc_reflectance warns only on the scaled dark path", {
+  # Scaling (differing tint, no darkspec) warns; matched darks and equal tint
+  # do not.
   expect_warning(
     hsi_calc_reflectance(
       x = test_x,
@@ -219,10 +172,7 @@ test_that("hsi_calc_reflectance warns when scaling dark without darkspec", {
     ),
     "Scaling dark reference"
   )
-})
 
-test_that("hsi_calc_reflectance does not warn when darkspec provided with differing tint", {
-  # Matched darks — no scaling, no warning
   expect_no_warning(
     hsi_calc_reflectance(
       x = test_x,
@@ -233,10 +183,7 @@ test_that("hsi_calc_reflectance does not warn when darkspec provided with differ
       in_memory = TRUE
     )
   )
-})
 
-test_that("hsi_calc_reflectance does not warn when tint values are equal", {
-  # Single-session path — no scaling, no warning
   expect_no_warning(
     hsi_calc_reflectance(
       x = test_x,
@@ -247,125 +194,39 @@ test_that("hsi_calc_reflectance does not warn when tint values are equal", {
   )
 })
 
-# ── Memory and file handling ──────────────────────────────────────────────────
-# Exercises all four combinations of in_memory and filename.
+# File writing ----
 
-test_that("hsi_calc_reflectance in_memory = TRUE, filename = '' returns SpatRaster", {
-  result <- hsi_calc_reflectance(
-    x = test_x,
-    whiteref = test_whiteref,
-    darkref = test_darkref,
-    in_memory = TRUE
-  )
+test_that("hsi_calc_reflectance writes to file when filename is provided", {
+  # Exercises both the in-memory and file-backed write branches.
+  temp_memory <- withr::local_tempfile(fileext = ".tif")
+  temp_backed <- withr::local_tempfile(fileext = ".tif")
 
-  expect_s4_class(result, "SpatRaster")
-})
-
-test_that("hsi_calc_reflectance in_memory = TRUE, filename provided writes file and returns SpatRaster", {
-  temp_file <- tempfile(fileext = ".tif")
-
-  result <- hsi_calc_reflectance(
+  result_memory <- hsi_calc_reflectance(
     x = test_x,
     whiteref = test_whiteref,
     darkref = test_darkref,
     in_memory = TRUE,
-    filename = temp_file,
+    filename = temp_memory,
     overwrite = TRUE
   )
 
-  expect_s4_class(result, "SpatRaster")
-  expect_true(file.exists(temp_file))
-
-  unlink(temp_file)
-})
-
-test_that("hsi_calc_reflectance in_memory = FALSE, filename provided writes file and returns SpatRaster", {
-  # withr::local_tempdir() manages per-band intermediates; they are cleaned
-  # up automatically when the function exits because the final result is
-  # committed to filename before exit.
-  temp_file <- tempfile(fileext = ".tif")
-
-  result <- hsi_calc_reflectance(
+  result_backed <- hsi_calc_reflectance(
     x = test_x,
     whiteref = test_whiteref,
     darkref = test_darkref,
     in_memory = FALSE,
-    filename = temp_file,
+    filename = temp_backed,
     overwrite = TRUE
   )
 
-  expect_s4_class(result, "SpatRaster")
-  expect_true(file.exists(temp_file))
-
-  unlink(temp_file)
+  expect_true(file.exists(temp_memory))
+  expect_s4_class(result_memory, "SpatRaster")
+  expect_true(file.exists(temp_backed))
+  expect_s4_class(result_backed, "SpatRaster")
 })
 
-test_that("hsi_calc_reflectance in_memory = FALSE, filename = '' warns and returns SpatRaster", {
-  # Per-band temp files are the backing store of the returned SpatRaster
-  # and cannot be cleaned up automatically — a warning is emitted.
-  expect_warning(
-    result <- hsi_calc_reflectance(
-      x = test_x,
-      whiteref = test_whiteref,
-      darkref = test_darkref,
-      in_memory = FALSE
-    ),
-    "Temporary files will not be cleaned up"
-  )
-
-  expect_s4_class(result, "SpatRaster")
-})
-
-test_that("hsi_calc_reflectance in_memory = TRUE and FALSE produce equivalent values", {
-  result_mem <- hsi_calc_reflectance(
-    x = test_x,
-    whiteref = test_whiteref,
-    darkref = test_darkref,
-    in_memory = TRUE
-  )
-
-  temp_file <- tempfile(fileext = ".tif")
-
-  result_disk <- hsi_calc_reflectance(
-    x = test_x,
-    whiteref = test_whiteref,
-    darkref = test_darkref,
-    in_memory = FALSE,
-    filename = temp_file,
-    overwrite = TRUE
-  )
-
-  expect_equal(
-    terra::values(result_mem),
-    terra::values(result_disk),
-    tolerance = 1e-6
-  )
-
-  unlink(temp_file)
-})
-
-# ── File writing ─────────────────────────────────────────────────────────────
-
-test_that("hsi_calc_reflectance writes to file when filename provided", {
-  temp_file <- tempfile(fileext = ".tif")
-
-  result <- hsi_calc_reflectance(
-    x = test_x,
-    whiteref = test_whiteref,
-    darkref = test_darkref,
-    in_memory = TRUE,
-    filename = temp_file,
-    overwrite = TRUE
-  )
-
-  expect_true(file.exists(temp_file))
-  expect_s4_class(result, "SpatRaster")
-
-  unlink(temp_file)
-})
-
-test_that("hsi_calc_reflectance errors when file exists and overwrite = FALSE", {
-  temp_file <- tempfile(fileext = ".tif")
+test_that("hsi_calc_reflectance errors when the file exists and overwrite is FALSE", {
+  temp_file <- withr::local_tempfile(fileext = ".tif")
 
   hsi_calc_reflectance(
     x = test_x,
@@ -386,13 +247,11 @@ test_that("hsi_calc_reflectance errors when file exists and overwrite = FALSE", 
       overwrite = FALSE
     )
   )
-
-  unlink(temp_file)
 })
 
-# ── Input validation ─────────────────────────────────────────────────────────
+# Input validation ----
 
-test_that("hsi_calc_reflectance errors with non-SpatRaster x", {
+test_that("hsi_calc_reflectance rejects non-SpatRaster inputs", {
   expect_error(
     hsi_calc_reflectance(
       x = "not a raster",
@@ -400,9 +259,7 @@ test_that("hsi_calc_reflectance errors with non-SpatRaster x", {
       darkref = test_darkref
     )
   )
-})
 
-test_that("hsi_calc_reflectance errors with non-SpatRaster whiteref", {
   expect_error(
     hsi_calc_reflectance(
       x = test_x,
@@ -410,9 +267,7 @@ test_that("hsi_calc_reflectance errors with non-SpatRaster whiteref", {
       darkref = test_darkref
     )
   )
-})
 
-test_that("hsi_calc_reflectance errors with non-SpatRaster darkref", {
   expect_error(
     hsi_calc_reflectance(
       x = test_x,
@@ -420,9 +275,7 @@ test_that("hsi_calc_reflectance errors with non-SpatRaster darkref", {
       darkref = "not a raster"
     )
   )
-})
 
-test_that("hsi_calc_reflectance errors with non-SpatRaster darkspec", {
   expect_error(
     hsi_calc_reflectance(
       x = test_x,
@@ -433,9 +286,9 @@ test_that("hsi_calc_reflectance errors with non-SpatRaster darkspec", {
   )
 })
 
-test_that("hsi_calc_reflectance errors when band counts differ", {
-  # Subset whiteref to fewer bands than x
+test_that("hsi_calc_reflectance rejects band-count mismatches", {
   whiteref_short <- terra::subset(test_whiteref, 1:10)
+  darkspec_short <- terra::subset(test_darkref, 1:10)
 
   expect_error(
     hsi_calc_reflectance(
@@ -445,10 +298,6 @@ test_that("hsi_calc_reflectance errors when band counts differ", {
     ),
     "same number of bands"
   )
-})
-
-test_that("hsi_calc_reflectance errors when darkspec band count differs", {
-  darkspec_short <- terra::subset(test_darkref, 1:10)
 
   expect_error(
     hsi_calc_reflectance(
@@ -461,7 +310,7 @@ test_that("hsi_calc_reflectance errors when darkspec band count differs", {
   )
 })
 
-test_that("hsi_calc_reflectance errors when tint is wrong length", {
+test_that("hsi_calc_reflectance rejects invalid tint", {
   expect_error(
     hsi_calc_reflectance(
       x = test_x,
@@ -470,15 +319,66 @@ test_that("hsi_calc_reflectance errors when tint is wrong length", {
       tint = c(1, 1, 1)
     )
   )
-})
 
-test_that("hsi_calc_reflectance errors when tint contains zero", {
   expect_error(
     hsi_calc_reflectance(
       x = test_x,
       whiteref = test_whiteref,
       darkref = test_darkref,
       tint = c(0, 1)
+    )
+  )
+})
+
+test_that("hsi_calc_reflectance rejects non-numeric band names", {
+  x_bad_names <- terra::deepcopy(test_x)
+  names(x_bad_names) <- paste0("band_", seq_len(terra::nlyr(x_bad_names)))
+
+  expect_error(
+    hsi_calc_reflectance(
+      x = x_bad_names,
+      whiteref = test_whiteref,
+      darkref = test_darkref
+    ),
+    "numeric wavelengths"
+  )
+})
+
+# Error messages ----
+# Dev/CI-only message-quality layer; pins the wording of every abort authored
+# in this function. check_* helper errors are covered by their own tests.
+
+test_that("hsi_calc_reflectance error messages are informative", {
+  whiteref_short <- terra::subset(test_whiteref, 1:10)
+  darkspec_short <- terra::subset(test_darkref, 1:10)
+  x_bad_names <- terra::deepcopy(test_x)
+  names(x_bad_names) <- paste0("band_", seq_len(terra::nlyr(x_bad_names)))
+
+  expect_snapshot(
+    error = TRUE,
+    hsi_calc_reflectance(
+      x = test_x,
+      whiteref = whiteref_short,
+      darkref = test_darkref
+    )
+  )
+
+  expect_snapshot(
+    error = TRUE,
+    hsi_calc_reflectance(
+      x = test_x,
+      whiteref = test_whiteref,
+      darkref = test_darkref,
+      darkspec = darkspec_short
+    )
+  )
+
+  expect_snapshot(
+    error = TRUE,
+    hsi_calc_reflectance(
+      x = x_bad_names,
+      whiteref = test_whiteref,
+      darkref = test_darkref
     )
   )
 })

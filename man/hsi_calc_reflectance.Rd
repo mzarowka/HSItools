@@ -2,7 +2,7 @@
 % Please edit documentation in R/hsi_calc_reflectance.R
 \name{hsi_calc_reflectance}
 \alias{hsi_calc_reflectance}
-\title{Hyperspectral reflectance raster}
+\title{Calculate hyperspectral reflectance}
 \usage{
 hsi_calc_reflectance(
   x,
@@ -37,8 +37,7 @@ reference and specimen capture, in that order. Default \code{c(1, 1)} assumes
 equal integration times.}
 
 \item{in_memory}{Logical. Process entirely in RAM. Default \code{FALSE}.
-Set \code{TRUE} only when data fits comfortably in available memory. When
-\code{FALSE}, writes one temporary file per band.}
+Set \code{TRUE} only when data fits comfortably in available memory.}
 
 \item{filename}{Character. Output filename. Default \code{""} keeps result in memory.}
 
@@ -47,7 +46,7 @@ Set \code{TRUE} only when data fits comfortably in available memory. When
 \item{...}{Additional arguments passed to \code{\link[terra:writeRaster]{terra::writeRaster()}}.}
 }
 \value{
-A \code{\link[terra:SpatRaster-class]{SpatRaster}} with normalized reflectance values.
+A \code{\link[terra:SpatRaster-class]{SpatRaster}} with reflectance values.
 }
 \description{
 Convert raw hyperspectral imaging data (digital numbers) to calibrated
@@ -71,8 +70,8 @@ strategy.
 specimen is overexposed relative to the white reference to maximise signal.
 Each subtraction uses the dark reference captured at the matching
 integration time. This is the recommended approach for dual-exposure
-scanning. For example, Lumo Scanner always captures a dark reference per session, so
-matched darks should be available for all standard workflows.
+scanning. Many scanners capture a dark reference per session, so matched
+darks are typically available for standard workflows.
 
 \deqn{R(\lambda) = \frac{specimen - dark_{specimen}}{white - dark_{white}}
   \times \frac{t_{white}}{t_{specimen}}}
@@ -81,7 +80,7 @@ matched darks should be available for all standard workflows.
 dual-exposure workflows when only the white-session dark reference is
 available. The dark reference is scaled by the integration time ratio
 before numerator subtraction. This assumes dark current scales linearly
-with integration time. In practice, some detectors (SWIR) have a large
+with integration time. In practice, some detectors have a large
 fixed-pattern noise component that does not scale with exposure time.
 Scaling overestimates the specimen dark current, producing severely
 degraded reflectance — often negative across entire spectra. Use only as
