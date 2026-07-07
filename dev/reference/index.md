@@ -59,8 +59,6 @@
   : Find a fixed-width extent from reference points
 - [`hsi_match_gcp()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_match_gcp.md)
   : Match ground control points between two SpatVectors
-- [`hsi_merge_rasters()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_merge_rasters.md)
-  : Merge SpatRasters in a stratigraphic order
 - [`hsi_pixels_to_units()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_pixels_to_units.md)
   : Convert pixel coordinates to physical units
 - [`hsi_plot_composite()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_plot_composite.md)

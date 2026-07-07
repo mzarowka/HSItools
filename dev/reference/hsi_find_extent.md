@@ -2,28 +2,22 @@
 
 Find a fixed-width extent from reference points
 
-Find a fixed-width extent
-
 ## Usage
 
 ``` r
-hsi_find_extent(e, width)
-
-hsi_find_extent(e, width)
+hsi_find_extent(
+  x,
+  points,
+  width,
+  filename = "",
+  overwrite = FALSE,
+  insert = FALSE,
+  layer = "",
+  ...
+)
 ```
 
 ## Arguments
-
-- e:
-
-  A
-  [`SpatExtent`](https://rspatial.github.io/terra/reference/SpatExtent-class.html)
-  in which to search. Created with
-  [`terra::ext()`](https://rspatial.github.io/terra/reference/ext.html).
-
-- width:
-
-  Numeric. Width in pixels of the new extent.
 
 - x:
 
@@ -37,6 +31,10 @@ hsi_find_extent(e, width)
   [`SpatVector`](https://rspatial.github.io/terra/reference/SpatVector-class.html)
   with exactly 2 point geometries marking the vertical extent of the
   region of interest. Must be in the same coordinate space as `x`.
+
+- width:
+
+  Positive integer. Width of the output extent in pixels.
 
 - filename:
 
@@ -65,10 +63,6 @@ A
 [`SpatVector`](https://rspatial.github.io/terra/reference/SpatVector-class.html)
 polygon snapped to the grid of `x`.
 
-A
-[`SpatExtent`](https://rspatial.github.io/terra/reference/SpatExtent-class.html)
-centered within `extent` and of the specified width.
-
 ## Details
 
 The output polygon spans vertically between the two reference points and
@@ -88,7 +82,6 @@ to assign physical units to a raster extent.
 Other Utilities:
 [`hsi_bind_layers()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_bind_layers.md),
 [`hsi_bind_rows()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_bind_rows.md),
-[`hsi_merge_rasters()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_merge_rasters.md),
 [`hsi_subset()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_subset.md),
 [`hsi_subset_range()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_subset_range.md),
 [`wavelength_position()`](https://mzarowka.github.io/HSItools/dev/reference/wavelength_position.md)
