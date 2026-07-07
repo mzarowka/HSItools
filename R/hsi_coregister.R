@@ -59,11 +59,7 @@ hsi_coregister <- function(
 
   check_spatraster(y)
 
-  if (!inherits(gcp, "data.frame")) {
-    cli::cli_abort(
-      "{.arg gcp} must be a data frame."
-    )
-  }
+  check_data_frame(gcp)
 
   # Validate columns
   check_has_cols(gcp, cols = c("source_x", "source_y", "target_x", "target_y"))

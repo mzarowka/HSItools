@@ -32,17 +32,13 @@
 #' }
 #'
 #' @importFrom rlang .data
-#' 
+#'
 #' @export
 hsi_plot_spectrum <- function(
   x
 ) {
   # Validate inputs
-  if (!inherits(x, "data.frame")) {
-    cli::cli_abort(
-      "{.arg x} is a {.class {class(x)}} not a data frame or tibble"
-    )
-  }
+  check_data_frame(x)
 
   # Create ggplot object
   result <- ggplot2::ggplot(data = x) +

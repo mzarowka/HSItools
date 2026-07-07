@@ -49,12 +49,8 @@ hsi_check_gcp <- function(
   x,
   verbose = FALSE
 ) {
-  # Validate inputs
-  if (!inherits(x, "data.frame")) {
-    cli::cli_abort(
-      "{.arg x} must be a data frame."
-    )
-  }
+    # Validate inputs
+  check_data_frame(x)
 
   # Validate columns
   check_has_cols(x, cols = c("source_x", "source_y", "target_x", "target_y"))

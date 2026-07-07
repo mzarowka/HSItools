@@ -8,20 +8,82 @@ hsi_create_metadata(
   name,
   sensor_type = NULL,
   manufacturer = NULL,
+  session_id = NULL,
   nrow = NULL,
   ncol = NULL,
   nlyr = NULL,
   xres = NULL,
   yres = NULL,
+  spectral_resolution_nm = NULL,
+  frame_rate_hz = NULL,
   et_target_ms = NULL,
   et_white_ms = NULL,
   target_start_mm = NULL,
   target_stop_mm = NULL,
-  session_id = NULL,
+  spectral_binning = NULL,
+  spatial_binning = NULL,
   wavelengths = NULL,
   fwhm = NULL
 )
 }
+\arguments{
+\item{name}{Character. Capture name. A single non-empty string.}
+
+\item{sensor_type}{Character. Sensor type. Default \code{NULL}.}
+
+\item{manufacturer}{Character. Sensor manufacturer. Default \code{NULL}.}
+
+\item{session_id}{Character. Session identifier grouping scans that share a white reference. Default \code{NULL}.}
+
+\item{nrow}{Positive integer. Number of raster rows. Default \code{NULL}.}
+
+\item{ncol}{Positive integer. Number of raster columns. Default \code{NULL}.}
+
+\item{nlyr}{Positive integer. Number of raster layers. Default \code{NULL}.}
+
+\item{xres}{Positive number. Pixel resolution in the x direction. Default \code{NULL}.}
+
+\item{yres}{Positive number. Pixel resolution in the y direction. Default \code{NULL}.}
+
+\item{spectral_resolution_nm}{Positive number. Spectral resolution in nm. Default \code{NULL}.}
+
+\item{frame_rate_hz}{Positive number. Frame rate in Hz. Default \code{NULL}.}
+
+\item{et_target_ms}{Positive number. Target integration time in ms. Default \code{NULL}.}
+
+\item{et_white_ms}{Positive number. White reference integration time in ms. Default \code{NULL}.}
+
+\item{target_start_mm}{Positive number. Motor position at scan start in mm. Default \code{NULL}.}
+
+\item{target_stop_mm}{Positive number. Motor position at scan end in mm. Default \code{NULL}.}
+
+\item{spectral_binning}{Positive integer. Spectral binning factor. Default \code{NULL}.}
+
+\item{spatial_binning}{Positive integer. Spatial binning factor. Default \code{NULL}.}
+
+\item{wavelengths}{Positive numeric vector. Band centre wavelengths in nm, one value per layer. Default \code{NULL}.}
+
+\item{fwhm}{Positive numeric vector. Band full width at half maximum in nm, one value per layer. Default \code{NULL}.}
+}
+\value{
+An object of class \code{hsi_metadata}: a validated list of capture metadata fields with an internally stamped \code{schema_version}.
+}
 \description{
 Create structured hyperspectral metadata
 }
+\examples{
+\dontrun{
+# Minimal: name only
+metadata <- hsi_create_metadata(name = "capture_01")
+
+# With sensor identity, dimensions, and spectral axis
+metadata <- hsi_create_metadata(
+  name = "capture_01",
+  sensor_type = "VNIR",
+  manufacturer = "Specim",
+  nlyr = 224,
+  wavelengths = seq(400, 1000, length.out = 224)
+)
+}
+}
+\concept{HSI Metadata}

@@ -20,7 +20,7 @@ hsi_plot_composite <- function(
 
   # Check if correct class is supplied.
   if (!inherits(plots, what = "list")) {
-    rlang::abort(message = "Supplied data is not a list.")
+    cli::cli_abort(message = "Supplied data is not a list.")
   }
 
   # Create a plot composed from a list of plots

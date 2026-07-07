@@ -96,99 +96,6 @@ wavelength_sub <- function(
   raster
 }
 
-#' Merge SpatRasters in a stratigraphic order
-#'
-#' @family Utilities
-#' @param x a terra SpatRaster. First in the sequence.
-#' @param y a terra SpatRaster. Second in the sequence.
-#' @param filename Character. Output filename. Default "" keeps in memory
-#' @param overwrite Logical
-#' @param ... further passed to writeRaster
-#'
-#' @return a terra SpatRaster. Merged inputs.
-#' @export
-hsi_merge_rasters <- function(
-  x,
-  y,
-  filename = "",
-  overwrite = FALSE,
-  ...
-) {
-  # TODO experimental fun, needs a proper refactor
-
-  # Validate input
-  if (!inherits(x, "SpatRaster")) {
-    cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
-  }
-
-  # Validate input
-  if (!inherits(y, "SpatRaster")) {
-    cli::cli_abort("Input {.arg y} must be a terra SpatRaster.")
-  }
-
-  # Get extent of the first SpatRaster
-  extent_1 <- terra::ext(x)
-
-  # Get extent of the second SpatRaster
-  extent_2 <- terra::ext(y)
-
-  # Shift second extent
-  # xmin and xmax stay the same
-  extent_2 <- terra::ext(
-    extent_2[1],
-    extent_2[2],
-    extent_1[3] - (extent_2[4] - extent_2[3]),
-    extent_1[3]
-  )
-
-  # Update extent of second SpatRaster
-  terra::ext(y) <- extent_2
-
-  # Get merged SpatRaster
-  raster <- terra::merge(x, y, filename = filename)
-
-  # Return
-  return(raster)
-}
-
-#' Find a fixed-width extent
-#'
-#' @family Utilities
-#'
-#' @param e A [`SpatExtent`][terra::SpatExtent-class] in which to search.
-#'   Created with [`terra::ext()`].
-#' @param width Numeric. Width in pixels of the new extent.
-#'
-#' @returns A [`SpatExtent`][terra::SpatExtent-class] centered within `extent`
-#'   and of the specified width.
-#'
-#' @export
-hsi_find_extent <- function(e, width) {
-  # Validate input
-  if (!inherits(e, "SpatExtent")) {
-    cli::cli_abort("Input {.arg e} must be a terra SpatExtent.")
-  }
-  # TODO, probably can work with real world units once SpatRaster is calibrated?
-
-  # Validate input
-  check_numeric(width, len = 1, positive = TRUE)
-
-  # Get mid point
-  middle_point <- terra::round((terra::xmax(e) - terra::xmin(e)) / 2)
-
-  # New xmin
-  ext.xmin <- terra::xmin(e) + middle_point - (width / 2)
-
-  # New xmax
-  ext.xmax <- terra::xmin(e) + middle_point + (width / 2)
-
-  # Update extent
-  e <- terra::ext(ext.xmin, ext.xmax, e[3], e[4])
-
-  # Return
-  e
-}
-
 #' Subset SpatRaster by wavelength
 #'
 #' @family Utilities
@@ -392,41 +299,51 @@ from_um <- function(value, to) {
   value
 }
 
+
 #' Create structured hyperspectral metadata
 #'
-#' @param name
-#' @param sensor_type
-#' @param manufacturer
-#' @param nrow
-#' @param ncol
-#' @param nlyr
-#' @param xres
-#' @param yres
-#' @param et_target_ms
-#' @param et_white_ms
-#' @param target_start_mm
-#' @param target_stop_mm
-#' @param session_id
-#' @param wavelengths
-#' @param fwhm
-#'
-#' @returns
+#' @family HSI Metadata
+#' @param name Character. Capture name. A single non-empty string.
+#' @param sensor_type Character. Sensor type. Default `NULL`.
+#' @param manufacturer Character. Sensor manufacturer. Default `NULL`.
+#' @param session_id Character. Session identifier grouping scans that share a white reference. Default `NULL`.
+#' @param nrow Positive integer. Number of raster rows. Default `NULL`.
+#' @param ncol Positive integer. Number of raster columns. Default `NULL`.
+#' @param nlyr Positive integer. Number of raster layers. Default `NULL`.
+#' @param xres Positive number. Pixel resolution in the x direction. Default `NULL`.
+#' @param yres Positive number. Pixel resolution in the y direction. Default `NULL`.
+#' @param spectral_resolution_nm Positive number. Spectral resolution in nm. Default `NULL`.
+#' @param frame_rate_hz Positive number. Frame rate in Hz. Default `NULL`.
+#' @param et_target_ms Positive number. Target integration time in ms. Default `NULL`.
+#' @param et_white_ms Positive number. White reference integration time in ms. Default `NULL`.
+#' @param target_start_mm Positive number. Motor position at scan start in mm. Default `NULL`.
+#' @param target_stop_mm Positive number. Motor position at scan end in mm. Default `NULL`.
+#' @param spectral_binning Positive integer. Spectral binning factor. Default `NULL`.
+#' @param spatial_binning Positive integer. Spatial binning factor. Default `NULL`.
+#' @param wavelengths Positive numeric vector. Band centre wavelengths in nm, one value per layer. Default `NULL`.
+#' @param fwhm Positive numeric vector. Band full width at half maximum in nm, one value per layer. Default `NULL`.
+#' 
+#' @returns An object of class `hsi_metadata`: a validated list of capture metadata fields with an internally stamped `schema_version`.
 #'
 #' @noRd
 new_hsi_metadata <- function(
   name,
   sensor_type = NULL,
   manufacturer = NULL,
+  session_id = NULL,
   nrow = NULL,
   ncol = NULL,
   nlyr = NULL,
   xres = NULL,
   yres = NULL,
+  spectral_resolution_nm = NULL,
+  frame_rate_hz = NULL,
   et_target_ms = NULL,
   et_white_ms = NULL,
   target_start_mm = NULL,
   target_stop_mm = NULL,
-  session_id = NULL,
+  spectral_binning = NULL,
+  spatial_binning = NULL,
   wavelengths = NULL,
   fwhm = NULL
 ) {
@@ -437,16 +354,20 @@ new_hsi_metadata <- function(
       name = name,
       sensor_type = sensor_type,
       manufacturer = manufacturer,
+      session_id = session_id,
       nrow = nrow,
       ncol = ncol,
       nlyr = nlyr,
       xres = xres,
       yres = yres,
+      spectral_resolution_nm = spectral_resolution_nm,
+      frame_rate_hz = frame_rate_hz,
       et_target_ms = et_target_ms,
       et_white_ms = et_white_ms,
       target_start_mm = target_start_mm,
       target_stop_mm = target_stop_mm,
-      session_id = session_id,
+      spectral_binning = spectral_binning,
+      spatial_binning = spatial_binning,
       wavelengths = wavelengths,
       fwhm = fwhm
     ),
@@ -456,15 +377,186 @@ new_hsi_metadata <- function(
 
 #' Validate structured hyperspectral metadata
 #'
-#' @param x
+#' @param x An object of class `hsi_metadata` to validate.
+#' @param call Environment for error reporting. Auto-detected via
+#'   [rlang::caller_env()].
 #'
-#' @returns
+#' @returns `x`, invisibly, if validation passes; aborts otherwise.
 #'
 #' @noRd
-validate_hsi_metadata <- function(x) {
-  # Validate inputs
-  check_scalar_character(x$name, "name")
-  check_scalar_number(x$xres, "xres")
+validate_hsi_metadata <- function(x, call = rlang::caller_env()) {
+  # Required string
+  rlang::check_string(
+    x$name,
+    allow_empty = FALSE,
+    arg = "name",
+    call = call
+  )
+
+  # Optional strings
+  rlang::check_string(
+    x$sensor_type,
+    allow_null = TRUE,
+    arg = "sensor_type",
+    call = call
+  )
+  rlang::check_string(
+    x$manufacturer,
+    allow_null = TRUE,
+    arg = "manufacturer",
+    call = call
+  )
+  rlang::check_string(
+    x$session_id,
+    allow_null = TRUE,
+    arg = "session_id",
+    call = call
+  )
+
+  # Optional positive integers
+  check_numeric(
+    x$nrow,
+    len = 1,
+    positive = TRUE,
+    allow_null = TRUE,
+    arg = "nrow",
+    call = call
+  )
+  check_numeric(
+    x$ncol,
+    len = 1,
+    positive = TRUE,
+    allow_null = TRUE,
+    arg = "ncol",
+    call = call
+  )
+  check_numeric(
+    x$nlyr,
+    len = 1,
+    positive = TRUE,
+    allow_null = TRUE,
+    arg = "nlyr",
+    call = call
+  )
+  check_numeric(
+    x$xres,
+    len = 1,
+    positive = TRUE,
+    allow_null = TRUE,
+    arg = "xres",
+    call = call
+  )
+  check_numeric(
+    x$yres,
+    len = 1,
+    positive = TRUE,
+    allow_null = TRUE,
+    arg = "yres",
+    call = call
+  )
+  check_numeric(
+    x$spectral_resolution_nm,
+    len = 1,
+    positive = TRUE,
+    allow_null = TRUE,
+    arg = "spectral_resolution_nm",
+    call = call
+  )
+  check_numeric(
+    x$frame_rate_hz,
+    len = 1,
+    positive = TRUE,
+    allow_null = TRUE,
+    arg = "frame_rate_hz",
+    call = call
+  )
+  check_numeric(
+    x$et_target_ms,
+    len = 1,
+    positive = TRUE,
+    allow_null = TRUE,
+    arg = "et_target_ms",
+    call = call
+  )
+  check_numeric(
+    x$et_white_ms,
+    len = 1,
+    positive = TRUE,
+    allow_null = TRUE,
+    arg = "et_white_ms",
+    call = call
+  )
+  check_numeric(
+    x$target_start_mm,
+    len = 1,
+    positive = TRUE,
+    allow_null = TRUE,
+    arg = "target_start_mm",
+    call = call
+  )
+  check_numeric(
+    x$target_stop_mm,
+    len = 1,
+    positive = TRUE,
+    allow_null = TRUE,
+    arg = "target_stop_mm",
+    call = call
+  )
+  check_numeric(
+    x$spectral_binning,
+    len = 1,
+    positive = TRUE,
+    allow_null = TRUE,
+    arg = "spectral_binning",
+    call = call
+  )
+  check_numeric(
+    x$spatial_binning,
+    len = 1,
+    positive = TRUE,
+    allow_null = TRUE,
+    arg = "spatial_binning",
+    call = call
+  )
+  check_numeric(
+    x$wavelengths,
+    allow_null = TRUE,
+    arg = "wavelengths",
+    call = call
+  )
+  check_numeric(x$fwhm, allow_null = TRUE, arg = "fwhm", call = call)
+
+  # Wavelengths length must match nlyr
+  if (
+    !is.null(x$wavelengths) &&
+      !is.null(x$nlyr) &&
+      length(x$wavelengths) != x$nlyr
+  ) {
+    cli::cli_abort(
+      c(
+        "{.arg wavelengths} must have one value per layer.",
+        "i" = "{.arg nlyr} is {x$nlyr}, but {.arg wavelengths} has length {length(x$wavelengths)}."
+      ),
+      class = "hsitools_error",
+      call = call
+    )
+  }
+
+  # FW HM length must match nlyr
+  if (
+    !is.null(x$fwhm) &&
+      !is.null(x$nlyr) &&
+      length(x$fwhm) != x$nlyr
+  ) {
+    cli::cli_abort(
+      c(
+        "{.arg fwhm} must have one value per layer.",
+        "i" = "{.arg nlyr} is {x$nlyr}, but {.arg fwhm} has length {length(x$fwhm)}."
+      ),
+      class = "hsitools_error",
+      call = call
+    )
+  }
 
   # Return result
   invisible(x)

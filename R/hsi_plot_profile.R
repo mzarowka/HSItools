@@ -52,12 +52,8 @@
 #'
 #' @export
 hsi_plot_profile <- function(x) {
-  # Validate inputs
-  if (!inherits(x, "data.frame")) {
-    cli::cli_abort(
-      "{.arg x} is a {.class {class(x)}} not a data frame or tibble"
-    )
-  }
+    # Validate inputs
+  check_data_frame(x)
 
   var_name <- setdiff(names(x), "position")
 
