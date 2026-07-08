@@ -115,6 +115,11 @@ hsi_create_metadata(
 An object of class `hsi_metadata`: a validated list of capture metadata
 fields with an internally stamped `schema_version`.
 
+## See also
+
+Other HSI Metadata:
+[`hsi_write_metadata()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_write_metadata.md)
+
 ## Examples
 
 ``` r

@@ -135,6 +135,8 @@ and previously by the Polish National Agency for Academic Exchange
   : Subset SpatRaster by wavelength range
 - [`hsi_tiled()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_tiled.md)
   : Process a SpatRaster in parallel tiles
+- [`hsi_write_metadata()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_write_metadata.md)
+  : Write hsi_metadata to file
 - [`hsi_write_scaled()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_write_scaled.md)
   : Write HSI reflectance raster as a scaled integer or float GeoTIFF
 - [`spectral_indices`](https://mzarowka.github.io/HSItools/dev/reference/spectral_indices.md)
