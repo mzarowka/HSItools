@@ -28,6 +28,7 @@ x_written <- hsi_write_metadata(x, filename = "metadata.yaml", overwrite = TRUE)
 }
 \seealso{
 Other HSI Metadata:
-\code{\link[=hsi_create_metadata]{hsi_create_metadata()}}
+\code{\link[=hsi_create_metadata]{hsi_create_metadata()}},
+\code{\link[=hsi_read_metadata]{hsi_read_metadata()}}
 }
 \concept{HSI Metadata}

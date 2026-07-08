@@ -24,10 +24,10 @@
 #' @examples
 #' \dontrun{
 #' # Minimal: name only
-#' metadata <- hsi_create_metadata(name = "capture_01")
+#' x_metadata <- hsi_create_metadata(name = "capture_01")
 #'
 #' # With sensor identity, dimensions, and spectral axis
-#' metadata <- hsi_create_metadata(
+#' x_metadata <- hsi_create_metadata(
 #'   name = "capture_01",
 #'   sensor_type = "VNIR",
 #'   manufacturer = "Specim",

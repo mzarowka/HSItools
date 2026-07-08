@@ -74,10 +74,10 @@ Create structured hyperspectral metadata
 \examples{
 \dontrun{
 # Minimal: name only
-metadata <- hsi_create_metadata(name = "capture_01")
+x_metadata <- hsi_create_metadata(name = "capture_01")
 
 # With sensor identity, dimensions, and spectral axis
-metadata <- hsi_create_metadata(
+x_metadata <- hsi_create_metadata(
   name = "capture_01",
   sensor_type = "VNIR",
   manufacturer = "Specim",
@@ -88,6 +88,7 @@ metadata <- hsi_create_metadata(
 }
 \seealso{
 Other HSI Metadata:
+\code{\link[=hsi_read_metadata]{hsi_read_metadata()}},
 \code{\link[=hsi_write_metadata]{hsi_write_metadata()}}
 }
 \concept{HSI Metadata}

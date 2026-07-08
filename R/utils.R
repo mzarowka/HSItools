@@ -300,9 +300,8 @@ from_um <- function(value, to) {
 }
 
 
-#' Create structured hyperspectral metadata
+#' Construct an hsi_metadata list, unvalidated
 #'
-#' @family HSI Metadata
 #' @param name Character. Capture name. A single non-empty string.
 #' @param sensor_type Character. Sensor type. Default `NULL`.
 #' @param manufacturer Character. Sensor manufacturer. Default `NULL`.
@@ -323,7 +322,9 @@ from_um <- function(value, to) {
 #' @param wavelengths Positive numeric vector. Band centre wavelengths in nm, one value per layer. Default `NULL`.
 #' @param fwhm Positive numeric vector. Band full width at half maximum in nm, one value per layer. Default `NULL`.
 #'
-#' @returns An object of class `hsi_metadata`: a validated list of capture metadata fields with an internally stamped `schema_version`.
+#' @returns An object of class `hsi_metadata`: an unvalidated list of capture
+#'   metadata fields with `schema_version` stamped. Validation happens
+#'   separately via `validate_hsi_metadata()`.
 #'
 #' @noRd
 new_hsi_metadata <- function(
