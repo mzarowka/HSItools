@@ -29,7 +29,8 @@ An `hsi_metadata` object, returned invisibly.
 ## See also
 
 Other HSI Metadata:
-[`hsi_create_metadata()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_create_metadata.md)
+[`hsi_create_metadata()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_create_metadata.md),
+[`hsi_read_metadata()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_read_metadata.md)
 
 ## Examples
 

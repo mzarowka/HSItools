@@ -118,6 +118,7 @@ fields with an internally stamped `schema_version`.
 ## See also
 
 Other HSI Metadata:
+[`hsi_read_metadata()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_read_metadata.md),
 [`hsi_write_metadata()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_write_metadata.md)
 
 ## Examples
@@ -125,10 +126,10 @@ Other HSI Metadata:
 ``` r
 if (FALSE) { # \dontrun{
 # Minimal: name only
-metadata <- hsi_create_metadata(name = "capture_01")
+x_metadata <- hsi_create_metadata(name = "capture_01")
 
 # With sensor identity, dimensions, and spectral axis
-metadata <- hsi_create_metadata(
+x_metadata <- hsi_create_metadata(
   name = "capture_01",
   sensor_type = "VNIR",
   manufacturer = "Specim",

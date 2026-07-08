@@ -72,6 +72,8 @@
   : Plot a three-layer pseudoRGB SpatRaster
 - [`hsi_plot_spectrum()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_plot_spectrum.md)
   : Plot a reflectance spectrum
+- [`hsi_read_metadata()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_read_metadata.md)
+  : Read hsi_metadata from file
 - [`hsi_remove_continuum()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_remove_continuum.md)
   : Remove continuum from hyperspectral data
 - [`hsi_set_extent()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_set_extent.md)
