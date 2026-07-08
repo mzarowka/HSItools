@@ -322,7 +322,7 @@ from_um <- function(value, to) {
 #' @param spatial_binning Positive integer. Spatial binning factor. Default `NULL`.
 #' @param wavelengths Positive numeric vector. Band centre wavelengths in nm, one value per layer. Default `NULL`.
 #' @param fwhm Positive numeric vector. Band full width at half maximum in nm, one value per layer. Default `NULL`.
-#' 
+#'
 #' @returns An object of class `hsi_metadata`: a validated list of capture metadata fields with an internally stamped `schema_version`.
 #'
 #' @noRd
@@ -413,7 +413,7 @@ validate_hsi_metadata <- function(x, call = rlang::caller_env()) {
     call = call
   )
 
-  # Optional positive integers
+  # Optional positive scalars
   check_numeric(
     x$nrow,
     len = 1,
@@ -521,10 +521,17 @@ validate_hsi_metadata <- function(x, call = rlang::caller_env()) {
   check_numeric(
     x$wavelengths,
     allow_null = TRUE,
+    positive = TRUE,
     arg = "wavelengths",
     call = call
   )
-  check_numeric(x$fwhm, allow_null = TRUE, arg = "fwhm", call = call)
+  check_numeric(
+    x$fwhm,
+    allow_null = TRUE,
+    positive = TRUE,
+    arg = "fwhm",
+    call = call
+  )
 
   # Wavelengths length must match nlyr
   if (
@@ -542,7 +549,7 @@ validate_hsi_metadata <- function(x, call = rlang::caller_env()) {
     )
   }
 
-  # FW HM length must match nlyr
+  # FWHM length must match nlyr
   if (
     !is.null(x$fwhm) &&
       !is.null(x$nlyr) &&

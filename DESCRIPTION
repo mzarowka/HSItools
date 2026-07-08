@@ -49,7 +49,8 @@ Imports:
     prospectr,
     gsignal,
     withr,
-    tibble
+    tibble,
+    yaml
 Depends: 
     R (>= 4.2.0)
 LazyData: true

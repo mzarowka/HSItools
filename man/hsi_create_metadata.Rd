@@ -86,4 +86,8 @@ metadata <- hsi_create_metadata(
 )
 }
 }
+\seealso{
+Other HSI Metadata:
+\code{\link[=hsi_write_metadata]{hsi_write_metadata()}}
+}
 \concept{HSI Metadata}
