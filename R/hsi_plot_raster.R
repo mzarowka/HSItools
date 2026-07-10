@@ -48,7 +48,8 @@ hsi_plot_raster <- function(x) {
 
   if (terra::nlyr(x) > 1) {
     cli::cli_abort(
-      "{.arg x} has {.val {terra::nlyr(x)}} layers. Only one is accepted."
+      "{.arg x} has {.val {terra::nlyr(x)}} layers. Only one is accepted.",
+      class = "hsitools_error"
     )
   }
 

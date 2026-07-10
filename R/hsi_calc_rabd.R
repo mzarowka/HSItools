@@ -61,7 +61,8 @@ hsi_calc_rabd <- function(
   # Validate index type
   if (!index_type %in% c("strict", "mid", "max")) {
     cli::cli_abort(
-      "Input {.arg index_type} must be one of 'strict', 'mid' or 'max'."
+      "Input {.arg index_type} must be one of 'strict', 'mid' or 'max'.",
+      class = "hsitools_error"
     )
   }
 

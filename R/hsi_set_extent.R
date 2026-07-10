@@ -61,7 +61,10 @@ hsi_set_extent <- function(
 	check_geom_type(reference, allowed = "points")
 
 	if (terra::nrow(reference) != 1) {
-		cli::cli_abort("{.arg reference} must contain exactly one point.")
+		cli::cli_abort(
+			"{.arg reference} must contain exactly one point.",
+			class = "hsitools_error"
+		)
 	}
 
 	check_numeric(um_per_pixel, len = 1, positive = TRUE)

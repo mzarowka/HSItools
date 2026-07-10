@@ -103,6 +103,7 @@ test_that("hsi_extract_spectrum errors when band names are not numeric wavelengt
 
   expect_error(
     hsi_extract_spectrum(x = non_numeric),
-    "numeric wavelengths"
+    "numeric wavelengths",
+    class = "hsitools_error"
   )
 })

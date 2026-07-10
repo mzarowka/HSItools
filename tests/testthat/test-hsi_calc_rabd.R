@@ -214,7 +214,8 @@ test_that("hsi_calc_rabd errors with invalid index_type", {
       absorption_band = 670,
       index_type = "invalid"
     ),
-    "must be one of"
+    "must be one of",
+    class = "hsitools_error"
   )
 })
 

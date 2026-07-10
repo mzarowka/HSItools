@@ -77,7 +77,10 @@ hsi_pixels_to_units <- function(
 
   # Validate direction
   if (!direction %in% c(1, -1)) {
-    cli::cli_abort("{.arg direction} must be {.val {1}} or {.val {-1}}.")
+    cli::cli_abort(
+      "{.arg direction} must be {.val {1}} or {.val {-1}}.",
+      class = "hsitools_error"
+    )
   }
 
   # Conver pixel distance from origin × resolution × direction

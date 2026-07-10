@@ -38,25 +38,14 @@ hsi_bind_rows <- function(
   ...
 ) {
   # Validate inputs
-  if (!is.list(x)) {
-    cli::cli_abort(
-      "{.arg x} must be a {.cls list} of {.cls SpatRaster} objects, not {.cls {class(x)[[1]]}}."
-    )
-  }
+  check_spatraster_list(x)
 
   if (length(x) < 2) {
     cli::cli_abort(
-      "{.arg x} must contain at least 2 {.cls SpatRaster} objects, not {length(x)}."
+      "{.arg x} must contain at least 2 {.cls SpatRaster} objects, not {length(x)}.",
+      class = "hsitools_error"
     )
   }
-
-  purrr::iwalk(x, \(r, i) {
-    if (!inherits(r, "SpatRaster")) {
-      cli::cli_abort(
-        "Element {i} of {.arg x} must be a {.cls SpatRaster}, not {.cls {class(r)[[1]]}}."
-      )
-    }
-  })
 
   # Validate consistent layer count
   n_layers <- purrr::map_int(x, terra::nlyr)

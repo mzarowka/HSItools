@@ -62,7 +62,8 @@ hsi_plot_raster_rgb <- function(
 
   if (terra::nlyr(x) != 3) {
     cli::cli_abort(
-      "{.arg x} has {.val {terra::nlyr(x)}} layers. Exactly three are needed."
+      "{.arg x} has {.val {terra::nlyr(x)}} layers. Exactly three are needed.",
+      class = "hsitools_error"
     )
   }
 

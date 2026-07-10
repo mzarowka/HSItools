@@ -47,19 +47,20 @@
 #'   ggplot2::labs(x = "Depth (cm)", y = "RABD") +
 #'   ggplot2::theme_minimal()
 #' }
-#' 
+#'
 #' @importFrom rlang .data
 #'
 #' @export
 hsi_plot_profile <- function(x) {
-    # Validate inputs
+  # Validate inputs
   check_data_frame(x)
 
   var_name <- setdiff(names(x), "position")
 
   if (length(var_name) != 1) {
     cli::cli_abort(
-      "{.arg x} must have exactly one value column beside {.val position}, not {.val {length(var_name)}}."
+      "{.arg x} must have exactly one value column beside {.val position}, not {.val {length(var_name)}}.",
+      class = "hsitools_error"
     )
   }
 
@@ -70,7 +71,11 @@ hsi_plot_profile <- function(x) {
     ggplot2::aes(x = .data$position, y = .data[[var_name]]) +
     ggplot2::geom_line() +
     ggplot2::scale_x_reverse(
-      labels = if (!is.null(units)) hsi_unit_label_fun(units) else ggplot2::waiver()
+      labels = if (!is.null(units)) {
+        hsi_unit_label_fun(units)
+      } else {
+        ggplot2::waiver()
+      }
     ) +
     ggplot2::coord_flip()
 

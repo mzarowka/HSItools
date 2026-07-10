@@ -24,7 +24,10 @@
 hsi_drop_crs <- function(x) {
   # Validate inputs
   if (!inherits(x, c("SpatRaster", "SpatVector"))) {
-    cli::cli_abort("{.arg x} is a neither SpatRaster nor a SpatVector.")
+    cli::cli_abort(
+      "{.arg x} is a neither SpatRaster nor a SpatVector.",
+      class = "hsitools_error"
+    )
   }
 
   # Strip CRS

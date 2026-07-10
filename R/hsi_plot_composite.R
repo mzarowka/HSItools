@@ -14,13 +14,16 @@ hsi_plot_composite <- function(
   ...
 ) {
   # TODO: experimental fun, needs a proper refactor
-  
+
   # Validate input
   check_spatraster(x)
 
   # Check if correct class is supplied.
   if (!inherits(plots, what = "list")) {
-    cli::cli_abort(message = "Supplied data is not a list.")
+    cli::cli_abort(
+      message = "Supplied data is not a list.",
+      class = "hsitools_error"
+    )
   }
 
   # Create a plot composed from a list of plots

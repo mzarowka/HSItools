@@ -53,7 +53,8 @@ hsi_extract_spectrum <- function(
       c(
         "Band names cannot be converted to numeric wavelengths.",
         "i" = "Band names are: {.val {head(terra::names(x), 5)}}..."
-      )
+      ),
+      class = "hsitools_error"
     )
   }
 
