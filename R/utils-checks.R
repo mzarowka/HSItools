@@ -430,7 +430,24 @@ check_spatraster_list <- function(
     return(invisible(x))
   }
 
-  #todo: check if all elements are SpatRaster
+  if (!is.list(x)) {
+    cli::cli_abort(
+      "{.arg {arg} must be a list, not {.obj_type_friendly {x}.",
+      class = "hsitools_error",
+      call = call
+    )
+  }
+
+  # Wrong items
+  wrong <- which(!purrr::map_lgl(x, \(i) inherits(i, "SpatRaster")))
+
+  if (length(wrong) > 0) {
+    cli::cli_abort(
+      "{.arg {arg}} must contain only {.cls SpatRaster} objects; {cli::qty(length(offenders))}element{?s} {.val {offenders}} {?is/are} not.",
+      class = "hsitools_error",
+      call = call
+    )
+  }
 
   # Return invisibly
   invisible(x)
