@@ -55,7 +55,8 @@ hsi_bind_rows <- function(
       c(
         "All elements of {.arg x} must have the same number of layers.",
         "i" = "Found: {.val {unique(n_layers)}}."
-      )
+      ),
+      class = "hsitools_error"
     )
   }
 
@@ -69,7 +70,8 @@ hsi_bind_rows <- function(
       c(
         "All elements of {.arg x} must have identical layer names.",
         "i" = "Mismatch in element{?s}: {.val {mismatched}}."
-      )
+      ),
+      class = "hsitools_error"
     )
   }
 
@@ -83,7 +85,8 @@ hsi_bind_rows <- function(
       c(
         "All elements of {.arg x} must have the same spatial resolution.",
         "i" = "Mismatch in element{?s}: {.val {mismatched}}."
-      )
+      ),
+      class = "hsitools_error"
     )
   }
 

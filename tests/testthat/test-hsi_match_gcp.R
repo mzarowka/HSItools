@@ -111,7 +111,8 @@ test_that("hsi_match_gcp warns when GCPs are present in only one input", {
 
   expect_warning(
     hsi_match_gcp(source_gcp, target_partial),
-    "Dropped unmatched GCPs"
+    "Dropped unmatched GCPs",
+    class = "hsitools_warning"
   )
 })
 
@@ -154,7 +155,8 @@ test_that("hsi_match_gcp errors on duplicate IDs in source", {
 
   expect_error(
     hsi_match_gcp(source_dup, target_gcp),
-    "Duplicate"
+    "Duplicate",
+    class = "hsitools_error"
   )
 })
 
@@ -163,7 +165,8 @@ test_that("hsi_match_gcp errors on duplicate IDs in target", {
 
   expect_error(
     hsi_match_gcp(source_gcp, target_dup),
-    "Duplicate"
+    "Duplicate",
+    class = "hsitools_error"
   )
 })
 
@@ -173,6 +176,7 @@ test_that("hsi_match_gcp errors when fewer than 3 GCPs match", {
 
   expect_error(
     hsi_match_gcp(source_gcp, target_two),
-    "at least 3"
+    "at least 3",
+    class = "hsitools_error"
   )
 })

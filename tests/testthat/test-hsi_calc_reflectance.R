@@ -170,7 +170,8 @@ test_that("hsi_calc_reflectance warns only on the scaled dark path", {
       tint = c(1, 2),
       in_memory = TRUE
     ),
-    "Scaling dark reference"
+    "Scaling dark reference",
+    class = "hsitools_warning"
   )
 
   expect_no_warning(
@@ -296,7 +297,8 @@ test_that("hsi_calc_reflectance rejects band-count mismatches", {
       whiteref = whiteref_short,
       darkref = test_darkref
     ),
-    "same number of bands"
+    "same number of bands",
+    class = "hsitools_error"
   )
 
   expect_error(
@@ -306,7 +308,8 @@ test_that("hsi_calc_reflectance rejects band-count mismatches", {
       darkref = test_darkref,
       darkspec = darkspec_short
     ),
-    "same number of bands"
+    "same number of bands",
+    class = "hsitools_error"
   )
 })
 
@@ -340,7 +343,8 @@ test_that("hsi_calc_reflectance rejects non-numeric band names", {
       whiteref = test_whiteref,
       darkref = test_darkref
     ),
-    "numeric wavelengths"
+    "numeric wavelengths",
+    class = "hsitools_error"
   )
 })
 

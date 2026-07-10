@@ -59,23 +59,32 @@ hsi_apply_mnf <- function(
   check_spatraster(x)
 
   if (!inherits(fit, "mnf")) {
-    cli::cli_abort(c(
-      "{.arg fit} must be of class {.cls mnf}, not {.cls {class(fit)[[1]]}}.",
-      "i" = "{.arg fit} should come either from {hsi_calc_mnf} or {spacetime::mnf}."
-    ))
+    cli::cli_abort(
+      c(
+        "{.arg fit} must be of class {.cls mnf}, not {.cls {class(fit)[[1]]}}.",
+        "i" = "{.arg fit} should come either from {hsi_calc_mnf} or {spacetime::mnf}."
+      ),
+      class = "hsitools_error"
+    )
   }
 
   if (is.null(n)) {
-    cli::cli_abort(c(
-      "{.arg n} must be specified.",
-      "i" = "Inspect {.code fit$values} to choose the number of signal-rich components, then pass it as {.arg n}."
-    ))
+    cli::cli_abort(
+      c(
+        "{.arg n} must be specified.",
+        "i" = "Inspect {.code fit$values} to choose the number of signal-rich components, then pass it as {.arg n}."
+      ),
+      class = "hsitools_error"
+    )
   }
 
   check_numeric(n, len = 1, positive = TRUE)
 
   if (n > ncol(fit$x)) {
-    cli::cli_abort("{.arg n} is > than number of available components.")
+    cli::cli_abort(
+      "{.arg n} is > than number of available components.",
+      class = "hsitools_error"
+    )
   }
 
   if (terra::ncell(x) != nrow(fit$x)) {
@@ -83,12 +92,13 @@ hsi_apply_mnf <- function(
       c(
         "Number of cells in {.arg x} does not match number of pixels in {.arg fit}.",
         "i" = "{.val {terra::ncell(x)}} cells vs {.val {nrow(fit$x)}} pixels."
-      )
+      ),
+      class = "hsitools_error"
     )
   }
 
   # Retained indices
-  # Keepein the last n components with the lowest eigenvalues
+  # Keeping the last n components with the lowest eigenvalues
   # Rather than first like expected in PCA
   indices <- rev((ncol(fit$x) - n + 1L):ncol(fit$x))
 

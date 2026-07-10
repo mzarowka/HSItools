@@ -86,7 +86,8 @@ hsi_extract_profile <- function(
         "Band names conflict with coordinate columns.",
         "i" = "Conflicting names: {.val {conflicts}}",
         "i" = "Prefixing with 'band_' to avoid conflicts."
-      )
+      ),
+      class = "hsitools_warning"
     )
 
     # Rename conflicting bands

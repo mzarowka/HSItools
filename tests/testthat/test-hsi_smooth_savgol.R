@@ -156,21 +156,22 @@ test_that("hsi_smooth_savgol errors when file exists and overwrite = FALSE", {
 test_that("hsi_smooth_savgol errors with non-SpatRaster input", {
   expect_error(
     hsi_smooth_savgol(x = "not a raster"),
-    class = "error"
+    class = "hsitools_error"
   )
 })
 
 test_that("hsi_smooth_savgol errors when p >= n", {
   expect_error(
     hsi_smooth_savgol(x = test_reflectance, p = 11, n = 11),
-    "must be less than"
+    "must be less than",
+    class = "hsitools_error"
   )
 })
 
 test_that("hsi_smooth_savgol errors when n is even", {
   expect_error(
     hsi_smooth_savgol(x = test_reflectance, p = 3, n = 10),
-    class = "error"
+    class = "hsitools_error"
   )
 })
 
@@ -182,6 +183,6 @@ test_that("hsi_smooth_savgol errors when filter length exceeds number of bands",
       p = 3,
       n = terra::nlyr(test_reflectance) + 2
     ),
-    class = "error"
+    class = "hsitools_error"
   )
 })

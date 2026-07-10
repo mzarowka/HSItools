@@ -171,7 +171,8 @@ test_that("hsi_coregister errors when fewer than 3 GCPs provided", {
 
   expect_error(
     hsi_coregister(test_source, test_target, two_gcp),
-    "at least 3"
+    "at least 3",
+    class = "hsitools_error"
   )
 })
 
@@ -186,7 +187,8 @@ test_that("hsi_coregister errors when GCPs are collinear", {
 
   expect_error(
     hsi_coregister(test_source, test_target, collinear_gcp),
-    "collinear"
+    "collinear",
+    class = "hsitools_error"
   )
 })
 
@@ -201,13 +203,15 @@ test_that("hsi_coregister errors when x has no file source", {
 
   expect_error(
     hsi_coregister(in_memory, test_target, test_gcp),
-    "no file source"
+    "no file source",
+    class = "hsitools_error"
   )
 })
 
 test_that("hsi_coregister errors with invalid method", {
   expect_error(
     hsi_coregister(test_source, test_target, test_gcp, method = "invalid"),
-    "invalid"
+    "invalid",
+    class = "hsitools_error"
   )
 })

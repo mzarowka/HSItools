@@ -215,7 +215,8 @@ hsi_calc_reflectance <- function(
         "x" = "Sample: {n_bands_x} band{?s}",
         "x" = "White reference: {n_bands_white} band{?s}",
         "x" = "Dark reference: {n_bands_dark} band{?s}"
-      )
+      ),
+      class = "hsitools_error"
     )
   }
 
@@ -231,7 +232,8 @@ hsi_calc_reflectance <- function(
           "Specimen dark reference must have the same number of bands as {.arg x}.",
           "x" = "Sample: {n_bands_x} band{?s}",
           "x" = "Specimen dark reference: {n_bands_darkspec} band{?s}"
-        )
+        ),
+        class = "hsitools_error"
       )
     }
   }
@@ -244,7 +246,8 @@ hsi_calc_reflectance <- function(
       c(
         "Band names cannot be converted to numeric wavelengths.",
         "i" = "Band names are: {.val {head(names(x), 5)}}..."
-      )
+      ),
+      class = "hsitools_error"
     )
   }
 
@@ -257,7 +260,8 @@ hsi_calc_reflectance <- function(
 
   if (!identical(bands_x, bands_white) || !identical(bands_x, bands_dark)) {
     cli::cli_warn(
-      "Band names don't match across inputs. Proceeding with band-by-band processing."
+      "Band names don't match across inputs. Proceeding with band-by-band processing.",
+      class = "hsitools_warning"
     )
   }
 
@@ -276,7 +280,8 @@ hsi_calc_reflectance <- function(
         c(
           "Scaling dark reference by integration time ratio ({.val {dark_scale}}).",
           "i" = "For best accuracy, provide {.arg darkspec} from the specimen session."
-        )
+        ),
+        class = "hsitools_warning"
       )
     }
   }
@@ -323,7 +328,8 @@ hsi_calc_reflectance <- function(
       c(
         "{.arg in_memory} is {.val FALSE} but no {.arg filename} was provided.",
         "i" = "Temporary files will not be cleaned up until the R session ends. Files might persist."
-      )
+      ),
+      class = "hsitools_warning"
     )
   }
 

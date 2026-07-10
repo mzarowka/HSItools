@@ -60,7 +60,8 @@ hsi_remove_continuum <- function(
   if (terra::nlyr(x) < 3) {
     cli::cli_abort(
       "Input raster must have at least 3 bands for continuum removal.",
-      i = "Current raster has {terra::nlyr(x)} band{?s}."
+      i = "Current raster has {terra::nlyr(x)} band{?s}.",
+      class = "hsitools_error"
     )
   }
 
@@ -83,7 +84,8 @@ hsi_remove_continuum <- function(
 
   if (all(is.na(wavelengths))) {
     cli::cli_warn(
-      "Band names cannot be converted to wavelengths. Using band indices."
+      "Band names cannot be converted to wavelengths. Using band indices.",
+      class = "hsitools_warning"
     )
     wavelengths <- seq_along(band_names)
   }

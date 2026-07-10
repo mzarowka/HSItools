@@ -36,7 +36,10 @@ wavelength_position <- function(
 
   # Check if there is at least one layer
   if (length(wavelength) == 0) {
-    cli::cli_abort("{.arg wavelength} must not be empty.")
+    cli::cli_abort(
+      "{.arg wavelength} must not be empty.",
+      class = "hsitools_error"
+    )
   }
 
   # Check wavelengths
@@ -82,7 +85,8 @@ wavelength_sub <- function(
   # Validate input
   if (!inherits(wavelength_tbl, "data.frame")) {
     cli::cli_abort(
-      "Input {.arg wavelength_tbl} must be a data frame or tibble."
+      "Input {.arg wavelength_tbl} must be a data frame or tibble.",
+      class = "hsitools_error"
     )
   }
 
@@ -132,11 +136,17 @@ hsi_subset <- function(
 ) {
   # Validate input
   if (!inherits(x, "SpatRaster")) {
-    cli::cli_abort("Input {.arg x} must be a terra SpatRaster.")
+    cli::cli_abort(
+      "Input {.arg x} must be a terra SpatRaster.",
+      class = "hsitools_error"
+    )
   }
 
   if (!is.numeric(wavelength) || length(wavelength) == 0) {
-    cli::cli_abort("{.arg wavelength} must be a non-empty numeric vector.")
+    cli::cli_abort(
+      "{.arg wavelength} must be a non-empty numeric vector.",
+      class = "hsitools_error"
+    )
   }
 
   # Find and subset
@@ -207,7 +217,8 @@ hsi_subset_range <- function(
       c(
         "Band names cannot be converted to numeric wavelengths.",
         "i" = "Band names are: {.val {head(terra::names(x), 5)}}..."
-      )
+      ),
+      class = "hsitools_error"
     )
   }
 
@@ -222,7 +233,8 @@ hsi_subset_range <- function(
       c(
         "No bands found in range {range_min}-{range_max} nm.",
         "i" = "Available range: {min(wavelengths)}-{max(wavelengths)} nm"
-      )
+      ),
+      class = "hsitools_error"
     )
   }
 
@@ -260,7 +272,8 @@ to_um <- function(value, from) {
     "cm" = 10000,
     # Abort if none of the above is supplied
     cli::cli_abort(
-      "{.val {from}} is not a supported unit. Use {.or {.val {c('um', 'mm', 'cm')}}}."
+      "{.val {from}} is not a supported unit. Use {.or {.val {c('um', 'mm', 'cm')}}}.",
+      class = "hsitools_error"
     )
   )
 
@@ -288,7 +301,8 @@ from_um <- function(value, to) {
     "cm" = 0.0001,
     # Abort if none of the above is supplied
     cli::cli_abort(
-      "{.val {to}} is not a supported unit. Use {.or {.val {c('um', 'mm', 'cm')}}}."
+      "{.val {to}} is not a supported unit. Use {.or {.val {c('um', 'mm', 'cm')}}}.",
+      class = "hsitools_error"
     )
   )
 

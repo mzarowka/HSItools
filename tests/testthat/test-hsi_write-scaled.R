@@ -169,7 +169,8 @@ test_that("hsi_write_scaled errors when values exceed uint16 capacity", {
       scale_factor = 10000L,
       overwrite = TRUE
     ),
-    "exceeds.*capacity"
+    "exceeds.*capacity",
+    class = "hsitools_error"
   )
 
   unlink(temp_file)

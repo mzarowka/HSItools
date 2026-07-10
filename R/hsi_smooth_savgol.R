@@ -71,7 +71,8 @@ hsi_smooth_savgol <- function(
   # Filter polynomial order (typically 2-4)
   if (p >= n) {
     cli::cli_abort(
-      "Filter order {.arg p} must be less than filter length {.arg n}."
+      "Filter order {.arg p} must be less than filter length {.arg n}.",
+      class = "hsitools_error"
     )
   }
 
@@ -80,14 +81,18 @@ hsi_smooth_savgol <- function(
 
   # Check if filter parameters are positive
   if (p < 0 || n < 0 || m < 0) {
-    cli::cli_abort("Filter parameters must be non-negative.")
+    cli::cli_abort(
+      "Filter parameters must be non-negative.",
+      class = "hsitools_error"
+    )
   }
 
   # Check for sufficient bands
   if (terra::nlyr(x) < n) {
     cli::cli_abort(
       "SpatRaster has {terra::nlyr(x)} bands but filter length is {n}.",
-      "i" = "Reduce filter length or use a raster with more bands."
+      "i" = "Reduce filter length or use a raster with more bands.",
+      class = "hsitools_error"
     )
   }
 

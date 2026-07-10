@@ -95,9 +95,12 @@ hsi_write_scaled <- function(
       max(na.rm = TRUE)
 
     if (global_max > max_storable) {
-      cli::cli_abort(c(
-        "Maximum value {.val {round(global_max, 4)}} exceeds {.val {datatype}} capacity at scale factor {.val {scale_factor}} (max storable: {.val {max_storable}})."
-      ))
+      cli::cli_abort(
+        c(
+          "Maximum value {.val {round(global_max, 4)}} exceeds {.val {datatype}} capacity at scale factor {.val {scale_factor}} (max storable: {.val {max_storable}})."
+        ),
+        class = "hsitools_error"
+      )
     }
   }
 

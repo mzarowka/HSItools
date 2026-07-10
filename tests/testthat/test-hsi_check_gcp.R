@@ -122,7 +122,8 @@ test_that("hsi_check_gcp residuals tibble has same row count as input", {
 test_that("hsi_check_gcp warns when RMSE exceeds 5 pixels", {
   expect_warning(
     hsi_check_gcp(noisy_gcps),
-    "RMSE > 5 pixels"
+    "RMSE > 5 pixels",
+    class = "hsitools_warning"
   )
 })
 
@@ -141,7 +142,8 @@ test_that("hsi_check_gcp errors when fewer than 3 GCPs provided", {
 
   expect_error(
     hsi_check_gcp(two_gcps),
-    "at least 3"
+    "at least 3",
+    class = "hsitools_error"
   )
 })
 
@@ -158,6 +160,7 @@ test_that("hsi_check_gcp errors when source GCPs are collinear", {
 
   expect_error(
     hsi_check_gcp(collinear_gcps),
-    "collinear"
+    "collinear",
+    class = "hsitools_error"
   )
 })

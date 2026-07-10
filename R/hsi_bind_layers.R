@@ -38,7 +38,8 @@ hsi_bind_layers <- function(
       c(
         "All elements of {.arg x} must have the same spatial resolution.",
         "i" = "Mismatch in element{?s}: {.val {mismatched}}."
-      )
+      ),
+      class = "hsitools_error"
     )
   }
 

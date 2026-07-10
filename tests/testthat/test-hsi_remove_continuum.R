@@ -128,6 +128,7 @@ test_that("hsi_remove_continuum errors when input has fewer than 3 bands", {
 
   expect_error(
     hsi_remove_continuum(x = two_band),
-    "at least 3 bands"
+    "at least 3 bands",
+    class = "hsitools_error"
   )
 })

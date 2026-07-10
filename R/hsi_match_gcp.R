@@ -58,7 +58,7 @@ hsi_match_gcp <- function(
 
   check_has_cols(target, cols = id_col)
 
-  # Strip CRS ----
+  # Strip CRS
   # For example, in new projects QGIS assigns WGS84 to pixel-space data by default
   source <- hsi_drop_crs(source)
   target <- hsi_drop_crs(target)
@@ -94,14 +94,16 @@ hsi_match_gcp <- function(
   # Validate and abort if there are duplicates in source
   if (length(source_dups) > 0) {
     cli::cli_abort(
-      "Duplicate {.val {id_col}} in {.arg source}: {.val {unique(source_dups)}}."
+      "Duplicate {.val {id_col}} in {.arg source}: {.val {unique(source_dups)}}.",
+      class = "hsitools_error"
     )
   }
 
   # Validate and abort if there are duplicates in target
   if (length(target_dups) > 0) {
     cli::cli_abort(
-      "Duplicate {.val {id_col}} in {.arg target}: {.val {unique(target_dups)}}."
+      "Duplicate {.val {id_col}} in {.arg target}: {.val {unique(target_dups)}}.",
+      class = "hsitools_error"
     )
   }
 
@@ -111,7 +113,8 @@ hsi_match_gcp <- function(
   # Check minimum of 3 GCP
   if (nrow(matched) < 3) {
     cli::cli_abort(
-      "Need at least 3 matched GCPs, found {nrow(matched)}."
+      "Need at least 3 matched GCPs, found {nrow(matched)}.",
+      class = "hsitools_error"
     )
   }
 
@@ -125,7 +128,8 @@ hsi_match_gcp <- function(
   # Warning on dropped (GCP only in one data frame)
   if (n_source_only > 0 || n_target_only > 0) {
     cli::cli_warn(
-      "Dropped unmatched GCPs: {n_source_only} source-only, {n_target_only} target-only."
+      "Dropped unmatched GCPs: {n_source_only} source-only, {n_target_only} target-only.",
+      class = "hsitools_warning"
     )
   }
 

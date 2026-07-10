@@ -68,18 +68,24 @@ hsi_calc_mnf <- function(x, trim = 0L, ...) {
 
   # Check if there are any bands left
   if (lyrs <= 0) {
-    cli::cli_abort(c(
-      "There are no layers left in {.arg x}.",
-      "i" = "{.arg x} now has {.val {lyrs}} bands."
-    ))
+    cli::cli_abort(
+      c(
+        "There are no layers left in {.arg x}.",
+        "i" = "{.arg x} now has {.val {lyrs}} bands."
+      ),
+      class = "hsitools_error"
+    )
   }
 
   # Check relation between the cell number and band number
   if (terra::ncell(x) <= lyrs) {
-    cli::cli_abort(c(
-      "There are not enough pixels in {.arg x}.",
-      "i" = "{.arg x} now has {.val {terra::ncell(x)}} cells which is <= {.val {lyrs}} bands."
-    ))
+    cli::cli_abort(
+      c(
+        "There are not enough pixels in {.arg x}.",
+        "i" = "{.arg x} now has {.val {terra::ncell(x)}} cells which is <= {.val {lyrs}} bands."
+      ),
+      class = "hsitools_error"
+    )
   }
 
   # Subset conditionally

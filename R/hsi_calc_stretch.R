@@ -64,20 +64,23 @@ hsi_calc_stretch <- function(
       SWIR = c(1650, 1100, 2200),
       cli::cli_abort(
         "Unknown band type: {.val {type}}",
-        i = "Use one of: RGB, NIR, CIR, SWIR, or provide numeric wavelengths."
+        i = "Use one of: RGB, NIR, CIR, SWIR, or provide numeric wavelengths.",
+        class = "hsitools_error"
       )
     )
   } else if (is.numeric(type)) {
     # Custom wavelengths
     if (length(type) != 3) {
       cli::cli_abort(
-        "Custom wavelengths must provide exactly 3 values, got {length(type)}."
+        "Custom wavelengths must provide exactly 3 values, got {length(type)}.",
+        class = "hsitools_error"
       )
     }
     spectra <- type
   } else {
     cli::cli_abort(
-      "{.arg type} must be either a character string (e.g., 'RGB') or a numeric vector of 3 wavelengths."
+      "{.arg type} must be either a character string (e.g., 'RGB') or a numeric vector of 3 wavelengths.",
+      class = "hsitools_error"
     )
   }
 
@@ -99,7 +102,8 @@ hsi_calc_stretch <- function(
         "Cannot find all required bands within tolerance of {tol} nm.",
         x = "Missing bands near: {missing_bands} nm",
         i = "Available bands: {sort(available_bands)} nm"
-      )
+      ),
+      class = "hsitools_error"
     )
   }
 

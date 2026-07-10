@@ -167,20 +167,23 @@ test_that("hsi_calc_stretch errors with non-SpatRaster input", {
 test_that("hsi_calc_stretch errors with unknown string type", {
   expect_error(
     hsi_calc_stretch(x = test_reflectance, type = "INVALID"),
-    "Unknown band type"
+    "Unknown band type",
+    class = "hsitools_error"
   )
 })
 
 test_that("hsi_calc_stretch errors when custom type has fewer than 3 wavelengths", {
   expect_error(
     hsi_calc_stretch(x = test_reflectance, type = c(650, 550)),
-    "exactly 3"
+    "exactly 3",
+    class = "hsitools_error"
   )
 })
 
 test_that("hsi_calc_stretch errors when custom type has more than 3 wavelengths", {
   expect_error(
     hsi_calc_stretch(x = test_reflectance, type = c(700, 660, 620, 540)),
-    "exactly 3"
+    "exactly 3",
+    class = "hsitools_error"
   )
 })

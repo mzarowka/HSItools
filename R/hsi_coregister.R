@@ -67,14 +67,16 @@ hsi_coregister <- function(
   # Check minimum of 3 GCPs
   if (nrow(gcp) < 3) {
     cli::cli_abort(
-      "Need at least 3 matched GCPs, found {nrow(gcp)}."
+      "Need at least 3 matched GCPs, found {nrow(gcp)}.",
+      class = "hsitools_error"
     )
   }
 
   # Check for collinear GCPs
   if (qr(cbind(1, gcp$source_x, gcp$source_y))$rank < 3) {
     cli::cli_abort(
-      "GCPs are collinear and affine transform cannot be fit."
+      "GCPs are collinear and affine transform cannot be fit.",
+      class = "hsitools_error"
     )
   }
 
@@ -90,7 +92,8 @@ hsi_coregister <- function(
       c(
         "Package {.pkg sf} is required for co-registration.",
         "i" = "Install with: {.code install.packages('sf')}"
-      )
+      ),
+      class = "hsitools_error"
     )
   }
 
@@ -106,7 +109,8 @@ hsi_coregister <- function(
       c(
         "{.arg x} has no file source.",
         "i" = "Write it to disk first with {.code terra::writeRaster()}."
-      )
+      ),
+      class = "hsitools_error"
     )
   }
 

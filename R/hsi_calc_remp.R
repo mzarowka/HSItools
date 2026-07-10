@@ -98,7 +98,8 @@ hsi_calc_remp <- function(
       c(
         "Not enough bands in search range ({search_range[1]}-{search_range[2]} nm).",
         "i" = "Need at least 2 bands for zero-crossing detection."
-      )
+      ),
+      class = "hsitools_error"
     )
   }
 

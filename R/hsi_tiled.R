@@ -80,7 +80,8 @@ hsi_tiled <- function(
 
   if (!length(n_tiles) %in% c(1, 2)) {
     cli::cli_abort(
-      "{.arg n_tiles} must be a single integer or a vector of length 2 {.code c(nrow, ncol)}."
+      "{.arg n_tiles} must be a single integer or a vector of length 2 {.code c(nrow, ncol)}.",
+      class = "hsitools_error"
     )
   }
 
@@ -98,7 +99,8 @@ hsi_tiled <- function(
         "No {.arg filename} provided.",
         "i" = "Result is backed by a temporary file that will persist until the R session ends.",
         "i" = "Provide {.arg filename} to write to a permanent location."
-      )
+      ),
+      class = "hsitools_warning"
     )
   }
 

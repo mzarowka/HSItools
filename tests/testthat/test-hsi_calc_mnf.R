@@ -84,7 +84,8 @@ test_that("hsi_calc_mnf errors when ncell <= nlyr", {
   # Standard 9x9x101 fixture has 81 cells and 101 bands — fewer pixels than bands
   expect_error(
     hsi_calc_mnf(x = test_reflectance),
-    "not enough pixels"
+    "not enough pixels",
+    class = "hsitools_error"
   )
 })
 
@@ -108,7 +109,8 @@ test_that("hsi_calc_mnf errors when trim removes all bands", {
   # trim = 4L on 8-band raster leaves 0 bands
   expect_error(
     hsi_calc_mnf(x = test_8band, trim = 4L),
-    "no layers left"
+    "no layers left",
+    class = "hsitools_error"
   )
 })
 

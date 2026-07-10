@@ -113,7 +113,8 @@ test_that("hsi_extract_profile warns when band name conflicts with reserved colu
 
   expect_warning(
     hsi_extract_profile(x = conflicting),
-    regexp = "conflict"
+    regexp = "conflict",
+    class = "hsitools_warning"
   )
 })
 

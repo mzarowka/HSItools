@@ -58,10 +58,13 @@ hsi_calibration_from_scale <- function(
 
   # Validate number of line features
   if (terra::geomtype(x) == "lines" && nrow(x) > 1) {
-    cli::cli_warn(c(
-      "{.arg x} contains {nrow(x)} line features. Only the first will be used.",
-      "i" = "Filter {.arg x} to a single feature before calling this function."
-    ))
+    cli::cli_warn(
+      c(
+        "{.arg x} contains {nrow(x)} line features. Only the first will be used.",
+        "i" = "Filter {.arg x} to a single feature before calling this function."
+      ),
+      class = "hsitools_warning"
+    )
 
     # Subset line feature
     x <- x[1]
@@ -70,7 +73,8 @@ hsi_calibration_from_scale <- function(
   # Validate number of points
   if (terra::geomtype(x) == "points" && nrow(x) != 2) {
     cli::cli_abort(
-      "{.arg x} must contain exactly 2 points (start and finish), not {nrow(x)}."
+      "{.arg x} must contain exactly 2 points (start and finish), not {nrow(x)}.",
+      class = "hsitools_error"
     )
   }
 
