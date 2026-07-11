@@ -21,6 +21,10 @@ hsi_create_metadata(
   et_white_ms = NULL,
   target_start_mm = NULL,
   target_stop_mm = NULL,
+  fov_mm = NULL,
+  camera_position_mm = NULL,
+  stage_position_mm = NULL,
+  scanning_speed_mm_s = NULL,
   spectral_binning = NULL,
   spatial_binning = NULL,
   wavelengths = NULL,
@@ -91,6 +95,22 @@ hsi_create_metadata(
 - target_stop_mm:
 
   Positive number. Motor position at scan end in mm. Default `NULL`.
+
+- fov_mm:
+
+  Numeric. Across-track field of view in mm. Default `NULL`.
+
+- camera_position_mm:
+
+  Numeric. Camera position reading in mm. Default `NULL`.
+
+- stage_position_mm:
+
+  Numeric. Stage or focus-table position reading in mm. Default `NULL`.
+
+- scanning_speed_mm_s:
+
+  Numeric. Along-track scanning speed in mm/s. Default `NULL`.
 
 - spectral_binning:
 

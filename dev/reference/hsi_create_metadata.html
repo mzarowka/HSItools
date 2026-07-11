@@ -61,6 +61,10 @@
 <span>  et_white_ms <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  target_start_mm <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  target_stop_mm <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  fov_mm <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  camera_position_mm <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  stage_position_mm <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  scanning_speed_mm_s <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  spectral_binning <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  spatial_binning <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  wavelengths <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -130,6 +134,22 @@
 
 <dt id="arg-target-stop-mm">target_stop_mm<a class="anchor" aria-label="anchor" href="#arg-target-stop-mm"></a></dt>
 <dd><p>Positive number. Motor position at scan end in mm. Default <code>NULL</code>.</p></dd>
+
+
+<dt id="arg-fov-mm">fov_mm<a class="anchor" aria-label="anchor" href="#arg-fov-mm"></a></dt>
+<dd><p>Numeric. Across-track field of view in mm. Default <code>NULL</code>.</p></dd>
+
+
+<dt id="arg-camera-position-mm">camera_position_mm<a class="anchor" aria-label="anchor" href="#arg-camera-position-mm"></a></dt>
+<dd><p>Numeric. Camera position reading in mm. Default <code>NULL</code>.</p></dd>
+
+
+<dt id="arg-stage-position-mm">stage_position_mm<a class="anchor" aria-label="anchor" href="#arg-stage-position-mm"></a></dt>
+<dd><p>Numeric. Stage or focus-table position reading in mm. Default <code>NULL</code>.</p></dd>
+
+
+<dt id="arg-scanning-speed-mm-s">scanning_speed_mm_s<a class="anchor" aria-label="anchor" href="#arg-scanning-speed-mm-s"></a></dt>
+<dd><p>Numeric. Along-track scanning speed in mm/s. Default <code>NULL</code>.</p></dd>
 
 
 <dt id="arg-spectral-binning">spectral_binning<a class="anchor" aria-label="anchor" href="#arg-spectral-binning"></a></dt>
