@@ -1,0 +1,119 @@
+# spatial_calibration
+
+``` r
+
+library(HSItools)
+```
+
+Hyperspectral imaging data is, by definition, spatial. However,
+typically there is no easy and immediate anchor to real world units.
+Most of the time ENVI or GeoTIFF will load in GIS software in WGS84 or
+with NULL CRS.
+
+## Getting the units
+
+To express HSI data in real world units we need, at the very minimum, to
+know real world resolution. Internally, we use micrometers per pixel
+throughout the HSItools package and offer options to convert to mm and
+cm. We also offer three complementary ways to get and store real world
+resolution. We assume throughout the workflow, that pixels are square.
+
+### Known resolution
+
+In an instance where real world pixel size is known, for example in a
+lab where field of view is used to determine scanning resolution, or
+once one scan is done, and others follow exactly the same settings, it
+is possible to simply provide a number.
+
+``` r
+
+um <- HSItools::hsi_calibration_direct(60, units = "um")
+
+um
+#> um_per_px 
+#>        60
+```
+
+### Digitized scale
+
+If there is a vertical or horizontal measure scanned along the specimen
+it is easy to digitize it and use as a reference. Simply read your
+digitized data as a `terra` SpatVector pointing to a line or two-point
+feature and provide length that was read out. Importantly, be sure that
+the CRS is NULL.
+
+``` r
+
+# Construct SpatVector by hand
+line_vect <- terra::vect(
+  matrix(c(1000, 2000, 1000, 2100), ncol = 2, byrow = TRUE),
+  type = "lines"
+) |>
+  HSItools::hsi_drop_crs()
+
+# Distance of 10000 micrometers is default
+um <- HSItools::hsi_calibration_from_scale(
+  line_vect,
+  distance = 10000,
+  units = "um"
+)
+#> Warning: [perim] unknown CRS. Results can be wrong
+
+um
+#> um_per_px 
+#>       100
+```
+
+### Known dimensions
+
+If you know the exact scan length that was used in the controlling
+software, you can use it as a robust reference. We use known scan length
+and number of rows in a SpatRaster to calculate resolution. This
+requires that kind of metadata is written down, but ensures very good
+resolution estimate.
+
+``` r
+
+r <- terra::rast(
+  system.file(
+    package = "HSItools",
+    "testdata/products/SAVGOL_testdata.tif"
+  )
+)
+
+um <- HSItools::hsi_calibration_from_dims(
+  terra::nrow(r),
+  distance = 10000,
+  units = "um"
+)
+```
+
+## Building a coordinate raster
+
+An important step, and also data which is “free of charge” is building a
+`SpatRaster` that holds in its cells simple information about real world
+coordinates. This is an opitnionated framework, where we construct a
+`SpatRaster` that has two layers (bands). The first one is `"row_um"`
+and stores Y-axis position, the second one is `"col_um"` and stores
+X-axis. This provides both an interesting dataset, and a lookup table
+for other spatial data.
+
+## Anchoring to a reference point
+
+Often, the extent of a captured specimen does not reflect the ture
+origin, or a reference point anchored at some position along the Y-axis.
+For example, sediment core scanning often calls for specific point to
+represent real zero depth. For this, you can provide a point within a
+`SpatRaster` extent and use it as spatial anchor. By default we treat
+this as a point equal to zero, but any other value in real world units
+can be provided.
+
+## Shifting extent
+
+Once coordinate SpatRasters are available, either plain coordinates or
+anchored, they can be used to change the SpatExtent of a SpatRaster of
+choice. This operation, and further, downstream operations need to be
+done in concert. Maning, for example, cropping has to be applied to both
+SpatRasters so they keep their reference frame.
+
+## Shifting SpatRaster
