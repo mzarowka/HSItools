@@ -23,6 +23,45 @@ test_that("hsi_read_metadata round trip preserves the object exactly", {
   expect_identical(x_read, valid_metadata)
 })
 
+test_that("hsi_read_metadata round trip preserves geometry and scan fields", {
+  temp_file <- withr::local_tempfile(fileext = ".yaml")
+  metadata_with_geometry <- hsi_create_metadata(
+    name = "capture_01",
+    nlyr = 3,
+    wavelengths = c(450, 550, 650),
+    fov_mm = 120,
+    camera_position_mm = 45.5,
+    stage_position_mm = 10,
+    scanning_speed_mm_s = 2.5
+  )
+  hsi_write_metadata(metadata_with_geometry, filename = temp_file)
+
+  x_read <- hsi_read_metadata(temp_file)
+
+  expect_identical(x_read, metadata_with_geometry)
+})
+
+test_that("hsi_read_metadata reads a sidecar written before the geometry/scan fields existed", {
+  temp_file <- withr::local_tempfile(fileext = ".yaml")
+  hsi_write_metadata(valid_metadata, filename = temp_file)
+
+  lines <- readLines(temp_file)
+  new_fields <- c(
+    "fov_mm",
+    "camera_position_mm",
+    "stage_position_mm",
+    "scanning_speed_mm_s"
+  )
+  lines <- lines[
+    !grepl(paste0("^(", paste(new_fields, collapse = "|"), "):"), lines)
+  ]
+  writeLines(lines, temp_file)
+
+  x_read <- hsi_read_metadata(temp_file)
+
+  expect_true(all(purrr::map_lgl(x_read[new_fields], is.null)))
+})
+
 # ── Input validation ──────────────────────────────────────────────────────────
 
 test_that("hsi_read_metadata errors on a nonexistent file", {

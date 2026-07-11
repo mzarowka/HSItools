@@ -20,6 +20,10 @@ hsi_create_metadata(
   et_white_ms = NULL,
   target_start_mm = NULL,
   target_stop_mm = NULL,
+  fov_mm = NULL,
+  camera_position_mm = NULL,
+  stage_position_mm = NULL,
+  scanning_speed_mm_s = NULL,
   spectral_binning = NULL,
   spatial_binning = NULL,
   wavelengths = NULL,
@@ -56,6 +60,14 @@ hsi_create_metadata(
 \item{target_start_mm}{Positive number. Motor position at scan start in mm. Default \code{NULL}.}
 
 \item{target_stop_mm}{Positive number. Motor position at scan end in mm. Default \code{NULL}.}
+
+\item{fov_mm}{Numeric. Across-track field of view in mm. Default \code{NULL}.}
+
+\item{camera_position_mm}{Numeric. Camera position reading in mm. Default \code{NULL}.}
+
+\item{stage_position_mm}{Numeric. Stage or focus-table position reading in mm. Default \code{NULL}.}
+
+\item{scanning_speed_mm_s}{Numeric. Along-track scanning speed in mm/s. Default \code{NULL}.}
 
 \item{spectral_binning}{Positive integer. Spectral binning factor. Default \code{NULL}.}
 

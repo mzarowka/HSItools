@@ -16,6 +16,10 @@
 #' @param et_white_ms Positive number. White reference integration time in ms. Default `NULL`.
 #' @param target_start_mm Positive number. Motor position at scan start in mm. Default `NULL`.
 #' @param target_stop_mm Positive number. Motor position at scan end in mm. Default `NULL`.
+#' @param fov_mm Numeric. Across-track field of view in mm. Default `NULL`.
+#' @param camera_position_mm Numeric. Camera position reading in mm. Default `NULL`.
+#' @param stage_position_mm Numeric. Stage or focus-table position reading in mm. Default `NULL`.
+#' @param scanning_speed_mm_s Numeric. Along-track scanning speed in mm/s. Default `NULL`.
 #' @param spectral_binning Positive integer. Spectral binning factor. Default `NULL`.
 #' @param spatial_binning Positive integer. Spatial binning factor. Default `NULL`.
 #' @param wavelengths Positive numeric vector. Band centre wavelengths in nm, one value per layer. Default `NULL`.
@@ -52,6 +56,10 @@ hsi_create_metadata <- function(
   et_white_ms = NULL,
   target_start_mm = NULL,
   target_stop_mm = NULL,
+  fov_mm = NULL,
+  camera_position_mm = NULL,
+  stage_position_mm = NULL,
+  scanning_speed_mm_s = NULL,
   spectral_binning = NULL,
   spatial_binning = NULL,
   wavelengths = NULL,
@@ -73,6 +81,10 @@ hsi_create_metadata <- function(
     et_white_ms = et_white_ms,
     target_start_mm = target_start_mm,
     target_stop_mm = target_stop_mm,
+    fov_mm = fov_mm,
+    camera_position_mm = camera_position_mm,
+    stage_position_mm = stage_position_mm,
+    scanning_speed_mm_s = scanning_speed_mm_s,
     spectral_binning = spectral_binning,
     spatial_binning = spatial_binning,
     wavelengths = wavelengths,

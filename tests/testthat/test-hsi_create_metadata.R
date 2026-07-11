@@ -23,6 +23,10 @@ expected_fields <- c(
   "et_white_ms",
   "target_start_mm",
   "target_stop_mm",
+  "fov_mm",
+  "camera_position_mm",
+  "stage_position_mm",
+  "scanning_speed_mm_s",
   "spectral_binning",
   "spatial_binning",
   "wavelengths",
@@ -99,6 +103,30 @@ test_that("hsi_create_metadata errors when wavelengths or fwhm length mismatches
       nlyr = 3,
       fwhm = c(2, 2)
     ),
+    class = "hsitools_error"
+  )
+})
+
+test_that("hsi_create_metadata errors when a geometry or scan field is non-scalar", {
+  expect_error(
+    hsi_create_metadata(name = "capture_01", fov_mm = c(120, 130)),
+    class = "hsitools_error"
+  )
+
+  expect_error(
+    hsi_create_metadata(name = "capture_01", camera_position_mm = c(10, 20)),
+    class = "hsitools_error"
+  )
+})
+
+test_that("hsi_create_metadata errors when fov_mm or scanning_speed_mm_s is non-positive", {
+  expect_error(
+    hsi_create_metadata(name = "capture_01", fov_mm = 0),
+    class = "hsitools_error"
+  )
+
+  expect_error(
+    hsi_create_metadata(name = "capture_01", scanning_speed_mm_s = -2.5),
     class = "hsitools_error"
   )
 })
