@@ -41,6 +41,15 @@ jobs:
       - uses: actions/checkout@v4
 
       - uses: quarto-dev/quarto-actions/setup@v2
+        with:
+          version: "1.9.38"
+
+      - name: Debug quarto/R env (temporary)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          quarto --version
+          quarto check 2>&1 | head -40
 
       - uses: r-lib/actions/setup-pandoc@v2
 
