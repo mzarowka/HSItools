@@ -16,7 +16,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/mzarowka/HSItools/blob/dev/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/mzarowka/HSItools/blob/main/DESCRIPTION)
 
 Żarczyński M, McKay N, Edge D, Nowosad J, Zander P (2026). *HSItools:
 Process, Analyze and Visualize Hyperspectral Core Scanning Data*. R
