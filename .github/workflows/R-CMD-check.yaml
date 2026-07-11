@@ -58,6 +58,14 @@ jobs:
       - uses: r-lib/actions/check-r-package@v2
         env:
           _R_CHECK_FORCE_SUGGESTS_: false
+          # Windows: runner temp (D:\a\_temp) is on the same drive as the
+          # checkout (D:\a\...). Quarto's path handling breaks across drive
+          # letters, so the vignette-render subprocess loses the temp package
+          # library if temp stays on C:. Same bug as the local TMPDIR=C:/rtemp
+          # fix, mirrored. No-op on macOS/Linux.
+          TMPDIR: ${{ runner.temp }}
+          TMP: ${{ runner.temp }}
+          TEMP: ${{ runner.temp }}
         with:
           upload-snapshots: true
           build_args: 'c("--no-manual", "--compact-vignettes=gs+qpdf")'

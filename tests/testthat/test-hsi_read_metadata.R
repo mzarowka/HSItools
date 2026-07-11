@@ -1,6 +1,6 @@
 # Test hsi_read_metadata ----
 # hsi_read_metadata() reads a YAML sidecar back into an hsi_metadata object.
-# It gates on schema_version (must be exactly "1.0.0"), assembles the class
+# It gates on schema_version (must be exactly "1.1.0"), assembles the class
 # directly via structure() rather than new_hsi_metadata() (which would
 # re-stamp schema_version), then re-runs validate_hsi_metadata() so a
 # hand-corrupted sidecar cannot be read back silently.
@@ -62,6 +62,28 @@ test_that("hsi_read_metadata reads a sidecar written before the geometry/scan fi
   expect_true(all(purrr::map_lgl(x_read[new_fields], is.null)))
 })
 
+test_that("hsi_read_metadata round trip preserves acquisition and QC fields", {
+  temp_file <- withr::local_tempfile(fileext = ".yaml")
+  metadata_with_acquisition <- hsi_create_metadata(
+    name = "capture_01",
+    nlyr = 3,
+    wavelengths = c(450, 550, 650),
+    operator = "J. Doe",
+    campaign_prefix = "LK24",
+    dataset_name = "core_03_scan_01",
+    lens = "18.5 mm",
+    calibration_pack = "specim_2026_06",
+    aspect_ratio = 1.02,
+    dropped_frames = 3,
+    gcp_count = 6
+  )
+  hsi_write_metadata(metadata_with_acquisition, filename = temp_file)
+
+  x_read <- hsi_read_metadata(temp_file)
+
+  expect_identical(x_read, metadata_with_acquisition)
+})
+
 # ── Input validation ──────────────────────────────────────────────────────────
 
 test_that("hsi_read_metadata errors on a nonexistent file", {
@@ -93,6 +115,20 @@ test_that("hsi_read_metadata errors when schema_version does not match", {
 
   lines <- readLines(temp_file)
   lines <- sub("^schema_version:.*$", "schema_version: 0.9.0", lines)
+  writeLines(lines, temp_file)
+
+  expect_error(
+    hsi_read_metadata(temp_file),
+    class = "hsitools_error"
+  )
+})
+
+test_that("hsi_read_metadata rejects a sidecar written under the previous schema_version", {
+  temp_file <- withr::local_tempfile(fileext = ".yaml")
+  hsi_write_metadata(valid_metadata, filename = temp_file)
+
+  lines <- readLines(temp_file)
+  lines <- sub("^schema_version:.*$", "schema_version: 1.0.0", lines)
   writeLines(lines, temp_file)
 
   expect_error(

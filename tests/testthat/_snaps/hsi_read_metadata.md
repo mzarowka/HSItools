@@ -14,5 +14,5 @@
     Condition
       Error in `hsi_read_metadata()`:
       ! '<temp_file>' does not carry a supported schema_version.
-      i Supported: "1.0.0". Found: "0.9.0".
+      i Supported: "1.1.0". Found: "0.9.0".
 

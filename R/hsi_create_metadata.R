@@ -4,7 +4,12 @@
 #' @param name Character. Capture name. A single non-empty string.
 #' @param sensor_type Character. Sensor type. Default `NULL`.
 #' @param manufacturer Character. Sensor manufacturer. Default `NULL`.
+#' @param lens Character. Lens description, e.g. focal length. Default `NULL`.
+#' @param calibration_pack Character. Calibration pack name or path. Default `NULL`.
 #' @param session_id Character. Session identifier grouping scans that share a white reference. Default `NULL`.
+#' @param operator Character. Operator full name. Default `NULL`.
+#' @param campaign_prefix Character. Campaign prefix as set in the acquisition software. Default `NULL`.
+#' @param dataset_name Character. Dataset name as entered in the acquisition software. Default `NULL`.
 #' @param nrow Positive integer. Number of raster rows. Default `NULL`.
 #' @param ncol Positive integer. Number of raster columns. Default `NULL`.
 #' @param nlyr Positive integer. Number of raster layers. Default `NULL`.
@@ -20,8 +25,11 @@
 #' @param camera_position_mm Numeric. Camera position reading in mm. Default `NULL`.
 #' @param stage_position_mm Numeric. Stage or focus-table position reading in mm. Default `NULL`.
 #' @param scanning_speed_mm_s Numeric. Along-track scanning speed in mm/s. Default `NULL`.
+#' @param aspect_ratio Positive number. Measured pixel aspect ratio (along-track / across-track). Default `NULL`.
 #' @param spectral_binning Positive integer. Spectral binning factor. Default `NULL`.
 #' @param spatial_binning Positive integer. Spatial binning factor. Default `NULL`.
+#' @param dropped_frames Numeric. Number of dropped frames reported by the acquisition software. Default `NULL`.
+#' @param gcp_count Numeric. Number of ground control points placed for co-registration. Default `NULL`.
 #' @param wavelengths Positive numeric vector. Band centre wavelengths in nm, one value per layer. Default `NULL`.
 #' @param fwhm Positive numeric vector. Band full width at half maximum in nm, one value per layer. Default `NULL`.
 #' @returns An object of class `hsi_metadata`: a validated list of capture metadata fields with an internally stamped `schema_version`.
@@ -44,7 +52,12 @@ hsi_create_metadata <- function(
   name,
   sensor_type = NULL,
   manufacturer = NULL,
+  lens = NULL,
+  calibration_pack = NULL,
   session_id = NULL,
+  operator = NULL,
+  campaign_prefix = NULL,
+  dataset_name = NULL,
   nrow = NULL,
   ncol = NULL,
   nlyr = NULL,
@@ -60,8 +73,11 @@ hsi_create_metadata <- function(
   camera_position_mm = NULL,
   stage_position_mm = NULL,
   scanning_speed_mm_s = NULL,
+  aspect_ratio = NULL,
   spectral_binning = NULL,
   spatial_binning = NULL,
+  dropped_frames = NULL,
+  gcp_count = NULL,
   wavelengths = NULL,
   fwhm = NULL
 ) {
@@ -69,7 +85,12 @@ hsi_create_metadata <- function(
     name = name,
     sensor_type = sensor_type,
     manufacturer = manufacturer,
+    lens = lens,
+    calibration_pack = calibration_pack,
     session_id = session_id,
+    operator = operator,
+    campaign_prefix = campaign_prefix,
+    dataset_name = dataset_name,
     nrow = nrow,
     ncol = ncol,
     nlyr = nlyr,
@@ -85,8 +106,11 @@ hsi_create_metadata <- function(
     camera_position_mm = camera_position_mm,
     stage_position_mm = stage_position_mm,
     scanning_speed_mm_s = scanning_speed_mm_s,
+    aspect_ratio = aspect_ratio,
     spectral_binning = spectral_binning,
     spatial_binning = spatial_binning,
+    dropped_frames = dropped_frames,
+    gcp_count = gcp_count,
     wavelengths = wavelengths,
     fwhm = fwhm
   )

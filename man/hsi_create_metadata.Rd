@@ -8,7 +8,12 @@ hsi_create_metadata(
   name,
   sensor_type = NULL,
   manufacturer = NULL,
+  lens = NULL,
+  calibration_pack = NULL,
   session_id = NULL,
+  operator = NULL,
+  campaign_prefix = NULL,
+  dataset_name = NULL,
   nrow = NULL,
   ncol = NULL,
   nlyr = NULL,
@@ -24,8 +29,11 @@ hsi_create_metadata(
   camera_position_mm = NULL,
   stage_position_mm = NULL,
   scanning_speed_mm_s = NULL,
+  aspect_ratio = NULL,
   spectral_binning = NULL,
   spatial_binning = NULL,
+  dropped_frames = NULL,
+  gcp_count = NULL,
   wavelengths = NULL,
   fwhm = NULL
 )
@@ -37,7 +45,17 @@ hsi_create_metadata(
 
 \item{manufacturer}{Character. Sensor manufacturer. Default \code{NULL}.}
 
+\item{lens}{Character. Lens description, e.g. focal length. Default \code{NULL}.}
+
+\item{calibration_pack}{Character. Calibration pack name or path. Default \code{NULL}.}
+
 \item{session_id}{Character. Session identifier grouping scans that share a white reference. Default \code{NULL}.}
+
+\item{operator}{Character. Operator full name. Default \code{NULL}.}
+
+\item{campaign_prefix}{Character. Campaign prefix as set in the acquisition software. Default \code{NULL}.}
+
+\item{dataset_name}{Character. Dataset name as entered in the acquisition software. Default \code{NULL}.}
 
 \item{nrow}{Positive integer. Number of raster rows. Default \code{NULL}.}
 
@@ -69,9 +87,15 @@ hsi_create_metadata(
 
 \item{scanning_speed_mm_s}{Numeric. Along-track scanning speed in mm/s. Default \code{NULL}.}
 
+\item{aspect_ratio}{Positive number. Measured pixel aspect ratio (along-track / across-track). Default \code{NULL}.}
+
 \item{spectral_binning}{Positive integer. Spectral binning factor. Default \code{NULL}.}
 
 \item{spatial_binning}{Positive integer. Spatial binning factor. Default \code{NULL}.}
+
+\item{dropped_frames}{Numeric. Number of dropped frames reported by the acquisition software. Default \code{NULL}.}
+
+\item{gcp_count}{Numeric. Number of ground control points placed for co-registration. Default \code{NULL}.}
 
 \item{wavelengths}{Positive numeric vector. Band centre wavelengths in nm, one value per layer. Default \code{NULL}.}
 

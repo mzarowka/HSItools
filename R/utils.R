@@ -313,12 +313,18 @@ from_um <- function(value, to) {
   value
 }
 
+
 #' Construct an hsi_metadata list, unvalidated
 #'
 #' @param name Character. Capture name. A single non-empty string.
 #' @param sensor_type Character. Sensor type. Default `NULL`.
 #' @param manufacturer Character. Sensor manufacturer. Default `NULL`.
+#' @param lens Character. Lens description, e.g. focal length. Default `NULL`.
+#' @param calibration_pack Character. Calibration pack name or path. Default `NULL`.
 #' @param session_id Character. Session identifier grouping scans that share a white reference. Default `NULL`.
+#' @param operator Character. Operator full name. Default `NULL`.
+#' @param campaign_prefix Character. Campaign prefix as set in the acquisition software. Default `NULL`.
+#' @param dataset_name Character. Dataset name as entered in the acquisition software. Default `NULL`.
 #' @param nrow Positive integer. Number of raster rows. Default `NULL`.
 #' @param ncol Positive integer. Number of raster columns. Default `NULL`.
 #' @param nlyr Positive integer. Number of raster layers. Default `NULL`.
@@ -334,8 +340,11 @@ from_um <- function(value, to) {
 #' @param camera_position_mm Numeric. Camera position reading in mm. Default `NULL`.
 #' @param stage_position_mm Numeric. Stage or focus-table position reading in mm. Default `NULL`.
 #' @param scanning_speed_mm_s Numeric. Along-track scanning speed in mm/s. Default `NULL`.
+#' @param aspect_ratio Positive number. Measured pixel aspect ratio (along-track / across-track). Default `NULL`.
 #' @param spectral_binning Positive integer. Spectral binning factor. Default `NULL`.
 #' @param spatial_binning Positive integer. Spatial binning factor. Default `NULL`.
+#' @param dropped_frames Numeric. Number of dropped frames reported by the acquisition software. Default `NULL`.
+#' @param gcp_count Numeric. Number of ground control points placed for co-registration. Default `NULL`.
 #' @param wavelengths Positive numeric vector. Band centre wavelengths in nm, one value per layer. Default `NULL`.
 #' @param fwhm Positive numeric vector. Band full width at half maximum in nm, one value per layer. Default `NULL`.
 #'
@@ -348,7 +357,12 @@ new_hsi_metadata <- function(
   name,
   sensor_type = NULL,
   manufacturer = NULL,
+  lens = NULL,
+  calibration_pack = NULL,
   session_id = NULL,
+  operator = NULL,
+  campaign_prefix = NULL,
+  dataset_name = NULL,
   nrow = NULL,
   ncol = NULL,
   nlyr = NULL,
@@ -364,19 +378,27 @@ new_hsi_metadata <- function(
   camera_position_mm = NULL,
   stage_position_mm = NULL,
   scanning_speed_mm_s = NULL,
+  aspect_ratio = NULL,
   spectral_binning = NULL,
   spatial_binning = NULL,
+  dropped_frames = NULL,
+  gcp_count = NULL,
   wavelengths = NULL,
   fwhm = NULL
 ) {
   # Define list and class
   structure(
     list(
-      schema_version = "1.0.0",
+      schema_version = "1.1.0",
       name = name,
       sensor_type = sensor_type,
       manufacturer = manufacturer,
+      lens = lens,
+      calibration_pack = calibration_pack,
       session_id = session_id,
+      operator = operator,
+      campaign_prefix = campaign_prefix,
+      dataset_name = dataset_name,
       nrow = nrow,
       ncol = ncol,
       nlyr = nlyr,
@@ -392,8 +414,11 @@ new_hsi_metadata <- function(
       camera_position_mm = camera_position_mm,
       stage_position_mm = stage_position_mm,
       scanning_speed_mm_s = scanning_speed_mm_s,
+      aspect_ratio = aspect_ratio,
       spectral_binning = spectral_binning,
       spatial_binning = spatial_binning,
+      dropped_frames = dropped_frames,
+      gcp_count = gcp_count,
       wavelengths = wavelengths,
       fwhm = fwhm
     ),
@@ -433,9 +458,39 @@ validate_hsi_metadata <- function(x, call = rlang::caller_env()) {
     call = call
   )
   rlang::check_string(
+    x$lens,
+    allow_null = TRUE,
+    arg = "lens",
+    call = call
+  )
+  rlang::check_string(
+    x$calibration_pack,
+    allow_null = TRUE,
+    arg = "calibration_pack",
+    call = call
+  )
+  rlang::check_string(
     x$session_id,
     allow_null = TRUE,
     arg = "session_id",
+    call = call
+  )
+  rlang::check_string(
+    x$operator,
+    allow_null = TRUE,
+    arg = "operator",
+    call = call
+  )
+  rlang::check_string(
+    x$campaign_prefix,
+    allow_null = TRUE,
+    arg = "campaign_prefix",
+    call = call
+  )
+  rlang::check_string(
+    x$dataset_name,
+    allow_null = TRUE,
+    arg = "dataset_name",
     call = call
   )
 
@@ -559,6 +614,14 @@ validate_hsi_metadata <- function(x, call = rlang::caller_env()) {
     call = call
   )
   check_numeric(
+    x$aspect_ratio,
+    len = 1,
+    positive = TRUE,
+    allow_null = TRUE,
+    arg = "aspect_ratio",
+    call = call
+  )
+  check_numeric(
     x$spectral_binning,
     len = 1,
     positive = TRUE,
@@ -572,6 +635,20 @@ validate_hsi_metadata <- function(x, call = rlang::caller_env()) {
     positive = TRUE,
     allow_null = TRUE,
     arg = "spatial_binning",
+    call = call
+  )
+  check_numeric(
+    x$dropped_frames,
+    len = 1,
+    allow_null = TRUE,
+    arg = "dropped_frames",
+    call = call
+  )
+  check_numeric(
+    x$gcp_count,
+    len = 1,
+    allow_null = TRUE,
+    arg = "gcp_count",
     call = call
   )
   check_numeric(

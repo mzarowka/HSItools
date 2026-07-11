@@ -36,11 +36,11 @@ hsi_read_metadata <- function(filename) {
   raw <- yaml::read_yaml(filename)
 
   # Check schema
-  if (is.null(raw$schema_version) || !identical(raw$schema_version, "1.0.0")) {
+  if (is.null(raw$schema_version) || !identical(raw$schema_version, "1.1.0")) {
     cli::cli_abort(
       c(
         "{.file {filename}} does not carry a supported {.field schema_version}.",
-        "i" = "Supported: {.val 1.0.0}. Found: {.val {raw$schema_version %||% 'none'}}."
+        "i" = "Supported: {.val 1.1.0}. Found: {.val {raw$schema_version %||% 'none'}}."
       ),
       class = "hsitools_error"
     )
