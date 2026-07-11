@@ -1,4 +1,7 @@
-url: ~
+url: https://mzarowka.github.io/HSItools
+
 template:
   bootstrap: 5
 
+development:
+  mode: auto

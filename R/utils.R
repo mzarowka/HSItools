@@ -1,274 +1,703 @@
-#' Find position of selected spectra
+#' Find position of selected wavelengths
 #'
 #' @family Utilities
-#' @param raster a terra SpatRaster.
-#' @param spectra vector with choice of desired spectra.
 #'
-#' @return positions (indices) of desired spectra in SpatRaster
-#' @export
+#' @param x A [`SpatRaster`][terra::SpatRaster-class] with hyperspectral data.
+#' @param wavelength Numeric vector. Desired wavelengths in nm.
 #'
-#' @description find index position of the nearest spectra (band) in the dataset.
-#' Match for the lowest difference between integer band and actual SpatRaster band.
-#' This will produce duplicates with multiple bands. Drop.
-spectra_position <- function(
-  raster,
-  spectra
-) {
-  # Check if correct class is supplied.
-  if (!inherits(raster, what = "SpatRaster")) {
-    rlang::abort(message = "Supplied data is not a terra SpatRaster.")
-  }
-
-  # Find index (position) of selected spectra by comparing choice and names
-  spectraIndex <- purrr::map(
-    spectra,
-    \(x) terra::which.min(abs(x - as.numeric(terra::names(raster))))
-  ) |>
-    # Get positions
-    purrr::as_vector()
-
-  # Create tibble with spectra of choice and respective position
-  spectraIndex <- dplyr::tibble(
-    spectra = spectra,
-    position = spectraIndex
-  ) |>
-    # Keep second observation if duplicates are present
-    # From experience closer to desired product
-    dplyr::slice_tail(by = .data$position)
-
-  # Return values
-  return(spectraIndex)
-}
-
-
-#' Subset SpatRaster by spectra
+#' @returns A [tibble][tibble::tibble] with columns:
+#'   \item{wavelength}{Numeric. Requested wavelength in nm.}
+#'   \item{position}{Integer. Corresponding band index in `x`.}
+#'   \item{band_wavelength}{Numeric. Actual wavelength of the matched band in nm.}
 #'
-#' @family Utilities
-#' @param raster a terra SpatRaster to be subset.
-#' @param spectra_tbl a tibble with spectra positions from spectra_position.
-#'
-#' @return SpatRaster subset to contain only required spectral bands.
-#' @export
-#'
-#' @description subset SpatRaster with spectra (bands) positions.
-spectra_sub <- function(
-    raster,
-    spectra_tbl) {
-  # Check if correct class is supplied.
-  if (!inherits(raster, what = "SpatRaster")) {
-    rlang::abort(message = "Supplied data is not a terra SpatRaster.")
-  }
-
-  # Get spectra from tibble
-  spectra <- dplyr::pull(spectra_tbl, 1)
-
-  # Get positions from tibble
-  position <- dplyr::pull(spectra_tbl, 2)
-
-  # Subset raster by position
-  raster <- terra::subset(raster, position)
-
-  # Set raster names to match spectra
-  # terra::names(raster) <- as.character(spectra)
-
-  # Return raster
-  return(raster)
-}
-
-# Split job by ROIs
-split_by_roi <- function(core, roi){
-  # Check if correct class is supplied.
-  if (!inherits(raster, what = "SpatRaster")) {
-    rlang::abort(message = "Supplied data is not a terra SpatRaster.")
-  }
-}
-
-#' Create SpatVector from Shiny ROIs
-#'
-#' @family Utilities
-#' @param data \code{\link{run_core}} output with ROIs.
-#' @export
-#'
-#' @return SpatVector object suitable for plotting and setting extents.
-roi_to_vect <- function(data) {
-  # Check number of ROIs
-  if (sum(is.na(data)) > 0) {
-  data <- data
-
-  } else {
-  # Probably can do it quicker by bounding box of the points
-  # Remove some redundancies
-  # Create polygons
-  data <- data |>
-    # Add grouping variable
-    dplyr::mutate(
-      roi.id = paste0("ROI_", 1:terra::nrow(data)),
-      .before = 1
-    ) |>
-    # Group by
-    dplyr::group_by(.data$roi.id) |>
-    # Split
-    dplyr::group_split() |>
-    # Set names
-    purrr::set_names(nm = paste0("ROI_", 1:terra::nrow(data))) |>
-    # Drop id
-    purrr::map(\(i) dplyr::select(i, -.data$roi.id)) |>
-    # Pivot X
-    purrr::map(\(i) tidyr::pivot_longer(
-      i,
-      .data$xmin:.data$xmax,
-      names_to = "xcor",
-      values_to = "v1"
-    )) |>
-    # Pivot Y
-    purrr::map(\(i) tidyr::pivot_longer(
-      i,
-      .data$ymin:.data$ymax,
-      names_to = "ycor",
-      values_to = "v2"
-    )) |>
-    # Close polygon - duplicate first vertex
-    purrr::map(\(i) tibble::add_row(
-      i,
-      dplyr::slice_head(i, n = 1)
-    )) |>
-    # Select only x and y
-    purrr::map(\(i) dplyr::select(i, .data$v1, .data$v2)) |>
-    # To matrix for polygon
-    purrr::map(\(i) terra::as.matrix(i)) |>
-    # Create polygon
-    purrr::map(\(i) sf::st_polygon(list(i))) |>
-    # Polygon is intersecting, get bounding box
-    purrr::map(\(i) sf::st_bbox(i)) |>
-    # Coerce to sfc
-    purrr::map(\(i) sf::st_as_sfc(i)) |>
-    # Coerce to sf
-    purrr::map(\(i) sf::st_as_sf(i)) |>
-    # Set names
-    purrr::set_names(nm = paste0("ROI_", 1:terra::nrow(data))) |>
-    # Bind by row
-    purrr::list_rbind(names_to = "roi.id") |>
-    # Rename
-    dplyr::rename(geometry = .data$x) |>
-    # To one sf
-    sf::st_as_sf()
-  }
-
-  # Return SpatVector
-  return(data)
-}
-
-#' Get depth in metric units
-#'
-#' @family Utilities
-#' @param core \code{\link{run_core}} output. If provided fills pixel_ratio, sample_start and sample_end. Exclusive with pixel_ratio.
-#' @param pixel_ratio a source of conversion factor, manually input. Exclusive with pixel_ratio.
-#' @param ymax pixel value of the top.
-#' @param ymin pixel value of the bottom, default to 0.
-#' @param sample_start position of the sample beginning (point zero), either from \code{\link{run_core}} output or manually input.
-#' @param sample_end position of the sample end, either from \code{\link{run_core}} output or manually input.
-#' @param extent a terra extent or terra SpatVector used to subset SpatRaster. Defaults to the entire SpatRaster.
-#'
-#' @return lookup table with depths.
-#' @export
-pixel_to_distance <- function(
-    core,
-    pixel_ratio,
-    ymax,
-    ymin = 0,
-    sample_start,
-    sample_end,
-    extent = NULL) {
-
-  # Check if only one argument is provided
-  rlang::check_exclusive(core, pixel_ratio, .require = TRUE)
-
-  # Calculate mm distance and depths
-
-  # Using run_core output
-  if (is.null(core) == FALSE) {
-    # Here check if optional core is shiny output-like, S3 class
-    # if (!inherits(core, what = "CLASS-HERE")) {
-    #   rlang::abort(message = "Supplied \"core\" name is not a valid output of run_core().")
-    # }
-
-    # Set core to run_core output
-    core <- core
-
-    # Extract pixel ratio
-    pixel_ratio <- core$distances$pixelRatio
-
-    # Extract sample_start
-    sample_start <- core$distances$startCore
-
-    # Extract sample_end
-    sample_end <- core$distances$endCore
-
-    # Extract full extent of the captured data
-    extent <- terra::ext(core$simpleRGB$ext)
-
-    # Get the full capture distance
-    distance <- (terra::ymax(extent) - terra::ymin(extent)) * (pixel_ratio)
-  } else {
-
-    # Get the full capture distance
-    distance <- (ymax - ymin) * (pixel_ratio)
-  }
-
-  # Reverse values, get metric zero at the capture top
-  capture_top <- c(y = (terra::ymax(extent) * pixel_ratio) - distance)
-
-  # Reverse values, get metric max at the capture bottom
-  capture_bottom <- c(y = (terra::ymin(extent) * pixel_ratio) + distance)
-
-  # Get the metric point of the sample beginning
-  point_zero <- capture_top - (sample_start[2] * pixel_ratio) + distance
-
-  # Return
-  return(list(
-    distance = distance,
-    capture_top = capture_top,
-    capture_bottom = capture_bottom,
-    point_zero = point_zero,
-    pixel_ratio = pixel_ratio))
-}
-
-
-
-#' Adjust paths from Shiny output
-#'
-#' @family Utilities
-#' @param run_core_output
-#'
-#' @return run_core_output
-#' @export
+#' @description
+#' Find band index positions by matching requested wavelengths to the nearest
+#' available band. When multiple requested wavelengths resolve to the same band
+#' index, only the last is retained.
 #'
 #' @examples
-#' if (interactive() == TRUE) {
-#' a1 <- terra::readRDS(file.path(system.file(package = "HSItools"),"extdata/HSItools_core.rds"))
-#' change_output_dir(a1)
+#' \dontrun{
+#' r <- terra::rast(nrows = 10, ncols = 10, nlyrs = 5)
+#' names(r) <- c("400", "500", "600", "700", "800")
+#'
+#' wavelength_position(r, c(450, 650))
 #' }
 #'
-change_output_dir = function(
-    run_core_output){
+#' @export
+wavelength_position <- function(
+  x,
+  wavelength
+) {
+  # Validate input
+  check_spatraster(x)
 
-  #currentRoot <- rprojroot::find_root(rprojroot::criteria$is_rstudio_project)
-  currentRoot <- getwd()
-  shinyRoot <- run_core_output$directory
-  if (currentRoot == shinyRoot){
-    message("Current path is consistent with with Shiny output!")
-  } else {
-    #Set the paths in the core output to mesh with the user's current root
-    newDir <- utils::choose.dir(caption = paste0("Find the directory with the name: ", basename(run_core_output$directory)))
-    if (basename(run_core_output$directory) != basename(newDir)){
-      rlang::abort("The directory names must match!")
-    } else {
-      run_core_output$directory <- newDir
-      regex1 <- paste0(".*", basename(newDir))
-      fileNames <- gsub(regex1,"", run_core_output$rasterPaths)
-      fullPaths <- file.path(newDir, fileNames)
-      run_core_output$rasterPaths <- fullPaths
-    }
+  # Validate type
+  check_numeric(wavelength)
+
+  # Check if there is at least one layer
+  if (length(wavelength) == 0) {
+    cli::cli_abort(
+      "{.arg wavelength} must not be empty.",
+      class = "hsitools_error"
+    )
   }
-  return(run_core_output)
+
+  # Check wavelengths
+  band_wavelengths <- check_wavelengths(x)
+
+  # Find index (position) of selected wavelength by comparing choice and names
+  wavelength_index <- purrr::map_int(
+    wavelength,
+    \(i) terra::which.min(abs(i - band_wavelengths))
+  )
+
+  # Create tibble with wavelength of choice and respective position
+  wavelength_table <- dplyr::tibble(
+    wavelength = wavelength,
+    position = wavelength_index,
+    band_wavelength = band_wavelengths[wavelength_index]
+  ) |>
+    # Keep last observation if there are duplicates
+    dplyr::slice_tail(by = "position")
+
+  # Return
+  wavelength_table
+}
+
+#' Subset SpatRaster by wavelength
+#'
+#' @noRd
+#'
+#' @param x A [`SpatRaster`][terra::SpatRaster-class] with hyperspectral data.
+#' @param wavelength_tbl A [tibble][tibble::tibble] with wavelength positions
+#'   as returned by [`wavelength_position()`].
+#'
+#' @returns A [`SpatRaster`][terra::SpatRaster-class] subset to the bands at
+#'   the positions in `wavelength_tbl`.
+#'
+wavelength_sub <- function(
+  x,
+  wavelength_tbl
+) {
+  # Validate input
+  check_spatraster(x)
+
+  # Validate input
+  if (!inherits(wavelength_tbl, "data.frame")) {
+    cli::cli_abort(
+      "Input {.arg wavelength_tbl} must be a data frame or tibble.",
+      class = "hsitools_error"
+    )
+  }
+
+  # Get positions from tibble
+  position <- dplyr::pull(wavelength_tbl, position)
+
+  # Subset raster by position
+  raster <- terra::subset(x, position)
+
+  # Return
+  raster
+}
+
+#' Subset SpatRaster by wavelength
+#'
+#' @family Utilities
+#'
+#' @param x A [`SpatRaster`][terra::SpatRaster-class] with hyperspectral data.
+#'   Band names must be numeric wavelengths in nm.
+#' @param wavelength Numeric vector. Wavelength(s) to extract in nm. Nearest
+#'   available band is selected for each value.
+#' @param filename Character. Output filename. Default `""` keeps result in memory.
+#' @param overwrite Logical. Overwrite existing file. Default `FALSE`.
+#' @param ... Additional arguments passed to [`terra::writeRaster()`].
+#'
+#' @returns A [`SpatRaster`][terra::SpatRaster-class] subset to the requested
+#'   wavelength(s).
+#'
+#' @examples
+#' \dontrun{
+#' x |> hsi_subset(675)
+#'
+#' x |> hsi_subset(c(650, 550, 450))
+#'
+#' x |>
+#'   hsi_smooth_savgol(m = 1) |>
+#'   hsi_subset(675)
+#' }
+#'
+#' @export
+hsi_subset <- function(
+  x,
+  wavelength,
+  filename = "",
+  overwrite = FALSE,
+  ...
+) {
+  # Validate input
+  if (!inherits(x, "SpatRaster")) {
+    cli::cli_abort(
+      "Input {.arg x} must be a terra SpatRaster.",
+      class = "hsitools_error"
+    )
+  }
+
+  if (!is.numeric(wavelength) || length(wavelength) == 0) {
+    cli::cli_abort(
+      "{.arg wavelength} must be a non-empty numeric vector.",
+      class = "hsitools_error"
+    )
+  }
+
+  # Find and subset
+  result <- wavelength_position(x, wavelength) |>
+    wavelength_sub(x = x, wavelength_tbl = _)
+
+  # Write if requested
+  if (filename != "") {
+    terra::writeRaster(
+      result,
+      filename = filename,
+      overwrite = overwrite,
+      ...
+    )
+  }
+
+  # Return
+  result
+}
+
+#' Subset SpatRaster by wavelength range
+#'
+#' @family Utilities
+#'
+#' @param x A [`SpatRaster`][terra::SpatRaster-class] with hyperspectral data.
+#'   Band names must be numeric wavelengths in nm.
+#' @param from Numeric. Start wavelength of the range in nm, inclusive.
+#' @param to Numeric. End wavelength of the range in nm, inclusive.
+#' @param filename Character. Output filename. Default `""` keeps result in memory.
+#' @param overwrite Logical. Overwrite existing file. Default `FALSE`.
+#' @param ... Additional arguments passed to [`terra::writeRaster()`].
+#'
+#' @returns A [`SpatRaster`][terra::SpatRaster-class] with all bands within
+#'   the specified wavelength range.
+#'
+#' @examples
+#' \dontrun{
+#' x |> hsi_subset_range(from = 660, to = 680)
+#'
+#' x |>
+#'   hsi_smooth_savgol(m = 1) |>
+#'   hsi_subset_range(from = 680, to = 750)
+#' }
+#'
+#' @export
+hsi_subset_range <- function(
+  x,
+  from,
+  to,
+  filename = "",
+  overwrite = FALSE,
+  ...
+) {
+  # Validate input
+  check_spatraster(x)
+
+  # Validate input
+  check_numeric(from, len = 1, positive = TRUE)
+
+  # Validate input
+  check_numeric(to, len = 1, positive = TRUE)
+
+  # Get wavelengths from band names
+  wavelengths <- as.numeric(terra::names(x))
+
+  if (all(is.na(wavelengths))) {
+    cli::cli_abort(
+      c(
+        "Band names cannot be converted to numeric wavelengths.",
+        "i" = "Band names are: {.val {head(terra::names(x), 5)}}..."
+      ),
+      class = "hsitools_error"
+    )
+  }
+
+  # Find bands within range (handle inverted from/to)
+  range_min <- min(from, to)
+  range_max <- max(from, to)
+
+  indices <- which(wavelengths >= range_min & wavelengths <= range_max)
+
+  if (length(indices) == 0) {
+    cli::cli_abort(
+      c(
+        "No bands found in range {range_min}-{range_max} nm.",
+        "i" = "Available range: {min(wavelengths)}-{max(wavelengths)} nm"
+      ),
+      class = "hsitools_error"
+    )
+  }
+
+  # Subset
+  result <- terra::subset(x, indices)
+
+  # Write if requested
+  if (filename != "") {
+    terra::writeRaster(
+      result,
+      filename = filename,
+      overwrite = overwrite,
+      ...
+    )
+  }
+
+  # Return
+  result
+}
+
+#' Convert units to micrometers
+#'
+#' @param value Numeric. Value to convert.
+#' @param from Character. Source units. One of `"um"`, `"mm"`, or `"cm"`.
+#'
+#' @returns Numeric. Value in micrometers.
+#'
+#' @noRd
+to_um <- function(value, from) {
+  # Get the multiplier
+  multiplier <- switch(
+    from,
+    "um" = 1,
+    "mm" = 1000,
+    "cm" = 10000,
+    # Abort if none of the above is supplied
+    cli::cli_abort(
+      "{.val {from}} is not a supported unit. Use {.or {.val {c('um', 'mm', 'cm')}}}.",
+      class = "hsitools_error"
+    )
+  )
+
+  # Get the correct value
+  value <- value * multiplier
+
+  # Return
+  value
+}
+
+#' Convert micrometers to target units
+#'
+#' @param value Numeric. Value in micrometers.
+#' @param to Character. Target units. One of `"um"`, `"mm"`, or `"cm"`.
+#'
+#' @returns Numeric. Value in target units.
+#'
+#' @noRd
+from_um <- function(value, to) {
+  # Get the multiplier
+  multiplier <- switch(
+    to,
+    "um" = 1,
+    "mm" = 0.001,
+    "cm" = 0.0001,
+    # Abort if none of the above is supplied
+    cli::cli_abort(
+      "{.val {to}} is not a supported unit. Use {.or {.val {c('um', 'mm', 'cm')}}}.",
+      class = "hsitools_error"
+    )
+  )
+
+  # Get the correct value
+  value <- value * multiplier
+
+  # Return
+  value
+}
+
+
+#' Construct an hsi_metadata list, unvalidated
+#'
+#' @param name Character. Capture name. A single non-empty string.
+#' @param sensor_type Character. Sensor type. Default `NULL`.
+#' @param manufacturer Character. Sensor manufacturer. Default `NULL`.
+#' @param lens Character. Lens description, e.g. focal length. Default `NULL`.
+#' @param calibration_pack Character. Calibration pack name or path. Default `NULL`.
+#' @param session_id Character. Session identifier grouping scans that share a white reference. Default `NULL`.
+#' @param operator Character. Operator full name. Default `NULL`.
+#' @param campaign_prefix Character. Campaign prefix as set in the acquisition software. Default `NULL`.
+#' @param dataset_name Character. Dataset name as entered in the acquisition software. Default `NULL`.
+#' @param nrow Positive integer. Number of raster rows. Default `NULL`.
+#' @param ncol Positive integer. Number of raster columns. Default `NULL`.
+#' @param nlyr Positive integer. Number of raster layers. Default `NULL`.
+#' @param xres Positive number. Pixel resolution in the x direction. Default `NULL`.
+#' @param yres Positive number. Pixel resolution in the y direction. Default `NULL`.
+#' @param spectral_resolution_nm Positive number. Spectral resolution in nm. Default `NULL`.
+#' @param frame_rate_hz Positive number. Frame rate in Hz. Default `NULL`.
+#' @param et_target_ms Positive number. Target integration time in ms. Default `NULL`.
+#' @param et_white_ms Positive number. White reference integration time in ms. Default `NULL`.
+#' @param target_start_mm Positive number. Motor position at scan start in mm. Default `NULL`.
+#' @param target_stop_mm Positive number. Motor position at scan end in mm. Default `NULL`.
+#' @param fov_mm Numeric. Across-track field of view in mm. Default `NULL`.
+#' @param camera_position_mm Numeric. Camera position reading in mm. Default `NULL`.
+#' @param stage_position_mm Numeric. Stage or focus-table position reading in mm. Default `NULL`.
+#' @param scanning_speed_mm_s Numeric. Along-track scanning speed in mm/s. Default `NULL`.
+#' @param aspect_ratio Positive number. Measured pixel aspect ratio (along-track / across-track). Default `NULL`.
+#' @param spectral_binning Positive integer. Spectral binning factor. Default `NULL`.
+#' @param spatial_binning Positive integer. Spatial binning factor. Default `NULL`.
+#' @param dropped_frames Numeric. Number of dropped frames reported by the acquisition software. Default `NULL`.
+#' @param gcp_count Numeric. Number of ground control points placed for co-registration. Default `NULL`.
+#' @param wavelengths Positive numeric vector. Band centre wavelengths in nm, one value per layer. Default `NULL`.
+#' @param fwhm Positive numeric vector. Band full width at half maximum in nm, one value per layer. Default `NULL`.
+#'
+#' @returns An object of class `hsi_metadata`: an unvalidated list of capture
+#'   metadata fields with `schema_version` stamped. Validation happens
+#'   separately via `validate_hsi_metadata()`.
+#'
+#' @noRd
+new_hsi_metadata <- function(
+  name,
+  sensor_type = NULL,
+  manufacturer = NULL,
+  lens = NULL,
+  calibration_pack = NULL,
+  session_id = NULL,
+  operator = NULL,
+  campaign_prefix = NULL,
+  dataset_name = NULL,
+  nrow = NULL,
+  ncol = NULL,
+  nlyr = NULL,
+  xres = NULL,
+  yres = NULL,
+  spectral_resolution_nm = NULL,
+  frame_rate_hz = NULL,
+  et_target_ms = NULL,
+  et_white_ms = NULL,
+  target_start_mm = NULL,
+  target_stop_mm = NULL,
+  fov_mm = NULL,
+  camera_position_mm = NULL,
+  stage_position_mm = NULL,
+  scanning_speed_mm_s = NULL,
+  aspect_ratio = NULL,
+  spectral_binning = NULL,
+  spatial_binning = NULL,
+  dropped_frames = NULL,
+  gcp_count = NULL,
+  wavelengths = NULL,
+  fwhm = NULL
+) {
+  # Define list and class
+  structure(
+    list(
+      schema_version = "1.1.0",
+      name = name,
+      sensor_type = sensor_type,
+      manufacturer = manufacturer,
+      lens = lens,
+      calibration_pack = calibration_pack,
+      session_id = session_id,
+      operator = operator,
+      campaign_prefix = campaign_prefix,
+      dataset_name = dataset_name,
+      nrow = nrow,
+      ncol = ncol,
+      nlyr = nlyr,
+      xres = xres,
+      yres = yres,
+      spectral_resolution_nm = spectral_resolution_nm,
+      frame_rate_hz = frame_rate_hz,
+      et_target_ms = et_target_ms,
+      et_white_ms = et_white_ms,
+      target_start_mm = target_start_mm,
+      target_stop_mm = target_stop_mm,
+      fov_mm = fov_mm,
+      camera_position_mm = camera_position_mm,
+      stage_position_mm = stage_position_mm,
+      scanning_speed_mm_s = scanning_speed_mm_s,
+      aspect_ratio = aspect_ratio,
+      spectral_binning = spectral_binning,
+      spatial_binning = spatial_binning,
+      dropped_frames = dropped_frames,
+      gcp_count = gcp_count,
+      wavelengths = wavelengths,
+      fwhm = fwhm
+    ),
+    class = "hsi_metadata"
+  )
+}
+
+#' Validate structured hyperspectral metadata
+#'
+#' @param x An object of class `hsi_metadata` to validate.
+#' @param call Environment for error reporting. Auto-detected via
+#'   [rlang::caller_env()].
+#'
+#' @returns `x`, invisibly, if validation passes; aborts otherwise.
+#'
+#' @noRd
+validate_hsi_metadata <- function(x, call = rlang::caller_env()) {
+  # Required string
+  rlang::check_string(
+    x$name,
+    allow_empty = FALSE,
+    arg = "name",
+    call = call
+  )
+
+  # Optional strings
+  rlang::check_string(
+    x$sensor_type,
+    allow_null = TRUE,
+    arg = "sensor_type",
+    call = call
+  )
+  rlang::check_string(
+    x$manufacturer,
+    allow_null = TRUE,
+    arg = "manufacturer",
+    call = call
+  )
+  rlang::check_string(
+    x$lens,
+    allow_null = TRUE,
+    arg = "lens",
+    call = call
+  )
+  rlang::check_string(
+    x$calibration_pack,
+    allow_null = TRUE,
+    arg = "calibration_pack",
+    call = call
+  )
+  rlang::check_string(
+    x$session_id,
+    allow_null = TRUE,
+    arg = "session_id",
+    call = call
+  )
+  rlang::check_string(
+    x$operator,
+    allow_null = TRUE,
+    arg = "operator",
+    call = call
+  )
+  rlang::check_string(
+    x$campaign_prefix,
+    allow_null = TRUE,
+    arg = "campaign_prefix",
+    call = call
+  )
+  rlang::check_string(
+    x$dataset_name,
+    allow_null = TRUE,
+    arg = "dataset_name",
+    call = call
+  )
+
+  # Optional positive scalars
+  check_numeric(
+    x$nrow,
+    len = 1,
+    positive = TRUE,
+    allow_null = TRUE,
+    arg = "nrow",
+    call = call
+  )
+  check_numeric(
+    x$ncol,
+    len = 1,
+    positive = TRUE,
+    allow_null = TRUE,
+    arg = "ncol",
+    call = call
+  )
+  check_numeric(
+    x$nlyr,
+    len = 1,
+    positive = TRUE,
+    allow_null = TRUE,
+    arg = "nlyr",
+    call = call
+  )
+  check_numeric(
+    x$xres,
+    len = 1,
+    positive = TRUE,
+    allow_null = TRUE,
+    arg = "xres",
+    call = call
+  )
+  check_numeric(
+    x$yres,
+    len = 1,
+    positive = TRUE,
+    allow_null = TRUE,
+    arg = "yres",
+    call = call
+  )
+  check_numeric(
+    x$spectral_resolution_nm,
+    len = 1,
+    positive = TRUE,
+    allow_null = TRUE,
+    arg = "spectral_resolution_nm",
+    call = call
+  )
+  check_numeric(
+    x$frame_rate_hz,
+    len = 1,
+    positive = TRUE,
+    allow_null = TRUE,
+    arg = "frame_rate_hz",
+    call = call
+  )
+  check_numeric(
+    x$et_target_ms,
+    len = 1,
+    positive = TRUE,
+    allow_null = TRUE,
+    arg = "et_target_ms",
+    call = call
+  )
+  check_numeric(
+    x$et_white_ms,
+    len = 1,
+    positive = TRUE,
+    allow_null = TRUE,
+    arg = "et_white_ms",
+    call = call
+  )
+  check_numeric(
+    x$target_start_mm,
+    len = 1,
+    positive = TRUE,
+    allow_null = TRUE,
+    arg = "target_start_mm",
+    call = call
+  )
+  check_numeric(
+    x$target_stop_mm,
+    len = 1,
+    positive = TRUE,
+    allow_null = TRUE,
+    arg = "target_stop_mm",
+    call = call
+  )
+  check_numeric(
+    x$fov_mm,
+    len = 1,
+    positive = TRUE,
+    allow_null = TRUE,
+    arg = "fov_mm",
+    call = call
+  )
+  check_numeric(
+    x$camera_position_mm,
+    len = 1,
+    allow_null = TRUE,
+    arg = "camera_position_mm",
+    call = call
+  )
+  check_numeric(
+    x$stage_position_mm,
+    len = 1,
+    allow_null = TRUE,
+    arg = "stage_position_mm",
+    call = call
+  )
+  check_numeric(
+    x$scanning_speed_mm_s,
+    len = 1,
+    positive = TRUE,
+    allow_null = TRUE,
+    arg = "scanning_speed_mm_s",
+    call = call
+  )
+  check_numeric(
+    x$aspect_ratio,
+    len = 1,
+    positive = TRUE,
+    allow_null = TRUE,
+    arg = "aspect_ratio",
+    call = call
+  )
+  check_numeric(
+    x$spectral_binning,
+    len = 1,
+    positive = TRUE,
+    allow_null = TRUE,
+    arg = "spectral_binning",
+    call = call
+  )
+  check_numeric(
+    x$spatial_binning,
+    len = 1,
+    positive = TRUE,
+    allow_null = TRUE,
+    arg = "spatial_binning",
+    call = call
+  )
+  check_numeric(
+    x$dropped_frames,
+    len = 1,
+    allow_null = TRUE,
+    arg = "dropped_frames",
+    call = call
+  )
+  check_numeric(
+    x$gcp_count,
+    len = 1,
+    allow_null = TRUE,
+    arg = "gcp_count",
+    call = call
+  )
+  check_numeric(
+    x$wavelengths,
+    allow_null = TRUE,
+    positive = TRUE,
+    arg = "wavelengths",
+    call = call
+  )
+  check_numeric(
+    x$fwhm,
+    allow_null = TRUE,
+    positive = TRUE,
+    arg = "fwhm",
+    call = call
+  )
+
+  # Wavelengths length must match nlyr
+  if (
+    !is.null(x$wavelengths) &&
+      !is.null(x$nlyr) &&
+      length(x$wavelengths) != x$nlyr
+  ) {
+    cli::cli_abort(
+      c(
+        "{.arg wavelengths} must have one value per layer.",
+        "i" = "{.arg nlyr} is {x$nlyr}, but {.arg wavelengths} has length {length(x$wavelengths)}."
+      ),
+      class = "hsitools_error",
+      call = call
+    )
+  }
+
+  # FWHM length must match nlyr
+  if (
+    !is.null(x$fwhm) &&
+      !is.null(x$nlyr) &&
+      length(x$fwhm) != x$nlyr
+  ) {
+    cli::cli_abort(
+      c(
+        "{.arg fwhm} must have one value per layer.",
+        "i" = "{.arg nlyr} is {x$nlyr}, but {.arg fwhm} has length {length(x$fwhm)}."
+      ),
+      class = "hsitools_error",
+      call = call
+    )
+  }
+
+  # Return result
+  invisible(x)
 }
