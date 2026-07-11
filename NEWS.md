@@ -1,8 +1,26 @@
-# HSItools 0.5.2
+# HSItools 0.5.3
 
-# HSItools 0.5.1
+-   Breaking: `hsi_bind_layers()` is no longer exported (non-functional stub; design pending).
 
-# HSItools 0.5.0
+-   Breaking: removed `hsi_merge_rasters`; use `hsi_bind_rows` instead.
+
+-   Added capture metadata sidecars: `hsi_create_metadata()`, `hsi_write_metadata()`, `hsi_read_metadata()`. One flat YAML file per capture, 32-field schema (v1.1.0), only `name` required. Reader validates fields and the schema version on read.
+
+-   All package errors and warnings now carry the `hsitools_error` / `hsitools_warning` condition classes, so they can be caught and distinguished from {terra}/GDAL or base R conditions programmatically.
+
+-   Internal validation helpers (`check_*` family) unified; list inputs now report all offending elements in a single error instead of failing on the first.
+
+-   Fixed `hsi_read_metadata()` pointing at the wrong argument name in filename validation errors.
+
+-   Added `hsi_tiled()` for parallel tiled processing of larger-than-memory rasters ({mirai} workers, VRT mosaic, automatic BIGTIFF for outputs over 4 GB).
+
+-   `hsi_calc_reflectance` now uses the matched-dark formula with independent white/target integration times.
+
+-   Added spatial calibration and co-registration toolchain: `hsi_calibration_from_scale`, `hsi_set_extent`, `hsi_find_extent`, `hsi_pixels_to_units`, `hsi_drop_crs`, `hsi_check_gcp`, `hsi_match_gcp`, `hsi_coregister`.
+
+-   Added MNF: `hsi_calc_mnf` / `hsi_apply_mnf`.
+
+-   Continuous integration on five platforms (Linux devel/release/oldrel, macOS, Windows) via GitHub Actions, including Quarto vignette builds (skipped on Windows CI due to an upstream quarto limitation; verified on the other platforms).
 
 # HSItools 0.4.0
 

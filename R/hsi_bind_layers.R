@@ -1,7 +1,5 @@
 #' Bind hyperspectral SpatRasters along the spectral axis
 #'
-#' @family Utilities
-#'
 #' @param x List of [`SpatRaster`][terra::SpatRaster-class] objects with
 #'   hyperspectral data. All elements must
 #'   share the same spatial resolution and spatial extent (pixel to pixel coverage).

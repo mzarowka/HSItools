@@ -33,7 +33,6 @@ wavelength_position(r, c(450, 650))
 }
 \seealso{
 Other Utilities:
-\code{\link[=hsi_bind_layers]{hsi_bind_layers()}},
 \code{\link[=hsi_bind_rows]{hsi_bind_rows()}},
 \code{\link[=hsi_find_extent]{hsi_find_extent()}},
 \code{\link[=hsi_subset]{hsi_subset()}},

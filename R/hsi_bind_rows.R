@@ -21,9 +21,6 @@
 #' Resolution, layer count, and layer names (wavelengths) must be identical
 #' across all inputs — the function aborts if any mismatch is detected.
 #'
-#' @seealso
-#' [`hsi_bind_layers()`] for concatenation along the spectral (layer) axis.
-#'
 #' @examples
 #' \dontrun{
 #' sections <- list(section_01, section_02, section_03, section_04)

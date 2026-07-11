@@ -41,10 +41,7 @@ x_bound <- hsi_bind_rows(sections, filename = "bound.tif", overwrite = TRUE)
 
 }
 \seealso{
-\code{\link[=hsi_bind_layers]{hsi_bind_layers()}} for concatenation along the spectral (layer) axis.
-
 Other Utilities:
-\code{\link[=hsi_bind_layers]{hsi_bind_layers()}},
 \code{\link[=hsi_find_extent]{hsi_find_extent()}},
 \code{\link[=hsi_subset]{hsi_subset()}},
 \code{\link[=hsi_subset_range]{hsi_subset_range()}},

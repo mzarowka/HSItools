@@ -24,12 +24,3 @@ along the spectral axis in the order provided.
 \description{
 Bind hyperspectral SpatRasters along the spectral axis
 }
-\seealso{
-Other Utilities:
-\code{\link[=hsi_bind_rows]{hsi_bind_rows()}},
-\code{\link[=hsi_find_extent]{hsi_find_extent()}},
-\code{\link[=hsi_subset]{hsi_subset()}},
-\code{\link[=hsi_subset_range]{hsi_subset_range()}},
-\code{\link[=wavelength_position]{wavelength_position()}}
-}
-\concept{Utilities}
