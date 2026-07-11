@@ -49,7 +49,12 @@
 <span>  <span class="va">name</span>,</span>
 <span>  sensor_type <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  manufacturer <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  lens <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  calibration_pack <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  session_id <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  operator <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  campaign_prefix <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  dataset_name <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  nrow <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  ncol <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  nlyr <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -65,8 +70,11 @@
 <span>  camera_position_mm <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  stage_position_mm <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  scanning_speed_mm_s <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  aspect_ratio <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  spectral_binning <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  spatial_binning <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  dropped_frames <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  gcp_count <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  wavelengths <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  fwhm <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -88,8 +96,28 @@
 <dd><p>Character. Sensor manufacturer. Default <code>NULL</code>.</p></dd>
 
 
+<dt id="arg-lens">lens<a class="anchor" aria-label="anchor" href="#arg-lens"></a></dt>
+<dd><p>Character. Lens description, e.g. focal length. Default <code>NULL</code>.</p></dd>
+
+
+<dt id="arg-calibration-pack">calibration_pack<a class="anchor" aria-label="anchor" href="#arg-calibration-pack"></a></dt>
+<dd><p>Character. Calibration pack name or path. Default <code>NULL</code>.</p></dd>
+
+
 <dt id="arg-session-id">session_id<a class="anchor" aria-label="anchor" href="#arg-session-id"></a></dt>
 <dd><p>Character. Session identifier grouping scans that share a white reference. Default <code>NULL</code>.</p></dd>
+
+
+<dt id="arg-operator">operator<a class="anchor" aria-label="anchor" href="#arg-operator"></a></dt>
+<dd><p>Character. Operator full name. Default <code>NULL</code>.</p></dd>
+
+
+<dt id="arg-campaign-prefix">campaign_prefix<a class="anchor" aria-label="anchor" href="#arg-campaign-prefix"></a></dt>
+<dd><p>Character. Campaign prefix as set in the acquisition software. Default <code>NULL</code>.</p></dd>
+
+
+<dt id="arg-dataset-name">dataset_name<a class="anchor" aria-label="anchor" href="#arg-dataset-name"></a></dt>
+<dd><p>Character. Dataset name as entered in the acquisition software. Default <code>NULL</code>.</p></dd>
 
 
 <dt id="arg-nrow">nrow<a class="anchor" aria-label="anchor" href="#arg-nrow"></a></dt>
@@ -152,12 +180,24 @@
 <dd><p>Numeric. Along-track scanning speed in mm/s. Default <code>NULL</code>.</p></dd>
 
 
+<dt id="arg-aspect-ratio">aspect_ratio<a class="anchor" aria-label="anchor" href="#arg-aspect-ratio"></a></dt>
+<dd><p>Positive number. Measured pixel aspect ratio (along-track / across-track). Default <code>NULL</code>.</p></dd>
+
+
 <dt id="arg-spectral-binning">spectral_binning<a class="anchor" aria-label="anchor" href="#arg-spectral-binning"></a></dt>
 <dd><p>Positive integer. Spectral binning factor. Default <code>NULL</code>.</p></dd>
 
 
 <dt id="arg-spatial-binning">spatial_binning<a class="anchor" aria-label="anchor" href="#arg-spatial-binning"></a></dt>
 <dd><p>Positive integer. Spatial binning factor. Default <code>NULL</code>.</p></dd>
+
+
+<dt id="arg-dropped-frames">dropped_frames<a class="anchor" aria-label="anchor" href="#arg-dropped-frames"></a></dt>
+<dd><p>Numeric. Number of dropped frames reported by the acquisition software. Default <code>NULL</code>.</p></dd>
+
+
+<dt id="arg-gcp-count">gcp_count<a class="anchor" aria-label="anchor" href="#arg-gcp-count"></a></dt>
+<dd><p>Numeric. Number of ground control points placed for co-registration. Default <code>NULL</code>.</p></dd>
 
 
 <dt id="arg-wavelengths">wavelengths<a class="anchor" aria-label="anchor" href="#arg-wavelengths"></a></dt>
