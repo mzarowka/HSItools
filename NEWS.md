@@ -1,3 +1,5 @@
+# HSItools (development version)
+
 # HSItools 0.5.3
 
 -   Breaking: `hsi_bind_layers()` is no longer exported (non-functional stub; design pending).
