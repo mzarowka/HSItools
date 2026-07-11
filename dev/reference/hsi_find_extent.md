@@ -80,7 +80,6 @@ bounds. Reduce `width` or adjust the reference points to fit within `x`.
 to assign physical units to a raster extent.
 
 Other Utilities:
-[`hsi_bind_layers()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_bind_layers.md),
 [`hsi_bind_rows()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_bind_rows.md),
 [`hsi_subset()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_subset.md),
 [`hsi_subset_range()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_subset_range.md),

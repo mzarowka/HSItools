@@ -35,12 +35,3 @@ hsi_bind_layers(x, filename = "", overwrite = FALSE, ...)
 A
 [`SpatRaster`](https://rspatial.github.io/terra/reference/SpatRaster-class.html)
 with all inputs bound along the spectral axis in the order provided.
-
-## See also
-
-Other Utilities:
-[`hsi_bind_rows()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_bind_rows.md),
-[`hsi_find_extent()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_find_extent.md),
-[`hsi_subset()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_subset.md),
-[`hsi_subset_range()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_subset_range.md),
-[`wavelength_position()`](https://mzarowka.github.io/HSItools/dev/reference/wavelength_position.md)

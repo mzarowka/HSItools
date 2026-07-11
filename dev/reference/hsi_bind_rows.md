@@ -50,11 +50,7 @@ across all inputs — the function aborts if any mismatch is detected.
 
 ## See also
 
-[`hsi_bind_layers()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_bind_layers.md)
-for concatenation along the spectral (layer) axis.
-
 Other Utilities:
-[`hsi_bind_layers()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_bind_layers.md),
 [`hsi_find_extent()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_find_extent.md),
 [`hsi_subset()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_subset.md),
 [`hsi_subset_range()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_subset_range.md),
