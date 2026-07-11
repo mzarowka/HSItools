@@ -41,15 +41,6 @@ jobs:
       - uses: actions/checkout@v4
 
       - uses: quarto-dev/quarto-actions/setup@v2
-        with:
-          version: "1.9.38"
-
-      - name: Debug quarto/R env (temporary)
-        if: runner.os == 'Windows'
-        shell: bash
-        run: |
-          quarto --version
-          quarto check 2>&1 | head -40
 
       - uses: r-lib/actions/setup-pandoc@v2
 
@@ -63,6 +54,19 @@ jobs:
         with:
           extra-packages: any::rcmdcheck
           needs: check
+
+      # The Windows runner image ships a preinstalled system R, and quarto
+      # discovers R via the Windows Registry -- finding that bare install
+      # instead of the setup-r one. The vignette subprocess then has an empty
+      # library ("there is no package called 'HSItools'"). QUARTO_R is
+      # quarto's documented override; point it at the R actually running the
+      # check. macOS/Linux are unaffected (quarto finds R via PATH there).
+      - name: Point quarto at the setup-r R installation (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $rbin = Split-Path (Get-Command Rscript.exe).Source
+          echo "QUARTO_R=$rbin" >> $env:GITHUB_ENV
 
       - uses: r-lib/actions/check-r-package@v2
         env:
