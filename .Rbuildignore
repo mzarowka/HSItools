@@ -11,3 +11,5 @@
 ^Meta$
 ^vignettes/\.quarto$
 ^vignettes/*_files$
+^[.]?air[.]toml$
+^\.vscode$
