@@ -46,17 +46,7 @@ hsi_extract_spectrum <- function(
   check_spatraster(x)
 
   # Validate band names are numeric wavelengths
-  wavelengths <- suppressWarnings(as.numeric(terra::names(x)))
-
-  if (all(is.na(wavelengths))) {
-    cli::cli_abort(
-      c(
-        "Band names cannot be converted to numeric wavelengths.",
-        "i" = "Band names are: {.val {head(terra::names(x), 5)}}..."
-      ),
-      class = "hsitools_error"
-    )
-  }
+  check_wavelengths(x)
 
   # Aggregate entire raster to single pixel
   spectrum <- terra::aggregate(

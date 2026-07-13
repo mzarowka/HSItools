@@ -239,17 +239,7 @@ hsi_calc_reflectance <- function(
   }
 
   # Validate band names are numeric wavelengths
-  wavelengths <- suppressWarnings(as.numeric(names(x)))
-
-  if (all(is.na(wavelengths))) {
-    cli::cli_abort(
-      c(
-        "Band names cannot be converted to numeric wavelengths.",
-        "i" = "Band names are: {.val {head(names(x), 5)}}..."
-      ),
-      class = "hsitools_error"
-    )
-  }
+  check_wavelengths(x)
 
   # Check that band names match
   bands_x <- names(x)

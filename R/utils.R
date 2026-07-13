@@ -210,17 +210,7 @@ hsi_subset_range <- function(
   check_numeric(to, len = 1, positive = TRUE)
 
   # Get wavelengths from band names
-  wavelengths <- as.numeric(terra::names(x))
-
-  if (all(is.na(wavelengths))) {
-    cli::cli_abort(
-      c(
-        "Band names cannot be converted to numeric wavelengths.",
-        "i" = "Band names are: {.val {head(terra::names(x), 5)}}..."
-      ),
-      class = "hsitools_error"
-    )
-  }
+  wavelengths <- check_wavelengths(x)
 
   # Find bands within range (handle inverted from/to)
   range_min <- min(from, to)
