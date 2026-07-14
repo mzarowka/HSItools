@@ -1,6 +1,6 @@
 # HSItools Ecosystem Development Guidelines (CLAUDE.md)
 
-> **Version 1.7.0 — 2026-07-13.** This file is the **canonical source** of development
+> **Version 1.8.0 — 2026-07-14.** This file is the **canonical source** of development
 > conventions for the HSItools ecosystem. Claude Code reads it automatically at session
 > start; the claude.ai `hsitools-development` skill is a mirror refreshed from this file
 > at milestone boundaries (the skill adds only trigger frontmatter). If the two disagree,
@@ -116,7 +116,7 @@ The normative rule and its documented exceptions live in §3.6; this paragraph i
 
 ### Error/warning conventions (pointer)
 
-All package-raised conditions use `cli::cli_abort()` / `cli::cli_warn()` with `class = "hsitools_error"` / `"hsitools_warning"` so callers can distinguish them programmatically from terra/GDAL or base-R conditions. Validate inputs at the top of exported functions with the `check_*` helpers in `utils-checks.R` — current inventory: `check_spatraster`, `check_spatvector`, `check_numeric`, `check_wavelengths`, `check_geom_type`, `check_one_of`, `check_has_cols`, `check_crs_null`, `check_list_has`, `check_data_frame`, `check_spatraster_list` — never ad hoc checks. They auto-detect argument name and call site via `rlang::caller_arg()` / `rlang::caller_env()`, and list-input checkers report *all* offending elements in one error rather than failing on the first. Normative rules, carve-outs, and call-attribution: §3.2–§3.3a.
+All package-raised conditions use `cli::cli_abort()` / `cli::cli_warn()` with `class = "hsitools_error"` / `"hsitools_warning"` so callers can distinguish them programmatically from terra/GDAL or base-R conditions. Validate inputs at the top of exported functions with the `check_*` helpers in `utils-checks.R` — current inventory: `check_spatraster`, `check_spatvector`, `check_numeric`, `check_wavelengths`, `check_geom_type`, `check_one_of`, `check_has_cols`, `check_crs_null`, `check_list_has`, `check_data_frame`, `check_spatraster_list`, `check_dots_write` — never ad hoc checks. They auto-detect argument name and call site via `rlang::caller_arg()` / `rlang::caller_env()`, and list-input checkers report *all* offending elements in one error rather than failing on the first. Normative rules, carve-outs, and call-attribution: §3.2–§3.3a.
 
 ---
 
@@ -141,6 +141,7 @@ All package-raised conditions use `cli::cli_abort()` / `cli::cli_warn()` with `c
 | `cli::cli_abort()` inside a purrr lambda | Collect offenders first (`purrr::map_lgl()`), then **one** abort after the loop listing all offending indices — lambda-frame aborts blame purrr internals and force whack-a-mole fixes |
 | `match.arg()` | `check_one_of()` — cli-consistent errors, same semantics |
 | `raw$schema` on deserialized/external data | Spell the full name — `raw$schema_version` or `raw[["schema_version"]]` — `$` partial matching silently returns the wrong element on raw external data |
+| `rlang::list2(...)` into `wopt` with no dots check (guarded-write functions) | `wopt_user <- rlang::list2(...)` then `check_dots_write(wopt_user, filename)` in the validation block — a silent `...` sink hides typos and removed arguments (§3.2 has the exemption for direct-to-terra functions) |
 
 Applies to all source, test, template, and example code in every package:
 
@@ -199,6 +200,7 @@ Every exported function opens with a self-contained validation block before any 
 
 - All `check_*` calls first, in argument-order sequence. `check_spatraster()` is the canonical raster validator (do not mix with plain `inherits()` checks — reconcile toward `check_spatraster`).
 - `check_one_of()` is the canonical validator for enumerated strings. `match.arg()` is not used anywhere in the codebase (audited 2026-07-06) — its base-R errors break cli consistency.
+- **Guarded-write Shape A functions end the validation block with the dots check** (decided 2026-07-14, swept same day): `wopt_user <- rlang::list2(...)` immediately followed by `check_dots_write(wopt_user, filename)`. With no `filename`, nothing in `...` can take effect, so a non-empty `...` is a misspelled or removed argument and must abort *before* computation. **Exemption (do not "fix"):** functions that pass `filename`/`wopt` directly into a terra primitive (`terra::app()`, `terra::focal()`, `terra::predict()` — e.g. the smoothers, per-pixel statistics, `hsi_remove_continuum`, `hsi_tiled`, zarowka's `hsi_apply_reduction`) never get this check. terra validates `wopt` names unconditionally and honours valid options even in-memory (probed 2026-07-14, terra 1.9.34: `names = "custom"` sticks at `filename = ""`), so their `...` is a live interface and adding the check would reject working calls.
 - **`cli::cli_abort()` is the only permitted validation error** — never `stop()`, never `rlang::abort()`.
 
 ```r
@@ -231,9 +233,16 @@ cli::cli_abort(
 **Shape A — compute functions (default).** Computes a SpatRaster; writing is optional via `filename`. Result returned as the final bare expression — no `return()`, no `invisible()`:
 
 ```r
+  # Validate inputs
+  check_spatraster(x)
+  # ...other check_* calls...
+  wopt_user <- rlang::list2(...)
+  check_dots_write(wopt_user, filename)
+
+  # ...computation...
+
   # Build write options
   wopt_default <- list(names = index_name)
-  wopt_user <- rlang::list2(...)
   wopt <- purrr::list_modify(wopt_default, !!!wopt_user)
 
   # Write to file
@@ -244,6 +253,8 @@ cli::cli_abort(
   # Return result
   result
 ```
+
+`wopt_user` is captured in the **validation block** (so `check_dots_write()` fires before any computation); the `# Build write options` block keeps `wopt_default` and the merge. Functions that hand `filename`/`wopt` directly to a terra primitive skip the check entirely — see the exemption in §3.2.
 
 The `result <-` reassignment in the guard is **required** whenever `withr::local_tempdir()` manages intermediates — it re-backs the lazy SpatRaster to the permanent file before withr cleanup orphans the pointer.
 
@@ -256,7 +267,7 @@ The `result <-` reassignment in the guard is **required** whenever `withr::local
 Always the same two-variable merge; names are always `wopt_default` and `wopt_user`:
 
 - `wopt_default` contains at minimum `names` (layer name).
-- `wopt_user <- rlang::list2(...)`.
+- `wopt_user <- rlang::list2(...)` — captured in the validation block, immediately followed by `check_dots_write(wopt_user, filename)` in guarded-write functions (§3.2).
 - `purrr::list_modify(wopt_default, !!!wopt_user)` — user values win.
 - Never specify `datatype` in `wopt_default` — terra chooses — unless a documented reason exists (e.g. SWIR float32 requirement, §7).
 - Never expose `wopt` directly to users; `...` is the interface.
@@ -551,6 +562,7 @@ Before proposing any HSItools/zarowka code, confirm:
 
 ## Changelog
 
+- **1.8.0 (2026-07-14)** — The `...` sink fix (design Fable+Maury, probes Opus/Fable, sweep Sonnet+Fable, all 2026-07-14; record in `dev-notes/2026-07-14_*dots*` in both repos). New `check_dots_write()` helper in `utils-checks.R` and its call blessed as canonical: guarded-write Shape A functions end the validation block with `wopt_user <- rlang::list2(...)` + `check_dots_write(wopt_user, filename)`, aborting when `...` is non-empty and `filename == ""` — previously such arguments (typos, removed args like `hsi_calc_abundance(method =)`) were silently discarded, which defeated zarowka's test suite for three weeks. §3.2/§3.4/§3.5 updated; §3.4 snippet now shows `wopt_user` captured in the validation block. **Exemption recorded in §3.2:** functions passing `filename`/`wopt` directly into `terra::app()`/`focal()`/`predict()` are excluded — terra validates `wopt` unconditionally and honours valid options in-memory (probed, terra 1.9.34), so their `...` is live and the check would break working calls. Swept: 7 HSItools + 2 zarowka functions; 8 HSItools functions exempt. Anti-pattern row added; helper inventory updated. `test-hsi_rcv.R` renamed `test-hsi_calc_rcv.R` (§3.8 mirror rule). §10 untouched.
 - **1.7.0 (2026-07-13)** — Migrated from claude.ai skill to repo-root `CLAUDE.md` as the canonical source (decision Maury + Fable, 2026-07-13); version header and changelog now live here, and the skill becomes a mirror refreshed at milestone boundaries. New unnumbered **Repo map and mechanics** section merged from the Claude Code auto-generated CLAUDE.md, with two corrections: package description rewritten material/sensor/manufacturer-agnostic (the generated text had baked in core-scanning framing, violating §1) and the formatter guidance corrected to air (the generated text inferred hand-formatting from a missing config). Genuinely new captures retained from the generated file: `@family`-as-navigation, `wavelength_position()` as the shared wavelength primitive, `hsi_coregister()` file-source requirement, mirai worker self-containment, `spectral_indices` column→argument mapping, fixture layout, Windows CI vignette skip, schema-version bump-together rule, and the as-built articulation of the two temp-file lifetimes (normative rule unchanged in §3.6). §0 rule 7 rewritten conditionally (executing sessions run tests and show output per change; non-executing sessions hand off patches); new rule 8 (git modifications belong to Maury; read-only inspection permitted) and rule 9 (no milestone state or session notes in this file; never edit unprompted). §9 decoupling rule renamed file/roadmap and now names this file. §10 untouched — all open questions remain open.
 - **1.6.0 (2026-07-11)** — Post-0.5.3-release consolidation. §8 rewritten for contract v3.0: the flat HSItools sidecar (32 keys, schema 1.1.0) is the scan record; hsical is schema-less and wraps the trio; deliberate field rejections recorded. §0 gains rule 7 (execution-environment): model sessions edit source and hand off patches, Maury runs all R verification locally. §10 unchanged.
 - **1.5.0 (2026-07-10)** — Guardrails Phase 2 closure (decisions 2026-07-09 by Fable+Maury, sweep 2026-07-10 by Sonnet): §3.3 `hsitools_warning` umbrella promoted from proposed to settled convention (every `cli_warn()` site, hardwired, no taxonomy); corresponding §10 question dropped. §5.6 gains the class-assertion discipline: class assertions ride on existing message/behaviour assertions, never as a test's sole content, never bolted onto bare `expect_error()`. `check_spatraster_list()` joined `utils-checks.R` — no skill edit needed; §3.3's generic `check_*` rules already cover it. All other §10 questions (incl. `cli_alert_info`, `wavelength_position` threading) remain open.
