@@ -81,7 +81,7 @@
 </h2>
 <p>Typically, you need to calculate reflectance from raw data captured during the scan. HSItools makes this straightforward using a combination of {<a href="https://CRAN.R-project.org/package=terra" class="external-link">terra</a>} and {HSItools} functions.</p>
 <p>First, locate your data. Because no assumptions about directory structure are made, you can use external white and dark reference files in this step. If you are reading data from ENVI <code>.raw</code> files, it may be important to use <code>noflip = TRUE</code> in your <code><a href="https://rspatial.github.io/terra/reference/rast.html" class="external-link">terra::rast()</a></code> call, otherwise files will be flipped vertically.</p>
-<p>Our test dataset is a 9 × 9 pixel, 101-band subset of HSI data (517–772 nm) from the Hyperspectral Imaging Laboratory in Gdańsk.</p>
+<p>Our test dataset is a 9 × 9 pixel, 101-band subset of HSI data (517–772 nm) from the Hyperspectral Imaging Laboratory in Gdańsk. It comes from a <strong>single-session</strong> scan: specimen, white reference and dark reference were all captured at the same integration time. The dual-exposure examples below are therefore shown but not run, as they need a second dark reference that this dataset does not contain.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Read in captured data and references</span></span>
@@ -121,15 +121,19 @@
 <span>  in_memory <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 </div>
-<p><strong>Matched darks</strong> is the recommended approach for dual-exposure workflows where the specimen is scanned at a higher integration time than the white reference. Each dark subtraction uses the dark reference captured at the matching integration time. For example Lumo Scanner always captures a dark reference per session, so both are always available.</p>
+<p><strong>Matched darks</strong> is the recommended approach for dual-exposure workflows where the specimen is scanned at a higher integration time than the white reference. Each dark subtraction uses the dark reference captured at the matching integration time, so two dark references are needed: <code>darkref</code> from the white reference session, and <code>darkspec</code> from the specimen session. Many scanners capture a dark reference once per session, so both are usually already sitting in your capture folders.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Matched darks: recommended for dual-exposure scanning</span></span>
+<code class="sourceCode R"><span><span class="co"># One dark reference per session, each at its own integration time</span></span>
+<span><span class="va">darkref</span> <span class="op">&lt;-</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="st">"white_session/DARKREF.tif"</span><span class="op">)</span> <span class="co"># captured at tint_white</span></span>
+<span><span class="va">darkspec</span> <span class="op">&lt;-</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="st">"specimen_session/DARKREF.tif"</span><span class="op">)</span> <span class="co"># captured at tint_specimen</span></span>
+<span></span>
+<span><span class="co"># Matched darks: recommended for dual-exposure scanning</span></span>
 <span><span class="va">r2</span> <span class="op">&lt;-</span> <span class="fu">HSItools</span><span class="fu">::</span><span class="fu"><a href="../reference/hsi_calc_reflectance.html">hsi_calc_reflectance</a></span><span class="op">(</span></span>
 <span>  x <span class="op">=</span> <span class="va">data</span><span class="op">$</span><span class="va">x</span>,</span>
 <span>  whiteref <span class="op">=</span> <span class="va">data</span><span class="op">$</span><span class="va">whiteref</span>,</span>
-<span>  darkref <span class="op">=</span> <span class="va">data</span><span class="op">$</span><span class="va">darkref</span>,</span>
-<span>  darkspec <span class="op">=</span> <span class="va">data</span><span class="op">$</span><span class="va">darkspec</span>,</span>
+<span>  darkref <span class="op">=</span> <span class="va">darkref</span>,</span>
+<span>  darkspec <span class="op">=</span> <span class="va">darkspec</span>,</span>
 <span>  tint <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">9</span><span class="op">)</span>,</span>
 <span>  in_memory <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -154,10 +158,11 @@
 </div>
 </section><section class="level2"><h3 id="memory-and-file-handling">Memory and file handling<a class="anchor" aria-label="anchor" href="#memory-and-file-handling"></a>
 </h3>
-<p>You can control whether processing is done in memory or not. With the default <code>in_memory = FALSE</code>, {<a href="https://cran.r-project.org/package=withr" class="external-link">withr</a>} manages temporary files and removes them once the function finishes. You can write the result to a permanent file via <code>filename</code>, or keep it in memory.</p>
+<p>You can control whether processing happens on disk or in RAM. Intermediate files created <em>inside</em> the function are cleaned up when it returns. The result itself is different: with the default <code>in_memory = FALSE</code> and no <code>filename</code>, the returned raster is still backed by a temporary file, and that file cannot be deleted on exit precisely because it <em>is</em> the storage behind the object you get back. It persists until the R session ends, and <code><a href="../reference/hsi_calc_reflectance.html">hsi_calc_reflectance()</a></code> warns you when you take this path.</p>
+<p>Two ways to avoid it: pass a <code>filename</code> to write a permanent file, or set <code>in_memory = TRUE</code> to keep the result entirely in RAM. The latter is only safe when the data fits comfortably in memory.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Calculate with defaults: temporary files, result in memory</span></span>
+<code class="sourceCode R"><span><span class="co"># Calculate with defaults: result backed by a session-lifetime temporary file</span></span>
 <span><span class="va">r4</span> <span class="op">&lt;-</span> <span class="fu">HSItools</span><span class="fu">::</span><span class="fu"><a href="../reference/hsi_calc_reflectance.html">hsi_calc_reflectance</a></span><span class="op">(</span></span>
 <span>  x <span class="op">=</span> <span class="va">data</span><span class="op">$</span><span class="va">x</span>,</span>
 <span>  whiteref <span class="op">=</span> <span class="va">data</span><span class="op">$</span><span class="va">whiteref</span>,</span>
