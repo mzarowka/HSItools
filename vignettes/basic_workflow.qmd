@@ -23,7 +23,7 @@ Typically, you need to calculate reflectance from raw data captured during the s
 
 First, locate your data. Because no assumptions about directory structure are made, you can use external white and dark reference files in this step. If you are reading data from ENVI `.raw` files, it may be important to use `noflip = TRUE` in your `terra::rast()` call, otherwise files will be flipped vertically.
 
-Our test dataset is a 9 × 9 pixel, 101-band subset of HSI data (517–772 nm) from the Hyperspectral Imaging Laboratory in Gdańsk.
+Our test dataset is a 9 × 9 pixel, 101-band subset of HSI data (517–772 nm) from the Hyperspectral Imaging Laboratory in Gdańsk. It comes from a **single-session** scan: specimen, white reference and dark reference were all captured at the same integration time. The dual-exposure examples below are therefore shown but not run, as they need a second dark reference that this dataset does not contain.
 
 ```{r}
 # Read in captured data and references
@@ -67,16 +67,20 @@ r1 <- HSItools::hsi_calc_reflectance(
 )
 ```
 
-**Matched darks** is the recommended approach for dual-exposure workflows where the specimen is scanned at a higher integration time than the white reference. Each dark subtraction uses the dark reference captured at the matching integration time. For example Lumo Scanner always captures a dark reference per session, so both are always available.
+**Matched darks** is the recommended approach for dual-exposure workflows where the specimen is scanned at a higher integration time than the white reference. Each dark subtraction uses the dark reference captured at the matching integration time, so two dark references are needed: `darkref` from the white reference session, and `darkspec` from the specimen session. Many scanners capture a dark reference once per session, so both are usually already sitting in your capture folders.
 
 ```{r}
 #| eval: false
+# One dark reference per session, each at its own integration time
+darkref <- terra::rast("white_session/DARKREF.tif") # captured at tint_white
+darkspec <- terra::rast("specimen_session/DARKREF.tif") # captured at tint_specimen
+
 # Matched darks: recommended for dual-exposure scanning
 r2 <- HSItools::hsi_calc_reflectance(
   x = data$x,
   whiteref = data$whiteref,
-  darkref = data$darkref,
-  darkspec = data$darkspec,
+  darkref = darkref,
+  darkspec = darkspec,
   tint = c(3, 9),
   in_memory = TRUE
 )
@@ -102,10 +106,12 @@ r3 <- HSItools::hsi_calc_reflectance(
 
 ## Memory and file handling
 
-You can control whether processing is done in memory or not. With the default `in_memory = FALSE`, {[withr](https://cran.r-project.org/package=withr)} manages temporary files and removes them once the function finishes. You can write the result to a permanent file via `filename`, or keep it in memory.
+You can control whether processing happens on disk or in RAM. Intermediate files created *inside* the function are cleaned up when it returns. The result itself is different: with the default `in_memory = FALSE` and no `filename`, the returned raster is still backed by a temporary file, and that file cannot be deleted on exit precisely because it *is* the storage behind the object you get back. It persists until the R session ends, and `hsi_calc_reflectance()` warns you when you take this path.
+
+Two ways to avoid it: pass a `filename` to write a permanent file, or set `in_memory = TRUE` to keep the result entirely in RAM. The latter is only safe when the data fits comfortably in memory.
 
 ```{r}
-# Calculate with defaults: temporary files, result in memory
+# Calculate with defaults: result backed by a session-lifetime temporary file
 r4 <- HSItools::hsi_calc_reflectance(
   x = data$x,
   whiteref = data$whiteref,
