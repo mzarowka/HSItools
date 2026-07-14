@@ -41,7 +41,7 @@
 <div id="hsitools-ecosystem-development-guidelines-claudemd" class="section level1">
 
 <blockquote>
-<p><strong>Version 1.7.0 — 2026-07-13.</strong> This file is the <strong>canonical source</strong> of development conventions for the HSItools ecosystem. Claude Code reads it automatically at session start; the claude.ai <code>hsitools-development</code> skill is a mirror refreshed from this file at milestone boundaries (the skill adds only trigger frontmatter). If the two disagree, this file wins. Check the version here at the start of every session.</p>
+<p><strong>Version 1.8.0 — 2026-07-14.</strong> This file is the <strong>canonical source</strong> of development conventions for the HSItools ecosystem. Claude Code reads it automatically at session start; the claude.ai <code>hsitools-development</code> skill is a mirror refreshed from this file at milestone boundaries (the skill adds only trigger frontmatter). If the two disagree, this file wins. Check the version here at the start of every session.</p>
 <p>Consolidated 2026-07-02. Supersedes CODING_GUIDELINES.md, TESTING_GUIDELINES.md, ROXYGEN_GUIDELINES.md and scattered design notes as the single reference. These rules are non-negotiable house style; do not improvise alternatives.</p>
 </blockquote>
 <hr><div class="section level2">
@@ -136,7 +136,7 @@
 </div>
 <div class="section level3">
 <h3 id="errorwarning-conventions-pointer">Error/warning conventions (pointer)<a class="anchor" aria-label="anchor" href="#errorwarning-conventions-pointer"></a></h3>
-<p>All package-raised conditions use <code><a href="https://cli.r-lib.org/reference/cli_abort.html" class="external-link">cli::cli_abort()</a></code> / <code><a href="https://cli.r-lib.org/reference/cli_abort.html" class="external-link">cli::cli_warn()</a></code> with <code>class = "hsitools_error"</code> / <code>"hsitools_warning"</code> so callers can distinguish them programmatically from terra/GDAL or base-R conditions. Validate inputs at the top of exported functions with the <code>check_*</code> helpers in <code>utils-checks.R</code> — current inventory: <code>check_spatraster</code>, <code>check_spatvector</code>, <code>check_numeric</code>, <code>check_wavelengths</code>, <code>check_geom_type</code>, <code>check_one_of</code>, <code>check_has_cols</code>, <code>check_crs_null</code>, <code>check_list_has</code>, <code>check_data_frame</code>, <code>check_spatraster_list</code> — never ad hoc checks. They auto-detect argument name and call site via <code><a href="https://rlang.r-lib.org/reference/caller_arg.html" class="external-link">rlang::caller_arg()</a></code> / <code><a href="https://rlang.r-lib.org/reference/stack.html" class="external-link">rlang::caller_env()</a></code>, and list-input checkers report <em>all</em> offending elements in one error rather than failing on the first. Normative rules, carve-outs, and call-attribution: §3.2–§3.3a.</p>
+<p>All package-raised conditions use <code><a href="https://cli.r-lib.org/reference/cli_abort.html" class="external-link">cli::cli_abort()</a></code> / <code><a href="https://cli.r-lib.org/reference/cli_abort.html" class="external-link">cli::cli_warn()</a></code> with <code>class = "hsitools_error"</code> / <code>"hsitools_warning"</code> so callers can distinguish them programmatically from terra/GDAL or base-R conditions. Validate inputs at the top of exported functions with the <code>check_*</code> helpers in <code>utils-checks.R</code> — current inventory: <code>check_spatraster</code>, <code>check_spatvector</code>, <code>check_numeric</code>, <code>check_wavelengths</code>, <code>check_geom_type</code>, <code>check_one_of</code>, <code>check_has_cols</code>, <code>check_crs_null</code>, <code>check_list_has</code>, <code>check_data_frame</code>, <code>check_spatraster_list</code>, <code>check_dots_write</code> — never ad hoc checks. They auto-detect argument name and call site via <code><a href="https://rlang.r-lib.org/reference/caller_arg.html" class="external-link">rlang::caller_arg()</a></code> / <code><a href="https://rlang.r-lib.org/reference/stack.html" class="external-link">rlang::caller_env()</a></code>, and list-input checkers report <em>all</em> offending elements in one error rather than failing on the first. Normative rules, carve-outs, and call-attribution: §3.2–§3.3a.</p>
 <hr></div>
 </div>
 <div class="section level2">
@@ -197,6 +197,10 @@
 </tr><tr><td>
 <code>raw$schema</code> on deserialized/external data</td>
 <td>Spell the full name — <code>raw$schema_version</code> or <code>raw[["schema_version"]]</code> — <code>$</code> partial matching silently returns the wrong element on raw external data</td>
+</tr><tr><td>
+<code>rlang::list2(...)</code> into <code>wopt</code> with no dots check (guarded-write functions)</td>
+<td>
+<code>wopt_user &lt;- rlang::list2(...)</code> then <code>check_dots_write(wopt_user, filename)</code> in the validation block — a silent <code>...</code> sink hides typos and removed arguments (§3.2 has the exemption for direct-to-terra functions)</td>
 </tr></tbody></table><p>Applies to all source, test, template, and example code in every package:</p>
 <ul><li>
 <strong>Native pipe <code>|&gt;</code> only.</strong> Never <code>%&gt;%</code>.</li>
@@ -265,6 +269,8 @@
 <li>
 <code>check_one_of()</code> is the canonical validator for enumerated strings. <code><a href="https://rdrr.io/r/base/match.arg.html" class="external-link">match.arg()</a></code> is not used anywhere in the codebase (audited 2026-07-06) — its base-R errors break cli consistency.</li>
 <li>
+<strong>Guarded-write Shape A functions end the validation block with the dots check</strong> (decided 2026-07-14, swept same day): <code>wopt_user &lt;- rlang::list2(...)</code> immediately followed by <code>check_dots_write(wopt_user, filename)</code>. With no <code>filename</code>, nothing in <code>...</code> can take effect, so a non-empty <code>...</code> is a misspelled or removed argument and must abort <em>before</em> computation. <strong>Exemption (do not “fix”):</strong> functions that pass <code>filename</code>/<code>wopt</code> directly into a terra primitive (<code><a href="https://rspatial.github.io/terra/reference/app.html" class="external-link">terra::app()</a></code>, <code><a href="https://rspatial.github.io/terra/reference/focal.html" class="external-link">terra::focal()</a></code>, <code><a href="https://rspatial.github.io/terra/reference/predict.html" class="external-link">terra::predict()</a></code> — e.g. the smoothers, per-pixel statistics, <code>hsi_remove_continuum</code>, <code>hsi_tiled</code>, zarowka’s <code>hsi_apply_reduction</code>) never get this check. terra validates <code>wopt</code> names unconditionally and honours valid options even in-memory (probed 2026-07-14, terra 1.9.34: <code>names = "custom"</code> sticks at <code>filename = ""</code>), so their <code>...</code> is a live interface and adding the check would reject working calls.</li>
+<li>
 <strong><code><a href="https://cli.r-lib.org/reference/cli_abort.html" class="external-link">cli::cli_abort()</a></code> is the only permitted validation error</strong> — never <code><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop()</a></code>, never <code><a href="https://rlang.r-lib.org/reference/abort.html" class="external-link">rlang::abort()</a></code>.</li>
 </ul><div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">cli</span><span class="fu">::</span><span class="fu"><a href="https://cli.r-lib.org/reference/cli_abort.html" class="external-link">cli_abort</a></span><span class="op">(</span></span>
@@ -297,9 +303,16 @@
 <h3 id="id_34-return-values--exactly-two-shapes">3.4 Return values — exactly two shapes<a class="anchor" aria-label="anchor" href="#id_34-return-values--exactly-two-shapes"></a></h3>
 <p><strong>Shape A — compute functions (default).</strong> Computes a SpatRaster; writing is optional via <code>filename</code>. Result returned as the final bare expression — no <code><a href="https://rdrr.io/r/base/function.html" class="external-link">return()</a></code>, no <code><a href="https://rdrr.io/r/base/invisible.html" class="external-link">invisible()</a></code>:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span>  <span class="co"># Build write options</span></span>
-<span>  <span class="va">wopt_default</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>names <span class="op">=</span> <span class="va">index_name</span><span class="op">)</span></span>
+<code class="sourceCode R"><span>  <span class="co"># Validate inputs</span></span>
+<span>  <span class="fu">check_spatraster</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
+<span>  <span class="co"># ...other check_* calls...</span></span>
 <span>  <span class="va">wopt_user</span> <span class="op">&lt;-</span> <span class="fu">rlang</span><span class="fu">::</span><span class="fu"><a href="https://rlang.r-lib.org/reference/list2.html" class="external-link">list2</a></span><span class="op">(</span><span class="va">...</span><span class="op">)</span></span>
+<span>  <span class="fu">check_dots_write</span><span class="op">(</span><span class="va">wopt_user</span>, <span class="va">filename</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="co"># ...computation...</span></span>
+<span></span>
+<span>  <span class="co"># Build write options</span></span>
+<span>  <span class="va">wopt_default</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>names <span class="op">=</span> <span class="va">index_name</span><span class="op">)</span></span>
 <span>  <span class="va">wopt</span> <span class="op">&lt;-</span> <span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/list_assign.html" class="external-link">list_modify</a></span><span class="op">(</span><span class="va">wopt_default</span>, <span class="op">!</span><span class="op">!</span><span class="op">!</span><span class="va">wopt_user</span><span class="op">)</span></span>
 <span></span>
 <span>  <span class="co"># Write to file</span></span>
@@ -309,6 +322,7 @@
 <span></span>
 <span>  <span class="co"># Return result</span></span>
 <span>  <span class="va">result</span></span></code></pre></div>
+<p><code>wopt_user</code> is captured in the <strong>validation block</strong> (so <code>check_dots_write()</code> fires before any computation); the <code># Build write options</code> block keeps <code>wopt_default</code> and the merge. Functions that hand <code>filename</code>/<code>wopt</code> directly to a terra primitive skip the check entirely — see the exemption in §3.2.</p>
 <p>The <code>result &lt;-</code> reassignment in the guard is <strong>required</strong> whenever <code><a href="https://withr.r-lib.org/reference/with_tempfile.html" class="external-link">withr::local_tempdir()</a></code> manages intermediates — it re-backs the lazy SpatRaster to the permanent file before withr cleanup orphans the pointer.</p>
 <p><strong>Shape B — write-primary functions</strong> (e.g. <code>hsi_write_scaled</code>): sole purpose is encoding/writing an existing raster; return <code>invisible(x)</code> so it sits quietly in a pipeline.</p>
 <p><code><a href="https://rdrr.io/r/base/function.html" class="external-link">return()</a></code> is permitted <strong>only</strong> for early exits inside the validation block.</p>
@@ -319,7 +333,7 @@
 <ul><li>
 <code>wopt_default</code> contains at minimum <code>names</code> (layer name).</li>
 <li>
-<code>wopt_user &lt;- rlang::list2(...)</code>.</li>
+<code>wopt_user &lt;- rlang::list2(...)</code> — captured in the validation block, immediately followed by <code>check_dots_write(wopt_user, filename)</code> in guarded-write functions (§3.2).</li>
 <li>
 <code>purrr::list_modify(wopt_default, !!!wopt_user)</code> — user values win.</li>
 <li>Never specify <code>datatype</code> in <code>wopt_default</code> — terra chooses — unless a documented reason exists (e.g. SWIR float32 requirement, §7).</li>
@@ -629,6 +643,8 @@ R = numerator / denominator × (ET_white / ET_target)</code></pre>
 <div class="section level2">
 <h2 id="changelog">Changelog<a class="anchor" aria-label="anchor" href="#changelog"></a></h2>
 <ul><li>
+<strong>1.8.0 (2026-07-14)</strong> — The <code>...</code> sink fix (design Fable+Maury, probes Opus/Fable, sweep Sonnet+Fable, all 2026-07-14; record in <code>dev-notes/2026-07-14_*dots*</code> in both repos). New <code>check_dots_write()</code> helper in <code>utils-checks.R</code> and its call blessed as canonical: guarded-write Shape A functions end the validation block with <code>wopt_user &lt;- rlang::list2(...)</code> + <code>check_dots_write(wopt_user, filename)</code>, aborting when <code>...</code> is non-empty and <code>filename == ""</code> — previously such arguments (typos, removed args like <code>hsi_calc_abundance(method =)</code>) were silently discarded, which defeated zarowka’s test suite for three weeks. §3.2/§3.4/§3.5 updated; §3.4 snippet now shows <code>wopt_user</code> captured in the validation block. <strong>Exemption recorded in §3.2:</strong> functions passing <code>filename</code>/<code>wopt</code> directly into <code><a href="https://rspatial.github.io/terra/reference/app.html" class="external-link">terra::app()</a></code>/<code>focal()</code>/<code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> are excluded — terra validates <code>wopt</code> unconditionally and honours valid options in-memory (probed, terra 1.9.34), so their <code>...</code> is live and the check would break working calls. Swept: 7 HSItools + 2 zarowka functions; 8 HSItools functions exempt. Anti-pattern row added; helper inventory updated. <code>test-hsi_rcv.R</code> renamed <code>test-hsi_calc_rcv.R</code> (§3.8 mirror rule). §10 untouched.</li>
+<li>
 <strong>1.7.0 (2026-07-13)</strong> — Migrated from claude.ai skill to repo-root <code>CLAUDE.md</code> as the canonical source (decision Maury + Fable, 2026-07-13); version header and changelog now live here, and the skill becomes a mirror refreshed at milestone boundaries. New unnumbered <strong>Repo map and mechanics</strong> section merged from the Claude Code auto-generated CLAUDE.md, with two corrections: package description rewritten material/sensor/manufacturer-agnostic (the generated text had baked in core-scanning framing, violating §1) and the formatter guidance corrected to air (the generated text inferred hand-formatting from a missing config). Genuinely new captures retained from the generated file: <code>@family</code>-as-navigation, <code><a href="reference/wavelength_position.html">wavelength_position()</a></code> as the shared wavelength primitive, <code><a href="reference/hsi_coregister.html">hsi_coregister()</a></code> file-source requirement, mirai worker self-containment, <code>spectral_indices</code> column→argument mapping, fixture layout, Windows CI vignette skip, schema-version bump-together rule, and the as-built articulation of the two temp-file lifetimes (normative rule unchanged in §3.6). §0 rule 7 rewritten conditionally (executing sessions run tests and show output per change; non-executing sessions hand off patches); new rule 8 (git modifications belong to Maury; read-only inspection permitted) and rule 9 (no milestone state or session notes in this file; never edit unprompted). §9 decoupling rule renamed file/roadmap and now names this file. §10 untouched — all open questions remain open.</li>
 <li>
 <strong>1.6.0 (2026-07-11)</strong> — Post-0.5.3-release consolidation. §8 rewritten for contract v3.0: the flat HSItools sidecar (32 keys, schema 1.1.0) is the scan record; hsical is schema-less and wraps the trio; deliberate field rejections recorded. §0 gains rule 7 (execution-environment): model sessions edit source and hand off patches, Maury runs all R verification locally. §10 unchanged.</li>

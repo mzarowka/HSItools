@@ -1,6 +1,6 @@
 # HSItools Ecosystem Development Guidelines (CLAUDE.md)
 
-> **Version 1.7.0 — 2026-07-13.** This file is the **canonical source**
+> **Version 1.8.0 — 2026-07-14.** This file is the **canonical source**
 > of development conventions for the HSItools ecosystem. Claude Code
 > reads it automatically at session start; the claude.ai
 > `hsitools-development` skill is a mirror refreshed from this file at
@@ -312,8 +312,9 @@ Validate inputs at the top of exported functions with the `check_*`
 helpers in `utils-checks.R` — current inventory: `check_spatraster`,
 `check_spatvector`, `check_numeric`, `check_wavelengths`,
 `check_geom_type`, `check_one_of`, `check_has_cols`, `check_crs_null`,
-`check_list_has`, `check_data_frame`, `check_spatraster_list` — never ad
-hoc checks. They auto-detect argument name and call site via
+`check_list_has`, `check_data_frame`, `check_spatraster_list`,
+`check_dots_write` — never ad hoc checks. They auto-detect argument name
+and call site via
 [`rlang::caller_arg()`](https://rlang.r-lib.org/reference/caller_arg.html)
 / [`rlang::caller_env()`](https://rlang.r-lib.org/reference/stack.html),
 and list-input checkers report *all* offending elements in one error
@@ -343,6 +344,7 @@ call-attribution: §3.2–§3.3a.
 | [`cli::cli_abort()`](https://cli.r-lib.org/reference/cli_abort.html) inside a purrr lambda | Collect offenders first ([`purrr::map_lgl()`](https://purrr.tidyverse.org/reference/map.html)), then **one** abort after the loop listing all offending indices — lambda-frame aborts blame purrr internals and force whack-a-mole fixes |
 | [`match.arg()`](https://rdrr.io/r/base/match.arg.html) | `check_one_of()` — cli-consistent errors, same semantics |
 | `raw$schema` on deserialized/external data | Spell the full name — `raw$schema_version` or `raw[["schema_version"]]` — `$` partial matching silently returns the wrong element on raw external data |
+| `rlang::list2(...)` into `wopt` with no dots check (guarded-write functions) | `wopt_user <- rlang::list2(...)` then `check_dots_write(wopt_user, filename)` in the validation block — a silent `...` sink hides typos and removed arguments (§3.2 has the exemption for direct-to-terra functions) |
 
 Applies to all source, test, template, and example code in every
 package:
@@ -447,6 +449,23 @@ nested:
   [`match.arg()`](https://rdrr.io/r/base/match.arg.html) is not used
   anywhere in the codebase (audited 2026-07-06) — its base-R errors
   break cli consistency.
+- **Guarded-write Shape A functions end the validation block with the
+  dots check** (decided 2026-07-14, swept same day):
+  `wopt_user <- rlang::list2(...)` immediately followed by
+  `check_dots_write(wopt_user, filename)`. With no `filename`, nothing
+  in `...` can take effect, so a non-empty `...` is a misspelled or
+  removed argument and must abort *before* computation. **Exemption (do
+  not “fix”):** functions that pass `filename`/`wopt` directly into a
+  terra primitive
+  ([`terra::app()`](https://rspatial.github.io/terra/reference/app.html),
+  [`terra::focal()`](https://rspatial.github.io/terra/reference/focal.html),
+  [`terra::predict()`](https://rspatial.github.io/terra/reference/predict.html)
+  — e.g. the smoothers, per-pixel statistics, `hsi_remove_continuum`,
+  `hsi_tiled`, zarowka’s `hsi_apply_reduction`) never get this check.
+  terra validates `wopt` names unconditionally and honours valid options
+  even in-memory (probed 2026-07-14, terra 1.9.34: `names = "custom"`
+  sticks at `filename = ""`), so their `...` is a live interface and
+  adding the check would reject working calls.
 - **[`cli::cli_abort()`](https://cli.r-lib.org/reference/cli_abort.html)
   is the only permitted validation error** — never
   [`stop()`](https://rdrr.io/r/base/stop.html), never
@@ -518,9 +537,16 @@ expression — no [`return()`](https://rdrr.io/r/base/function.html), no
 
 ``` r
 
+  # Validate inputs
+  check_spatraster(x)
+  # ...other check_* calls...
+  wopt_user <- rlang::list2(...)
+  check_dots_write(wopt_user, filename)
+
+  # ...computation...
+
   # Build write options
   wopt_default <- list(names = index_name)
-  wopt_user <- rlang::list2(...)
   wopt <- purrr::list_modify(wopt_default, !!!wopt_user)
 
   # Write to file
@@ -531,6 +557,12 @@ expression — no [`return()`](https://rdrr.io/r/base/function.html), no
   # Return result
   result
 ```
+
+`wopt_user` is captured in the **validation block** (so
+`check_dots_write()` fires before any computation); the
+`# Build write options` block keeps `wopt_default` and the merge.
+Functions that hand `filename`/`wopt` directly to a terra primitive skip
+the check entirely — see the exemption in §3.2.
 
 The `result <-` reassignment in the guard is **required** whenever
 [`withr::local_tempdir()`](https://withr.r-lib.org/reference/with_tempfile.html)
@@ -550,7 +582,9 @@ Always the same two-variable merge; names are always `wopt_default` and
 `wopt_user`:
 
 - `wopt_default` contains at minimum `names` (layer name).
-- `wopt_user <- rlang::list2(...)`.
+- `wopt_user <- rlang::list2(...)` — captured in the validation block,
+  immediately followed by `check_dots_write(wopt_user, filename)` in
+  guarded-write functions (§3.2).
 - `purrr::list_modify(wopt_default, !!!wopt_user)` — user values win.
 - Never specify `datatype` in `wopt_default` — terra chooses — unless a
   documented reason exists (e.g. SWIR float32 requirement, §7).
@@ -1152,6 +1186,26 @@ Before proposing any HSItools/zarowka code, confirm:
 
 ## Changelog
 
+- **1.8.0 (2026-07-14)** — The `...` sink fix (design Fable+Maury,
+  probes Opus/Fable, sweep Sonnet+Fable, all 2026-07-14; record in
+  `dev-notes/2026-07-14_*dots*` in both repos). New `check_dots_write()`
+  helper in `utils-checks.R` and its call blessed as canonical:
+  guarded-write Shape A functions end the validation block with
+  `wopt_user <- rlang::list2(...)` +
+  `check_dots_write(wopt_user, filename)`, aborting when `...` is
+  non-empty and `filename == ""` — previously such arguments (typos,
+  removed args like `hsi_calc_abundance(method =)`) were silently
+  discarded, which defeated zarowka’s test suite for three weeks.
+  §3.2/§3.4/§3.5 updated; §3.4 snippet now shows `wopt_user` captured in
+  the validation block. **Exemption recorded in §3.2:** functions
+  passing `filename`/`wopt` directly into
+  [`terra::app()`](https://rspatial.github.io/terra/reference/app.html)/`focal()`/[`predict()`](https://rdrr.io/r/stats/predict.html)
+  are excluded — terra validates `wopt` unconditionally and honours
+  valid options in-memory (probed, terra 1.9.34), so their `...` is live
+  and the check would break working calls. Swept: 7 HSItools + 2 zarowka
+  functions; 8 HSItools functions exempt. Anti-pattern row added; helper
+  inventory updated. `test-hsi_rcv.R` renamed `test-hsi_calc_rcv.R`
+  (§3.8 mirror rule). §10 untouched.
 - **1.7.0 (2026-07-13)** — Migrated from claude.ai skill to repo-root
   `CLAUDE.md` as the canonical source (decision Maury + Fable,
   2026-07-13); version header and changelog now live here, and the skill
