@@ -230,3 +230,17 @@ test_that("hsi_calc_rabd errors with multiple absorption_band for index_type = '
     "must be length 1"
   )
 })
+
+test_that("hsi_calc_rabd errors when an unused argument is passed without filename", {
+  expect_error(
+    hsi_calc_rabd(
+      x = test_reflectance,
+      continuum_edges = c(590, 730),
+      absorption_band = 670,
+      index_type = "strict",
+      bogus_arg = 1
+    ),
+    "not used",
+    class = "hsitools_error"
+  )
+})

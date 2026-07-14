@@ -144,3 +144,14 @@ test_that("hsi_calc_rcv errors with non-SpatRaster input", {
     hsi_calc_rcv(x = "not a raster")
   )
 })
+
+test_that("hsi_calc_rcv errors when an unused argument is passed without filename", {
+  expect_error(
+    hsi_calc_rcv(
+      x = test_reflectance,
+      bogus_arg = 1
+    ),
+    "not used",
+    class = "hsitools_error"
+  )
+})

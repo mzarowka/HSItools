@@ -348,6 +348,19 @@ test_that("hsi_calc_reflectance rejects non-numeric band names", {
   )
 })
 
+test_that("hsi_calc_reflectance errors when an unused argument is passed without filename", {
+  expect_error(
+    hsi_calc_reflectance(
+      x = test_x,
+      whiteref = test_whiteref,
+      darkref = test_darkref,
+      bogus_arg = 1
+    ),
+    "not used",
+    class = "hsitools_error"
+  )
+})
+
 # Error messages ----
 # Dev/CI-only message-quality layer; pins the wording of every abort authored
 # in this function. check_* helper errors are covered by their own tests.

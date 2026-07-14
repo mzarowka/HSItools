@@ -452,3 +452,45 @@ check_spatraster_list <- function(
   # Return invisibly
   invisible(x)
 }
+
+#' Check that `...` write options are not silently discarded
+#'
+#' @param dots A list of already-evaluated `...` elements, from
+#'   `rlang::list2(...)`.
+#' @param filename Character. The calling function's `filename` argument.
+#' @param call Environment for error reporting. Auto-detected via
+#'   [rlang::caller_env()].
+#'
+#' @returns Invisible `dots` if valid, otherwise aborts.
+#' @noRd
+check_dots_write <- function(
+  dots,
+  filename,
+  call = rlang::caller_env()
+) {
+  if (filename == "" && length(dots) > 0) {
+    # Positional (unnamed) dots render as "" and collapse to nothing under
+    # {.arg {}}, silently dropping the offending name and confusing cli's
+    # pluralization. A placeholder keeps every offender visible.
+    dots_names <- names(dots)
+
+    if (is.null(dots_names)) {
+      dots_names <- rep("", length(dots))
+    }
+
+    dots_names[dots_names == ""] <- "(unnamed)"
+
+    cli::cli_abort(
+      c(
+        "Argument{?s} {.arg {dots_names}} {?was/were} not used.",
+        "i" = "{.arg ...} holds write options for {.fn terra::writeRaster}; without {.arg filename} they have no effect.",
+        "i" = "Check for misspelled or removed argument names."
+      ),
+      class = "hsitools_error",
+      call = call
+    )
+  }
+
+  # Return invisibly
+  invisible(dots)
+}

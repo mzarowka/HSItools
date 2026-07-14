@@ -13,3 +13,4 @@
 ^vignettes/*_files$
 ^[.]?air[.]toml$
 ^\.vscode$
+^dev-notes$

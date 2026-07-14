@@ -187,3 +187,15 @@ test_that("hsi_calc_stretch errors when custom type has more than 3 wavelengths"
     class = "hsitools_error"
   )
 })
+
+test_that("hsi_calc_stretch errors when an unused argument is passed without filename", {
+  expect_error(
+    hsi_calc_stretch(
+      x = test_reflectance,
+      type = c(700, 620, 540),
+      bogus_arg = 1
+    ),
+    "not used",
+    class = "hsitools_error"
+  )
+})

@@ -280,6 +280,7 @@ hsi_calc_reflectance <- function(
 
   # Build write options
   wopt_user <- rlang::list2(...)
+  check_dots_write(wopt_user, filename)
 
   wopt_default <- list(names = names(x))
 

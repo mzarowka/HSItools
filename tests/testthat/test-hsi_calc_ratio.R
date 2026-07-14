@@ -188,3 +188,15 @@ test_that("hsi_calc_ratio errors when bands is length 1", {
     "must be length 2"
   )
 })
+
+test_that("hsi_calc_ratio errors when an unused argument is passed without filename", {
+  expect_error(
+    hsi_calc_ratio(
+      x = test_reflectance,
+      bands = c(570, 690),
+      bogus_arg = 1
+    ),
+    "not used",
+    class = "hsitools_error"
+  )
+})

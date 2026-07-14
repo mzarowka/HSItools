@@ -73,6 +73,7 @@ hsi_calc_rabd <- function(
 
   # Store user input in a spliceable list
   wopt_user <- rlang::list2(...)
+  check_dots_write(wopt_user, filename)
 
   # Named list with write options
   wopt_default <- list(
