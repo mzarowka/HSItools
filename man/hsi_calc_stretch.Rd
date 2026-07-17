@@ -74,6 +74,7 @@ Other HSI Transformations:
 \code{\link[=hsi_calc_rmedian]{hsi_calc_rmedian()}},
 \code{\link[=hsi_calc_rsd]{hsi_calc_rsd()}},
 \code{\link[=hsi_destripe]{hsi_destripe()}},
+\code{\link[=hsi_mask]{hsi_mask()}},
 \code{\link[=hsi_remove_continuum]{hsi_remove_continuum()}},
 \code{\link[=hsi_smooth_median]{hsi_smooth_median()}},
 \code{\link[=hsi_smooth_savgol]{hsi_smooth_savgol()}},
