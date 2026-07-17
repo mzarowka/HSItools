@@ -127,6 +127,13 @@ test_that("hsi_calc_rmedian errors when file exists and overwrite = FALSE", {
 
 # ── Input validation ─────────────────────────────────────────────────────────
 
+test_that("hsi_calc_rmedian validates filename and overwrite", {
+  expect_write_tail_validated(
+    hsi_calc_rmedian,
+    list(x = test_reflectance)
+  )
+})
+
 test_that("hsi_calc_rmedian errors with non-SpatRaster input", {
   expect_error(
     hsi_calc_rmedian(x = "not a raster")

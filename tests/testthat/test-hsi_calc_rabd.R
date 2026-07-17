@@ -183,6 +183,18 @@ test_that("hsi_calc_rabd errors when file exists and overwrite = FALSE", {
 
 # ── Input validation ─────────────────────────────────────────────────────────
 
+test_that("hsi_calc_rabd validates filename and overwrite", {
+  expect_write_tail_validated(
+    hsi_calc_rabd,
+    list(
+      x = test_reflectance,
+      continuum_edges = c(590, 730),
+      absorption_band = 670,
+      index_type = "strict"
+    )
+  )
+})
+
 test_that("hsi_calc_rabd errors with non-SpatRaster input", {
   expect_error(
     hsi_calc_rabd(

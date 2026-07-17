@@ -65,6 +65,15 @@ test_that("hsi_write_metadata errors on non-hsi_metadata input", {
   )
 })
 
+test_that("hsi_write_metadata validates filename and overwrite", {
+  temp_file <- withr::local_tempfile(fileext = ".yaml")
+
+  expect_write_tail_validated(
+    hsi_write_metadata,
+    list(x = valid_metadata, filename = temp_file)
+  )
+})
+
 test_that("hsi_write_metadata refuses to write an invalidated object", {
   temp_file <- withr::local_tempfile(fileext = ".yaml")
 

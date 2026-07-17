@@ -51,6 +51,10 @@ hsi_calc_rcv <- function(
   # Validate input
   check_spatraster(x)
 
+  rlang::check_string(filename)
+
+  rlang::check_bool(overwrite)
+
   # Store user input in a spliceable list
   wopt_user <- rlang::list2(...)
   check_dots_write(wopt_user, filename)

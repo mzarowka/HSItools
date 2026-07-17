@@ -117,6 +117,13 @@ test_that("hsi_remove_continuum errors when file exists and overwrite = FALSE", 
 
 # ── Input validation ─────────────────────────────────────────────────────────
 
+test_that("hsi_remove_continuum validates filename and overwrite", {
+  expect_write_tail_validated(
+    hsi_remove_continuum,
+    list(x = test_savgol)
+  )
+})
+
 test_that("hsi_remove_continuum errors with non-SpatRaster input", {
   expect_error(
     hsi_remove_continuum(x = "not a raster")

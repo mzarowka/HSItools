@@ -148,6 +148,13 @@ test_that("hsi_coregister errors when file exists and overwrite = FALSE", {
 
 # ── Input validation ──────────────────────────────────────────────────────────
 
+test_that("hsi_coregister validates filename and overwrite", {
+  expect_write_tail_validated(
+    hsi_coregister,
+    list(x = test_source, y = test_target, gcp = test_gcp)
+  )
+})
+
 test_that("hsi_coregister errors with non-SpatRaster x", {
   expect_error(hsi_coregister("not a raster", test_target, test_gcp))
 })

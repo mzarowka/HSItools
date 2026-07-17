@@ -149,6 +149,10 @@ hsi_subset <- function(
     )
   }
 
+  rlang::check_string(filename)
+
+  rlang::check_bool(overwrite)
+
   # Find and subset
   result <- wavelength_position(x, wavelength) |>
     wavelength_sub(x = x, wavelength_tbl = _)
@@ -227,6 +231,10 @@ hsi_subset_range <- function(
       class = "hsitools_error"
     )
   }
+
+  rlang::check_string(filename)
+
+  rlang::check_bool(overwrite)
 
   # Subset
   result <- terra::subset(x, indices)

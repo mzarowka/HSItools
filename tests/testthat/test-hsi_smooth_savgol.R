@@ -153,6 +153,13 @@ test_that("hsi_smooth_savgol errors when file exists and overwrite = FALSE", {
 
 # ── Input validation ─────────────────────────────────────────────────────────
 
+test_that("hsi_smooth_savgol validates filename and overwrite", {
+  expect_write_tail_validated(
+    hsi_smooth_savgol,
+    list(x = test_reflectance)
+  )
+})
+
 test_that("hsi_smooth_savgol errors with non-SpatRaster input", {
   expect_error(
     hsi_smooth_savgol(x = "not a raster"),

@@ -133,6 +133,13 @@ test_that("hsi_calc_remp errors when file exists and overwrite = FALSE", {
 
 # ── Input validation ─────────────────────────────────────────────────────────
 
+test_that("hsi_calc_remp validates filename and overwrite", {
+  expect_write_tail_validated(
+    hsi_calc_remp,
+    list(x = test_reflectance, search_range = c(660, 680))
+  )
+})
+
 test_that("hsi_calc_remp errors with non-SpatRaster input", {
   expect_error(
     hsi_calc_remp(x = "not a raster")

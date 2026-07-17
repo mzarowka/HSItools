@@ -142,6 +142,13 @@ test_that("hsi_smooth_median errors when file exists and overwrite = FALSE", {
 
 # ── Input validation ─────────────────────────────────────────────────────────
 
+test_that("hsi_smooth_median validates filename and overwrite", {
+  expect_write_tail_validated(
+    hsi_smooth_median,
+    list(x = test_reflectance)
+  )
+})
+
 test_that("hsi_smooth_median errors with non-SpatRaster input", {
   expect_error(
     hsi_smooth_median(x = "not a raster")

@@ -158,6 +158,13 @@ test_that("hsi_calc_stretch errors when file exists and overwrite = FALSE", {
 
 # ── Input validation ─────────────────────────────────────────────────────────
 
+test_that("hsi_calc_stretch validates filename and overwrite", {
+  expect_write_tail_validated(
+    hsi_calc_stretch,
+    list(x = test_reflectance, type = custom_bands)
+  )
+})
+
 test_that("hsi_calc_stretch errors with non-SpatRaster input", {
   expect_error(
     hsi_calc_stretch(x = "not a raster", type = custom_bands)

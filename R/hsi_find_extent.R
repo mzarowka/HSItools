@@ -71,6 +71,10 @@ hsi_find_extent <- function(
 
   check_numeric(width, len = 1, positive = TRUE)
 
+  rlang::check_string(filename)
+
+  rlang::check_bool(overwrite)
+
   # Extract coordinates from reference points
   coords <- terra::crds(points)
 

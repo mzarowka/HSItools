@@ -252,6 +252,13 @@ test_that("hsi_calc_reflectance errors when the file exists and overwrite is FAL
 
 # Input validation ----
 
+test_that("hsi_calc_reflectance validates filename and overwrite", {
+  expect_write_tail_validated(
+    hsi_calc_reflectance,
+    list(x = test_x, whiteref = test_whiteref, darkref = test_darkref)
+  )
+})
+
 test_that("hsi_calc_reflectance rejects non-SpatRaster inputs", {
   expect_error(
     hsi_calc_reflectance(

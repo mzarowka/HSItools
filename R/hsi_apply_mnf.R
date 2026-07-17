@@ -97,6 +97,10 @@ hsi_apply_mnf <- function(
     )
   }
 
+  rlang::check_string(filename)
+
+  rlang::check_bool(overwrite)
+
   # Retained indices
   # Keeping the last n components with the lowest eigenvalues
   # Rather than first like expected in PCA

@@ -131,6 +131,13 @@ test_that("hsi_subset errors when file exists and overwrite = FALSE", {
 
 # ── Input validation ─────────────────────────────────────────────────────────
 
+test_that("hsi_subset validates filename and overwrite", {
+  expect_write_tail_validated(
+    hsi_subset,
+    list(x = test_reflectance, wavelength = 670)
+  )
+})
+
 test_that("hsi_subset errors with non-SpatRaster input", {
   expect_error(
     hsi_subset(x = "not a raster", wavelength = 670)

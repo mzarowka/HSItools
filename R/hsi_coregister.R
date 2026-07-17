@@ -97,6 +97,10 @@ hsi_coregister <- function(
     )
   }
 
+  rlang::check_string(filename)
+
+  rlang::check_bool(overwrite)
+
   # Drop CRS from both rasters - work in pixel space
   x <- hsi_drop_crs(x)
   y <- hsi_drop_crs(y)

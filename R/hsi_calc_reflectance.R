@@ -278,6 +278,10 @@ hsi_calc_reflectance <- function(
 
   f_tint <- tint[1] / tint[2]
 
+  rlang::check_string(filename)
+
+  rlang::check_bool(overwrite)
+
   # Build write options
   wopt_user <- rlang::list2(...)
   check_dots_write(wopt_user, filename)

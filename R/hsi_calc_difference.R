@@ -44,6 +44,10 @@ hsi_calc_difference <- function(
   # Validate bands
   check_numeric(bands, len = 2)
 
+  rlang::check_string(filename)
+
+  rlang::check_bool(overwrite)
+
   # Store user input in a spliceable list
   wopt_user <- rlang::list2(...)
   check_dots_write(wopt_user, filename)

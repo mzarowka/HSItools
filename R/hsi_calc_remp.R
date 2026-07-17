@@ -72,6 +72,10 @@ hsi_calc_remp <- function(
   # Validate input
   check_numeric(search_range, len = 2)
 
+  rlang::check_string(filename)
+
+  rlang::check_bool(overwrite)
+
   # Store user input in a spliceable list
   wopt_user <- rlang::list2(...)
 

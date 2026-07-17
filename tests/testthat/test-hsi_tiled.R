@@ -155,6 +155,19 @@ test_that("hsi_tiled errors when file exists and overwrite = FALSE", {
 
 # ── Input validation ─────────────────────────────────────────────────────────
 
+test_that("hsi_tiled validates filename and overwrite", {
+  skip_if_tiled_unavailable()
+
+  expect_write_tail_validated(
+    hsi_tiled,
+    list(
+      fun = \(tile) HSItools::hsi_calc_rmean(tile),
+      x = test_reflectance,
+      n_tiles = 4
+    )
+  )
+})
+
 test_that("hsi_tiled errors with non-SpatRaster input", {
   skip_if_tiled_unavailable()
 

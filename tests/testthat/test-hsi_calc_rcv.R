@@ -139,6 +139,13 @@ test_that("hsi_calc_rcv errors when file exists and overwrite = FALSE", {
 
 # ── Input validation ─────────────────────────────────────────────────────────
 
+test_that("hsi_calc_rcv validates filename and overwrite", {
+  expect_write_tail_validated(
+    hsi_calc_rcv,
+    list(x = test_reflectance)
+  )
+})
+
 test_that("hsi_calc_rcv errors with non-SpatRaster input", {
   expect_error(
     hsi_calc_rcv(x = "not a raster")

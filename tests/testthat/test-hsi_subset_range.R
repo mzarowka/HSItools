@@ -148,6 +148,13 @@ test_that("hsi_subset_range errors when file exists and overwrite = FALSE", {
 
 # ── Input validation ─────────────────────────────────────────────────────────
 
+test_that("hsi_subset_range validates filename and overwrite", {
+  expect_write_tail_validated(
+    hsi_subset_range,
+    list(x = test_reflectance, from = 600, to = 700)
+  )
+})
+
 test_that("hsi_subset_range errors with non-SpatRaster input", {
   expect_error(
     hsi_subset_range(x = "not a raster", from = 600, to = 700)

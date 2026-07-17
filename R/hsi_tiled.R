@@ -85,6 +85,10 @@ hsi_tiled <- function(
     )
   }
 
+  rlang::check_string(filename)
+
+  rlang::check_bool(overwrite)
+
   # Determine merge target path.
   # Exception to the withr rule: the merge output IS the backing store of the
   # returned SpatRaster. withr::local_tempdir() would delete it on function

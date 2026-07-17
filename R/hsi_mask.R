@@ -83,12 +83,6 @@ hsi_mask <- function(
 
   check_spatraster(mask)
 
-  rlang::check_bool(inverse)
-
-  rlang::check_string(filename)
-
-  rlang::check_bool(overwrite)
-
   # Check number of layers
   if (terra::nlyr(mask) != 1) {
     cli::cli_abort(
@@ -96,6 +90,12 @@ hsi_mask <- function(
       class = "hsitools_error"
     )
   }
+
+  rlang::check_bool(inverse)
+
+  rlang::check_string(filename)
+
+  rlang::check_bool(overwrite)
 
   # Store user input in a spliceable list
   wopt_user <- rlang::list2(...)

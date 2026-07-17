@@ -37,6 +37,10 @@ hsi_calc_rmean <- function(
   # Validate input
   check_spatraster(x)
 
+  rlang::check_string(filename)
+
+  rlang::check_bool(overwrite)
+
   # Store user input in a spliceable list
   wopt_user <- rlang::list2(...)
 

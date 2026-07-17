@@ -87,6 +87,10 @@ hsi_bind_rows <- function(
     )
   }
 
+  rlang::check_string(filename)
+
+  rlang::check_bool(overwrite)
+
   # Compute geometry for each element
   geom <- tibble::tibble(
     idx = seq_along(x),

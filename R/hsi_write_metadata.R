@@ -24,6 +24,10 @@ hsi_write_metadata <- function(x, filename, overwrite = FALSE) {
   }
   validate_hsi_metadata(x)
 
+  rlang::check_string(filename)
+
+  rlang::check_bool(overwrite)
+
   # Write to file
   if (file.exists(filename) && !overwrite) {
     cli::cli_abort(

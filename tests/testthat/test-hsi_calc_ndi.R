@@ -188,6 +188,13 @@ test_that("hsi_calc_ndi errors when bands is length 1", {
   )
 })
 
+test_that("hsi_calc_ndi validates filename and overwrite", {
+  expect_write_tail_validated(
+    hsi_calc_ndi,
+    list(x = test_reflectance, bands = c(570, 690))
+  )
+})
+
 test_that("hsi_calc_ndi errors when an unused argument is passed without filename", {
   expect_error(
     hsi_calc_ndi(
