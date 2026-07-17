@@ -106,6 +106,8 @@ and previously by the Polish National Agency for Academic Exchange
   : Extract averaged spectrum from hyperspectral raster
 - [`hsi_find_extent()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_find_extent.md)
   : Find a fixed-width extent from reference points
+- [`hsi_mask()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_mask.md)
+  : Mask hyperspectral raster
 - [`hsi_match_gcp()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_match_gcp.md)
   : Match ground control points between two SpatVectors
 - [`hsi_pixels_to_units()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_pixels_to_units.md)
