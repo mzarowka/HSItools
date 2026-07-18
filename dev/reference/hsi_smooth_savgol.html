@@ -119,9 +119,10 @@ smoothed spectrum respectively; higher-order derivatives are also supported
 by increasing <code>m</code>. Note that edge bands equal to roughly half the window
 size are unreliable for derivatives — always compute on the full spectrum
 before subsetting to a wavelength range of interest.</p>
-<p>Pixels with <code>NA</code> values will cause the function to fail. For full-raster
-processing, <code><a href="hsi_tiled.html">hsi_tiled()</a></code> can distribute the workload across parallel
-workers. Requires the
+<p>Pixels with any <code>NA</code> value in their spectrum return <code>NA</code> in every band
+rather than failing — masked and background pixels pass through cleanly.
+For full-raster processing, <code><a href="hsi_tiled.html">hsi_tiled()</a></code> can distribute the workload
+across parallel workers. Requires the
 <a href="https://CRAN.R-project.org/package=gsignal" class="external-link"><code>gsignal</code></a> package.</p>
     </div>
     <div class="section level2">

@@ -78,8 +78,9 @@ supported by increasing `m`. Note that edge bands equal to roughly half
 the window size are unreliable for derivatives — always compute on the
 full spectrum before subsetting to a wavelength range of interest.
 
-Pixels with `NA` values will cause the function to fail. For full-raster
-processing,
+Pixels with any `NA` value in their spectrum return `NA` in every band
+rather than failing — masked and background pixels pass through cleanly.
+For full-raster processing,
 [`hsi_tiled()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_tiled.md)
 can distribute the workload across parallel workers. Requires the
 [`gsignal`](https://CRAN.R-project.org/package=gsignal) package.
