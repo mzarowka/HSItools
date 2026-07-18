@@ -1,6 +1,6 @@
 # HSItools Ecosystem Development Guidelines (CLAUDE.md)
 
-> **Version 1.8.1 — 2026-07-18.** This file is the **canonical source**
+> **Version 1.8.2 — 2026-07-18.** This file is the **canonical source**
 > of development conventions for the HSItools ecosystem. Claude Code
 > reads it automatically at session start; the claude.ai
 > `hsitools-development` skill is a mirror refreshed from this file at
@@ -1118,7 +1118,12 @@ reader of its own. Rules:
   a version-number milestone into this file; never treat a handoff as a
   source of durable convention. Handoffs execute decisions already made
   — items a handoff marks settled stay settled; items marked ⏳ belong
-  to Maury.
+  to Maury. As of 2026-07-18 all dated documents live in the **private
+  `hsi_development` repo** (one folder per package: `hsitools/`,
+  `zarowka/`, `hsical/`), never inside the package repos; the
+  `dev-notes/` `.gitignore` entries in the package repos remain as a
+  safety net. Changelog citations of `dev-notes/...` paths predate the
+  move and now resolve under `hsi_development/hsitools/`.
 
 ------------------------------------------------------------------------
 
@@ -1192,6 +1197,18 @@ Before proposing any HSItools/zarowka code, confirm:
 
 ## Changelog
 
+- **1.8.2 (2026-07-18)** — Dev-notes centralized into the **private
+  `hsi_development` repo** (decision Maury + Fable, 2026-07-18), one
+  folder per package (`hsitools/`, `zarowka/`, `hsical/`), after the
+  day’s accidental push of `dev-notes/` to the public HSItools repo
+  (commit `847ae9a`, reverted in `87fb297`). §9 file/roadmap decoupling
+  rule updated accordingly: dated documents never live inside the
+  package repos; their `dev-notes/` `.gitignore` entries remain as a
+  safety net; pre-move changelog citations of `dev-notes/...` paths
+  resolve under `hsi_development/hsitools/`. Companion corrections
+  applied to zarowka’s and hsical’s CLAUDE.md (scratchpad wording,
+  interface-contract location — no absolute filesystem paths anywhere by
+  policy). No convention content changed otherwise; §10 untouched.
 - **1.8.1 (2026-07-18)** — §7 gains the masking-before-MNF safety note,
   closing D2 of the hsi_mask close-out (source + ground-truth probes by
   Opus, design Fable+Maury; evidence in
