@@ -88,15 +88,33 @@ hsi_calc_mnf <- function(x, trim = 0L, ...) {
     )
   }
 
-  # Subset conditionally
+  # Drop trimmed bands before materializing
   if (trim != 0L) {
-    result <- x |>
-      terra::subset((trim + 1):(terra::nlyr(x) - trim)) |>
-      (\(x) spacetime::mnf(terra::as.matrix(x), ...))()
-  } else {
-    # Subset and calculate minimum noise fraction
-    result <- spacetime::mnf(terra::as.matrix(x), ...)
+    x <- terra::subset(x, (trim + 1):(terra::nlyr(x) - trim))
   }
+
+  # Materialize once; the guard below and spacetime::mnf() share this matrix
+  mat <- terra::as.matrix(x)
+
+  # Masked or cropped input can clear the cell count check above while holding
+  # too few valid pixels to estimate a non-singular covariance. That count is
+  # only knowable after the read, so the guard sits here rather than with the
+  # other input checks.
+  n_valid <- sum(stats::complete.cases(mat))
+
+  if (n_valid <= lyrs) {
+    cli::cli_abort(
+      c(
+        "There are not enough valid pixels in {.arg x}.",
+        "i" = "{.arg x} has {.val {n_valid}} pixel{?s} without {.val {NA}} values, which is <= {.val {lyrs}} bands.",
+        "i" = "Masked or cropped input? Check mask coverage before computing MNF."
+      ),
+      class = "hsitools_error"
+    )
+  }
+
+  # Calculate minimum noise fraction
+  result <- spacetime::mnf(mat, ...)
 
   # Return result
   result

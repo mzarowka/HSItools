@@ -93,6 +93,21 @@ test_that("hsi_calc_mnf errors when trim is not length 1", {
   expect_error(hsi_calc_mnf(x = test_8band, trim = c(2L, 3L)))
 })
 
+test_that("hsi_calc_mnf errors when valid pixels are fewer than bands", {
+  # A masked raster passes the cell count check (81 cells > 8 bands) while
+  # holding only 5 pixels that carry data.
+  sparse_values <- terra::values(test_8band)
+  sparse_values[6:terra::ncell(test_8band), ] <- NA
+
+  sparse <- terra::setValues(test_8band, sparse_values)
+
+  expect_error(
+    hsi_calc_mnf(x = sparse),
+    "not enough valid pixels",
+    class = "hsitools_error"
+  )
+})
+
 # ── Trim behaviour ────────────────────────────────────────────────────────────
 
 test_that("hsi_calc_mnf with trim reduces output dimensions accordingly", {
