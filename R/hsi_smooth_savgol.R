@@ -33,9 +33,10 @@
 #' size are unreliable for derivatives — always compute on the full spectrum
 #' before subsetting to a wavelength range of interest.
 #'
-#' Pixels with `NA` values will cause the function to fail. For full-raster
-#' processing, [`hsi_tiled()`] can distribute the workload across parallel
-#' workers. Requires the
+#' Pixels with any `NA` value in their spectrum return `NA` in every band
+#' rather than failing — masked and background pixels pass through cleanly.
+#' For full-raster processing, [`hsi_tiled()`] can distribute the workload
+#' across parallel workers. Requires the
 #' [`gsignal`](https://CRAN.R-project.org/package=gsignal) package.
 #'
 #' @examples

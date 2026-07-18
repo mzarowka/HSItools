@@ -55,9 +55,10 @@ by increasing \code{m}. Note that edge bands equal to roughly half the window
 size are unreliable for derivatives — always compute on the full spectrum
 before subsetting to a wavelength range of interest.
 
-Pixels with \code{NA} values will cause the function to fail. For full-raster
-processing, \code{\link[=hsi_tiled]{hsi_tiled()}} can distribute the workload across parallel
-workers. Requires the
+Pixels with any \code{NA} value in their spectrum return \code{NA} in every band
+rather than failing — masked and background pixels pass through cleanly.
+For full-raster processing, \code{\link[=hsi_tiled]{hsi_tiled()}} can distribute the workload
+across parallel workers. Requires the
 \href{https://CRAN.R-project.org/package=gsignal}{\code{gsignal}} package.
 }
 \examples{
