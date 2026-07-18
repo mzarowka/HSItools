@@ -1,6 +1,6 @@
 # HSItools Ecosystem Development Guidelines (CLAUDE.md)
 
-> **Version 1.8.0 — 2026-07-14.** This file is the **canonical source**
+> **Version 1.8.1 — 2026-07-18.** This file is the **canonical source**
 > of development conventions for the HSItools ecosystem. Claude Code
 > reads it automatically at session start; the claude.ai
 > `hsitools-development` skill is a mirror refreshed from this file at
@@ -1007,6 +1007,12 @@ minimal).
   multi-scene raster. Pooled
   [`stats::prcomp`](https://rdrr.io/r/stats/prcomp.html) is the
   reduction front-end.
+- **Masking before MNF is safe** (probed 2026-07-18):
+  [`spacetime::mnf`](https://rdrr.io/pkg/spacetime/man/mnf.html)
+  differences neighbours *before* dropping NA pairs, so mask holes
+  shrink the noise-estimate sample without biasing it. Caveat: dilating
+  crack masks by 1–2 px to exclude smeared edge pixels is sensible
+  practice, but is domain judgment, not a probe result.
 - **Cumulative explained variance undercounts endmembers** — it buries
   low-abundance, spectrally distinct phases. Use
   over-specify-then-prune-on-SAM.
@@ -1186,6 +1192,14 @@ Before proposing any HSItools/zarowka code, confirm:
 
 ## Changelog
 
+- **1.8.1 (2026-07-18)** — §7 gains the masking-before-MNF safety note,
+  closing D2 of the hsi_mask close-out (source + ground-truth probes by
+  Opus, design Fable+Maury; evidence in
+  `dev-notes/2026-07-18_handoff-mask-closeout-opus.md` and
+  `..._handoff-d2-mnf-mask-probe-opus.md`). Seam-crossing pairs (the
+  existing PCA-over-MNF bullet) remain toxic; mask holes are benign —
+  the two cases are mechanically different (valid-valid poisoned pairs
+  vs. dropped NA pairs). No other sections touched.
 - **1.8.0 (2026-07-14)** — The `...` sink fix (design Fable+Maury,
   probes Opus/Fable, sweep Sonnet+Fable, all 2026-07-14; record in
   `dev-notes/2026-07-14_*dots*` in both repos). New `check_dots_write()`
