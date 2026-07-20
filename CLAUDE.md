@@ -132,7 +132,7 @@ Core packages (see DESCRIPTION for complete list):
 - `terra` - Raster data handling and spatial operations (primary raster backend)
 - `shiny` + `shinyFiles` + `DT` + `shinycssloaders` - Interactive web application framework
 - `ggplot2` + `tidyterra` - Plotting and visualization
-- `signal` + `prospectr` + `smoother` - Signal processing and spectral smoothing
+- `signal` + `prospectr` - Signal processing and spectral smoothing
 - `sf` - Spatial data handling for ROIs
 - `dplyr` + `tidyr` + `purrr` + `tibble` - Data manipulation (tidyverse)
 - `magick` - Image processing for dashboard creation

@@ -245,7 +245,7 @@ plotSpectralDashboard <- function(core,
         index = names(ind[[i]])) |>
       dplyr::mutate(depth = depths/10) |>
       dplyr::select(depth,!!names(ind[[i]])) |>
-      dplyr::mutate(dplyr::across(-depth, smoother::smth,window = smooth.win,.names = "smooth{.col}"))
+      dplyr::mutate(dplyr::across(-depth,smth_light,window = smooth.win,.names = "smooth{.col}"))
 
     if(i == 1){
       spectralIndices <- depth_index
@@ -316,5 +316,17 @@ plotSpectralDashboard <- function(core,
 
 }
 
+smth_light <- function(x, window, method = "gaussian", sd = 1) {
+  method <- match.arg(method)
 
+  if (method == "sma") {
+    weights <- rep(1 / window, window)
+  } else if (method == "gaussian") {
+    ax <- seq(-((window - 1) / 2), (window - 1) / 2)
+    weights <- exp(-ax^2 / (2 * sd^2))
+    weights <- weights / sum(weights)
+  }
+
+ return(as.vector(stats::filter(x, weights, sides = 2)))
+}
 

@@ -204,7 +204,8 @@ get_reflectance <- function(
             filename = filename,
             wopt = list(
               steps = terra::nlyr(raster) * terra::ncell(raster),
-              overwrite = TRUE
+              overwrite = TRUE,
+              gdal = c("BIGTIFF=YES")
             )
           )
         })
@@ -357,6 +358,10 @@ standard_workflow <- function(core,
 
   #find the normalized reflectance file we need
   refl_file <- list.files(file.path(core$directory,"products"),pattern = "^REFLECTANCE.*[0-9]\\.*tif$",full.names = TRUE)
+
+  if(length(refl_file) == 0){
+    stop("Failed to produce reflectance file") #maybe we should check to make sure that it's the right number?
+  }
 
   #load that back in.
   refl <- terra::rast(refl_file[length(refl_file)])

@@ -53,7 +53,8 @@ raster_crop <- function(raster, type, dir = NULL, roi) {
       roi,
       filename = filename,
       overwrite = TRUE,
-      steps = terra::nlyr(raster) * terra::ncell(raster)
+      steps = terra::nlyr(raster) * terra::ncell(raster),
+      gdal = c("BIGTIFF=YES")
     )
 
     # If cropping reference SpatRaster use only xmin and xmax from large ROI
@@ -89,7 +90,8 @@ raster_crop <- function(raster, type, dir = NULL, roi) {
       ),
       filename = filename,
       overwrite = TRUE,
-      steps = terra::nlyr(raster) * terra::ncell(raster)
+      steps = terra::nlyr(raster) * terra::ncell(raster),
+      gdal = c("BIGTIFF=YES")
     )
 
     # Dark reference SpatRaster
@@ -124,7 +126,8 @@ raster_crop <- function(raster, type, dir = NULL, roi) {
       ),
       filename = filename,
       overwrite = TRUE,
-      steps = terra::nlyr(raster) * terra::ncell(raster)
+      steps = terra::nlyr(raster) * terra::ncell(raster),
+      gdal = c("BIGTIFF=YES")
     )
   }
 
@@ -267,6 +270,9 @@ normalization <- function(
   # Normalize
   raster <- (numerator / denominator) * f_tint
 
+  # raster[raster > 1] <- 1
+  # raster[raster < 0] <- 0
+
   # Correct with tint
   # raster <- raster * f_tint
 
@@ -303,7 +309,10 @@ create_normalized_raster <- function(
   params <- rlang::list2(...)
 
   # Named list with write options
-  wopts <- list(steps = terra::nlyr(capture) * terra::ncell(capture))
+  wopts <- list(
+    steps = terra::nlyr(capture) * terra::ncell(capture),
+    gdal = c("BIGTIFF=YES")
+  )
 
   # Create terra spatial dataset combining SpatRasters
   # Create list

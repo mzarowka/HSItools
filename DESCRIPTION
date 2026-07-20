@@ -13,7 +13,7 @@ Description: A toolbox to process raw hyperspectral core scanning imaging (HSI) 
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Suggests: 
     testthat (>= 3.0.0),
     patchwork,
@@ -47,7 +47,6 @@ Imports:
     prospectr,
     raster,
     magick,
-    smoother,
     egg
 Depends: 
     R (>= 4.1.0)

@@ -19,6 +19,7 @@ plotSpectralDashboard(
   page.length.multiplier = 3,
   y.tick.interval = 5,
   page.units = "cm",
+  roi.box = TRUE,
   tol = 1,
   output.file.path = NA,
   output.dpi = 600
