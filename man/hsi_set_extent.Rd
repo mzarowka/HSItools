@@ -10,11 +10,17 @@ hsi_set_extent(raster, reference, um_per_pixel, origin = 0, units = "cm")
 \item{raster}{A \code{\link[terra:SpatRaster-class]{SpatRaster}} with hyperspectral data.}
 
 \item{reference}{A \code{\link[terra:SpatVector-class]{SpatVector}} with a single point
-in pixel space that marks the physical origin anchor on the vertical axis.}
+marking the physical origin anchor on the vertical axis. Its y value is a
+spatial coordinate in the raster's own frame, increasing upward, as produced
+by digitising over the raster or by \code{\link[terra:xyFromCell]{terra::xyFromCell()}}..
+It is converted internally to a fractional row position, so sub-pixel
+anchors are preserved and a point falling outside \code{raster} is extrapolated
+with a warning.}
 
 \item{um_per_pixel}{Numeric. Physical size of one pixel in µm.}
 
-\item{origin}{Numeric. Physical position assigned to \code{reference} in µm.
+\item{origin}{Numeric. Physical position assigned to \code{reference}, in µm
+regardless of \code{units}. Converted to \code{units} alongside \code{um_per_pixel}.
 Default \code{0}.}
 
 \item{units}{Character. Output units for the calibrated raster extent.
@@ -33,9 +39,10 @@ extent so that downstream plotting and profile extraction work in physical
 units.
 
 The calibration is linear: the raster grid is converted from pixels to
-physical units using the supplied micrometers-per-pixel ratio. The
-horizontal axis starts at the first cell centre, and the vertical axis is
-anchored to \code{reference} at \code{origin}.
+physical units using the supplied micrometers-per-pixel ratio. The extent is
+expressed in cell edges, so the calibrated raster has a resolution of exactly
+\code{um_per_pixel} on both axes. The horizontal axis starts at zero, and the
+vertical axis is anchored so that \code{reference} sits at \code{origin}.
 
 Importantly, at this stage, calibration metag does not carry forvard into
 analysis products. Calibrate immediate products, where real world units are necessary.
@@ -44,8 +51,10 @@ analysis products. Calibrate immediate products, where real world units are nece
 \dontrun{
 x <- terra::rast("REFLECTANCE_testdata.tif")
 
-# Anchor point in pixel space, e.g. the core top in the first column.
-reference <- terra::vect(cbind(1, terra::nrow(x)), type = "points")
+# Anchor on the vertical axis, e.g. the core top. The y value is a spatial
+# coordinate increasing upward, so the centre of the top row sits at
+# `terra::nrow(x) - 0.5`.
+reference <- terra::vect(cbind(0.5, terra::nrow(x) - 0.5), type = "points")
 
 # 60 µm per pixel, supplied directly.
 um <- hsi_calibration_direct(60)
