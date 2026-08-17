@@ -1,19 +1,21 @@
-# Calculate hyperspectral reflectance
+# Calibrate a three-band preview composite
 
-Convert raw hyperspectral imaging data (digital numbers) to calibrated
-reflectance values using white and dark reference measurements. This is
-the essential first step in hyperspectral data processing.
+Calibrate only the three bands needed for a false-colour composite,
+instead of converting an entire cube to reflectance and discarding all
+but three bands afterwards. Intended for rapid visual inspection and
+markup.
 
 ## Usage
 
 ``` r
-hsi_calc_reflectance(
+hsi_calc_preview(
   x,
   whiteref,
   darkref,
   darkspec = NULL,
   tint = c(1, 1),
-  in_memory = FALSE,
+  type,
+  tol = 25,
   filename = "",
   overwrite = FALSE,
   ...
@@ -57,10 +59,14 @@ hsi_calc_reflectance(
   specimen capture, in that order. Default `c(1, 1)` assumes equal
   integration times.
 
-- in_memory:
+- type:
 
-  Logical. Process entirely in RAM. Default `FALSE`. Set `TRUE` only
-  when data fits comfortably in available memory.
+  Character or numeric. A predefined band combination (`"RGB"`, `"CIR"`,
+  `"NIR"`, `"SWIR"`) or a numeric vector of exactly 3 wavelengths in nm.
+
+- tol:
+
+  Numeric. Wavelength tolerance for band matching in nm. Default `25`.
 
 - filename:
 
@@ -79,59 +85,51 @@ hsi_calc_reflectance(
 
 A
 [`SpatRaster`](https://rspatial.github.io/terra/reference/SpatRaster-class.html)
-with reflectance values.
+with 3 reflectance bands, named by the wavelengths of the matched bands.
 
 ## Details
 
-All inputs must share the same spatial resolution, number of bands,
-wavelength labels, and compatible spatial extents. When reading `.raw`
-ESRI data, load with `terra::rast(x, noflip = TRUE)`.
+The requested wavelengths are resolved against the band grid of `x`
+once, and the resulting band indices are applied to `x`, `whiteref`,
+`darkref`, and `darkspec` alike. Resolving each raster independently
+would allow rounding differences between band labels to pull the
+specimen and its references onto different bands, silently calibrating
+one wavelength against another. All inputs must therefore share the same
+number of bands.
 
-Three calibration paths are supported:
+Calibration is delegated to
+[`hsi_calc_reflectance()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_calc_reflectance.md)
+and follows the same three paths, selected by `darkspec` and `tint`; see
+its documentation for the formulas. Processing is forced in memory,
+since three bands are small by construction.
 
-**Single session** (`darkspec = NULL`, `tint = c(1, 1)`): specimen,
-white reference, and dark reference all share the same integration time.
-No scaling is needed. This is the simplest workflow and produces correct
-reflectance, though signal-to-noise is lower than with a dual-exposure
-strategy.
-
-**Matched darks** (`darkspec` provided): a dual-exposure workflow where
-the specimen is overexposed relative to the white reference to maximise
-signal. Each subtraction uses the dark reference captured at the
-matching integration time. This is the recommended approach for
-dual-exposure scanning. Many scanners capture a dark reference per
-session, so matched darks are typically available for standard
-workflows.
-
-\$\$R(\lambda) = \frac{specimen - dark\_{specimen}}{white -
-dark\_{white}} \times \frac{t\_{white}}{t\_{specimen}}\$\$
-
-**Scaled dark** (`darkspec = NULL`, `tint` values differ): fallback for
-dual-exposure workflows when only the white-session dark reference is
-available. The dark reference is scaled by the integration time ratio
-before numerator subtraction. This assumes dark current scales linearly
-with integration time. In practice, some detectors have a large
-fixed-pattern noise component that does not scale with exposure time.
-Scaling overestimates the specimen dark current, producing severely
-degraded reflectance — often negative across entire spectra. Use only as
-a last resort.
-
-\$\$R(\lambda) = \frac{specimen - dark\_{white} \times
-\frac{t\_{specimen}}{t\_{white}}}{white - dark\_{white}} \times
-\frac{t\_{white}}{t\_{specimen}}\$\$
+Bands are matched to the nearest available wavelength, but a match
+further than `tol` from the request is an error rather than a silent
+substitution — without it, asking for a `"SWIR"` composite of a VNIR
+capture would return the nearest edge band three times over. The result
+is a reflectance raster, not a stretched one; pipe it through
+[`hsi_calc_stretch()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_calc_stretch.md)
+for display.
 
 ## See also
+
+[`hsi_calc_reflectance()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_calc_reflectance.md)
+for calibrating a full cube.
+[`hsi_calc_stretch()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_calc_stretch.md)
+for stretching the result to a displayable range.
+[`hsi_plot_raster_rgb()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_plot_raster_rgb.md)
+for rendering the composite.
 
 Other HSI Transformations:
 [`hsi_apply_mnf()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_apply_mnf.md),
 [`hsi_calc_difference()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_calc_difference.md),
 [`hsi_calc_mnf()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_calc_mnf.md),
 [`hsi_calc_ndi()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_calc_ndi.md),
-[`hsi_calc_preview()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_calc_preview.md),
 [`hsi_calc_raba()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_calc_raba.md),
 [`hsi_calc_rabd()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_calc_rabd.md),
 [`hsi_calc_ratio()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_calc_ratio.md),
 [`hsi_calc_rcv()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_calc_rcv.md),
+[`hsi_calc_reflectance()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_calc_reflectance.md),
 [`hsi_calc_remp()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_calc_remp.md),
 [`hsi_calc_rmean()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_calc_rmean.md),
 [`hsi_calc_rmedian()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_calc_rmedian.md),
@@ -153,31 +151,29 @@ x <- terra::rast("capture/testdata.tif")
 whiteref <- terra::rast("capture/WHITEREF_testdata.tif")
 darkref <- terra::rast("capture/DARKREF_testdata.tif")
 
-# Path 1: single session, equal integration times
-x_reflectance <- hsi_calc_reflectance(
+x_preview <- hsi_calc_preview(
   x = x,
   whiteref = whiteref,
-  darkref = darkref
+  darkref = darkref,
+  type = "RGB"
 )
 
-# Path 2a: matched darks (recommended)
+# Ready to display
+x_preview |>
+  hsi_calc_stretch(type = "RGB") |>
+  hsi_plot_raster_rgb()
+
+# Custom wavelengths, matched darks, written to disk
 darkspec <- terra::rast("specimen/DARKREF_testdata.tif")
 
-x_reflectance <- hsi_calc_reflectance(
+x_preview <- hsi_calc_preview(
   x = x,
   whiteref = whiteref,
   darkref = darkref,
   darkspec = darkspec,
-  tint = c(3, 9)
-)
-
-# Path 2b: scaled dark (single dark, different integration times)
-x_reflectance <- hsi_calc_reflectance(
-  x = x,
-  whiteref = whiteref,
-  darkref = darkref,
   tint = c(3, 9),
-  filename = "output_reflectance.tif",
+  type = c(700, 620, 540),
+  filename = "output_preview.tif",
   overwrite = TRUE
 )
 } # }

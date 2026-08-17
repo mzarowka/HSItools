@@ -14,6 +14,8 @@
   : Compute Minimum Noise Fraction transform
 - [`hsi_calc_ndi()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_calc_ndi.md)
   : Calculate normalized difference index (NDI)
+- [`hsi_calc_preview()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_calc_preview.md)
+  : Calibrate a three-band preview composite
 - [`hsi_calc_raba()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_calc_raba.md)
   : Calculate Relative Absorption Band Area (RABA)
 - [`hsi_calc_rabd()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_calc_rabd.md)
