@@ -43,9 +43,11 @@ rescaling required.
 \details{
 For integer datatypes, values are multiplied by \code{scale_factor} before
 writing and the reciprocal is stored as GDAL scale metadata. An error is
-raised if any value exceeds the maximum storable value for the chosen
-datatype at the given scale factor. Integer storage reduces file size by
-approximately 50\% relative to float32 before compression.
+raised if any value falls outside the storable range for the chosen datatype
+at the given scale factor, in either direction. The floor matters as much as
+the ceiling: unsigned types cannot hold negative values, and GDAL clamps them
+on write without reporting how many were affected. Integer storage reduces
+file size by approximately 50\% relative to float32 before compression.
 
 For float datatypes (\code{"FLT4S"}, \code{"FLT8S"}), \code{scale_factor} has no effect
 and no range validation is performed.

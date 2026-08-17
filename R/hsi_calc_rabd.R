@@ -59,12 +59,7 @@ hsi_calc_rabd <- function(
   check_numeric(continuum_edges, len = 2)
 
   # Validate index type
-  if (!index_type %in% c("strict", "mid", "max")) {
-    cli::cli_abort(
-      "Input {.arg index_type} must be one of 'strict', 'mid' or 'max'.",
-      class = "hsitools_error"
-    )
-  }
+  check_one_of(index_type, choices = c("strict", "mid", "max"))
 
   # Validate bands for strict
   if (index_type %in% c("strict") && length(absorption_band) > 1) {

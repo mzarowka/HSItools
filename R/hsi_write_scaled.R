@@ -25,9 +25,11 @@
 #' @details
 #' For integer datatypes, values are multiplied by `scale_factor` before
 #' writing and the reciprocal is stored as GDAL scale metadata. An error is
-#' raised if any value exceeds the maximum storable value for the chosen
-#' datatype at the given scale factor. Integer storage reduces file size by
-#' approximately 50% relative to float32 before compression.
+#' raised if any value falls outside the storable range for the chosen datatype
+#' at the given scale factor, in either direction. The floor matters as much as
+#' the ceiling: unsigned types cannot hold negative values, and GDAL clamps them
+#' on write without reporting how many were affected. Integer storage reduces
+#' file size by approximately 50% relative to float32 before compression.
 #'
 #' For float datatypes (`"FLT4S"`, `"FLT8S"`), `scale_factor` has no effect
 #' and no range validation is performed.
@@ -77,7 +79,8 @@ hsi_write_scaled <- function(
     choices = c("INT1U", "INT2S", "INT2U", "INT4S", "INT4U", "FLT4S", "FLT8S")
   )
 
-  # Maximum storable value per integer datatype
+  # Storable value range per integer datatype. Unsigned types have a floor of
+  # zero, so values below it are clamped by GDAL rather than stored.
   datatype_max <- c(
     INT1U = 255,
     INT2U = 65535,
@@ -86,18 +89,44 @@ hsi_write_scaled <- function(
     INT4S = 2147483647
   )
 
+  datatype_min <- c(
+    INT1U = 0,
+    INT2U = 0,
+    INT2S = -32768,
+    INT4U = 0,
+    INT4S = -2147483648
+  )
+
   # Only validate range for integers (floats have no meaningful ceiling)
   if (datatype %in% names(datatype_max)) {
     max_storable <- datatype_max[[datatype]] / scale_factor
+    min_storable <- datatype_min[[datatype]] / scale_factor
 
-    global_max <- terra::global(x, fun = "max", na.rm = TRUE) |>
+    extremes <- terra::global(x, fun = c("min", "max"), na.rm = TRUE)
+
+    global_max <- extremes |>
       dplyr::pull("max") |>
       max(na.rm = TRUE)
+
+    global_min <- extremes |>
+      dplyr::pull("min") |>
+      min(na.rm = TRUE)
 
     if (global_max > max_storable) {
       cli::cli_abort(
         c(
           "Maximum value {.val {round(global_max, 4)}} exceeds {.val {datatype}} capacity at scale factor {.val {scale_factor}} (max storable: {.val {max_storable}})."
+        ),
+        class = "hsitools_error"
+      )
+    }
+
+    if (global_min < min_storable) {
+      cli::cli_abort(
+        c(
+          "Minimum value {.val {round(global_min, 4)}} is below {.val {datatype}} capacity at scale factor {.val {scale_factor}} (min storable: {.val {min_storable}}).",
+          "i" = "Values below the floor are clamped on write, without any record of how many.",
+          "*" = "Use a float datatype to keep them, or clamp deliberately before writing."
         ),
         class = "hsitools_error"
       )

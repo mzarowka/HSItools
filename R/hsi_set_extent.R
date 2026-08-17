@@ -81,7 +81,9 @@ hsi_set_extent <- function(
   check_one_of(units, choices = c("um", "mm", "cm"))
 
   pixel_size <- from_um(um_per_pixel, to = units)
-  origin_size <- from_um(origin, to = units)
+
+  # Both um_per_pixel and origin arrive in micrometres; work in output units.
+  origin <- from_um(origin, to = units)
 
   nrow <- terra::nrow(raster)
   ncol <- terra::ncol(raster)
@@ -115,8 +117,8 @@ hsi_set_extent <- function(
   x_max <- ncol * pixel_size
 
   # Vertical positions anchored to the reference point.
-  y_min <- -(origin_size + (nrow + 0.5 - ref_y) * pixel_size)
-  y_max <- -(origin_size + (0.5 - ref_y) * pixel_size)
+  y_min <- -(origin + (nrow + 0.5 - ref_y) * pixel_size)
+  y_max <- -(origin + (0.5 - ref_y) * pixel_size)
 
   # Create a copy of the input raster with the new extent.
   result <- terra::deepcopy(raster)

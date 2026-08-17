@@ -40,6 +40,18 @@ Subset a hyperspectral raster to three bands and apply a linear or
 histogram-equalized stretch. Supports predefined band combinations and
 custom wavelength selection.
 }
+\details{
+The stretch is computed over the whole frame, so the tone curve depends on
+everything in it, including background, mounting hardware and labels. Two
+captures of the same specimen framed against different backgrounds therefore
+receive different tone curves, and \strong{the resulting previews are not
+comparable between captures}. Treat them as a look at one capture, never as
+evidence that two captures differ.
+
+To compare captures visually, crop each to the region of interest first and
+stretch the crops, so the tone curve is derived only from the pixels being
+compared.
+}
 \examples{
 \dontrun{
 x <- terra::rast("REFLECTANCE_testdata.tif")
