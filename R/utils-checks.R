@@ -446,7 +446,7 @@ check_spatraster_list <- function(
 
   if (!is.list(x)) {
     cli::cli_abort(
-      "{.arg {arg} must be a list, not {.obj_type_friendly {x}.",
+      "{.arg {arg}} must be a list, not {.cls {class(x)[[1]]}}.",
       class = "hsitools_error",
       call = call
     )
@@ -457,7 +457,7 @@ check_spatraster_list <- function(
 
   if (length(wrong) > 0) {
     cli::cli_abort(
-      "{.arg {arg}} must contain only {.cls SpatRaster} objects; {cli::qty(length(offenders))}element{?s} {.val {offenders}} {?is/are} not.",
+      "{.arg {arg}} must contain only {.cls SpatRaster} objects; {cli::qty(length(wrong))}offending element{?s}: {.val {wrong}}.",
       class = "hsitools_error",
       call = call
     )
