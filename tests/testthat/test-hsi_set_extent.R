@@ -307,6 +307,23 @@ test_that("hsi_set_extent rejects inputs carrying a CRS", {
   )
 })
 
+test_that("hsi_set_extent rejects a non-finite pixel size", {
+  # Regression: NA and NaN made the positivity comparison NA and crashed the
+  # `if ()` with a bare simpleError, while Inf passed the check entirely and
+  # produced a raster with an infinite extent.
+  purrr::walk(c(NaN, NA_real_, Inf), \(bad) {
+    expect_error(
+      hsi_set_extent(
+        test_reflectance,
+        anchor(row_centre(1)),
+        um_per_pixel = bad
+      ),
+      "finite",
+      class = "hsitools_error"
+    )
+  })
+})
+
 test_that("hsi_set_extent rejects an invalid pixel size or units", {
   expect_error(
     hsi_set_extent(

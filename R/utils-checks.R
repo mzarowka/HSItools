@@ -68,8 +68,10 @@ check_spatvector <- function(
 #'
 #' @param x Object to check.
 #' @param len Integer. Expected length. `NULL` skips the check.
-#' @param positive Logical. Must all values be positive. Default `FALSE`.
-#' @param odd Logical. Must value be odd (for window sizes). Default `FALSE`.
+#' @param positive Logical. Must all values be positive and finite. Default
+#'   `FALSE`.
+#' @param odd Logical. Must value be odd, and therefore finite and length one
+#'   (for window sizes). Default `FALSE`.
 #' @param allow_null Logical. Allow `NULL` values. Default `FALSE`.
 #' @param arg Argument name for error messages. Auto-detected via
 #'   [rlang::caller_arg()].
@@ -109,7 +111,18 @@ check_numeric <- function(
     )
   }
 
-  # Check positive if requested
+  # Check positive if requested. Finiteness is checked first and separately:
+  # `NA <= 0` and `NaN <= 0` are `NA`, which would crash the `if ()` rather than
+  # abort, and `Inf` would otherwise pass as positive and propagate into
+  # downstream arithmetic.
+  if (positive && !all(is.finite(x))) {
+    cli::cli_abort(
+      "{.arg {arg}} must contain only finite values.",
+      class = "hsitools_error",
+      call = call
+    )
+  }
+
   if (positive && any(x <= 0)) {
     cli::cli_abort(
       "{.arg {arg}} must contain only positive values.",
@@ -118,8 +131,9 @@ check_numeric <- function(
     )
   }
 
-  # Check odd if requested (for window sizes)
-  if (odd && (length(x) != 1 || x %% 2 == 0)) {
+  # Check odd if requested (for window sizes). Non-finite values make the modulo
+  # comparison `NA`, so they are excluded before it is reached.
+  if (odd && (length(x) != 1 || !is.finite(x) || x %% 2 == 0)) {
     cli::cli_abort(
       "{.arg {arg}} must be an odd number.",
       class = "hsitools_error",

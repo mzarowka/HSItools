@@ -161,6 +161,18 @@ test_that("hsi_smooth_median errors with even window size", {
   )
 })
 
+test_that("hsi_smooth_median errors with a non-finite window size", {
+  # Regression: NA, NaN and Inf all made the modulo comparison NA and crashed
+  # the `if ()` with a bare simpleError instead of aborting.
+  purrr::walk(c(NaN, NA_real_, Inf), \(bad) {
+    expect_error(
+      hsi_smooth_median(x = test_reflectance, window = bad),
+      "odd number",
+      class = "hsitools_error"
+    )
+  })
+})
+
 test_that("hsi_smooth_median errors with window = 1", {
   # terra::focal rejects a 1x1 window as not meaningful
   expect_error(
