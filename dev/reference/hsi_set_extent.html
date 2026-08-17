@@ -58,7 +58,12 @@
 
 <dt id="arg-reference">reference<a class="anchor" aria-label="anchor" href="#arg-reference"></a></dt>
 <dd><p>A <code><a href="https://rspatial.github.io/terra/reference/SpatVector-class.html" class="external-link">SpatVector</a></code> with a single point
-in pixel space that marks the physical origin anchor on the vertical axis.</p></dd>
+marking the physical origin anchor on the vertical axis. Its y value is a
+spatial coordinate in the raster's own frame, increasing upward, as produced
+by digitising over the raster or by <code><a href="https://rspatial.github.io/terra/reference/xyCellFrom.html" class="external-link">terra::xyFromCell()</a></code>..
+It is converted internally to a fractional row position, so sub-pixel
+anchors are preserved and a point falling outside <code>raster</code> is extrapolated
+with a warning.</p></dd>
 
 
 <dt id="arg-um-per-pixel">um_per_pixel<a class="anchor" aria-label="anchor" href="#arg-um-per-pixel"></a></dt>
@@ -66,7 +71,8 @@ in pixel space that marks the physical origin anchor on the vertical axis.</p></
 
 
 <dt id="arg-origin">origin<a class="anchor" aria-label="anchor" href="#arg-origin"></a></dt>
-<dd><p>Numeric. Physical position assigned to <code>reference</code> in µm.
+<dd><p>Numeric. Physical position assigned to <code>reference</code>, in µm
+regardless of <code>units</code>. Converted to <code>units</code> alongside <code>um_per_pixel</code>.
 Default <code>0</code>.</p></dd>
 
 
@@ -86,9 +92,10 @@ extent.</p>
 extent so that downstream plotting and profile extraction work in physical
 units.</p>
 <p>The calibration is linear: the raster grid is converted from pixels to
-physical units using the supplied micrometers-per-pixel ratio. The
-horizontal axis starts at the first cell centre, and the vertical axis is
-anchored to <code>reference</code> at <code>origin</code>.</p>
+physical units using the supplied micrometers-per-pixel ratio. The extent is
+expressed in cell edges, so the calibrated raster has a resolution of exactly
+<code>um_per_pixel</code> on both axes. The horizontal axis starts at zero, and the
+vertical axis is anchored so that <code>reference</code> sits at <code>origin</code>.</p>
 <p>Importantly, at this stage, calibration metag does not carry forvard into
 analysis products. Calibrate immediate products, where real world units are necessary.</p>
     </div>
@@ -110,8 +117,10 @@ analysis products. Calibrate immediate products, where real world units are nece
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
 <span class="r-in"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="st">"REFLECTANCE_testdata.tif"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Anchor point in pixel space, e.g. the core top in the first column.</span></span></span>
-<span class="r-in"><span><span class="va">reference</span> <span class="op">&lt;-</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/vect.html" class="external-link">vect</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/dimensions.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span>, type <span class="op">=</span> <span class="st">"points"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># Anchor on the vertical axis, e.g. the core top. The y value is a spatial</span></span></span>
+<span class="r-in"><span><span class="co"># coordinate increasing upward, so the centre of the top row sits at</span></span></span>
+<span class="r-in"><span><span class="co"># `terra::nrow(x) - 0.5`.</span></span></span>
+<span class="r-in"><span><span class="va">reference</span> <span class="op">&lt;-</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/vect.html" class="external-link">vect</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/dimensions.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">-</span> <span class="fl">0.5</span><span class="op">)</span>, type <span class="op">=</span> <span class="st">"points"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># 60 µm per pixel, supplied directly.</span></span></span>
 <span class="r-in"><span><span class="va">um</span> <span class="op">&lt;-</span> <span class="fu"><a href="hsi_calibration_direct.html">hsi_calibration_direct</a></span><span class="op">(</span><span class="fl">60</span><span class="op">)</span></span></span>
