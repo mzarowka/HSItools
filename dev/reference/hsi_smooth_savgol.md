@@ -14,6 +14,7 @@ hsi_smooth_savgol(
   n = p + 13 - p%%2,
   m = 0,
   ts = 1,
+  cores = 1,
   filename = "",
   overwrite = FALSE,
   ...
@@ -45,6 +46,10 @@ hsi_smooth_savgol(
 - ts:
 
   Numeric. Sampling interval for derivative calculations. Default `1`.
+
+- cores:
+
+  Positive integer. Number of parallel cores. Default `1`.
 
 - filename:
 
@@ -84,6 +89,12 @@ For full-raster processing,
 [`hsi_tiled()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_tiled.md)
 can distribute the workload across parallel workers. Requires the
 [`gsignal`](https://CRAN.R-project.org/package=gsignal) package.
+
+Setting `cores` above `1` hands the per-pixel filter to
+[`terra::app()`](https://rspatial.github.io/terra/reference/app.html)'s
+own cluster of worker processes, which splits the raster by write block.
+Returns flatten well before the core count is exhausted, as the output
+write stays serial.
 
 ## See also
 

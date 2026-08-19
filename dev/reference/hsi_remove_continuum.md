@@ -8,7 +8,7 @@ maxima across the spectrum. Requires the
 ## Usage
 
 ``` r
-hsi_remove_continuum(x, filename = "", overwrite = FALSE, ...)
+hsi_remove_continuum(x, cores = 1, filename = "", overwrite = FALSE, ...)
 ```
 
 ## Arguments
@@ -18,6 +18,10 @@ hsi_remove_continuum(x, filename = "", overwrite = FALSE, ...)
   A
   [`SpatRaster`](https://rspatial.github.io/terra/reference/SpatRaster-class.html)
   with hyperspectral data.
+
+- cores:
+
+  Positive integer. Number of parallel cores. Default `1`.
 
 - filename:
 
@@ -56,6 +60,12 @@ Computationally intensive; consider applying to subsets or regions of
 interest rather than full-resolution data. For full-raster processing,
 [`hsi_tiled()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_tiled.md)
 can distribute the workload across parallel workers.
+
+Setting `cores` above `1` hands the per-pixel continuum removal to
+[`terra::app()`](https://rspatial.github.io/terra/reference/app.html)'s
+own cluster of worker processes, which splits the raster by write block.
+Returns flatten well before the core count is exhausted, as the output
+write stays serial.
 
 ## See also
 

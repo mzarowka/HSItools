@@ -5,14 +5,7 @@ Focal raster smooth with a median
 ## Usage
 
 ``` r
-hsi_smooth_median(
-  x,
-  window = 3,
-  cores = 1L,
-  filename = "",
-  overwrite = FALSE,
-  ...
-)
+hsi_smooth_median(x, window = 3, filename = "", overwrite = FALSE, ...)
 ```
 
 ## Arguments
@@ -26,12 +19,6 @@ hsi_smooth_median(
 - window:
 
   Positive odd integer. Focal window size. Default `3`.
-
-- cores:
-
-  Positive integer. Number of cores for parallel processing. Default
-  `1L` (single core). Passed to
-  [`terra::focal()`](https://rspatial.github.io/terra/reference/focal.html).
 
 - filename:
 

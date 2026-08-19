@@ -11,6 +11,7 @@ hsi_calc_remp(
   x,
   search_range = c(660, 680),
   index_name = NULL,
+  cores = 1,
   filename = "",
   overwrite = FALSE,
   ...
@@ -34,6 +35,10 @@ hsi_calc_remp(
 - index_name:
 
   Character. Name for the output layer. Default `NULL`.
+
+- cores:
+
+  Positive integer. Number of parallel cores. Default `1`.
 
 - filename:
 
@@ -71,6 +76,12 @@ The algorithm:
     derivative equals zero.
 
 4.  Falls back to the wavelength nearest zero if no crossing is found.
+
+Setting `cores` above `1` hands the per-pixel zero-crossing search to
+[`terra::app()`](https://rspatial.github.io/terra/reference/app.html)'s
+own cluster of worker processes, which splits the raster by write block.
+Returns flatten well before the core count is exhausted, as the output
+write stays serial.
 
 ## References
 

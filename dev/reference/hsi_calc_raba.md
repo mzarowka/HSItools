@@ -12,6 +12,7 @@ hsi_calc_raba(
   x,
   continuum_edges,
   index_name = NULL,
+  cores = 1,
   filename = "",
   overwrite = FALSE,
   ...
@@ -32,6 +33,10 @@ hsi_calc_raba(
 - index_name:
 
   Character. Name of calculated RABA index. Default NULL
+
+- cores:
+
+  Positive integer. Number of parallel cores. Default `1`.
 
 - filename:
 
@@ -67,6 +72,12 @@ This approach:
 - Is bandwidth-independent (works with any spectral resolution)
 
 - Provides a measure of total absorption strength
+
+Setting `cores` above `1` hands the per-pixel calculation to
+[`terra::app()`](https://rspatial.github.io/terra/reference/app.html)'s
+own cluster of worker processes, which splits the raster by write block.
+Returns flatten well before the core count is exhausted, as the output
+write stays serial.
 
 ## See also
 

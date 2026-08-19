@@ -60,6 +60,7 @@ squares.</p>
 <span>  n <span class="op">=</span> <span class="va">p</span> <span class="op">+</span> <span class="fl">13</span> <span class="op">-</span> <span class="va">p</span><span class="op"><a href="https://rdrr.io/r/base/Arithmetic.html" class="external-link">%%</a></span><span class="fl">2</span>,</span>
 <span>  m <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  ts <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  cores <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  filename <span class="op">=</span> <span class="st">""</span>,</span>
 <span>  overwrite <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  <span class="va">...</span></span>
@@ -90,6 +91,10 @@ derivative. Default <code>0</code>.</p></dd>
 
 <dt id="arg-ts">ts<a class="anchor" aria-label="anchor" href="#arg-ts"></a></dt>
 <dd><p>Numeric. Sampling interval for derivative calculations. Default <code>1</code>.</p></dd>
+
+
+<dt id="arg-cores">cores<a class="anchor" aria-label="anchor" href="#arg-cores"></a></dt>
+<dd><p>Positive integer. Number of parallel cores. Default <code>1</code>.</p></dd>
 
 
 <dt id="arg-filename">filename<a class="anchor" aria-label="anchor" href="#arg-filename"></a></dt>
@@ -124,6 +129,10 @@ rather than failing — masked and background pixels pass through cleanly.
 For full-raster processing, <code><a href="hsi_tiled.html">hsi_tiled()</a></code> can distribute the workload
 across parallel workers. Requires the
 <a href="https://CRAN.R-project.org/package=gsignal" class="external-link"><code>gsignal</code></a> package.</p>
+<p>Setting <code>cores</code> above <code>1</code> hands the per-pixel filter to
+<code><a href="https://rspatial.github.io/terra/reference/app.html" class="external-link">terra::app()</a></code>'s own cluster of worker processes, which splits the raster
+by write block. Returns flatten well before the core count is exhausted, as
+the output write stays serial.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
