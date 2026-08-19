@@ -94,6 +94,46 @@ test_that("hsi_calc_remp produces only finite values", {
   expect_false(any(is.nan(values)))
 })
 
+test_that("hsi_calc_remp gives identical values on parallel workers", {
+  result_serial <- hsi_calc_remp(x = test_deriv, cores = 1)
+  result_parallel <- hsi_calc_remp(x = test_deriv, cores = 2)
+
+  expect_equal(
+    terra::values(result_parallel),
+    terra::values(result_serial)
+  )
+  expect_equal(
+    terra::names(result_parallel),
+    terra::names(result_serial)
+  )
+})
+
+test_that("hsi_calc_remp maps NA spectra to NA on parallel workers", {
+  # The NA must land inside the search range, which is all the pixel function
+  # ever sees
+  band_wavelengths <- as.numeric(terra::names(test_deriv))
+  in_range <- which(band_wavelengths >= 660 & band_wavelengths <= 680)
+  na_band <- in_range[ceiling(length(in_range) / 2)]
+
+  # Derive a per-test copy; the top-level fixture is read-only
+  values_na <- terra::values(test_deriv)
+  na_cells <- c(1, 5, 40)
+  values_na[na_cells, na_band] <- NA
+  test_na <- terra::setValues(test_deriv, values_na)
+
+  result_serial <- hsi_calc_remp(x = test_na, cores = 1)
+  result_parallel <- hsi_calc_remp(x = test_na, cores = 2)
+
+  # A spectrum containing NA returns NA
+  expect_true(all(is.na(terra::values(result_parallel)[na_cells, ])))
+
+  # Unaffected pixels match the serial result
+  expect_equal(
+    terra::values(result_parallel)[-na_cells, ],
+    terra::values(result_serial)[-na_cells, ]
+  )
+})
+
 # ── File writing ─────────────────────────────────────────────────────────────
 
 test_that("hsi_calc_remp writes to file when filename provided", {
@@ -153,6 +193,14 @@ test_that("hsi_calc_remp errors when search_range is not length 2", {
       search_range = c(660, 670, 680)
     ),
     "must be length 2"
+  )
+})
+
+test_that("hsi_calc_remp errors when cores is not a positive number", {
+  expect_error(
+    hsi_calc_remp(x = test_deriv, cores = -1),
+    "must contain only positive values",
+    class = "hsitools_error"
   )
 })
 
