@@ -4,10 +4,12 @@
 \alias{hsi_remove_continuum}
 \title{Remove continuum from hyperspectral data}
 \usage{
-hsi_remove_continuum(x, filename = "", overwrite = FALSE, ...)
+hsi_remove_continuum(x, cores = 1, filename = "", overwrite = FALSE, ...)
 }
 \arguments{
 \item{x}{A \code{\link[terra:SpatRaster-class]{SpatRaster}} with hyperspectral data.}
+
+\item{cores}{Positive integer. Number of parallel cores. Default \code{1}.}
 
 \item{filename}{Character. Output filename. Default \code{""} keeps result in memory.}
 
@@ -40,6 +42,11 @@ issued.
 Computationally intensive; consider applying to subsets or regions of
 interest rather than full-resolution data. For full-raster processing,
 \code{\link[=hsi_tiled]{hsi_tiled()}} can distribute the workload across parallel workers.
+
+Setting \code{cores} above \code{1} hands the per-pixel continuum removal to
+\code{\link[terra:app]{terra::app()}}'s own cluster of worker processes, which splits the raster
+by write block. Returns flatten well before the core count is exhausted, as
+the output write stays serial.
 }
 \examples{
 \dontrun{

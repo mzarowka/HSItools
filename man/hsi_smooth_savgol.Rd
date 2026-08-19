@@ -10,6 +10,7 @@ hsi_smooth_savgol(
   n = p + 13 - p\%\%2,
   m = 0,
   ts = 1,
+  cores = 1,
   filename = "",
   overwrite = FALSE,
   ...
@@ -27,6 +28,8 @@ than \code{p}. Typically 5–15. Default computed from \code{p}.}
 derivative. Default \code{0}.}
 
 \item{ts}{Numeric. Sampling interval for derivative calculations. Default \code{1}.}
+
+\item{cores}{Positive integer. Number of parallel cores. Default \code{1}.}
 
 \item{filename}{Character. Output filename. Default \code{""} keeps result in memory.}
 
@@ -60,6 +63,11 @@ rather than failing — masked and background pixels pass through cleanly.
 For full-raster processing, \code{\link[=hsi_tiled]{hsi_tiled()}} can distribute the workload
 across parallel workers. Requires the
 \href{https://CRAN.R-project.org/package=gsignal}{\code{gsignal}} package.
+
+Setting \code{cores} above \code{1} hands the per-pixel filter to
+\code{\link[terra:app]{terra::app()}}'s own cluster of worker processes, which splits the raster
+by write block. Returns flatten well before the core count is exhausted, as
+the output write stays serial.
 }
 \examples{
 \dontrun{

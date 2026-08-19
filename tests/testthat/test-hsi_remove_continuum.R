@@ -78,6 +78,40 @@ test_that("hsi_remove_continuum produces only finite values", {
   expect_false(any(is.nan(values)))
 })
 
+test_that("hsi_remove_continuum gives identical values on parallel workers", {
+  result_serial <- hsi_remove_continuum(x = test_savgol, cores = 1)
+  result_parallel <- hsi_remove_continuum(x = test_savgol, cores = 2)
+
+  expect_equal(
+    terra::values(result_parallel),
+    terra::values(result_serial)
+  )
+  expect_equal(
+    terra::names(result_parallel),
+    terra::names(result_serial)
+  )
+})
+
+test_that("hsi_remove_continuum maps NA spectra to NA on parallel workers", {
+  # Derive a per-test copy; the top-level fixture is read-only
+  values_na <- terra::values(test_savgol)
+  na_cells <- c(1, 5, 40)
+  values_na[na_cells, 3] <- NA
+  test_na <- terra::setValues(test_savgol, values_na)
+
+  result_serial <- hsi_remove_continuum(x = test_na, cores = 1)
+  result_parallel <- hsi_remove_continuum(x = test_na, cores = 2)
+
+  # A spectrum containing NA returns NA in every band
+  expect_true(all(is.na(terra::values(result_parallel)[na_cells, ])))
+
+  # Unaffected pixels match the serial result
+  expect_equal(
+    terra::values(result_parallel)[-na_cells, ],
+    terra::values(result_serial)[-na_cells, ]
+  )
+})
+
 # ── File writing ─────────────────────────────────────────────────────────────
 
 test_that("hsi_remove_continuum writes to file when filename provided", {
@@ -127,6 +161,14 @@ test_that("hsi_remove_continuum validates filename and overwrite", {
 test_that("hsi_remove_continuum errors with non-SpatRaster input", {
   expect_error(
     hsi_remove_continuum(x = "not a raster")
+  )
+})
+
+test_that("hsi_remove_continuum errors when cores is not a positive number", {
+  expect_error(
+    hsi_remove_continuum(x = test_savgol, cores = -1),
+    "must contain only positive values",
+    class = "hsitools_error"
   )
 })
 

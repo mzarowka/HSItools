@@ -80,6 +80,20 @@ test_that("hsi_smooth_savgol with m = 1 returns first derivative (differs from m
   )
 })
 
+test_that("hsi_smooth_savgol gives identical values on parallel workers", {
+  result_serial <- hsi_smooth_savgol(x = test_reflectance, cores = 1)
+  result_parallel <- hsi_smooth_savgol(x = test_reflectance, cores = 2)
+
+  expect_equal(
+    terra::values(result_parallel),
+    terra::values(result_serial)
+  )
+  expect_equal(
+    terra::names(result_parallel),
+    terra::names(result_serial)
+  )
+})
+
 test_that("hsi_smooth_savgol with m = 2 returns second derivative (differs from m = 1)", {
   result_deriv1 <- hsi_smooth_savgol(x = test_reflectance, m = 1)
   result_deriv2 <- hsi_smooth_savgol(x = test_reflectance, m = 2)
@@ -178,6 +192,14 @@ test_that("hsi_smooth_savgol errors when p >= n", {
 test_that("hsi_smooth_savgol errors when n is even", {
   expect_error(
     hsi_smooth_savgol(x = test_reflectance, p = 3, n = 10),
+    class = "hsitools_error"
+  )
+})
+
+test_that("hsi_smooth_savgol errors when cores is not a positive number", {
+  expect_error(
+    hsi_smooth_savgol(x = test_reflectance, cores = -1),
+    "must contain only positive values",
     class = "hsitools_error"
   )
 })

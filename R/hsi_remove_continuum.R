@@ -3,6 +3,7 @@
 #' @family HSI Transformations
 #'
 #' @param x A [`SpatRaster`][terra::SpatRaster-class] with hyperspectral data.
+#' @param cores Positive integer. Number of parallel cores. Default `1`.
 #' @param filename Character. Output filename. Default `""` keeps result in memory.
 #' @param overwrite Logical. Overwrite existing file. Default `FALSE`.
 #' @param ... Additional arguments passed to [`terra::writeRaster()`].
@@ -32,6 +33,11 @@
 #' interest rather than full-resolution data. For full-raster processing,
 #' [`hsi_tiled()`] can distribute the workload across parallel workers.
 #'
+#' Setting `cores` above `1` hands the per-pixel continuum removal to
+#' [`terra::app()`]'s own cluster of worker processes, which splits the raster
+#' by write block. Returns flatten well before the core count is exhausted, as
+#' the output write stays serial.
+#'
 #' @examples
 #' \dontrun{
 #' x <- terra::rast("REFLECTANCE_testdata.tif")
@@ -48,6 +54,7 @@
 #' @export
 hsi_remove_continuum <- function(
   x,
+  cores = 1,
   filename = "",
   overwrite = FALSE,
   ...
@@ -64,6 +71,9 @@ hsi_remove_continuum <- function(
       class = "hsitools_error"
     )
   }
+
+  # Validate inputs
+  check_numeric(cores, len = 1, positive = TRUE)
 
   rlang::check_string(filename)
 
@@ -114,10 +124,22 @@ hsi_remove_continuum <- function(
     )
   }
 
+  # Rebind the closure to a minimal environment holding only the wavelengths.
+  # Defined inline the closure would carry this call frame, and
+  # `terra::app(cores = )` serializes `fun` to its workers once per write block:
+  # the frame drags `x` along, and a SpatRaster serializes to ~40 MB regardless
+  # of raster size, which measured 5.5x *slower* than single-threaded. The body
+  # needs nothing beyond `prospectr::continuumRemoval()`, and `::` lives in base.
+  environment(remove_continuum_fun) <- rlang::new_environment(
+    data = list(wavelengths = wavelengths),
+    parent = baseenv()
+  )
+
   # Apply function over entire SpatRaster
   result <- terra::app(
     x,
     fun = remove_continuum_fun,
+    cores = cores,
     filename = filename,
     overwrite = overwrite,
     wopt = wopt
