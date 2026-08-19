@@ -4,22 +4,12 @@
 \alias{hsi_smooth_median}
 \title{Focal raster smooth with a median}
 \usage{
-hsi_smooth_median(
-  x,
-  window = 3,
-  cores = 1L,
-  filename = "",
-  overwrite = FALSE,
-  ...
-)
+hsi_smooth_median(x, window = 3, filename = "", overwrite = FALSE, ...)
 }
 \arguments{
 \item{x}{A \code{\link[terra:SpatRaster-class]{SpatRaster}} with hyperspectral data.}
 
 \item{window}{Positive odd integer. Focal window size. Default \code{3}.}
-
-\item{cores}{Positive integer. Number of cores for parallel processing.
-Default \code{1L} (single core). Passed to \code{\link[terra:focal]{terra::focal()}}.}
 
 \item{filename}{Character. Output filename. Default \code{""} keeps result in memory.}
 

@@ -4,8 +4,6 @@
 #'
 #' @param x A [`SpatRaster`][terra::SpatRaster-class] with hyperspectral data.
 #' @param window Positive odd integer. Focal window size. Default `3`.
-#' @param cores Positive integer. Number of cores for parallel processing.
-#'   Default `1L` (single core). Passed to [`terra::focal()`].
 #' @param filename Character. Output filename. Default `""` keeps result in memory.
 #' @param overwrite Logical. Overwrite existing file. Default `FALSE`.
 #' @param ... Additional arguments passed to [`terra::writeRaster()`].
@@ -29,7 +27,6 @@
 hsi_smooth_median <- function(
   x,
   window = 3,
-  cores = 1L,
   filename = "",
   overwrite = FALSE,
   ...
@@ -38,8 +35,6 @@ hsi_smooth_median <- function(
   check_spatraster(x)
 
   check_numeric(window, odd = TRUE)
-
-  check_numeric(cores, len = 1, positive = TRUE)
 
   rlang::check_string(filename)
 
@@ -65,7 +60,6 @@ hsi_smooth_median <- function(
     w = window,
     fun = "median",
     na.rm = TRUE,
-    cores = cores,
     filename = filename,
     overwrite = overwrite,
     wopt = wopt
