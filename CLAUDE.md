@@ -1,6 +1,6 @@
 # HSItools Ecosystem Development Guidelines (CLAUDE.md)
 
-> **Version 1.8.2 — 2026-07-18.** This file is the **canonical source** of development
+> **Version 1.9.0 — 2026-08-19.** This file is the **canonical source** of development
 > conventions for the HSItools ecosystem. Claude Code reads it automatically at session
 > start; the claude.ai `hsitools-development` skill is a mirror refreshed from this file
 > at milestone boundaries (the skill adds only trigger frontmatter). If the two disagree,
@@ -140,6 +140,8 @@ All package-raised conditions use `cli::cli_abort()` / `cli::cli_warn()` with `c
 | Loading whole raster into memory by default | Lazy, file-backed terra pipeline; `in_memory = TRUE` is opt-in |
 | `cli::cli_abort()` inside a purrr lambda | Collect offenders first (`purrr::map_lgl()`), then **one** abort after the loop listing all offending indices — lambda-frame aborts blame purrr internals and force whack-a-mole fixes |
 | `match.arg()` | `check_one_of()` — cli-consistent errors, same semantics |
+| `terra::app(x, fun = <inline lambda>, cores = cores)` | rebind the closure to a minimal environment first (§3.10) — the inline lambda drags the SpatRaster to every worker, measured 5.5× slower than serial |
+| `cores` on a built-in fun (`terra::app(fun = "mean")`, `terra::focal(fun = "median")`) | no `cores` — built-ins are C++/TBB and ignore it; size them with `terraOptions(threads = )` |
 | `raw$schema` on deserialized/external data | Spell the full name — `raw$schema_version` or `raw[["schema_version"]]` — `$` partial matching silently returns the wrong element on raw external data |
 | `rlang::list2(...)` into `wopt` with no dots check (guarded-write functions) | `wopt_user <- rlang::list2(...)` then `check_dots_write(wopt_user, filename)` in the validation block — a silent `...` sink hides typos and removed arguments (§3.2 has the exemption for direct-to-terra functions) |
 
@@ -163,6 +165,8 @@ Applies to all source, test, template, and example code in every package:
 - `terra::writeRaster()` errors on `filename = ""` — always guard with `if (filename != "")`.
 - `terra::rast()` is lazy (stores paths, not data). Any SpatRaster backed by a temp file must be re-backed (reassigned from `terra::writeRaster()` return) before that temp file is cleaned up.
 - `terra::subset()` and `terra::mask()` can force per-scene materialization — see §7 "Bind first, trim later".
+- `terra::crop()` on an integer source can reserve the datatype maximum as NoData, so cells at the sensor ceiling read back as `NA`. Never crop to inspect values against a datatype limit — read rows directly with `terra::values(x, row =, nrows =)`. (Cost several debugging passes on a saturated uint16 ENVI cube, 2026-08-18.)
+- **`cores` and `threads` are different mechanisms.** `cores` (in `terra::app()`, `focal()`, `predict()`) spawns PSOCK worker processes and only does anything when `fun` is a **user-supplied R function**; built-in character funs (`"mean"`, `"median"`, `"sd"`, …) run in C++ and ignore it silently. Those built-ins are threaded internally via TBB, sized by `terra::terraOptions(threads = )`, which defaults to 16 regardless of machine size. Never add a `cores` argument to a function whose `fun` is a built-in name — it is a silent no-op (removed from `hsi_smooth_median()` for exactly this reason, 2026-08-19).
 
 ---
 
@@ -305,7 +309,26 @@ Apply `tryCatch` only when all three hold: third-party code can error on *legiti
 
 ### 3.10 Parallelism
 
-`mirai` is the parallel backend. `hsi_tiled()` pattern: `mirai::mirai_map()` with `.args = list(fun = fun)` for explicit argument passing (never rely on environment scoping); `carrier::crate()` for worker environment isolation; `terra::makeTiles()` with corrected tile-size conversion; VRT-based mosaic; `BIGTIFF=YES` hardcoded for mosaic intermediates.
+**`terra::app(cores = )` is the backend for per-pixel spectral operations** (settled 2026-08-19, after measurement on GKUT and GRF17). Any exported function that hands a **user-supplied R function** to `terra::app()` takes `cores` at §3.1 slot 9, validated with `check_numeric(cores, len = 1, positive = TRUE)`. Current holders: `hsi_smooth_savgol()`, `hsi_remove_continuum()`, `hsi_calc_raba()`, `hsi_calc_remp()`. Built-in character funs never get it (§2 terra gotchas).
+
+**The minimal-environment rebind is mandatory and unconditional.** `terra::app()` serializes `fun` to its workers once per write block, and a closure serializes together with its environment — a lambda defined inline inside an exported function carries that call frame, including the SpatRaster, which serializes to ~40 MB regardless of raster size. Measured consequence of the naive pass-through: **5.5× slower than single-threaded**. Immediately before the `terra::app()` call, rebind:
+
+```r
+# `terra::app(cores = )` serializes `fun` to its workers once per write block:
+# the frame drags `x` along, and a SpatRaster serializes to ~40 MB regardless
+# of raster size, which measured 5.5x *slower* than single-threaded. The body
+# needs nothing beyond `pkg::fun()`, and `::` lives in base.
+environment(my_fun) <- rlang::new_environment(
+  data = list(<only what the body references>),
+  parent = baseenv()
+)
+```
+
+`data = list()` is valid and **load-bearing** when the body references nothing from the frame (`hsi_calc_raba()`): its job is removing the fat environment, not adding to it — never "clean it up". `parent = baseenv()` suffices because `::` lives in base and namespaces serialize by reference; this makes explicit `pkg::` namespacing in the body load-bearing too, not just house style. Applied unconditionally, including at `cores = 1`, so there is one code path (§0 rule 4). Verified: `tryCatch` handlers survive the trip and fire on workers; outputs are bit-identical to serial.
+
+**`mirai` remains available for genuinely custom orchestration**, but is no longer the default answer. `hsi_tiled()` pattern (unchanged, fate open — §10): `mirai::mirai_map()` with `.args = list(fun = fun)` for explicit argument passing (never rely on environment scoping); `carrier::crate()` for worker environment isolation; `terra::makeTiles()` with corrected tile-size conversion; VRT-based mosaic; `BIGTIFF=YES` hardcoded for mosaic intermediates. Measured 2–5× **slower** than a direct call for per-pixel ops on both narrow and wide rasters, with ~99 % of the cost in the serial VRT→TIFF mosaic read-back, not in `makeTiles()`.
+
+**terra version floor (performance, not correctness):** from terra 1.9-46 the built-in focal statistics `max`/`min`/`median`/`modal`/`sd` are TBB-threaded (previously only `sum`/`mean`), which makes `hsi_smooth_median()` ~3.9× faster with no code change; values are bit-identical either way. Templates set `terra::terraOptions(threads = )` to the core count, since terra's own default caps at 16.
 
 ### 3.11 S3 serialization — readers bypass the constructor
 
@@ -401,6 +424,12 @@ Assert properties that must always hold (type, dimensions, bounds, finiteness, b
 - Value sanity: finiteness (no `Inf`/`NaN`) and mathematically guaranteed bounds (continuum removal → [0, 1]) are separate behaviours — separate tests.
 - Fixture-match (`expect_equal` vs reference file) is at most one test per function, never the only test.
 - Never re-test what terra/GDAL itself guarantees (format handling, CRS propagation) — that is their interface, not ours.
+
+### 5.3a Testing functions that subset before computing
+
+Index functions cut their input to a wavelength window (`x_range`) before the pixel function ever runs. A test that injects a value — `NA` especially — into a band **outside** that window is not a failing test, it is a **vacuous** one: it passes forever while exercising nothing. Derive the target band from `terra::names()` and the window the test call actually uses; never hardcode a band index. (Caught mid-implementation on `hsi_calc_raba()`, 2026-08-19.) The same care applies to any function that masks, subsets or crops before the code under test.
+
+For functions carrying `cores` (§3.10), the per-function set is: `cores = 2` output `expect_equal` to `cores = 1` output on the fixture; the `NA` path under `cores = 2` (proving the guard runs *on workers*); and invalid `cores` rejected with a message fragment plus `class = "hsitools_error"`. Never a timing test — §5.8 stands.
 
 ### 5.4 Tolerance
 
@@ -535,7 +564,10 @@ These are deliberately unresolved. Ask before implementing; never lock them unil
 - **`hsi_bind_sensors()`** — four open decisions: final function name, default `cut` behaviour, whether to offer an offset option, wavelength source. The hard-cut + median-ratio-gain + no-blending approach *is* agreed; the four details are not.
 - **splib07 spectral library resampling** — method choice between `approx()` and Gaussian SRF convolution weighted by FWHM; input model (folder glob vs chapter directory query).
 - **`hsi_calc_sam` units** — verify whether it returns degrees or radians before writing any threshold logic or tests.
-- **`terra::spatSample(cells = TRUE)` column name** — verify against the installed terra version before writing test assertions.
+- **`terra::spatSample(cells = TRUE)` column name** — verify against the installed terra version before writing test assertions. (terra 1.9-25/34/46 all changed `spatSample` behaviour — re-verify, do not assume the 2026-07 answer holds.)
+- **`hsi_tiled()` fate** — measurement left it without a use case (2–5× slower than direct on both narrow and wide rasters; ~99 % of its cost is the serial VRT→TIFF mosaic read-back). Retire it, or keep it documented as legacy? Related: terra 1.9-25 added its own `tile_apply()` for parallelization, which may cover any remaining need; and whether a shipped product may be a VRT at all is unresolved (if the mosaic cost is read-side, a VRT defers rather than removes it — a ~2 h probe would settle it, and is moot if the function is retired).
+- **terra native GCP support** — terra 1.9-46 added `has.geoloc`/`geoloc` and better GCP handling in `rast()`. The co-registration toolchain currently embeds GCPs into a VRT by hand and warps via `sf::gdal_utils()`; whether to migrate is unexamined.
+- **`terra::terraOptions(memmax = )`** — raising it from the 16 GB default to 64 GB measured ~13 % off the postprocess chain (bigger blocks, fewer per-block closure ships), flat beyond that. Not adopted: modest, machine-specific, and untested for interaction with 32 concurrent workers.
 - **Lawson & Hanson 1974 DOI** — verify before adding to `references.bib`.
 - **S3 endmember class** — S3 (not S4/S7) is decided; the concrete constructor/validator/`[`/print design is in progress, endmember class first, metadata sidecar second.
 - **`wavelength_position` `arg`/`call` threading** — it is exported *and* the internal workhorse behind every `hsi_calc_*` index; its abort names `{.arg wavelength}`, which callers of `hsi_calc_*` never typed. Recommendation: thread. Not confirmed.
@@ -563,6 +595,7 @@ Before proposing any HSItools/zarowka code, confirm:
 
 ## Changelog
 
+- **1.9.0 (2026-08-19)** — Parallelism conventions, from the 2026-08-18/19 arc (design/orchestration Fable + Maury, implementation and validation by Opus subagents; full record in `hsi_development/hsitools/2026-08-19_handoff-parallelism-closeout-fable.md`). §3.10 rewritten: `terra::app(cores = )` is the backend for per-pixel spectral operations, with the **mandatory unconditional minimal-environment rebind** — an inline lambda carries its call frame, so the SpatRaster (~40 MB serialized, re-shipped per write block) rides to every worker and the naive pass-through measured **5.5× slower than serial**; `data = list()` is valid and load-bearing; explicit `pkg::` namespacing in the body becomes load-bearing under `parent = baseenv()`. `cores` landed on `hsi_smooth_savgol`, `hsi_remove_continuum`, `hsi_calc_raba`, `hsi_calc_remp`; chain 64 → 4.8 min (GKUT SWIR), outputs bit-identical to serial and to the 2026-05 `hsi_tiled()` products. `mirai` demoted from "the parallel backend" to custom orchestration only; `hsi_tiled()` measured 2–5× slower than direct on both raster shapes (~99 % of cost in the serial VRT mosaic read-back, **not** `makeTiles()`) — fate moved to §10. §2 gains the `cores`-vs-`threads` distinction (built-in character funs ignore `cores`; a dead `cores` was removed from `hsi_smooth_median()`) and the `terra::crop()` NoData trap. New §5.3a: tests for functions that subset before computing must target bands **inside** the window (a hardcoded index gives a vacuous always-green test), plus the standard three-test set for `cores`. terra performance floor recorded: ≥ 1.9-46 TBB-threads the built-in focal statistics (median 3.9× faster, bit-identical), templates set `terraOptions(threads = )` to the core count. §10 gains four entries (`hsi_tiled` fate incl. terra's own `tile_apply`, terra native GCP support, `memmax` tuning, `spatSample` re-verification).
 - **1.8.2 (2026-07-18)** — Dev-notes centralized into the **private `hsi_development` repo** (decision Maury + Fable, 2026-07-18), one folder per package (`hsitools/`, `zarowka/`, `hsical/`), after the day's accidental push of `dev-notes/` to the public HSItools repo (commit `847ae9a`, reverted in `87fb297`). §9 file/roadmap decoupling rule updated accordingly: dated documents never live inside the package repos; their `dev-notes/` `.gitignore` entries remain as a safety net; pre-move changelog citations of `dev-notes/...` paths resolve under `hsi_development/hsitools/`. Companion corrections applied to zarowka's and hsical's CLAUDE.md (scratchpad wording, interface-contract location — no absolute filesystem paths anywhere by policy). No convention content changed otherwise; §10 untouched.
 - **1.8.1 (2026-07-18)** — §7 gains the masking-before-MNF safety note, closing D2 of the hsi_mask close-out (source + ground-truth probes by Opus, design Fable+Maury; evidence in `dev-notes/2026-07-18_handoff-mask-closeout-opus.md` and `..._handoff-d2-mnf-mask-probe-opus.md`). Seam-crossing pairs (the existing PCA-over-MNF bullet) remain toxic; mask holes are benign — the two cases are mechanically different (valid-valid poisoned pairs vs. dropped NA pairs). No other sections touched.
 - **1.8.0 (2026-07-14)** — The `...` sink fix (design Fable+Maury, probes Opus/Fable, sweep Sonnet+Fable, all 2026-07-14; record in `dev-notes/2026-07-14_*dots*` in both repos). New `check_dots_write()` helper in `utils-checks.R` and its call blessed as canonical: guarded-write Shape A functions end the validation block with `wopt_user <- rlang::list2(...)` + `check_dots_write(wopt_user, filename)`, aborting when `...` is non-empty and `filename == ""` — previously such arguments (typos, removed args like `hsi_calc_abundance(method =)`) were silently discarded, which defeated zarowka's test suite for three weeks. §3.2/§3.4/§3.5 updated; §3.4 snippet now shows `wopt_user` captured in the validation block. **Exemption recorded in §3.2:** functions passing `filename`/`wopt` directly into `terra::app()`/`focal()`/`predict()` are excluded — terra validates `wopt` unconditionally and honours valid options in-memory (probed, terra 1.9.34), so their `...` is live and the check would break working calls. Swept: 7 HSItools + 2 zarowka functions; 8 HSItools functions exempt. Anti-pattern row added; helper inventory updated. `test-hsi_rcv.R` renamed `test-hsi_calc_rcv.R` (§3.8 mirror rule). §10 untouched.
