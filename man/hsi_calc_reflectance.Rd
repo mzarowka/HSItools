@@ -58,6 +58,22 @@ All inputs must share the same spatial resolution, number of bands,
 wavelength labels, and compatible spatial extents. When reading \code{.raw} ESRI
 data, load with \code{terra::rast(x, noflip = TRUE)}.
 
+Raw captures are typically integer rasters, where a value at the datatype
+maximum is a saturated reading rather than missing data. Subsetting such a
+capture with \code{\link[terra:crop]{terra::crop()}} — or any operation that writes an integer copy
+to disk — makes terra reserve the datatype maximum as the NoData value, so
+saturated readings are read back as \code{NA}. Whether this happens depends on
+whether terra materialises the result to a file, so the same script can give
+different answers on different machines and terra versions.
+
+Set the region of interest with \code{\link[terra:window]{terra::window()}} on \code{x}, \code{whiteref} and
+\code{darkref} instead: it reads lazily from the source and writes nothing.
+References are usually windowed in the column direction only, since they are
+collapsed to per-column means. If a physical subset must be written, write it
+with a float datatype (for example \code{datatype = "FLT4S"} passed to
+\code{\link[terra:writeRaster]{terra::writeRaster()}} or through the \code{wopt} argument of \code{\link[terra:crop]{terra::crop()}}) so
+that no integer value is repurposed as NoData.
+
 Three calibration paths are supported:
 
 \strong{Single session} (\code{darkspec = NULL}, \code{tint = c(1, 1)}): specimen, white
