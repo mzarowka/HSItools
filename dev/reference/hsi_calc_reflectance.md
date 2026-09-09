@@ -87,6 +87,28 @@ All inputs must share the same spatial resolution, number of bands,
 wavelength labels, and compatible spatial extents. When reading `.raw`
 ESRI data, load with `terra::rast(x, noflip = TRUE)`.
 
+Raw captures are typically integer rasters, where a value at the
+datatype maximum is a saturated reading rather than missing data.
+Subsetting such a capture with
+[`terra::crop()`](https://rspatial.github.io/terra/reference/crop.html)
+— or any operation that writes an integer copy to disk — makes terra
+reserve the datatype maximum as the NoData value, so saturated readings
+are read back as `NA`. Whether this happens depends on whether terra
+materialises the result to a file, so the same script can give different
+answers on different machines and terra versions.
+
+Set the region of interest with
+[`terra::window()`](https://rspatial.github.io/terra/reference/window.html)
+on `x`, `whiteref` and `darkref` instead: it reads lazily from the
+source and writes nothing. References are usually windowed in the column
+direction only, since they are collapsed to per-column means. If a
+physical subset must be written, write it with a float datatype (for
+example `datatype = "FLT4S"` passed to
+[`terra::writeRaster()`](https://rspatial.github.io/terra/reference/writeRaster.html)
+or through the `wopt` argument of
+[`terra::crop()`](https://rspatial.github.io/terra/reference/crop.html))
+so that no integer value is repurposed as NoData.
+
 Three calibration paths are supported:
 
 **Single session** (`darkspec = NULL`, `tint = c(1, 1)`): specimen,

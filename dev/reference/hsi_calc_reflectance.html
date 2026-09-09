@@ -123,6 +123,20 @@ Set <code>TRUE</code> only when data fits comfortably in available memory.</p></
     <p>All inputs must share the same spatial resolution, number of bands,
 wavelength labels, and compatible spatial extents. When reading <code>.raw</code> ESRI
 data, load with <code>terra::rast(x, noflip = TRUE)</code>.</p>
+<p>Raw captures are typically integer rasters, where a value at the datatype
+maximum is a saturated reading rather than missing data. Subsetting such a
+capture with <code><a href="https://rspatial.github.io/terra/reference/crop.html" class="external-link">terra::crop()</a></code> — or any operation that writes an integer copy
+to disk — makes terra reserve the datatype maximum as the NoData value, so
+saturated readings are read back as <code>NA</code>. Whether this happens depends on
+whether terra materialises the result to a file, so the same script can give
+different answers on different machines and terra versions.</p>
+<p>Set the region of interest with <code><a href="https://rspatial.github.io/terra/reference/window.html" class="external-link">terra::window()</a></code> on <code>x</code>, <code>whiteref</code> and
+<code>darkref</code> instead: it reads lazily from the source and writes nothing.
+References are usually windowed in the column direction only, since they are
+collapsed to per-column means. If a physical subset must be written, write it
+with a float datatype (for example <code>datatype = "FLT4S"</code> passed to
+<code><a href="https://rspatial.github.io/terra/reference/writeRaster.html" class="external-link">terra::writeRaster()</a></code> or through the <code>wopt</code> argument of <code><a href="https://rspatial.github.io/terra/reference/crop.html" class="external-link">terra::crop()</a></code>) so
+that no integer value is repurposed as NoData.</p>
 <p>Three calibration paths are supported:</p>
 <p><strong>Single session</strong> (<code>darkspec = NULL</code>, <code>tint = c(1, 1)</code>): specimen, white
 reference, and dark reference all share the same integration time. No
