@@ -20,12 +20,12 @@ Source:
 
 Żarczyński M, McKay N, Edge D, Nowosad J, Zander P (2026). *HSItools:
 Process, Analyze and Visualize Hyperspectral Core Scanning Data*. R
-package version 0.5.3.9001, <https://github.com/mzarowka/HSItools>.
+package version 0.5.3.9002, <https://github.com/mzarowka/HSItools>.
 
     @Manual{,
       title = {HSItools: Process, Analyze and Visualize Hyperspectral Core Scanning Data},
       author = {Maurycy Żarczyński and Nicholas McKay and David Edge and Jakub Nowosad and Paul Zander},
       year = {2026},
-      note = {R package version 0.5.3.9001},
+      note = {R package version 0.5.3.9002},
       url = {https://github.com/mzarowka/HSItools},
     }
