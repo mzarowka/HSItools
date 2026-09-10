@@ -1,6 +1,6 @@
 # HSItools Ecosystem Development Guidelines (CLAUDE.md)
 
-> **Version 1.10.0 — 2026-09-10.** This file is the **canonical source**
+> **Version 1.11.0 — 2026-09-10.** This file is the **canonical source**
 > of development conventions for the HSItools ecosystem. Claude Code
 > reads it automatically at session start; the claude.ai
 > `hsitools-development` skill is a mirror refreshed from this file at
@@ -829,9 +829,9 @@ with `\item{}{}` list; `A named list containing: ...`;
 
 `HSI Transformations` (all `hsi_calc_*`, `hsi_smooth_*`,
 `hsi_remove_continuum`, `hsi_write_scaled`) · `HSI Calibration` ·
-`HSI Extraction` · `Plotting` · `Utilities`. Catalogue is open — new
-families may be added as the package grows; keep Title Case and
-consistency within a family.
+`HSI Extraction` · `HSI Diagnostics` · `Plotting` · `Utilities`.
+Catalogue is open — new families may be added as the package grows; keep
+Title Case and consistency within a family.
 
 ### 4.7 Internal helpers
 
@@ -1096,6 +1096,51 @@ minimal).
   continuum-removal-first methods; localize vendor differences in a thin
   ingest adapter keyed on processing stage.
 
+### 6.6 Saturation
+
+**A clipped reading carries no information about the specimen.** The
+digital number is pinned at the ceiling, so what survives calibration is
+the shape of the white reference: a smooth, plausible-looking curve that
+is pure instrument response. Measured on a GKUT VNIR transect
+(2026-09-09), a sixty-band clipped run sat flat at 65535 in raw DN and
+climbed from 0.2565 to 0.3259 in reflectance, and a linear chord across
+the gap reproduced those values within 0.002. Passing clipped cells
+through and interpolating across them are therefore the same fiction,
+and neither recovers anything.
+
+**The clipping threshold is instrument knowledge, is never inferred from
+the data, and normally sits below the datatype ceiling.** Detector
+response compresses before it clips: immediately outside that run,
+unflagged bands read 64824 and 64450 rather than returning to a normal
+level, so an exact-ceiling test understates the damaged region.
+Inferring the threshold from the data maximum would make a clean capture
+flag its own brightest pixel; hardcoding a bit depth would tie the check
+to one sensor.
+[`hsi_check_saturation()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_check_saturation.md)
+takes it as a required argument for exactly this reason.
+
+**Masking is whole-pixel, via the collapsed screen.** A pixel that
+clipped anywhere is suspect everywhere — charge spill into neighbouring
+bands, plus that compressed shoulder — and no line can be drawn between
+contaminated and clean. Per-band masking would assert a distinction the
+data does not support. A consequence worth stating: whole-pixel masking
+makes
+[`hsi_smooth_savgol()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_smooth_savgol.md)’s
+all-or-nothing `NA` rule *correct* rather than an amplifier, since it
+only propagates a decision already taken upstream.
+
+**Mask while the product is still on the raw pixel grid**, i.e. after
+calibration and before any flip or co-registration. The screen is
+written full-frame and the product is usually windowed, so narrowing the
+screen to the product’s extent is the alignment step; both share the raw
+index space only until the product’s geometry changes.
+
+**[`hsi_calc_reflectance()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_calc_reflectance.md)
+never adjudicates saturation.** It marks calibration failures (a zero or
+negative denominator) and nothing else. Detection is a separate
+primitive on raw digital numbers, and masking is the caller’s deliberate
+step — the same composition rule as §7’s masking-precedes-unmixing.
+
 ------------------------------------------------------------------------
 
 ## 7. Unmixing and big-raster restraints (hard-won — do not relearn)
@@ -1285,24 +1330,6 @@ them unilaterally:
   machine-specific, and untested for interaction with concurrent
   [`terra::app()`](https://rspatial.github.io/terra/reference/app.html)
   workers.
-- **Saturation semantics in
-  [`hsi_calc_reflectance()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_calc_reflectance.md)**
-  — a value at the input datatype maximum is a clipped reading, and the
-  arithmetic proves it rather than inferring it. Open: does reflectance
-  return `NA` there, or pass the value through with a loud reported
-  count? `NA` is the honest reading, but
-  [`hsi_smooth_savgol()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_smooth_savgol.md)’s
-  any-NA rule then erases the pixel’s whole spectrum; deliberate `NA` is
-  more defensible than accidental `NA` without softening that rule. With
-  [`terra::window()`](https://rspatial.github.io/terra/reference/window.html)
-  in the templates the clipped readings now reach the function intact,
-  so the decision has a real input to act on.
-- **[`hsi_smooth_savgol()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_smooth_savgol.md)
-  any-NA policy** — one `NA` band currently kills a pixel’s entire
-  spectrum. Should isolated interior `NA` bands be interpolated across
-  instead? On a GKUT VNIR capture 24,816 clipped readings became 567
-  pixels erased across all 476 bands. For captures with real saturation
-  this matters more than the semantics question above.
 - **Lawson & Hanson 1974 DOI** — verify before adding to
   `references.bib`.
 - **S3 endmember class** — S3 (not S4/S7) is decided; the concrete
@@ -1356,6 +1383,30 @@ Before proposing any HSItools/zarowka code, confirm:
 
 ## Changelog
 
+- **1.11.0 (2026-09-10)** — Saturation doctrine settled, and both
+  questions opened the same morning closed (design Fable + Maury;
+  records in
+  `hsi_development/zarowka/2026-09-09_window-reflectance-gkut-validation-opus.md`
+  and `2026-09-09_memmax-window-probes-opus.md`).
+  [`hsi_check_saturation()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_check_saturation.md)
+  **promoted from zarowka to HSItools** (0.5.3.9003), bringing the new
+  `HSI Diagnostics` family in §4.6; zarowka now calls it through the
+  package namespace and requires that version. New §6.6 records the
+  physics and the composition rule: a clipped reading carries no
+  specimen information (a sixty-band run measured flat at the ceiling in
+  DN and climbing 0.2565 to 0.3259 in reflectance, matching a linear
+  chord within 0.002, i.e. pure white-reference shape); the threshold is
+  instrument knowledge that normally sits *below* the datatype ceiling
+  because response compresses first (unflagged neighbours at 64824 and
+  64450); masking is whole-pixel via the collapsed screen; and it
+  happens on the raw pixel grid, after calibration and before
+  co-registration. §10 accordingly **loses** both entries added in
+  1.10.0: reflectance keeps no saturation semantics (the threshold
+  cannot be inferred and the primitive already exists separately), and
+  the
+  [`hsi_smooth_savgol()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_smooth_savgol.md)
+  any-NA question dissolves rather than resolving, since whole-pixel
+  masking makes the existing rule correct.
 - **1.10.0 (2026-09-10)** — The saturation/NoData collision closed on
   the template side (design and orchestration Fable + Maury;
   implementation, runs and validation by Opus subagents. Problem
