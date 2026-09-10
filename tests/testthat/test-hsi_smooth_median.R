@@ -103,6 +103,25 @@ test_that("hsi_smooth_median produces only finite values", {
   expect_false(any(is.nan(values)))
 })
 
+test_that("hsi_smooth_median leaves blanked pixels blank", {
+  # Whole-pixel blanks are how saturation masking reaches this function, and
+  # terra's default na.policy = "all" computes a value for NA cells too: a
+  # blank comes back as the median of its neighbours, a fabricated spectrum
+  # where the mask said there is no measurement. Neighbouring pixels must
+  # still smooth normally, so both halves are asserted.
+  blanked <- terra::cellFromRowCol(test_reflectance, 5, 5)
+  neighbour <- terra::cellFromRowCol(test_reflectance, 4, 5)
+
+  values <- terra::values(test_reflectance)
+  values[blanked, ] <- NA
+  x <- terra::setValues(test_reflectance, values)
+
+  result <- terra::values(hsi_smooth_median(x = x))
+
+  expect_true(all(is.na(result[blanked, ])))
+  expect_false(anyNA(result[neighbour, ]))
+})
+
 # ── File writing ─────────────────────────────────────────────────────────────
 
 test_that("hsi_smooth_median writes to file when filename provided", {
