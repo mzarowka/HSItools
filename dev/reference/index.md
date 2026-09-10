@@ -45,6 +45,8 @@
   : Create spatial calibration from a digitized scale reference
 - [`hsi_check_gcp()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_check_gcp.md)
   : Assess affine transformation quality from matched GCPs
+- [`hsi_check_saturation()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_check_saturation.md)
+  : Check a raster for saturated pixels
 - [`hsi_coregister()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_coregister.md)
   : Co-register source raster to target raster grid
 - [`hsi_create_metadata()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_create_metadata.md)
