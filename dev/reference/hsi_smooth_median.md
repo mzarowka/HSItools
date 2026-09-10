@@ -39,6 +39,21 @@ A
 [`SpatRaster`](https://rspatial.github.io/terra/reference/SpatRaster-class.html)
 with median filtered values.
 
+## Details
+
+`NA` cells are preserved rather than filled. The focal window is applied
+with `na.policy = "omit"`, so a cell that is already `NA` stays `NA`
+instead of taking the median of its neighbours. Cells that hold data are
+unaffected and still smooth across whichever neighbours are available,
+so masked input changes only the masked pixels.
+
+This matters when the input has been masked, for example against a
+saturation screen: a blank marks a pixel with no usable measurement, and
+filling it from its neighbours would fabricate a spectrum where the mask
+recorded an absence. Whether a blank covers one band or all of them is
+decided upstream, by whatever produced the mask; this function only
+declines to overwrite it.
+
 ## See also
 
 Other HSI Transformations:

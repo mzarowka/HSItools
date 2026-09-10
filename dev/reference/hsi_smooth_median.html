@@ -77,6 +77,19 @@
     <p>A <code><a href="https://rspatial.github.io/terra/reference/SpatRaster-class.html" class="external-link">SpatRaster</a></code> with median filtered values.</p>
     </div>
     <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p><code>NA</code> cells are preserved rather than filled. The focal window is applied with
+<code>na.policy = "omit"</code>, so a cell that is already <code>NA</code> stays <code>NA</code> instead of
+taking the median of its neighbours. Cells that hold data are unaffected and
+still smooth across whichever neighbours are available, so masked input
+changes only the masked pixels.</p>
+<p>This matters when the input has been masked, for example against a saturation
+screen: a blank marks a pixel with no usable measurement, and filling it from
+its neighbours would fabricate a spectrum where the mask recorded an absence.
+Whether a blank covers one band or all of them is decided upstream, by
+whatever produced the mask; this function only declines to overwrite it.</p>
+    </div>
+    <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p>Other HSI Transformations:
 <code><a href="hsi_apply_mnf.html">hsi_apply_mnf()</a></code>,
