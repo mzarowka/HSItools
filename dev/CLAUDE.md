@@ -1,6 +1,6 @@
 # HSItools Ecosystem Development Guidelines (CLAUDE.md)
 
-> **Version 1.9.0 — 2026-08-19.** This file is the **canonical source**
+> **Version 1.10.0 — 2026-09-10.** This file is the **canonical source**
 > of development conventions for the HSItools ecosystem. Claude Code
 > reads it automatically at session start; the claude.ai
 > `hsitools-development` skill is a mirror refreshed from this file at
@@ -347,6 +347,7 @@ call-attribution: §3.2–§3.3a.
 | `cores` on a built-in fun (`terra::app(fun = "mean")`, `terra::focal(fun = "median")`) | no `cores` — built-ins are C++/TBB and ignore it; size them with `terraOptions(threads = )` |
 | `raw$schema` on deserialized/external data | Spell the full name — `raw$schema_version` or `raw[["schema_version"]]` — `$` partial matching silently returns the wrong element on raw external data |
 | `rlang::list2(...)` into `wopt` with no dots check (guarded-write functions) | `wopt_user <- rlang::list2(...)` then `check_dots_write(wopt_user, filename)` in the validation block — a silent `...` sink hides typos and removed arguments (§3.2 has the exemption for direct-to-terra functions) |
+| [`terra::crop()`](https://rspatial.github.io/terra/reference/crop.html) on a raw integer capture | [`terra::window()`](https://rspatial.github.io/terra/reference/window.html) — lazy ROI, reads and writes nothing, so it cannot relabel a saturated reading as NoData |
 
 Applies to all source, test, template, and example code in every
 package:
@@ -402,12 +403,25 @@ package:
   and
   [`terra::mask()`](https://rspatial.github.io/terra/reference/mask.html)
   can force per-scene materialization — see §7 “Bind first, trim later”.
-- [`terra::crop()`](https://rspatial.github.io/terra/reference/crop.html)
-  on an integer source can reserve the datatype maximum as NoData, so
-  cells at the sensor ceiling read back as `NA`. Never crop to inspect
-  values against a datatype limit — read rows directly with
-  `terra::values(x, row =, nrows =)`. (Cost several debugging passes on
-  a saturated uint16 ENVI cube, 2026-08-18.)
+- **Never
+  [`terra::crop()`](https://rspatial.github.io/terra/reference/crop.html)
+  a raw integer capture — use
+  [`terra::window()`](https://rspatial.github.io/terra/reference/window.html).**
+  A crop that materialises writes the copy in the source datatype and
+  reserves the datatype maximum as NoData, so genuine saturated readings
+  read back as `NA`. Whether it materialises depends on terra’s memory
+  budget, so the same script yields different products on different
+  machines and terra versions.
+  [`terra::window()`](https://rspatial.github.io/terra/reference/window.html)
+  sets a lazy region of interest; downstream functions read it straight
+  from the source, and nothing is written. This covers inspection too —
+  read rows with `terra::values(x, row =, nrows =)`. A physical subset,
+  if genuinely needed, must be written float (`datatype = "FLT4S"`);
+  that is correct but costly, measured 25× slower than windowing and
+  dominated by the serial read-back of terra’s default block layout
+  rather than by the write. (Cost several debugging passes on a
+  saturated uint16 ENVI cube, 2026-08-18; GKUT VNIR 2026-09-09, 24,816
+  saturated cells silently lost to a materialised crop.)
 - **`cores` and `threads` are different mechanisms.** `cores` (in
   [`terra::app()`](https://rspatial.github.io/terra/reference/app.html),
   `focal()`, [`predict()`](https://rdrr.io/r/stats/predict.html)) spawns
@@ -1258,11 +1272,37 @@ them unilaterally:
   warps via
   [`sf::gdal_utils()`](https://r-spatial.github.io/sf/reference/gdal_utils.html);
   whether to migrate is unexamined.
-- **`terra::terraOptions(memmax = )`** — raising it from the 16 GB
-  default to 64 GB measured ~13 % off the postprocess chain (bigger
-  blocks, fewer per-block closure ships), flat beyond that. Not adopted:
-  modest, machine-specific, and untested for interaction with 32
-  concurrent workers.
+- **`terra::terraOptions(memmax = )`** — on the windowed reflectance
+  step, raising it from the 16 GB default to 64 GB measured 5.8× (647 →
+  112 s, GKUT VNIR), and flat from there: 336 GB on a 383 GB machine
+  changed nothing, because peak working set was 19 GB. Thread count did
+  not order the results at 16, 32 or 64. On the postprocess chain the
+  same change measured ~13 % (bigger blocks, fewer per-block closure
+  ships). Earlier it also masked a correctness bug by keeping crops in
+  memory; with
+  [`terra::window()`](https://rspatial.github.io/terra/reference/window.html)
+  that path is gone and this is purely a speed knob. Still unadopted:
+  machine-specific, and untested for interaction with concurrent
+  [`terra::app()`](https://rspatial.github.io/terra/reference/app.html)
+  workers.
+- **Saturation semantics in
+  [`hsi_calc_reflectance()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_calc_reflectance.md)**
+  — a value at the input datatype maximum is a clipped reading, and the
+  arithmetic proves it rather than inferring it. Open: does reflectance
+  return `NA` there, or pass the value through with a loud reported
+  count? `NA` is the honest reading, but
+  [`hsi_smooth_savgol()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_smooth_savgol.md)’s
+  any-NA rule then erases the pixel’s whole spectrum; deliberate `NA` is
+  more defensible than accidental `NA` without softening that rule. With
+  [`terra::window()`](https://rspatial.github.io/terra/reference/window.html)
+  in the templates the clipped readings now reach the function intact,
+  so the decision has a real input to act on.
+- **[`hsi_smooth_savgol()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_smooth_savgol.md)
+  any-NA policy** — one `NA` band currently kills a pixel’s entire
+  spectrum. Should isolated interior `NA` bands be interpolated across
+  instead? On a GKUT VNIR capture 24,816 clipped readings became 567
+  pixels erased across all 476 bands. For captures with real saturation
+  this matters more than the semantics question above.
 - **Lawson & Hanson 1974 DOI** — verify before adding to
   `references.bib`.
 - **S3 endmember class** — S3 (not S4/S7) is decided; the concrete
@@ -1316,6 +1356,40 @@ Before proposing any HSItools/zarowka code, confirm:
 
 ## Changelog
 
+- **1.10.0 (2026-09-10)** — The saturation/NoData collision closed on
+  the template side (design and orchestration Fable + Maury;
+  implementation, runs and validation by Opus subagents. Problem
+  statement in
+  `hsi_development/hsitools/2026-09-09_handoff-saturation-nodata-open.md`;
+  records in
+  `hsi_development/zarowka/2026-09-09_window-reflectance-gkut-validation-opus.md`
+  and `2026-09-09_memmax-window-probes-opus.md`).
+  **[`terra::window()`](https://rspatial.github.io/terra/reference/window.html)
+  replaces
+  [`terra::crop()`](https://rspatial.github.io/terra/reference/crop.html)
+  for cutting a raw capture** — new §2 anti-pattern row and a rewritten
+  crop gotcha. A materialised crop writes the copy in the source integer
+  datatype and reserves the datatype maximum as NoData, so genuine
+  saturated readings return as `NA`; on a GKUT VNIR transect that
+  silently destroyed 24,816 readings, and whether it happened at all
+  depended on terra’s memory budget. The windowed product is
+  bit-identical to the in-memory-crop baseline with zero `NA`, and the
+  24,816 cells it preserves match the raw window exactly.
+  [`hsi_calc_reflectance()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_calc_reflectance.md)
+  gained an `@details` paragraph documenting the trap, the
+  [`terra::window()`](https://rspatial.github.io/terra/reference/window.html)
+  recommendation, and the float-datatype fallback for physical subsets.
+  Nine measured runs of the VNIR reflectance step separated the effects:
+  `memmax` alone accounts for the whole window-versus-crop timing gap,
+  thread count does not order the results at 16/32/64, the setting is
+  flat from 64 GB up, and the documented float crop is correct but ~25×
+  slower than windowing (serial read-back of terra’s default block
+  layout, not the write). §10’s `memmax` entry rewritten accordingly —
+  it is no longer a correctness knob — and gains the two questions the
+  2026-09-09 handoff parked there: reflectance saturation semantics, and
+  the
+  [`hsi_smooth_savgol()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_smooth_savgol.md)
+  any-NA policy.
 - **1.9.0 (2026-08-19)** — Parallelism conventions, from the
   2026-08-18/19 arc (design/orchestration Fable + Maury, implementation
   and validation by Opus subagents; full record in
