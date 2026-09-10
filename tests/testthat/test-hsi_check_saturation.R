@@ -33,32 +33,15 @@ na_values[1, ] <- 0
 na_values[1, 2] <- NA_real_
 test_na <- terra::setValues(test_capture, na_values)
 
-# ── Output type ──────────────────────────────────────────────────────────────
+# ── Output type and dimensions ───────────────────────────────────────────────
 
-test_that("hsi_check_saturation returns a SpatRaster", {
+test_that("hsi_check_saturation returns a SpatRaster with one layer per band", {
   result <- hsi_check_saturation(x = test_capture, limit = test_limit)
 
   expect_s4_class(result, "SpatRaster")
-})
-
-# ── Output dimensions ────────────────────────────────────────────────────────
-
-test_that("hsi_check_saturation returns one layer per band by default", {
-  result <- hsi_check_saturation(x = test_capture, limit = test_limit)
-
   expect_equal(terra::nlyr(result), terra::nlyr(test_capture))
   expect_equal(terra::nrow(result), terra::nrow(test_capture))
   expect_equal(terra::ncol(result), terra::ncol(test_capture))
-})
-
-test_that("hsi_check_saturation collapse reduces the mask to a single layer", {
-  result <- hsi_check_saturation(
-    x = test_capture,
-    limit = test_limit,
-    collapse = TRUE
-  )
-
-  expect_equal(terra::nlyr(result), 1L)
 })
 
 # ── Band names ───────────────────────────────────────────────────────────────
@@ -69,13 +52,14 @@ test_that("hsi_check_saturation preserves the band names of x", {
   expect_equal(terra::names(result), terra::names(test_capture))
 })
 
-test_that("hsi_check_saturation names the collapsed layer saturated", {
+test_that("hsi_check_saturation collapse returns a single layer named saturated", {
   result <- hsi_check_saturation(
     x = test_capture,
     limit = test_limit,
     collapse = TRUE
   )
 
+  expect_equal(terra::nlyr(result), 1L)
   expect_equal(terra::names(result), "saturated")
 })
 
@@ -87,29 +71,28 @@ test_that("hsi_check_saturation returns only 0, 1 and NA", {
   expect_true(all(terra::values(result) %in% c(0, 1, NA)))
 })
 
-test_that("hsi_check_saturation marks exactly the pixels reaching the limit", {
+test_that("hsi_check_saturation marks exactly the pixels at or above the limit", {
   result <- hsi_check_saturation(x = test_capture, limit = test_limit)
 
   expected <- terra::values(test_capture) >= test_limit
 
   expect_equal(as.vector(terra::values(result)) == 1, as.vector(expected))
-})
 
-test_that("hsi_check_saturation marks nothing when no pixel reaches the limit", {
-  unreachable <- max(terra::minmax(test_capture)[2, ]) + 1
-
-  result <- hsi_check_saturation(x = test_capture, limit = unreachable)
-
-  expect_equal(sum(terra::values(result)), 0)
-})
-
-test_that("hsi_check_saturation treats a pixel at exactly the limit as saturated", {
-  # The comparison is inclusive: hitting the ceiling counts.
+  # The comparison is inclusive: a pixel sitting exactly on the limit has
+  # clipped and must be marked. The smallest per-band maximum is a value the
+  # capture is guaranteed to contain.
   exact <- min(terra::minmax(test_capture)[2, ])
 
-  result <- hsi_check_saturation(x = test_capture, limit = exact)
+  result_exact <- hsi_check_saturation(x = test_capture, limit = exact)
 
-  expect_true(sum(terra::values(result)) > 0)
+  expect_true(sum(terra::values(result_exact)) > 0)
+
+  # Nothing is marked when the limit sits above every observed value.
+  unreachable <- max(terra::minmax(test_capture)[2, ]) + 1
+
+  result_none <- hsi_check_saturation(x = test_capture, limit = unreachable)
+
+  expect_equal(sum(terra::values(result_none)), 0)
 })
 
 # ── NA handling ──────────────────────────────────────────────────────────────
@@ -129,8 +112,7 @@ test_that("hsi_check_saturation collapse does not report an NA pixel as unsatura
 # ── File writing ─────────────────────────────────────────────────────────────
 
 test_that("hsi_check_saturation writes to file when filename provided", {
-  temp_file <- file.path(tempdir(), "test_saturation.tif")
-  on.exit(unlink(temp_file), add = TRUE)
+  temp_file <- withr::local_tempfile(fileext = ".tif")
 
   result <- hsi_check_saturation(
     x = test_capture,
@@ -146,8 +128,7 @@ test_that("hsi_check_saturation writes to file when filename provided", {
 })
 
 test_that("hsi_check_saturation errors when file exists and overwrite is FALSE", {
-  temp_file <- file.path(tempdir(), "test_saturation_overwrite.tif")
-  on.exit(unlink(temp_file), add = TRUE)
+  temp_file <- withr::local_tempfile(fileext = ".tif")
 
   hsi_check_saturation(
     x = test_capture,
@@ -168,29 +149,20 @@ test_that("hsi_check_saturation errors when file exists and overwrite is FALSE",
 
 # ── Input validation ─────────────────────────────────────────────────────────
 
-test_that("hsi_check_saturation validates filename and overwrite", {
-  expect_write_tail_validated(
-    hsi_check_saturation,
-    list(x = test_capture, limit = test_limit)
-  )
-})
-
 test_that("hsi_check_saturation errors with non-SpatRaster input", {
   expect_error(
     hsi_check_saturation(x = "not a raster", limit = test_limit)
   )
 })
 
-test_that("hsi_check_saturation errors when limit is absent", {
+test_that("hsi_check_saturation errors when limit is absent or not a single number", {
   # The saturation threshold is instrument knowledge and is never inferred.
   expect_error(
     hsi_check_saturation(x = test_capture),
     "absent",
     class = "rlang_error"
   )
-})
 
-test_that("hsi_check_saturation errors when limit is not a single number", {
   expect_error(
     hsi_check_saturation(x = test_capture, limit = c(1, 2)),
     "length 1",
@@ -198,7 +170,7 @@ test_that("hsi_check_saturation errors when limit is not a single number", {
   )
 })
 
-test_that("hsi_check_saturation errors when collapse is not a logical scalar", {
+test_that("hsi_check_saturation rejects malformed scalar arguments", {
   expect_error(
     hsi_check_saturation(
       x = test_capture,
@@ -206,6 +178,11 @@ test_that("hsi_check_saturation errors when collapse is not a logical scalar", {
       collapse = "yes"
     ),
     class = "rlang_error"
+  )
+
+  expect_write_tail_validated(
+    hsi_check_saturation,
+    list(x = test_capture, limit = test_limit)
   )
 })
 
