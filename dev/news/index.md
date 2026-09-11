@@ -2,6 +2,16 @@
 
 ## HSItools (development version)
 
+- [`hsi_coregister()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_coregister.md)
+  now errors when `x` is a window, layer subset or combination of files.
+  It warps the file on disk, so these inputs previously produced
+  silently misregistered output.
+
+- [`hsi_coregister()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_coregister.md)
+  now returns a readable raster; previously the returned object pointed
+  at a deleted temporary file. It also warps directly to `filename`
+  without an intermediate copy.
+
 ## HSItools 0.5.3
 
 - Breaking:

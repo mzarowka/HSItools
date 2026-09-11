@@ -22,7 +22,8 @@ hsi_coregister(
 
   A
   [`SpatRaster`](https://rspatial.github.io/terra/reference/SpatRaster-class.html)
-  to warp. Must have a file source on disk.
+  to warp. Must be a whole file on disk, not a window, layer subset or
+  combination of files.
 
 - y:
 

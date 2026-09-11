@@ -40,7 +40,9 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="development version" id="hsitools-development-version">HSItools (development version)<a class="anchor" aria-label="anchor" href="#hsitools-development-version"></a></h2>
-</div>
+<ul><li><p><code><a href="../reference/hsi_coregister.html">hsi_coregister()</a></code> now errors when <code>x</code> is a window, layer subset or combination of files. It warps the file on disk, so these inputs previously produced silently misregistered output.</p></li>
+<li><p><code><a href="../reference/hsi_coregister.html">hsi_coregister()</a></code> now returns a readable raster; previously the returned object pointed at a deleted temporary file. It also warps directly to <code>filename</code> without an intermediate copy.</p></li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.5.3" id="hsitools-053">HSItools 0.5.3<a class="anchor" aria-label="anchor" href="#hsitools-053"></a></h2>
 <ul><li><p>Breaking: <code><a href="../reference/hsi_bind_layers.html">hsi_bind_layers()</a></code> is no longer exported (non-functional stub; design pending).</p></li>
