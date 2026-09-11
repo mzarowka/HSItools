@@ -101,6 +101,17 @@ hsi_coregister <- function(
 
   rlang::check_bool(overwrite)
 
+  # Check for existing output file
+  if (file.exists(filename) && !overwrite) {
+    cli::cli_abort(
+      c(
+        "File {.file {filename}} already exists.",
+        "i" = "Use {.arg overwrite = TRUE} to overwrite."
+      ),
+      class = "hsitools_error"
+    )
+  }
+
   # Drop CRS from both rasters - work in pixel space
   x <- hsi_drop_crs(x)
   y <- hsi_drop_crs(y)
@@ -121,12 +132,9 @@ hsi_coregister <- function(
   # Temp VRT for GCP embedding
   vrt_path <- withr::local_tempfile(fileext = ".vrt")
 
-  # Temp path for GDAL warp output
-  warp_temp <- withr::local_tempfile(fileext = ".tif")
-
-  # Output path
+  # Output path, plain tempfile() as it backs the returned raster
   if (filename == "") {
-    filename <- withr::local_tempfile(fileext = ".tif")
+    filename <- tempfile(fileext = ".tif")
   }
 
   # Translate source raster coordinates to GDAL pixel/line
@@ -165,11 +173,11 @@ hsi_coregister <- function(
     options = c("-of", "VRT", gcp_flags)
   )
 
-  # Warp raster to target grid
+  # Warp raster to target grid, straight to output file
   sf::gdal_utils(
     util = "warp",
     source = vrt_path,
-    destination = warp_temp,
+    destination = filename,
     options = c(
       "-r",
       method,
@@ -182,24 +190,19 @@ hsi_coregister <- function(
       as.character(terra::ncol(y)),
       as.character(terra::nrow(y)),
       "-order",
-      "1"
+      "1",
+      "-multi",
+      "-overwrite"
     )
   )
 
-  # Read back warped result
-  result <- terra::rast(warp_temp)
+  # Write band names into output file
+  result <- terra::rast(filename)
 
-  # Write to final destination with band names
-  terra::writeRaster(
-    result,
-    filename = filename,
-    overwrite = overwrite,
-    wopt = list(names = names(x))
-  )
-
-  # Set names if in-memory
   names(result) <- names(x)
 
-  # Return
+  terra::update(result, names = TRUE)
+
+  # Return result
   result
 }

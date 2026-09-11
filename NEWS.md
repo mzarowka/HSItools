@@ -1,5 +1,7 @@
 # HSItools (development version)
 
+-   `hsi_coregister()` now returns a readable raster; previously the returned object pointed at a deleted temporary file. It also warps directly to `filename` without an intermediate copy.
+
 # HSItools 0.5.3
 
 -   Breaking: `hsi_bind_layers()` is no longer exported (non-functional stub; design pending).

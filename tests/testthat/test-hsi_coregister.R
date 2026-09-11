@@ -3,92 +3,37 @@
 # Key contracts: output always matches target grid dimensions; band names are
 # preserved both in-memory and on disk; x must have a file source.
 
-## Setup ----
-test_source <- terra::rast(
-  system.file(
-    package = "HSItools",
-    "testdata/products/REFLECTANCE_testdata.tif"
-  )
-)
-
-# Target grid: same extent, half the resolution — forces actual resampling
-test_target <- terra::rast(
-  extent = terra::ext(test_source),
-  nrows = terra::nrow(test_source),
-  ncols = terra::ncol(test_source)
-)
-
-# Non-collinear GCPs: four corners of a near-identity transform
-# source and target coords differ by a small constant offset
-test_gcp <- tibble::tibble(
-  gcp_id = 1:4,
-  source_x = c(
-    terra::xmin(test_source),
-    terra::xmax(test_source),
-    terra::xmin(test_source),
-    terra::xmax(test_source)
-  ),
-  source_y = c(
-    terra::ymax(test_source),
-    terra::ymax(test_source),
-    terra::ymin(test_source),
-    terra::ymin(test_source)
-  ),
-  target_x = c(
-    terra::xmin(test_target),
-    terra::xmax(test_target),
-    terra::xmin(test_target),
-    terra::xmax(test_target)
-  ),
-  target_y = c(
-    terra::ymax(test_target),
-    terra::ymax(test_target),
-    terra::ymin(test_target),
-    terra::ymin(test_target)
-  )
-)
-
 # ── Output type ───────────────────────────────────────────────────────────────
 
 test_that("hsi_coregister returns a SpatRaster", {
-  result <- hsi_coregister(test_source, test_target, test_gcp)
+  result <- hsi_coregister(test_reflectance, test_target, test_gcp)
 
   expect_s4_class(result, "SpatRaster")
 })
 
 # ── Output dimensions ─────────────────────────────────────────────────────────
 
-test_that("hsi_coregister output nrow matches target", {
-  result <- hsi_coregister(test_source, test_target, test_gcp)
+test_that("hsi_coregister output matches target grid and source bands", {
+  result <- hsi_coregister(test_reflectance, test_target, test_gcp)
 
   expect_equal(terra::nrow(result), terra::nrow(test_target))
-})
-
-test_that("hsi_coregister output ncol matches target", {
-  result <- hsi_coregister(test_source, test_target, test_gcp)
-
   expect_equal(terra::ncol(result), terra::ncol(test_target))
-})
-
-test_that("hsi_coregister output nlyr matches source", {
-  result <- hsi_coregister(test_source, test_target, test_gcp)
-
-  expect_equal(terra::nlyr(result), terra::nlyr(test_source))
+  expect_equal(terra::nlyr(result), terra::nlyr(test_reflectance))
 })
 
 # ── Band names ────────────────────────────────────────────────────────────────
 
 test_that("hsi_coregister preserves band names on in-memory result", {
-  result <- hsi_coregister(test_source, test_target, test_gcp)
+  result <- hsi_coregister(test_reflectance, test_target, test_gcp)
 
-  expect_equal(names(result), names(test_source))
+  expect_equal(names(result), names(test_reflectance))
 })
 
 test_that("hsi_coregister bakes band names into output file on disk", {
-  temp_file <- tempfile(fileext = ".tif")
+  temp_file <- withr::local_tempfile(fileext = ".tif")
 
   hsi_coregister(
-    test_source,
+    test_reflectance,
     test_target,
     test_gcp,
     filename = temp_file,
@@ -98,18 +43,57 @@ test_that("hsi_coregister bakes band names into output file on disk", {
   # Read back from disk — names must survive round-trip
   result_from_disk <- terra::rast(temp_file)
 
-  expect_equal(names(result_from_disk), names(test_source))
+  expect_equal(names(result_from_disk), names(test_reflectance))
+})
 
-  unlink(temp_file)
+test_that("hsi_coregister writes names(x) to disk, not the names in x's file", {
+  # Layers renamed in memory must reach disk, not the names in x's file
+  temp_file <- withr::local_tempfile(fileext = ".tif")
+
+  renamed <- terra::subset(
+    test_reflectance,
+    seq_len(terra::nlyr(test_reflectance))
+  )
+  names(renamed) <- paste0("renamed_", seq_len(terra::nlyr(renamed)))
+
+  hsi_coregister(
+    renamed,
+    test_target,
+    test_gcp,
+    filename = temp_file,
+    overwrite = TRUE
+  )
+
+  expect_equal(names(terra::rast(temp_file)), names(renamed))
+})
+
+test_that("hsi_coregister returns a raster whose values are readable", {
+  # Returned raster must stay readable after the call, with and without filename
+  temp_file <- withr::local_tempfile(fileext = ".tif")
+
+  written <- hsi_coregister(
+    test_reflectance,
+    test_target,
+    test_gcp,
+    filename = temp_file,
+    overwrite = TRUE
+  )
+
+  in_memory <- hsi_coregister(test_reflectance, test_target, test_gcp)
+
+  expect_true(file.exists(terra::sources(written)))
+  expect_true(file.exists(terra::sources(in_memory)))
+  expect_no_error(terra::values(written))
+  expect_no_error(terra::values(in_memory))
 })
 
 # ── File writing ──────────────────────────────────────────────────────────────
 
 test_that("hsi_coregister writes to file when filename provided", {
-  temp_file <- tempfile(fileext = ".tif")
+  temp_file <- withr::local_tempfile(fileext = ".tif")
 
   result <- hsi_coregister(
-    test_source,
+    test_reflectance,
     test_target,
     test_gcp,
     filename = temp_file,
@@ -118,15 +102,13 @@ test_that("hsi_coregister writes to file when filename provided", {
 
   expect_true(file.exists(temp_file))
   expect_s4_class(result, "SpatRaster")
-
-  unlink(temp_file)
 })
 
 test_that("hsi_coregister errors when file exists and overwrite = FALSE", {
-  temp_file <- tempfile(fileext = ".tif")
+  temp_file <- withr::local_tempfile(fileext = ".tif")
 
   hsi_coregister(
-    test_source,
+    test_reflectance,
     test_target,
     test_gcp,
     filename = temp_file,
@@ -135,15 +117,46 @@ test_that("hsi_coregister errors when file exists and overwrite = FALSE", {
 
   expect_error(
     hsi_coregister(
-      test_source,
+      test_reflectance,
       test_target,
       test_gcp,
       filename = temp_file,
       overwrite = FALSE
-    )
+    ),
+    "already exists",
+    class = "hsitools_error"
+  )
+})
+
+test_that("hsi_coregister overwrite = TRUE replaces an existing file", {
+  # A 3-band file must fully replace the existing 101-band output
+  temp_file <- withr::local_tempfile(fileext = ".tif")
+
+  three_bands <- terra::writeRaster(
+    terra::subset(test_reflectance, 1:3),
+    withr::local_tempfile(fileext = ".tif")
   )
 
-  unlink(temp_file)
+  hsi_coregister(
+    test_reflectance,
+    test_target,
+    test_gcp,
+    filename = temp_file,
+    overwrite = TRUE
+  )
+
+  hsi_coregister(
+    three_bands,
+    test_target,
+    test_gcp,
+    filename = temp_file,
+    overwrite = TRUE
+  )
+
+  result_from_disk <- terra::rast(temp_file)
+
+  expect_equal(terra::nlyr(result_from_disk), 3)
+  expect_equal(names(result_from_disk), names(three_bands))
 })
 
 # ── Input validation ──────────────────────────────────────────────────────────
@@ -151,7 +164,7 @@ test_that("hsi_coregister errors when file exists and overwrite = FALSE", {
 test_that("hsi_coregister validates filename and overwrite", {
   expect_write_tail_validated(
     hsi_coregister,
-    list(x = test_source, y = test_target, gcp = test_gcp)
+    list(x = test_reflectance, y = test_target, gcp = test_gcp)
   )
 })
 
@@ -160,24 +173,28 @@ test_that("hsi_coregister errors with non-SpatRaster x", {
 })
 
 test_that("hsi_coregister errors with non-SpatRaster y", {
-  expect_error(hsi_coregister(test_source, "not a raster", test_gcp))
+  expect_error(hsi_coregister(test_reflectance, "not a raster", test_gcp))
 })
 
 test_that("hsi_coregister errors with non-data-frame gcp", {
-  expect_error(hsi_coregister(test_source, test_target, "not a data frame"))
+  expect_error(hsi_coregister(
+    test_reflectance,
+    test_target,
+    "not a data frame"
+  ))
 })
 
 test_that("hsi_coregister errors when gcp columns are missing", {
   bad_gcp <- tibble::tibble(source_x = 1:4, source_y = 1:4)
 
-  expect_error(hsi_coregister(test_source, test_target, bad_gcp))
+  expect_error(hsi_coregister(test_reflectance, test_target, bad_gcp))
 })
 
 test_that("hsi_coregister errors when fewer than 3 GCPs provided", {
   two_gcp <- test_gcp |> dplyr::slice(1:2)
 
   expect_error(
-    hsi_coregister(test_source, test_target, two_gcp),
+    hsi_coregister(test_reflectance, test_target, two_gcp),
     "at least 3",
     class = "hsitools_error"
   )
@@ -193,7 +210,7 @@ test_that("hsi_coregister errors when GCPs are collinear", {
   )
 
   expect_error(
-    hsi_coregister(test_source, test_target, collinear_gcp),
+    hsi_coregister(test_reflectance, test_target, collinear_gcp),
     "collinear",
     class = "hsitools_error"
   )
@@ -217,7 +234,7 @@ test_that("hsi_coregister errors when x has no file source", {
 
 test_that("hsi_coregister errors with invalid method", {
   expect_error(
-    hsi_coregister(test_source, test_target, test_gcp, method = "invalid"),
+    hsi_coregister(test_reflectance, test_target, test_gcp, method = "invalid"),
     "invalid",
     class = "hsitools_error"
   )
