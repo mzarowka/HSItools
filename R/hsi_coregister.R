@@ -2,8 +2,8 @@
 #'
 #' @family HSI Co-registration
 #'
-#' @param x A [`SpatRaster`][terra::SpatRaster-class] to warp. Must have a
-#'   file source on disk.
+#' @param x A [`SpatRaster`][terra::SpatRaster-class] to warp. Must be a
+#'   whole file on disk, not a window, layer subset or combination of files.
 #' @param y A [`SpatRaster`][terra::SpatRaster-class] defining the output grid.
 #'   Output extent, resolution, and dimensions are taken from this raster.
 #' @param gcp A [data.frame] or [tibble][tibble::tibble] of matched GCPs from
@@ -123,6 +123,26 @@ hsi_coregister <- function(
     cli::cli_abort(
       c(
         "{.arg x} has no file source.",
+        "i" = "Write it to disk first with {.code terra::writeRaster()}."
+      ),
+      class = "hsitools_error"
+    )
+  }
+
+  # Source must be the whole file: GDAL warps the file, not a view of it
+  x_sources <- terra::sources(x, bands = TRUE)
+
+  x_file <- terra::rast(source_path)
+
+  is_whole_file <- length(unique(x_sources$source)) == 1 &&
+    identical(as.integer(x_sources$bands), seq_len(terra::nlyr(x_file))) &&
+    identical(as.vector(terra::ext(x)), as.vector(terra::ext(x_file)))
+
+  if (!is_whole_file) {
+    cli::cli_abort(
+      c(
+        "{.arg x} is not a whole file on disk.",
+        "i" = "Windows, layer subsets and combined rasters cannot be warped.",
         "i" = "Write it to disk first with {.code terra::writeRaster()}."
       ),
       class = "hsitools_error"

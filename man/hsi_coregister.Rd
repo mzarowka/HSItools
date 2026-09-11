@@ -14,8 +14,8 @@ hsi_coregister(
 )
 }
 \arguments{
-\item{x}{A \code{\link[terra:SpatRaster-class]{SpatRaster}} to warp. Must have a
-file source on disk.}
+\item{x}{A \code{\link[terra:SpatRaster-class]{SpatRaster}} to warp. Must be a
+whole file on disk, not a window, layer subset or combination of files.}
 
 \item{y}{A \code{\link[terra:SpatRaster-class]{SpatRaster}} defining the output grid.
 Output extent, resolution, and dimensions are taken from this raster.}

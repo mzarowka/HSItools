@@ -232,6 +232,29 @@ test_that("hsi_coregister errors when x has no file source", {
   )
 })
 
+test_that("hsi_coregister errors when x is a window or layer subset of its file", {
+  # Views of the file on disk, derived from copies so the fixture is untouched
+  windowed <- terra::subset(
+    test_reflectance,
+    seq_len(terra::nlyr(test_reflectance))
+  )
+  terra::window(windowed) <- terra::ext(test_reflectance) -
+    terra::res(test_reflectance)
+
+  layer_subset <- terra::subset(test_reflectance, 1:3)
+
+  expect_error(
+    hsi_coregister(windowed, test_target, test_gcp),
+    "not a whole file",
+    class = "hsitools_error"
+  )
+  expect_error(
+    hsi_coregister(layer_subset, test_target, test_gcp),
+    "not a whole file",
+    class = "hsitools_error"
+  )
+})
+
 test_that("hsi_coregister errors with invalid method", {
   expect_error(
     hsi_coregister(test_reflectance, test_target, test_gcp, method = "invalid"),
