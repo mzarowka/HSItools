@@ -1,14 +1,6 @@
 # Test hsi_subset ----
 # Extracts bands by wavelength value using nearest-band matching.
 
-## Setup ----
-test_reflectance <- terra::rast(
-  system.file(
-    package = "HSItools",
-    "testdata/products/REFLECTANCE_testdata.tif"
-  )
-)
-
 # ── Output type ──────────────────────────────────────────────────────────────
 
 test_that("hsi_subset returns a SpatRaster", {

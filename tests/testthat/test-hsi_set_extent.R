@@ -12,13 +12,6 @@
 #   - An anchor outside the raster extrapolates and raises a hsitools_warning.
 
 ## Setup ----
-test_reflectance <- terra::rast(
-  system.file(
-    package = "HSItools",
-    "testdata/products/REFLECTANCE_testdata.tif"
-  )
-)
-
 # The fixture is 9 x 9 x 101 with extent 1000-1009 / 2000-2009 and unit
 # resolution. The non-zero spatial origin is load-bearing: it catches any
 # assumption that the input raster starts at zero.

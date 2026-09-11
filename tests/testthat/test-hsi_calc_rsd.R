@@ -1,14 +1,6 @@
 # Test standard deviation of reflectance calculation ----
 # Rsd = standard deviation of reflectance across all bands per pixel.
 
-## Setup ----
-test_reflectance <- terra::rast(
-  system.file(
-    package = "HSItools",
-    "testdata/products/REFLECTANCE_testdata.tif"
-  )
-)
-
 # ── Output type ──────────────────────────────────────────────────────────────
 
 test_that("hsi_calc_rsd returns a SpatRaster", {

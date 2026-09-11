@@ -2,14 +2,6 @@
 # hsi_smooth_median applies terra::focal with fun = "median" across space.
 # Band names are preserved. Window must be odd.
 
-## Setup ----
-test_reflectance <- terra::rast(
-  system.file(
-    package = "HSItools",
-    "testdata/products/REFLECTANCE_testdata.tif"
-  )
-)
-
 # ── Output type ──────────────────────────────────────────────────────────────
 
 test_that("hsi_smooth_median returns a SpatRaster", {

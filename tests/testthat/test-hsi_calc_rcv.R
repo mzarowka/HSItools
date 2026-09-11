@@ -1,14 +1,6 @@
 # Test coefficient of variation of reflectance ----
 # Rcv = sd(reflectance) / mean(reflectance) per pixel across all bands.
 
-## Setup ----
-test_reflectance <- terra::rast(
-  system.file(
-    package = "HSItools",
-    "testdata/products/REFLECTANCE_testdata.tif"
-  )
-)
-
 # ── Output type ──────────────────────────────────────────────────────────────
 
 test_that("hsi_calc_rcv returns a SpatRaster", {

@@ -9,14 +9,6 @@
 #   - Values outside the storable range abort in BOTH directions. The floor
 #     matters as much as the ceiling: unsigned types clamp negatives silently.
 
-## Setup ----
-test_reflectance <- terra::rast(
-  system.file(
-    package = "HSItools",
-    "testdata/products/REFLECTANCE_testdata.tif"
-  )
-)
-
 # ── Output type ──────────────────────────────────────────────────────────────
 
 test_that("hsi_write_scaled returns a SpatRaster", {

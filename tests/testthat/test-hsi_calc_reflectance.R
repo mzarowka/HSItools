@@ -23,13 +23,6 @@ test_darkref <- terra::rast(
   system.file("testdata/capture/DARKREF_testdata.tif", package = "HSItools")
 )
 
-test_reflectance <- terra::rast(
-  system.file(
-    "testdata/products/REFLECTANCE_testdata.tif",
-    package = "HSItools"
-  )
-)
-
 # Output type ----
 
 test_that("hsi_calc_reflectance returns a SpatRaster", {

@@ -2,14 +2,6 @@
 # NDI = (band1 - band2) / (band1 + band2)
 # For non-negative reflectance this is mathematically bounded to [-1, 1].
 
-## Setup ----
-test_reflectance <- terra::rast(
-  system.file(
-    package = "HSItools",
-    "testdata/products/REFLECTANCE_testdata.tif"
-  )
-)
-
 # ── Output type ──────────────────────────────────────────────────────────────
 
 test_that("hsi_calc_ndi returns a SpatRaster", {

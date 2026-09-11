@@ -6,13 +6,6 @@
 # separate, pre-existing gap.
 
 ## Setup ----
-test_reflectance <- terra::rast(
-  system.file(
-    package = "HSItools",
-    "testdata/products/REFLECTANCE_testdata.tif"
-  )
-)
-
 # Two points spanning part of the fixture's vertical extent (1000-1009,
 # 2000-2009), centered so a modest width stays inside the raster bounds.
 test_points <- terra::vect(

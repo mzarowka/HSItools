@@ -8,14 +8,6 @@
 #   - `fun` argument affects output values
 #   - Errors when band names are not parseable as numeric wavelengths
 
-## Setup ----
-test_reflectance <- terra::rast(
-  system.file(
-    package = "HSItools",
-    "testdata/products/REFLECTANCE_testdata.tif"
-  )
-)
-
 # ── Output type ──────────────────────────────────────────────────────────────
 
 test_that("hsi_extract_spectrum returns a tibble", {

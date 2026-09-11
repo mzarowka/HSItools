@@ -7,13 +7,6 @@
 # paths. Happy-path tests use custom wavelengths within the available range.
 
 ## Setup ----
-test_reflectance <- terra::rast(
-  system.file(
-    package = "HSItools",
-    "testdata/products/REFLECTANCE_testdata.tif"
-  )
-)
-
 # Three wavelengths confirmed within the test data range (~517-772 nm)
 custom_bands <- c(700, 620, 540)
 

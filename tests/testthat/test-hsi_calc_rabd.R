@@ -1,14 +1,6 @@
 # Test RABD calculation ----
 # RABD = continuum / trough reflectance — values > 1 indicate absorption.
 
-## Setup ----
-test_reflectance <- terra::rast(
-  system.file(
-    package = "HSItools",
-    "testdata/products/REFLECTANCE_testdata.tif"
-  )
-)
-
 # ── Output type ──────────────────────────────────────────────────────────────
 
 test_that("hsi_calc_rabd returns a SpatRaster", {

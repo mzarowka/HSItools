@@ -8,13 +8,6 @@
 ## Setup ----
 skip_if_not_installed("spacetime")
 
-test_reflectance <- terra::rast(
-  system.file(
-    package = "HSItools",
-    "testdata/products/REFLECTANCE_testdata.tif"
-  )
-)
-
 # Subset to 8 bands so ncell (81) > nlyr (8), matching hsi_calc_mnf's own
 # fixture requirement.
 test_8band <- terra::subset(test_reflectance, 1:8)

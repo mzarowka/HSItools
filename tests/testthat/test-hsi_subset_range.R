@@ -1,14 +1,6 @@
 # Test hsi_subset_range ----
 # Extracts all bands whose wavelength falls within [from, to] (inclusive).
 
-## Setup ----
-test_reflectance <- terra::rast(
-  system.file(
-    package = "HSItools",
-    "testdata/products/REFLECTANCE_testdata.tif"
-  )
-)
-
 # ── Output type ──────────────────────────────────────────────────────────────
 
 test_that("hsi_subset_range returns a SpatRaster", {

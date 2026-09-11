@@ -10,13 +10,6 @@
 # is.na() pattern, never against literal NA.
 
 ## Setup ----
-test_reflectance <- terra::rast(
-  system.file(
-    package = "HSItools",
-    "testdata/products/REFLECTANCE_testdata.tif"
-  )
-)
-
 # Single-layer mask derived from the fixture with a known 3-state pattern over
 # the 81 cells: cells 1-40 nonzero, 41-70 zero, 71-81 NA. Cell ranges are named
 # so assertions read against the contract, not magic numbers.

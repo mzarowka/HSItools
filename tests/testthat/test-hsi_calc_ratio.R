@@ -1,14 +1,6 @@
 # Test band ratio calculation ----
 # ratio = band1 / band2
 
-## Setup ----
-test_reflectance <- terra::rast(
-  system.file(
-    package = "HSItools",
-    "testdata/products/REFLECTANCE_testdata.tif"
-  )
-)
-
 # ── Output type ──────────────────────────────────────────────────────────────
 
 test_that("hsi_calc_ratio returns a SpatRaster", {

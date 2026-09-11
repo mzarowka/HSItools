@@ -5,14 +5,6 @@
 # write-tail-validation-sonnet.md); full §5 coverage (8-12 tests) remains a
 # separate, pre-existing gap.
 
-## Setup ----
-test_reflectance <- terra::rast(
-  system.file(
-    package = "HSItools",
-    "testdata/products/REFLECTANCE_testdata.tif"
-  )
-)
-
 # ── Input validation ─────────────────────────────────────────────────────────
 
 test_that("hsi_bind_rows validates filename and overwrite", {

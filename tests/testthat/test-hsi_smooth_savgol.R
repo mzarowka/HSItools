@@ -1,13 +1,6 @@
 # Test Savitzky-Golay filter ----
 
-## Setup ----
 # Load test data once for all tests in this file
-test_reflectance <- terra::rast(
-  system.file(
-    package = "HSItools",
-    "testdata/products/REFLECTANCE_testdata.tif"
-  )
-)
 
 # ── Value snapshot ───────────────────────────────────────────────────────────
 

@@ -4,13 +4,6 @@
 # Output values are wavelengths, so they must lie within search_range.
 
 ## Setup ----
-test_reflectance <- terra::rast(
-  system.file(
-    package = "HSItools",
-    "testdata/products/REFLECTANCE_testdata.tif"
-  )
-)
-
 # Derivative is computed once and reused across tests
 test_deriv <- hsi_smooth_savgol(x = test_reflectance, m = 1)
 

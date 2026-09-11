@@ -10,14 +10,6 @@ skip_if_tiled_unavailable <- function() {
   testthat::skip_if_not_installed("carrier")
 }
 
-## Setup ----
-test_reflectance <- terra::rast(
-  system.file(
-    package = "HSItools",
-    "testdata/products/REFLECTANCE_testdata.tif"
-  )
-)
-
 # ── Output type ──────────────────────────────────────────────────────────────
 
 test_that("hsi_tiled returns a SpatRaster", {

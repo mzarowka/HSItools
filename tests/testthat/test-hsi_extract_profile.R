@@ -9,13 +9,6 @@
 #   - Invalid direction argument errors
 
 ## Setup ----
-test_reflectance <- terra::rast(
-  system.file(
-    package = "HSItools",
-    "testdata/products/REFLECTANCE_testdata.tif"
-  )
-)
-
 # Single-band raster for simpler structural assertions
 test_single <- terra::subset(test_reflectance, 1)
 
