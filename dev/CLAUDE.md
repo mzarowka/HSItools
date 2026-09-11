@@ -1,6 +1,6 @@
 # HSItools Ecosystem Development Guidelines (CLAUDE.md)
 
-> **Version 1.11.0 — 2026-09-10.** This file is the **canonical source**
+> **Version 1.12.0 — 2026-09-11.** This file is the **canonical source**
 > of development conventions for the HSItools ecosystem. Claude Code
 > reads it automatically at session start; the claude.ai
 > `hsitools-development` skill is a mirror refreshed from this file at
@@ -39,14 +39,18 @@ the user’s time even if the code is correct.
     down, not to defend it.
 7.  **Verification runs where R lives.** If this session can execute
     commands in the repo (Claude Code): after each single change, run
-    `Rscript -e "devtools::test()"` (plus `devtools::document()`
-    whenever a roxygen block or signature changed), show the output, and
-    wait for Maury’s go/no-go before the next change. If this session
-    cannot execute R (chat sessions — sandboxes lack the system
-    dependencies and CRAN access, confirmed empirically 2026-07-11):
-    make source edits and hand off patches; Maury runs all verification
-    locally. In either mode, never claim a verification step ran unless
-    its output was actually shown or Maury reported it.
+    the focused tests for the touched file —
+    `devtools::test_active_file("R/<name>.R")` — (plus
+    `devtools::document()` whenever a roxygen block or signature
+    changed), show the output, and wait for Maury’s go/no-go before the
+    next change; run the full `devtools::test()` before handing work
+    back. Commands and the Windows `Rscript` caveat: Repo map →
+    Commands. If this session cannot execute R (chat sessions —
+    sandboxes lack the system dependencies and CRAN access, confirmed
+    empirically 2026-07-11): make source edits and hand off patches;
+    Maury runs all verification locally. In either mode, never claim a
+    verification step ran unless its output was actually shown or Maury
+    reported it.
 8.  **Git belongs to Maury.** Never run git commands that modify state —
     no `add`, `commit`, `checkout`, `branch`, `merge`, `push`, `stash`,
     `restore`, or similar. Read-only inspection (`git status`,
@@ -129,11 +133,23 @@ package, not a script project).
 
 devtools::load_all()          # load package for interactive dev
 devtools::test()              # run full test suite (testthat edition 3)
-devtools::test_active_file()  # run the currently open test file
-testthat::test_file("tests/testthat/test-hsi_calc_rabd.R")  # run a single test file
+devtools::test(filter = "hsi_calc_rabd")                   # test files matching a regex ("hsi_calc_ra" hits raba/rabd/ratio)
+devtools::test_active_file("R/hsi_calc_rabd.R")            # tests for one source file (R/x.R -> tests/testthat/test-x.R)
+devtools::test_active_file("R/hsi_calc_rabd.R", desc = "hsi_calc_rabd returns a SpatRaster")  # one test, exact name, no regex
+devtools::test_coverage_active_file("R/hsi_calc_rabd.R")   # line coverage of R/x.R from its own test file
 devtools::check()             # full R CMD check
 devtools::document()          # regenerate NAMESPACE and man/*.Rd — required after touching any roxygen block
+pkgdown::check_pkgdown()      # every exported topic is listed in _pkgdown.yml
 ```
+
+Always pass an explicit path to `test_active_file()` /
+`test_coverage_active_file()`: without one they target the file open in
+the IDE editor, which an agent session does not have.
+
+From a shell, run these via `Rscript -e "..."`. On Windows, `Rscript -e`
+can segfault on multiline or complex code; in that case write the code
+to a temporary `.R` file outside the repo and run
+`Rscript path/to/file.R`.
 
 Formatting is owned by **air** (see §2): run `air format` on any file
 you edit before handing work back; `air.toml` at the repo root marks the
@@ -348,6 +364,7 @@ call-attribution: §3.2–§3.3a.
 | `raw$schema` on deserialized/external data | Spell the full name — `raw$schema_version` or `raw[["schema_version"]]` — `$` partial matching silently returns the wrong element on raw external data |
 | `rlang::list2(...)` into `wopt` with no dots check (guarded-write functions) | `wopt_user <- rlang::list2(...)` then `check_dots_write(wopt_user, filename)` in the validation block — a silent `...` sink hides typos and removed arguments (§3.2 has the exemption for direct-to-terra functions) |
 | [`terra::crop()`](https://rspatial.github.io/terra/reference/crop.html) on a raw integer capture | [`terra::window()`](https://rspatial.github.io/terra/reference/window.html) — lazy ROI, reads and writes nothing, so it cannot relabel a saturated reading as NoData |
+| `expect_true(all(x))` / `expect_true(is.numeric(x))` in tests | the specific expectation — `expect_all_true(x)`, `expect_all_equal(x, y)`, `expect_type(x, "double")` — its failure message says what went wrong (§5.3) |
 
 Applies to all source, test, template, and example code in every
 package:
@@ -542,6 +559,13 @@ house `check_*` helper exists. Their errors stay rlang-classed — they do
 **not** carry `hsitools_error`, and this is accepted. Never wrap them,
 never write house duplicates (no house `check_string()`). Test
 consequence in §5.6.
+
+**lifecycle carve-out.** Deprecation warnings from
+[`lifecycle::deprecate_warn()`](https://lifecycle.r-lib.org/reference/deprecate_soft.html)
+(§3.12) stay lifecycle-classed — they do **not** carry
+`hsitools_warning`, and this is accepted, on the same logic as the rlang
+carve-out. Never wrap them in
+[`cli::cli_warn()`](https://cli.r-lib.org/reference/cli_abort.html).
 
 **Call attribution rule.** Truly *internal* helpers (called by exported
 functions; e.g. `wavelength_sub`, `to_um`, `from_um`, the `check_*`
@@ -755,6 +779,42 @@ file actually says, defeating any schema gate. Pattern established by
 [`hsi_read_metadata()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_read_metadata.md)
 (2026-07-08).
 
+### 3.12 Deprecation (tidyverse lifecycle workflow)
+
+Exported functions and arguments are deprecated before they are removed,
+never removed outright. The first deprecation in a package starts with
+`usethis::use_lifecycle()`. Each deprecation is one change covering all
+five steps:
+
+1.  **Version.** Read `Version` from `DESCRIPTION`; the deprecation
+    version is the next minor release (`MAJOR.MINOR.PATCH.9xxx` →
+    `MAJOR.(MINOR+1).0`).
+
+2.  **Warning**, first thing in the body — ahead of the validation
+    block:
+
+    ``` r
+
+    # Deprecated function
+    lifecycle::deprecate_warn("X.Y.0", "hsi_old()", "hsi_new()")
+
+    # Deprecated argument: default becomes lifecycle::deprecated()
+    if (lifecycle::is_present(old_arg)) {
+      lifecycle::deprecate_warn("X.Y.0", "hsi_fn(old_arg)", "hsi_fn(new_arg)")
+    }
+    ```
+
+3.  **Documentation.** Function: `@description` opens with
+    `` `r lifecycle::badge("deprecated")` `` and a sentence naming the
+    replacement; `@examples` are replaced by 2–3 `# Old:` / `# New:`
+    migration pairs. Argument: the `@param` string starts with
+    `` `r lifecycle::badge("deprecated")` ``. Re-document.
+
+4.  **Tests** per §5.8.
+
+5.  **NEWS** bullet per §9 —
+    `` `hsi_old()` is deprecated. Use `hsi_new()` instead. ``
+
 ------------------------------------------------------------------------
 
 ## 4. Roxygen documentation rules
@@ -840,6 +900,14 @@ Title Case and consistency within a family.
 one-liners (`Auto-detected via [rlang::caller_arg()]` /
 `[rlang::caller_env()]`).
 
+### 4.8 pkgdown reference index
+
+In packages with a `_pkgdown.yml`: whenever a new exported documentation
+topic is added, add it to the reference index in `_pkgdown.yml` in the
+same change, then run
+[`pkgdown::check_pkgdown()`](https://pkgdown.r-lib.org/reference/check_pkgdown.html)
+— an unlisted topic fails the site build.
+
 ------------------------------------------------------------------------
 
 ## 5. Testing standards (testthat 3e)
@@ -856,16 +924,23 @@ session + `devtools::load_all()` must be able to run any single test).
 - One test file per exported function: `test-<function_name>.R`,
   mirroring `R/`.
 - File opens with a comment block (what the function does, key
-  contracts), then `## Setup ----` loading shared fixtures **once at top
-  level**. Fixtures are read-only — never mutate a top-level fixture
-  inside a test; derive per-test copies via
+  contracts). **No code outside `test_that()` blocks** in a `test-*.R`
+  file.
+- Fixtures live in helper files, auto-loaded by testthat and
+  `devtools::load_all()`: shared fixtures in
+  `tests/testthat/helper-fixtures.R`, fixtures used by a single test
+  file in `tests/testthat/helper-<name>.R` or built inside the
+  `test_that()` block that needs them. Fixtures are read-only — never
+  mutate one inside a test; derive per-test copies via
   [`terra::setValues()`](https://rspatial.github.io/terra/reference/setValues.html)
   /
   [`terra::subset()`](https://rspatial.github.io/terra/reference/subset.html).
+  Test files that still load fixtures under a top-level `## Setup ----`
+  predate this rule; move a file’s setup into helpers when it next gets
+  real test work.
 - Never [`source()`](https://rdrr.io/r/base/source.html) inside
   `tests/testthat/`. Shared expectation helpers live in
-  `tests/testthat/helper-*.R` (auto-loaded by testthat and
-  `devtools::load_all()`).
+  `tests/testthat/helper-*.R`.
 - Sections in this fixed order (omit only if genuinely N/A), RStudio
   section style: `Output type` → `Output dimensions` → `Band names` →
   `Value sanity` → `File writing` → `Input validation`. Tibble-returning
@@ -900,6 +975,13 @@ not one expectation per test:
   per function, never the only test.
 - Never re-test what terra/GDAL itself guarantees (format handling, CRS
   propagation) — that is their interface, not ours.
+- Use the most specific expectation available, because its failure
+  message shows the offending values: `expect_all_true(x >= 0 & x <= 1)`
+  not `expect_true(all(...))`, `expect_all_equal()` for “every element
+  equals”, `expect_type()` / `expect_s4_class()` for types.
+  `expect_true()` / `expect_false()` only where no specific expectation
+  exists (`expect_true(file.exists(temp_file))`, §5.5).
+  `expect_all_true()` / `expect_all_equal()` need testthat ≥ 3.3.0.
 
 ### 5.3a Testing functions that subset before computing
 
@@ -1021,14 +1103,19 @@ the generic (external interface), not internal helpers.
 
 Do **not** test: internal `check_*` helpers directly (validated once in
 isolation / indirectly through public functions), stub plot functions,
-deprecated functions, or the `cores` argument. Parameterized tests /
-shared helpers for function families; keep individual tests focused on
-unique logic. Target **~8–12 tests** per raster-transforming function,
-**6–10** for tibble-returning extraction functions (counts assume
-consolidated behaviours per §5.3; more only when the function has
-genuinely more contracts). `Suggests` packages guarded with skip helpers
-for CRAN compliance. Prune suites to reflect current function surfaces —
-dead tests are debt; testthat auto-deletes dangling snapshots, but guard
+or the `cores` argument. Deprecated functions and arguments (§3.12) get
+no new behaviour tests — exactly one `expect_snapshot(. <- hsi_fn(...))`
+pinning the deprecation warning; existing tests that exercise them stay
+until removal, silenced with
+`withr::local_options(lifecycle_verbosity = "quiet")` at the top of each
+affected `test_that()` block. Parameterized tests / shared helpers for
+function families; keep individual tests focused on unique logic. Target
+**~8–12 tests** per raster-transforming function, **6–10** for
+tibble-returning extraction functions (counts assume consolidated
+behaviours per §5.3; more only when the function has genuinely more
+contracts). `Suggests` packages guarded with skip helpers for CRAN
+compliance. Prune suites to reflect current function surfaces — dead
+tests are debt; testthat auto-deletes dangling snapshots, but guard
 conditional/skipped snapshot tests with `announce_snapshot_file()`.
 
 ------------------------------------------------------------------------
@@ -1263,6 +1350,15 @@ reader of its own. Rules:
   (Ubuntu devel/release/oldrel-1, Windows release, macOS release) on
   push/PR, `upload-snapshots: true`. New workflows (coverage, pkgdown)
   are added one at a time, never batched.
+- **NEWS.md** (in packages that keep one): every user-facing change gets
+  a bullet under `# <pkg> (development version)`, in the same change. No
+  bullet for internal refactors, small documentation edits, or fixes to
+  bugs introduced in the current dev version. Name the function early
+  (`` `hsi_calc_rabd()` now ... ``); breaking changes lead with
+  `Breaking:`; add a GitHub issue number in parentheses when one exists.
+  One bullet may be several sentences but is never line-wrapped. Order:
+  `Breaking:` bullets first, then bullets that name no function, then
+  the rest alphabetically by function name.
 - **Metadata sidecars must carry a `schema_version` field** from the
   first sidecar written in the wild. The same versioning question
   applies to the hsical interop contract.
@@ -1374,15 +1470,38 @@ Before proposing any HSItools/zarowka code, confirm:
     [`terra::subset`](https://rspatial.github.io/terra/reference/subset.html)/`mask`
     materialization?
 7.  Roxygen matches §4 verbatim strings and tag order; `@export` last?
-8.  Tests follow §5: sections, naming, fixture chain, 517.58–772.19 nm
-    constraint, withr tempfiles, one behaviour per test, snapshot layer
-    for cli errors?
-9.  Touching anything in §10? Stop and ask before deciding.
+    New exported topic added to `_pkgdown.yml` (§4.8)?
+8.  Tests follow §5: sections, naming, fixtures in helper files (no code
+    outside `test_that()`), fixture chain, 517.58–772.19 nm constraint,
+    withr tempfiles, one behaviour per test, specific expectations,
+    snapshot layer for cli errors?
+9.  User-facing change → NEWS bullet (§9)? Removing or renaming an
+    exported function/argument → deprecation workflow (§3.12)?
+10. Touching anything in §10? Stop and ask before deciding.
 
 ------------------------------------------------------------------------
 
 ## Changelog
 
+- **1.12.0 (2026-09-11)** — Conventions adopted from the tidyverse agent
+  guidance shipped in usethis 3.2.2 (`AGENTS.md` and the
+  `learn_tidy_skill()` skills), on the principle that the tidyverse
+  team’s defaults win where this file had no rule or diverged (decision
+  Maury, 2026-09-11). Commands gain agent-usable focused forms
+  (`test(filter =)`, `test_active_file("R/x.R")`, `desc =` single-test
+  runs, `test_coverage_active_file()`, `check_pkgdown()`), a warning
+  that path-less `test_active_file()` targets the IDE editor, and the
+  Windows `Rscript -e` segfault fallback; §0 rule 7 now runs focused
+  tests per change and the full suite before handback. New §3.12
+  deprecation workflow (lifecycle, deprecate-before-remove) with a §3.3
+  lifecycle carve-out and a rewritten §5.8 deprecated-test rule (one
+  warning snapshot; existing tests silenced, not deleted). New §4.8
+  pkgdown reference-index rule. §5.1 reversed: no code outside
+  `test_that()`, fixtures move to `helper-*.R` (existing top-level
+  `## Setup ----` blocks migrate organically). §5.3 and a §2.0 row
+  prefer specific expectations (`expect_all_true()` et al., testthat ≥
+  3.3.0) over `expect_true()`. §9 gains NEWS.md rules. §11 checklist
+  updated. §10 untouched.
 - **1.11.0 (2026-09-10)** — Saturation doctrine settled, and both
   questions opened the same morning closed (design Fable + Maury;
   records in
