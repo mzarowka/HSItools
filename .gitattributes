@@ -1,0 +1,2 @@
+# testthat writes snapshots with LF; pin them so core.autocrlf does not flag every test run.
+tests/testthat/_snaps/** text eol=lf
