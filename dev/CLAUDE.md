@@ -1,92 +1,35 @@
-# HSItools Ecosystem Development Guidelines (CLAUDE.md)
+# HSItools development conventions (CLAUDE.md)
 
-> **Version 1.12.0 — 2026-09-11.** This file is the **canonical source**
-> of development conventions for the HSItools ecosystem. Claude Code
-> reads it automatically at session start; the claude.ai
-> `hsitools-development` skill is a mirror refreshed from this file at
-> milestone boundaries (the skill adds only trigger frontmatter). If the
-> two disagree, this file wins. Check the version here at the start of
-> every session.
+> **Version 1.13.0 — 2026-09-24.** Conventions for working on the
+> HSItools package: style, function structure, documentation, testing,
+> and the physical constraints the code must respect. They apply to
+> anyone working on the package. Personal workflow preferences (review
+> cadence, who commits) belong in each developer’s own Claude Code
+> configuration, not here. History of this file: `git log`.
 >
-> Consolidated 2026-07-02. Supersedes CODING_GUIDELINES.md,
-> TESTING_GUIDELINES.md, ROXYGEN_GUIDELINES.md and scattered design
-> notes as the single reference. These rules are non-negotiable house
-> style; do not improvise alternatives.
+> These rules are non-negotiable house style; do not improvise
+> alternatives.
 
 ------------------------------------------------------------------------
 
-## 0. How to work on this project (read first)
+## 1. Scope and design philosophy
 
-These behavioral rules outrank everything below. Violating them wastes
-the user’s time even if the code is correct.
-
-1.  **Approach before code.** When discussing code, first talk approach
-    and design; never code immediately. Wait for agreement on the
-    contract, then implement.
-2.  **One change at a time.** Propose a single change, let the user run
-    tests, then continue. Never batch several unrelated edits into one
-    response.
-3.  **No hardcoding unless absolutely necessary.** Strive for simple,
-    reusable code.
-4.  **Do not generalize speculatively.** Defer convenience branches and
-    abstractions until reuse is confirmed. If tempted to add
-    “flexibility”, ask first.
-5.  **Do not settle open design questions unilaterally.** See §10 —
-    several designs are deliberately unresolved; ask before locking
-    them.
-6.  **The user pushes back on overcomplication** (“we’re
-    overcomplicating this”) — treat that as a signal to strip the design
-    down, not to defend it.
-7.  **Verification runs where R lives.** If this session can execute
-    commands in the repo (Claude Code): after each single change, run
-    the focused tests for the touched file —
-    `devtools::test_active_file("R/<name>.R")` — (plus
-    `devtools::document()` whenever a roxygen block or signature
-    changed), show the output, and wait for Maury’s go/no-go before the
-    next change; run the full `devtools::test()` before handing work
-    back. Commands and the Windows `Rscript` caveat: Repo map →
-    Commands. If this session cannot execute R (chat sessions —
-    sandboxes lack the system dependencies and CRAN access, confirmed
-    empirically 2026-07-11): make source edits and hand off patches;
-    Maury runs all verification locally. In either mode, never claim a
-    verification step ran unless its output was actually shown or Maury
-    reported it.
-8.  **Git belongs to Maury.** Never run git commands that modify state —
-    no `add`, `commit`, `checkout`, `branch`, `merge`, `push`, `stash`,
-    `restore`, or similar. Read-only inspection (`git status`,
-    `git diff`, `git log`) is permitted for reviewing work. Maury
-    performs all commits and branch operations himself.
-9.  **This file carries conventions only — and is hands-off.** Never add
-    milestone state, session notes, TODOs, or roadmap items here; those
-    live exclusively in dated documents (`YYYY-MM-DD_*.md`, see §9).
-    Never modify this file unless Maury explicitly asks for the change.
-
-------------------------------------------------------------------------
-
-## 1. The ecosystem
-
-Three packages, one workflow:
-
-| Package | Role |
-|----|----|
-| **HSItools** (`mzarowka/HSItools`) | Core R package: processing, analysis, visualization of hyperspectral raster data. Stable, CRAN-quality surface. |
-| **zarowka** | Front-end scaffolding layer: workflow templates and experimental functions. Battle-tests new functionality before promotion to HSItools. |
-| **hsical** | Standalone Shiny app (packaged, `hsical::run_app()`): scan-session calibration companion and logger. Never touches spectral data. |
-
-**Promotion flow:** new functionality lands in zarowka first; it is
-promoted to HSItools only once the pattern is proven in real analyses.
+HSItools processes, analyses and visualizes hyperspectral raster data.
+It is a stable, CRAN-quality surface.
 
 **Sensor-, manufacturer-, and MATERIAL-agnostic (imperative):** HSItools
 must work with hyperspectral data regardless of material provenance and
 nature — sediment cores, outcrops, mineral matter, biological specimens,
 art conservation — and regardless of which sensor or vendor produced it.
-The current lab context (Specim VNIR/SWIR pushbroom scanners, mostly
-lake sediments) is *incidental*, not a design constraint: never bake
-sediment-, Specim-, Lumo-, or wavelength-range-specific assumptions into
-HSItools function contracts. Domain and instrument specificity lives in
-templates (zarowka), thin ingest adapters, and the logging app (hsical)
-— never in the analysis functions. When a proposed contract only makes
-sense for cores or for one vendor’s output, redesign it.
+Never bake material-, vendor- (e.g. Specim, Lumo), or
+wavelength-range-specific assumptions into function contracts. Domain
+and instrument specificity belongs outside the analysis functions — in
+workflow templates, thin ingest adapters, or the applications that use
+HSItools. When a proposed contract only makes sense for one material or
+one vendor’s output, redesign it.
+
+**Open design questions (§10) are not settled.** Several designs are
+deliberately unresolved; ask before locking any of them.
 
 **Design philosophy (non-negotiable):** - **Design-first.** Discuss
 function contracts and key decisions before writing any code. When
@@ -116,10 +59,9 @@ values unless absolutely necessary; strive for simple reusable code.
 
 HSItools is an R package for processing, analyzing, and visualizing
 hyperspectral imagery — sensor-, manufacturer-, and material-agnostic by
-design (§1 is imperative; the original auto-generated description baked
-in core-scanning framing and was rewritten). It takes raw digital-number
-captures through radiometric calibration to reflectance, then spectral
-smoothing, continuum removal, spectral indices (RABD, RABA, NDI, ratio,
+design (§1 is imperative). It takes raw digital-number captures through
+radiometric calibration to reflectance, then spectral smoothing,
+continuum removal, spectral indices (RABD, RABA, NDI, ratio,
 difference), spatial co-registration, and profile/spectrum extraction.
 Built on `terra` for file-backed raster processing so datasets larger
 than memory are supported.
@@ -437,8 +379,8 @@ package:
   that is correct but costly, measured 25× slower than windowing and
   dominated by the serial read-back of terra’s default block layout
   rather than by the write. (Cost several debugging passes on a
-  saturated uint16 ENVI cube, 2026-08-18; GKUT VNIR 2026-09-09, 24,816
-  saturated cells silently lost to a materialised crop.)
+  saturated uint16 ENVI cube, 2026-08-18; a VNIR capture, 2026-09-09:
+  24,816 saturated cells silently lost to a materialised crop.)
 - **`cores` and `threads` are different mechanisms.** `cores` (in
   [`terra::app()`](https://rspatial.github.io/terra/reference/app.html),
   `focal()`, [`predict()`](https://rdrr.io/r/stats/predict.html)) spawns
@@ -454,7 +396,7 @@ package:
 
 ------------------------------------------------------------------------
 
-## 3. Function structure (HSItools/zarowka source code)
+## 3. Function structure
 
 ### 3.1 Canonical argument order
 
@@ -512,11 +454,11 @@ nested:
   [`terra::focal()`](https://rspatial.github.io/terra/reference/focal.html),
   [`terra::predict()`](https://rspatial.github.io/terra/reference/predict.html)
   — e.g. the smoothers, per-pixel statistics, `hsi_remove_continuum`,
-  `hsi_tiled`, zarowka’s `hsi_apply_reduction`) never get this check.
-  terra validates `wopt` names unconditionally and honours valid options
-  even in-memory (probed 2026-07-14, terra 1.9.34: `names = "custom"`
-  sticks at `filename = ""`), so their `...` is a live interface and
-  adding the check would reject working calls.
+  `hsi_tiled`) never get this check. terra validates `wopt` names
+  unconditionally and honours valid options even in-memory (probed
+  2026-07-14, terra 1.9.34: `names = "custom"` sticks at
+  `filename = ""`), so their `...` is a live interface and adding the
+  check would reject working calls.
 - **[`cli::cli_abort()`](https://cli.r-lib.org/reference/cli_abort.html)
   is the only permitted validation error** — never
   [`stop()`](https://rdrr.io/r/base/stop.html), never
@@ -634,489 +576,34 @@ it sits quietly in a pipeline.
 [`return()`](https://rdrr.io/r/base/function.html) is permitted **only**
 for early exits inside the validation block.
 
-### 3.5 wopt construction
+**Before creating a new file under `R/` or `tests/`, read an existing
+file in the same directory first.** The rules in `.claude/rules/` load
+when Claude *reads* a matching file, not when it creates one; without
+that read, a new function or test would be written without them.
 
-Always the same two-variable merge; names are always `wopt_default` and
-`wopt_user`:
+### 3.5–3.12 — in `.claude/rules/function-structure.md`
 
-- `wopt_default` contains at minimum `names` (layer name).
-- `wopt_user <- rlang::list2(...)` — captured in the validation block,
-  immediately followed by `check_dots_write(wopt_user, filename)` in
-  guarded-write functions (§3.2).
-- `purrr::list_modify(wopt_default, !!!wopt_user)` — user values win.
-- Never specify `datatype` in `wopt_default` — terra chooses — unless a
-  documented reason exists (e.g. SWIR float32 requirement, §7).
-- Never expose `wopt` directly to users; `...` is the interface.
-
-### 3.6 Temp files — always withr
-
-[`withr::local_tempdir()`](https://withr.r-lib.org/reference/with_tempfile.html)
-is the only permitted temp-file pattern; never bare
-[`tempfile()`](https://rdrr.io/r/base/tempfile.html)/[`tempdir()`](https://rdrr.io/r/base/tempfile.html).
-`withr` goes in `Imports` if any exported function uses it. Do not
-manually [`unlink()`](https://rdrr.io/r/base/unlink.html) — withr cleans
-up.
-
-**Documented exceptions:** - When the temp file is the backing store of
-the *returned* SpatRaster (`in_memory = FALSE`, `filename = ""`), withr
-cannot own it — use plain
-[`tempfile()`](https://rdrr.io/r/base/tempfile.html) with an explicit
-comment. -
-[`hsi_tiled()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_tiled.md)
-uses session-lifetime
-[`tempfile()`](https://rdrr.io/r/base/tempfile.html) +
-[`dir.create()`](https://rdrr.io/r/base/files2.html) deliberately, to
-avoid Windows GDAL handle races with
-[`withr::local_tempdir()`](https://withr.r-lib.org/reference/with_tempfile.html).
-
-### 3.7 Comments
-
-- No section-divider comments (`# ---- x ----`) in source files (test
-  files may use them).
-- Full-sentence comments explaining *why* or labelling a logical step.
-- **Canonical structural comments — never vary the wording:**
-
-| Block             | Comment                 |
-|-------------------|-------------------------|
-| `check_*` calls   | `# Validate inputs`     |
-| wopt merge        | `# Build write options` |
-| filename guard    | `# Write to file`       |
-| final bare result | `# Return result`       |
-
-### 3.8 File layout
-
-- One exported function per file; file name matches function name.
-- Internal helpers live in `utils.R`.
-- Tests mirror source structure: `test-hsi_calc_x.R` ↔︎ `R/hsi_calc_x.R`.
-
-### 3.9 tryCatch policy
-
-Apply `tryCatch` only when all three hold: third-party code can error on
-*legitimate* input data; the failure maps cleanly to `NA`;
-pre-validation is impractical. (Established precedent:
-`hsi_remove_continuum` wrapping
-[`prospectr::continuumRemoval()`](https://l-ramirez-lopez.github.io/prospectr/reference/continuumRemoval.html).)
-Everywhere else, fail loudly.
-
-### 3.10 Parallelism
-
-**`terra::app(cores = )` is the backend for per-pixel spectral
-operations** (settled 2026-08-19, after measurement on GKUT and GRF17).
-Any exported function that hands a **user-supplied R function** to
-[`terra::app()`](https://rspatial.github.io/terra/reference/app.html)
-takes `cores` at §3.1 slot 9, validated with
-`check_numeric(cores, len = 1, positive = TRUE)`. Current holders:
-[`hsi_smooth_savgol()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_smooth_savgol.md),
-[`hsi_remove_continuum()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_remove_continuum.md),
-[`hsi_calc_raba()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_calc_raba.md),
-[`hsi_calc_remp()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_calc_remp.md).
-Built-in character funs never get it (§2 terra gotchas).
-
-**The minimal-environment rebind is mandatory and unconditional.**
-[`terra::app()`](https://rspatial.github.io/terra/reference/app.html)
-serializes `fun` to its workers once per write block, and a closure
-serializes together with its environment — a lambda defined inline
-inside an exported function carries that call frame, including the
-SpatRaster, which serializes to ~40 MB regardless of raster size.
-Measured consequence of the naive pass-through: **5.5× slower than
-single-threaded**. Immediately before the
-[`terra::app()`](https://rspatial.github.io/terra/reference/app.html)
-call, rebind:
-
-``` r
-# `terra::app(cores = )` serializes `fun` to its workers once per write block:
-# the frame drags `x` along, and a SpatRaster serializes to ~40 MB regardless
-# of raster size, which measured 5.5x *slower* than single-threaded. The body
-# needs nothing beyond `pkg::fun()`, and `::` lives in base.
-environment(my_fun) <- rlang::new_environment(
-  data = list(<only what the body references>),
-  parent = baseenv()
-)
-```
-
-`data = list()` is valid and **load-bearing** when the body references
-nothing from the frame
-([`hsi_calc_raba()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_calc_raba.md)):
-its job is removing the fat environment, not adding to it — never “clean
-it up”. `parent = baseenv()` suffices because `::` lives in base and
-namespaces serialize by reference; this makes explicit `pkg::`
-namespacing in the body load-bearing too, not just house style. Applied
-unconditionally, including at `cores = 1`, so there is one code path (§0
-rule 4). Verified: `tryCatch` handlers survive the trip and fire on
-workers; outputs are bit-identical to serial.
-
-**`mirai` remains available for genuinely custom orchestration**, but is
-no longer the default answer.
-[`hsi_tiled()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_tiled.md)
-pattern (unchanged, fate open — §10):
-[`mirai::mirai_map()`](https://mirai.r-lib.org/reference/mirai_map.html)
-with `.args = list(fun = fun)` for explicit argument passing (never rely
-on environment scoping);
-[`carrier::crate()`](https://rdrr.io/pkg/carrier/man/crate.html) for
-worker environment isolation;
-[`terra::makeTiles()`](https://rspatial.github.io/terra/reference/makeTiles.html)
-with corrected tile-size conversion; VRT-based mosaic; `BIGTIFF=YES`
-hardcoded for mosaic intermediates. Measured 2–5× **slower** than a
-direct call for per-pixel ops on both narrow and wide rasters, with ~99
-% of the cost in the serial VRT→TIFF mosaic read-back, not in
-`makeTiles()`.
-
-**terra version floor (performance, not correctness):** from terra
-1.9-46 the built-in focal statistics `max`/`min`/`median`/`modal`/`sd`
-are TBB-threaded (previously only `sum`/`mean`), which makes
-[`hsi_smooth_median()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_smooth_median.md)
-~3.9× faster with no code change; values are bit-identical either way.
-Templates set `terra::terraOptions(threads = )` to the core count, since
-terra’s own default caps at 16.
-
-### 3.11 S3 serialization — readers bypass the constructor
-
-Functions that deserialize an S3 object from disk assemble it via
-`structure(raw, class = "...")` and then run the shared validator —
-**never** through the constructor. Constructors stamp provenance fields
-(e.g. `schema_version`); re-running one on read would overwrite what the
-file actually says, defeating any schema gate. Pattern established by
-[`hsi_read_metadata()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_read_metadata.md)
-(2026-07-08).
-
-### 3.12 Deprecation (tidyverse lifecycle workflow)
-
-Exported functions and arguments are deprecated before they are removed,
-never removed outright. The first deprecation in a package starts with
-`usethis::use_lifecycle()`. Each deprecation is one change covering all
-five steps:
-
-1.  **Version.** Read `Version` from `DESCRIPTION`; the deprecation
-    version is the next minor release (`MAJOR.MINOR.PATCH.9xxx` →
-    `MAJOR.(MINOR+1).0`).
-
-2.  **Warning**, first thing in the body — ahead of the validation
-    block:
-
-    ``` r
-
-    # Deprecated function
-    lifecycle::deprecate_warn("X.Y.0", "hsi_old()", "hsi_new()")
-
-    # Deprecated argument: default becomes lifecycle::deprecated()
-    if (lifecycle::is_present(old_arg)) {
-      lifecycle::deprecate_warn("X.Y.0", "hsi_fn(old_arg)", "hsi_fn(new_arg)")
-    }
-    ```
-
-3.  **Documentation.** Function: `@description` opens with
-    `` `r lifecycle::badge("deprecated")` `` and a sentence naming the
-    replacement; `@examples` are replaced by 2–3 `# Old:` / `# New:`
-    migration pairs. Argument: the `@param` string starts with
-    `` `r lifecycle::badge("deprecated")` ``. Re-document.
-
-4.  **Tests** per §5.8.
-
-5.  **NEWS** bullet per §9 —
-    `` `hsi_old()` is deprecated. Use `hsi_new()` instead. ``
+wopt construction, temp files, comments, file layout, `tryCatch` policy,
+parallelism, S3 serialization and deprecation. Claude Code loads that
+file when it reads a file under `R/`.
 
 ------------------------------------------------------------------------
 
-## 4. Roxygen documentation rules
+## 4. Roxygen documentation rules — in `.claude/rules/roxygen.md`
 
-### 4.1 Tag order (canonical; `@export` always last, `@family` always first)
-
-    Title (one line, no period)
-    @family <Family Name>          — Title Case, consistent across family
-    @param ...                     — in function signature order
-    @returns ...                   — use @returns, never @return
-    @description                   — optional; omit when title is self-sufficient; never duplicate title
-    @details                       — optional; algorithm detail, caveats, references
-    @seealso                       — between @details and @examples when present
-    @examples                      — always \dontrun{} when touching files or real data
-    @export
-
-### 4.2 @param format
-
-`Type. Description. Default`value`.` — capitalised type descriptor,
-every line ends with a period, defaults in backticks. Vector types state
-length (`Numeric vector of length 2. ...`). terra/sf objects use the
-markdown link form, never prose:
-
-``` r
-
-#' @param x A [`SpatRaster`][terra::SpatRaster-class] with hyperspectral data.
-```
-
-### 4.3 Standard parameter catalogue (verbatim strings — open-ended)
-
-The catalogue is **not closed**: new functions and parameters will be
-added. When a new parameter recurs across functions, coin one canonical
-string in the same `Type. Description. Default \`value\`.\` format, use
-it verbatim everywhere, and propose adding it to this catalogue. Never
-invent a second phrasing for a parameter that already has an entry.
-
-| Param | Canonical string |
-|----|----|
-| `x` | `` A [`SpatRaster`][terra::SpatRaster-class] with hyperspectral data. `` |
-| `whiteref`/`darkref` | Standard SpatRaster opener + `Must have the same bands and wavelengths as`x`.` |
-| `filename` | `` Character. Output filename. Default `""` keeps result in memory. `` |
-| `overwrite` | `` Logical. Overwrite existing file. Default `FALSE`. `` |
-| `...` | `` Additional arguments passed to [`terra::writeRaster()`]. `` |
-| `index_name` | `` Character. Name for the output layer. Default `NULL`. `` (never function-specific qualifiers) |
-| `na.rm` | `` Logical. Remove `NA` values. Default `TRUE`. `` |
-| `in_memory` | `` Logical. Process entirely in RAM. Default `FALSE`. Set `TRUE` only when data fits comfortably in available memory. `` |
-| `cores` | `` Positive integer. Number of parallel cores. Default `1`. `` |
-| `bands` | `Numeric vector of length 2. Wavelengths in nm.` |
-| `continuum_edges` | `Numeric vector of length 2. Continuum anchor wavelengths in nm.` |
-| `window` | `` Positive odd integer. Focal window size. Default `3`. `` |
-
-Canonical parameter names: `x`, `y`, `whiteref`, `darkref`, `tint`,
-`filename`, `overwrite`, `index_name`, `na.rm`, `bands`,
-`continuum_edges`, `absorption_band`, `index_type`, `in_memory`, `fun`,
-`window`, `n_tiles`, `cores`.
-
-### 4.4 @returns
-
-`` A [`SpatRaster`][terra::SpatRaster-class] with <x> values. `` — or
-the appropriate type (`A [tibble][tibble::tibble] with columns: ...`
-with `\item{}{}` list; `A named list containing: ...`;
-`` `NULL`, called for side effects. ``).
-
-### 4.5 Examples
-
-`\dontrun{}` always; show (1) minimal call, (2) call with
-`filename`/`overwrite`. Standard data load line:
-`x <- terra::rast("REFLECTANCE_testdata.tif")`. Result objects named
-`x_<suffix>` matching the function suffix (`x_rabd`, `x_savgol`).
-
-### 4.6 @family catalogue
-
-`HSI Transformations` (all `hsi_calc_*`, `hsi_smooth_*`,
-`hsi_remove_continuum`, `hsi_write_scaled`) · `HSI Calibration` ·
-`HSI Extraction` · `HSI Diagnostics` · `Plotting` · `Utilities`.
-Catalogue is open — new families may be added as the package grows; keep
-Title Case and consistency within a family.
-
-### 4.7 Internal helpers
-
-`@noRd` (not `@export`); document `@param`/`@return` for developers.
-`arg`/`call` rlang error-helper params are always last with the standard
-one-liners (`Auto-detected via [rlang::caller_arg()]` /
-`[rlang::caller_env()]`).
-
-### 4.8 pkgdown reference index
-
-In packages with a `_pkgdown.yml`: whenever a new exported documentation
-topic is added, add it to the reference index in `_pkgdown.yml` in the
-same change, then run
-[`pkgdown::check_pkgdown()`](https://pkgdown.r-lib.org/reference/check_pkgdown.html)
-— an unlisted topic fails the site build.
+Tag order, `@param` format, the standard parameter catalogue,
+`@returns`, examples, the `@family` catalogue, internal helpers and the
+pkgdown reference index. Loaded when Claude reads a file under `R/` or
+`_pkgdown.yml`.
 
 ------------------------------------------------------------------------
 
-## 5. Testing standards (testthat 3e)
+## 5. Testing standards (testthat 3e) — in `.claude/rules/testing.md`
 
-Calibrated against r-pkgs (2e) test design and testthat 3e practice
-(2026-07-02 audit). Guiding principles: test the **external interface**
-only; test **each behaviour in one and only one test** (multiple
-expectations per test are fine — one behaviour is not one expectation);
-tests are **hermetic** (self-contained setup and teardown; a fresh
-session + `devtools::load_all()` must be able to run any single test).
-
-### 5.1 Structure
-
-- One test file per exported function: `test-<function_name>.R`,
-  mirroring `R/`.
-- File opens with a comment block (what the function does, key
-  contracts). **No code outside `test_that()` blocks** in a `test-*.R`
-  file.
-- Fixtures live in helper files, auto-loaded by testthat and
-  `devtools::load_all()`: shared fixtures in
-  `tests/testthat/helper-fixtures.R`, fixtures used by a single test
-  file in `tests/testthat/helper-<name>.R` or built inside the
-  `test_that()` block that needs them. Fixtures are read-only — never
-  mutate one inside a test; derive per-test copies via
-  [`terra::setValues()`](https://rspatial.github.io/terra/reference/setValues.html)
-  /
-  [`terra::subset()`](https://rspatial.github.io/terra/reference/subset.html).
-  Test files that still load fixtures under a top-level `## Setup ----`
-  predate this rule; move a file’s setup into helpers when it next gets
-  real test work.
-- Never [`source()`](https://rdrr.io/r/base/source.html) inside
-  `tests/testthat/`. Shared expectation helpers live in
-  `tests/testthat/helper-*.R`.
-- Sections in this fixed order (omit only if genuinely N/A), RStudio
-  section style: `Output type` → `Output dimensions` → `Band names` →
-  `Value sanity` → `File writing` → `Input validation`. Tibble-returning
-  functions swap in `Output structure` / `Column contracts`.
-- Test names: `"<function_name> <what is being tested>"`, plain-English
-  sentences. Never “works correctly”.
-
-### 5.2 Fixtures and wavelength constraint
-
-Installed test data via
-[`system.file()`](https://rdrr.io/r/base/system.file.html), fixture
-chain: `REFLECTANCE_testdata.tif` (9×9×101 bands, **517.58–772.19 nm**)
-→ `MEDIAN_` → `SAVGOL_` → `CONREM_`. Start from the fixture matching the
-function’s pipeline position (`hsi_remove_continuum` tests start from
-SAVGOL). All wavelength arguments must fall inside 517.58–772.19 nm;
-presets (RGB, NIR, CIR, SWIR) will error by design. Safe happy-path
-choice: `c(700, 620, 540)`. Synthetic edge-case rasters are built from
-fixtures, not from scratch.
-
-### 5.3 Property-based thinking, right-sized
-
-Assert properties that must always hold (type, dimensions, bounds,
-finiteness, band names, guaranteed errors). One **behaviour** per test,
-not one expectation per test:
-
-- Dimension preservation is **one** test with `nlyr`/`nrow`/`ncol`
-  expectations inside — never three tests.
-- Value sanity: finiteness (no `Inf`/`NaN`) and mathematically
-  guaranteed bounds (continuum removal → \[0, 1\]) are separate
-  behaviours — separate tests.
-- Fixture-match (`expect_equal` vs reference file) is at most one test
-  per function, never the only test.
-- Never re-test what terra/GDAL itself guarantees (format handling, CRS
-  propagation) — that is their interface, not ours.
-- Use the most specific expectation available, because its failure
-  message shows the offending values: `expect_all_true(x >= 0 & x <= 1)`
-  not `expect_true(all(...))`, `expect_all_equal()` for “every element
-  equals”, `expect_type()` / `expect_s4_class()` for types.
-  `expect_true()` / `expect_false()` only where no specific expectation
-  exists (`expect_true(file.exists(temp_file))`, §5.5).
-  `expect_all_true()` / `expect_all_equal()` need testthat ≥ 3.3.0.
-
-### 5.3a Testing functions that subset before computing
-
-Index functions cut their input to a wavelength window (`x_range`)
-before the pixel function ever runs. A test that injects a value — `NA`
-especially — into a band **outside** that window is not a failing test,
-it is a **vacuous** one: it passes forever while exercising nothing.
-Derive the target band from
-[`terra::names()`](https://rspatial.github.io/terra/reference/names.html)
-and the window the test call actually uses; never hardcode a band index.
-(Caught mid-implementation on
-[`hsi_calc_raba()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_calc_raba.md),
-2026-08-19.) The same care applies to any function that masks, subsets
-or crops before the code under test.
-
-For functions carrying `cores` (§3.10), the per-function set is:
-`cores = 2` output `expect_equal` to `cores = 1` output on the fixture;
-the `NA` path under `cores = 2` (proving the guard runs *on workers*);
-and invalid `cores` rejected with a message fragment plus
-`class = "hsitools_error"`. Never a timing test — §5.8 stands.
-
-### 5.4 Tolerance
-
-`expect_equal(tolerance =)` is **relative** — wrong for
-quantization/fixed-precision guarantees. For absolute bounds compute
-`max(abs(actual - expected))` and use
-`expect_lte(max_abs_error, 1 / scale_factor)`. Reserve
-`expect_equal(..., tolerance = 1e-6)` for cross-platform floating-point
-fixture comparisons only.
-
-### 5.5 File-writing tests — withr, never manual unlink
-
-Every function with `filename`/`overwrite`: (1) writes file when
-filename provided, (2) errors when file exists and `overwrite = FALSE`.
-Temp paths via `withr::local_tempfile(fileext = ".tif")` — cleanup is
-guaranteed even when the function under test errors. **Never** bare
-[`tempfile()`](https://rdrr.io/r/base/tempfile.html) + manual
-[`unlink()`](https://rdrr.io/r/base/unlink.html) in tests (same withr
-policy as source code, §3.6):
-
-``` r
-
-test_that("hsi_xxx writes to file when filename provided", {
-  temp_file <- withr::local_tempfile(fileext = ".tif")
-  result <- hsi_xxx(x = test_reflectance, filename = temp_file, overwrite = TRUE)
-  expect_true(file.exists(temp_file))
-  expect_s4_class(result, "SpatRaster")
-})
-```
-
-Since the write block is duplicated per function by design (§3.4), the
-pair is required per function; implement it as a shared `helper-*.R`
-expectation helper to kill the boilerplate while keeping per-function
-coverage.
-
-### 5.6 Error and message testing — two layers
-
-- **Correctness layer (runs everywhere, CRAN included):** every
-  guaranteed error gets an `expect_error()`. For our own
-  [`cli::cli_abort()`](https://cli.r-lib.org/reference/cli_abort.html)
-  errors, prefer asserting on `class =` or a short stable message
-  fragment; for terra/GDAL internals, bare `expect_error()` only — their
-  messages are not version-stable. Failures raised by sanctioned rlang
-  type-check helpers (§3.3 carve-out) assert on `class = "rlang_error"`
-  or a stable fragment — never `hsitools_error`.
-
-- **Volatile paths in snapshots:** any `expect_snapshot(error = TRUE)`
-  whose message interpolates a runtime-generated path
-  ([`withr::local_tempfile()`](https://withr.r-lib.org/reference/with_tempfile.html),
-  tempdirs — anything a `cli_abort()` renders via `{.file {filename}}`)
-  must redact it to a stable placeholder via `transform`, or the
-  snapshot can never pass twice — the first run silently “adds” it,
-  every later run fails as a phantom regression:
-
-  ``` r
-
-  expect_snapshot(
-    hsi_write_metadata(x, filename = temp_file),
-    error = TRUE,
-    transform = \(lines) gsub(temp_file, "<temp_file>", lines, fixed = TRUE)
-  )
-  ```
-
-  `fixed = TRUE` is required — Windows paths contain backslashes that
-  would otherwise be mangled as regex.
-
-- **Message-quality layer (dev/CI only):** one
-  `expect_snapshot(error = TRUE)` block per function, exercising every
-  `cli_abort()` branch we author, so the full user-facing message is
-  reviewed and pinned. Snapshots live in `_snaps/*.md`, are committed to
-  git, and reviewed in PRs like code. Snapshot tests are skipped on CRAN
-  by default — never the sole test of a behaviour.
-
-- [`cli::cli_warn()`](https://cli.r-lib.org/reference/cli_abort.html)
-  paths get `expect_warning(class = )` or a snapshot; testthat 3e no
-  longer swallows messages — wrap known-noisy calls in
-  [`suppressMessages()`](https://rdrr.io/r/base/message.html) or assert
-  them deliberately.
-
-- **Class assertions ride, never drive:** `class = "hsitools_error"` /
-  `"hsitools_warning"` is added alongside an existing message/behaviour
-  assertion — never write a test whose sole content is a class check,
-  and never add `class =` to a bare `expect_error()` that asserts
-  nothing else (that’s a class-only test by the back door). New
-  abort/warn sites earn class assertions organically when their
-  functions next get real test work.
-
-### 5.7 S3 class testing (endmember class and successors)
-
-For each S3 class: constructor returns the class (`expect_s3_class`);
-validator rejections via the two-layer error pattern (§5.6);
-[`print()`](https://rdrr.io/r/base/print.html) method via
-`expect_snapshot()` — the canonical snapshot use case; `[` subsetting
-semantics as property tests (subsetting preserves class, `$spectra`
-columns and `$locations` stay aligned and named). Test methods through
-the generic (external interface), not internal helpers.
-
-### 5.8 Scope and counts
-
-Do **not** test: internal `check_*` helpers directly (validated once in
-isolation / indirectly through public functions), stub plot functions,
-or the `cores` argument. Deprecated functions and arguments (§3.12) get
-no new behaviour tests — exactly one `expect_snapshot(. <- hsi_fn(...))`
-pinning the deprecation warning; existing tests that exercise them stay
-until removal, silenced with
-`withr::local_options(lifecycle_verbosity = "quiet")` at the top of each
-affected `test_that()` block. Parameterized tests / shared helpers for
-function families; keep individual tests focused on unique logic. Target
-**~8–12 tests** per raster-transforming function, **6–10** for
-tibble-returning extraction functions (counts assume consolidated
-behaviours per §5.3; more only when the function has genuinely more
-contracts). `Suggests` packages guarded with skip helpers for CRAN
-compliance. Prune suites to reflect current function surfaces — dead
-tests are debt; testthat auto-deletes dangling snapshots, but guard
-conditional/skipped snapshot tests with `announce_snapshot_file()`.
+Structure, fixtures and the wavelength constraint, property-based
+thinking, windowed-function tests, tolerance, file-writing tests, error
+and message testing, S3 class testing, scope and counts. Loaded when
+Claude reads anything under `tests/`.
 
 ------------------------------------------------------------------------
 
@@ -1125,8 +612,9 @@ conditional/skipped snapshot tests with `announce_snapshot_file()`.
 ### 6.1 Reflectance formula and matched darks
 
 Dual-exposure protocol: white reference (ET_white) and target
-(ET_target) scanned at different integration times; Lumo’s built-in
-corrections are never applied. One formula for both sensors:
+(ET_target) scanned at different integration times; the acquisition
+software’s built-in corrections (e.g. Lumo’s) are never applied. One
+formula for both sensors:
 
     numerator   = specimen - dark × (ET_target / ET_dark)
     denominator = white    - dark × (ET_white  / ET_dark)
@@ -1136,12 +624,13 @@ corrections are never applied. One formula for both sensors:
   scaling is essential. Unsubtracted SWIR dark (~3000–9000 DN) was the
   dominant historical calibration error; VNIR (~100 DN) barely affected
   but corrected anyway.
-- **Matched dark references are always available**: Lumo captures
-  DARKREF at specimen integration time in the capture folder. Prefer
-  matched dark subtraction; the scaled-dark approximation was a
-  workaround for a non-existent problem. Matched darks eliminate
+- **Prefer matched dark references**: when the acquisition records a
+  dark reference at the specimen’s integration time (e.g. Lumo’s
+  in-capture DARKREF), subtract that; the scaled-dark approximation was
+  a workaround for a non-existent problem. Matched darks eliminate
   striping and negative-reflectance artifacts, critical for SWIR.
-- ET_dark = ET_white by protocol, so the denominator scaling is 1.0.
+- When the protocol sets ET_dark = ET_white, the denominator scaling is
+  1.0.
 
 ### 6.2 References and panels
 
@@ -1188,12 +677,12 @@ minimal).
 **A clipped reading carries no information about the specimen.** The
 digital number is pinned at the ceiling, so what survives calibration is
 the shape of the white reference: a smooth, plausible-looking curve that
-is pure instrument response. Measured on a GKUT VNIR transect
-(2026-09-09), a sixty-band clipped run sat flat at 65535 in raw DN and
-climbed from 0.2565 to 0.3259 in reflectance, and a linear chord across
-the gap reproduced those values within 0.002. Passing clipped cells
-through and interpolating across them are therefore the same fiction,
-and neither recovers anything.
+is pure instrument response. Measured on a VNIR transect (2026-09-09), a
+sixty-band clipped run sat flat at 65535 in raw DN and climbed from
+0.2565 to 0.3259 in reflectance, and a linear chord across the gap
+reproduced those values within 0.002. Passing clipped cells through and
+interpolating across them are therefore the same fiction, and neither
+recovers anything.
 
 **The clipping threshold is instrument knowledge, is never inferred from
 the data, and normally sits below the datatype ceiling.** Detector
@@ -1273,12 +762,13 @@ step — the same composition rule as §7’s masking-precedes-unmixing.
 - Abundance estimation is nnls-only (`nnls`).
 - **unmixR is never a dependency of HSItools** (decided 2026-07-06). It
   is GitHub-only (no CRAN release) and endmember *search* is not core
-  functionality. Search (N-FINDR/VCA via unmixR) lives in zarowka
-  templates, which may use `Remotes:` freely. The `hsi_endmembers` class
-  is a **pure container** — spectra + locations, no opinion on origin;
-  any producer (unmixR output, manual ROI picks, spectral library) feeds
-  the same constructor. If search ever enters core, it is a clean-room
-  implementation, never an import; see §10 for its unresolved naming.
+  functionality. Search (N-FINDR/VCA via unmixR) lives outside the
+  package, in workflow code, which may use `Remotes:` freely. The
+  `hsi_endmembers` class is a **pure container** — spectra + locations,
+  no opinion on origin; any producer (unmixR output, manual ROI picks,
+  spectral library) feeds the same constructor. If search ever enters
+  core, it is a clean-room implementation, never an import; see §10 for
+  its unresolved naming.
 - **Masking precedes unmixing — always.** Background/tray pixels
   silently corrupt indices, stats, and especially endmember search
   (N-FINDR will pick the tray as a vertex). Masking is material-agnostic
@@ -1289,42 +779,20 @@ step — the same composition rule as §7’s masking-precedes-unmixing.
 
 ------------------------------------------------------------------------
 
-## 8. hsical interop contract
+## 8. Metadata sidecar
 
-As of contract v3.0 (2026-07-11), **the HSItools metadata sidecar is the
-scan record** and hsical owns no schema, no YAML machinery, and no
-reader of its own. Rules:
-
-- **Single schema, owned by HSItools.** Flat YAML (no nested groups), 32
-  keys, `schema_version` 1.1.0, only `name` required. Normative
-  definition lives in
-  [`hsi_create_metadata()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_create_metadata.md)
-  / `validate_hsi_metadata()`; the human-readable map (field → GUI
-  source) lives in `hsi-interface-contract.md`. If the schema changes:
-  contract document first, then HSItools, then hsical’s form — in that
-  order.
-- hsical maps GUI fields onto
-  [`hsi_create_metadata()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_create_metadata.md)
-  arguments and calls
-  [`hsi_write_metadata()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_write_metadata.md)
-  /
-  [`hsi_read_metadata()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_read_metadata.md)
-  directly. If hsical code ever contains `yaml::` or a field list of its
-  own, the design has been violated.
-- No `camera` field — hsical’s camera selector writes `sensor_type`. No
-  sample/location fields, no `notes`, no `saturation_ratio`, no
-  test-scan positions, no derived `scan_length` (all deliberately
-  rejected; reasons in contract v3.0).
-- One sidecar per capture, beside the data; the master CSV is dead —
-  aggregate views read sidecars back via
-  [`hsi_read_metadata()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_read_metadata.md).
-- Unchanged protocol invariants: ET_white mandatory per session (ET_dark
-  = ET_white); motor positions logged, never scan length; manual
-  `session_id` groups scans sharing a white reference; naming
-  `PREFIX_CC-SS_TIMESTAMP`, zero-padded; saturation screening happens in
-  R, not the app.
-- hsical never processes spectral data, never calculates reflectance,
-  never co-registers.
+**HSItools owns the metadata sidecar schema.** Flat YAML (no nested
+groups), 32 keys, `schema_version` 1.1.0, only `name` required. The
+normative definition is
+[`hsi_create_metadata()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_create_metadata.md)
+/ `validate_hsi_metadata()`, and
+[`hsi_write_metadata()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_write_metadata.md)
+/
+[`hsi_read_metadata()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_read_metadata.md)
+are the only serialization path. Code that uses the sidecar calls these
+functions and adapts to the schema; it never carries its own field list
+or YAML handling. One sidecar per capture, beside the data. Any schema
+change bumps `schema_version` (§9).
 
 ------------------------------------------------------------------------
 
@@ -1337,12 +805,6 @@ reader of its own. Rules:
   (VCA), Winter 1999 (N-FINDR), Gadallah 2000 & Rogaß 2011 (destriping),
   Butz 2015 (RABA workflow). Verify any DOI before adding to
   `references.bib`.
-- **Iterate one thing at a time**: propose one change, let tests run,
-  then continue. The user runs tests after each change and catches
-  errors actively.
-- **Summaries for new chats**: when asked to summarize for a new chat,
-  always write a `.md` file with the current date (YYYY-MM-DD) in both
-  the file name and the file header.
 - Verify version-dependent behaviour
   (e.g. `terra::spatSample(cells = TRUE)` column name) against the
   installed package version before writing test assertions.
@@ -1360,22 +822,13 @@ reader of its own. Rules:
   `Breaking:` bullets first, then bullets that name no function, then
   the rest alphabetically by function name.
 - **Metadata sidecars must carry a `schema_version` field** from the
-  first sidecar written in the wild. The same versioning question
-  applies to the hsical interop contract.
-- **File/roadmap decoupling (rule):** this file (CLAUDE.md, canonical;
-  mirrored to the claude.ai skill at milestone boundaries) carries only
-  durable conventions and constraints. Milestone numbers, sequencing,
-  feature backlogs, and session state live exclusively in dated
-  documents (`YYYY-MM-DD_*.md` — roadmap, audits, handoffs). Never write
-  a version-number milestone into this file; never treat a handoff as a
-  source of durable convention. Handoffs execute decisions already made
-  — items a handoff marks settled stay settled; items marked ⏳ belong
-  to Maury. As of 2026-07-18 all dated documents live in the **private
-  `hsi_development` repo** (one folder per package: `hsitools/`,
-  `zarowka/`, `hsical/`), never inside the package repos; the
-  `dev-notes/` `.gitignore` entries in the package repos remain as a
-  safety net. Changelog citations of `dev-notes/...` paths predate the
-  move and now resolve under `hsi_development/hsitools/`.
+  first sidecar written in the wild.
+- **File/roadmap decoupling (rule):** this file carries only durable
+  conventions and constraints. Milestone numbers, sequencing, feature
+  backlogs and session state live in dated planning documents outside
+  the package repository, never here; never write a version-number
+  milestone into this file, and never treat a handoff as a source of
+  durable convention.
 
 ------------------------------------------------------------------------
 
@@ -1415,12 +868,12 @@ them unilaterally:
   whether to migrate is unexamined.
 - **`terra::terraOptions(memmax = )`** — on the windowed reflectance
   step, raising it from the 16 GB default to 64 GB measured 5.8× (647 →
-  112 s, GKUT VNIR), and flat from there: 336 GB on a 383 GB machine
-  changed nothing, because peak working set was 19 GB. Thread count did
-  not order the results at 16, 32 or 64. On the postprocess chain the
-  same change measured ~13 % (bigger blocks, fewer per-block closure
-  ships). Earlier it also masked a correctness bug by keeping crops in
-  memory; with
+  112 s, on a VNIR capture), and flat from there: 336 GB on a 383 GB
+  machine changed nothing, because peak working set was 19 GB. Thread
+  count did not order the results at 16, 32 or 64. On the postprocess
+  chain the same change measured ~13 % (bigger blocks, fewer per-block
+  closure ships). Earlier it also masked a correctness bug by keeping
+  crops in memory; with
   [`terra::window()`](https://rspatial.github.io/terra/reference/window.html)
   that path is gone and this is purely a speed knob. Still unadopted:
   machine-specific, and untested for interaction with concurrent
@@ -1437,21 +890,21 @@ them unilaterally:
   typed. Recommendation: thread. Not confirmed.
 - **`cli_alert_info()` at `hsi_check_gcp.R:100`** — migrate to
   [`cli::cli_inform()`](https://cli.r-lib.org/reference/cli_abort.html)
-  or bless `cli_alert_*` in §3.3a. One line either way; Maury’s pick.
+  or bless `cli_alert_*` in §3.3a. One line either way; undecided.
 - **Wavelength units on ingest** — ENVI headers are often µm; house
   convention is nm. Normalize-on-ingest vs. explicit units field in the
   metadata sidecar.
 - **In-core search function naming/signature** (if/when search ever
   enters core) — `hsi_find_endmembers()` vs `hsi_search_endmembers()` vs
   method-as-argument vs one-function-per-algorithm. Must not be
-  grandfathered in from a zarowka template name. Scheduling lives in the
-  roadmap, not here.
+  grandfathered in from a workflow template’s name. Scheduling lives in
+  the roadmap, not here.
 
 ------------------------------------------------------------------------
 
 ## 11. Quick pre-flight checklist
 
-Before proposing any HSItools/zarowka code, confirm:
+Before proposing any code, confirm:
 
 1.  Approach discussed first? (No code before design agreement.)
 2.  Function atomic, simplest possible IO, lean signature — and sensor-,
@@ -1478,249 +931,3 @@ Before proposing any HSItools/zarowka code, confirm:
 9.  User-facing change → NEWS bullet (§9)? Removing or renaming an
     exported function/argument → deprecation workflow (§3.12)?
 10. Touching anything in §10? Stop and ask before deciding.
-
-------------------------------------------------------------------------
-
-## Changelog
-
-- **1.12.0 (2026-09-11)** — Conventions adopted from the tidyverse agent
-  guidance shipped in usethis 3.2.2 (`AGENTS.md` and the
-  `learn_tidy_skill()` skills), on the principle that the tidyverse
-  team’s defaults win where this file had no rule or diverged (decision
-  Maury, 2026-09-11). Commands gain agent-usable focused forms
-  (`test(filter =)`, `test_active_file("R/x.R")`, `desc =` single-test
-  runs, `test_coverage_active_file()`, `check_pkgdown()`), a warning
-  that path-less `test_active_file()` targets the IDE editor, and the
-  Windows `Rscript -e` segfault fallback; §0 rule 7 now runs focused
-  tests per change and the full suite before handback. New §3.12
-  deprecation workflow (lifecycle, deprecate-before-remove) with a §3.3
-  lifecycle carve-out and a rewritten §5.8 deprecated-test rule (one
-  warning snapshot; existing tests silenced, not deleted). New §4.8
-  pkgdown reference-index rule. §5.1 reversed: no code outside
-  `test_that()`, fixtures move to `helper-*.R` (existing top-level
-  `## Setup ----` blocks migrate organically). §5.3 and a §2.0 row
-  prefer specific expectations (`expect_all_true()` et al., testthat ≥
-  3.3.0) over `expect_true()`. §9 gains NEWS.md rules. §11 checklist
-  updated. §10 untouched.
-- **1.11.0 (2026-09-10)** — Saturation doctrine settled, and both
-  questions opened the same morning closed (design Fable + Maury;
-  records in
-  `hsi_development/zarowka/2026-09-09_window-reflectance-gkut-validation-opus.md`
-  and `2026-09-09_memmax-window-probes-opus.md`).
-  [`hsi_check_saturation()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_check_saturation.md)
-  **promoted from zarowka to HSItools** (0.5.3.9003), bringing the new
-  `HSI Diagnostics` family in §4.6; zarowka now calls it through the
-  package namespace and requires that version. New §6.6 records the
-  physics and the composition rule: a clipped reading carries no
-  specimen information (a sixty-band run measured flat at the ceiling in
-  DN and climbing 0.2565 to 0.3259 in reflectance, matching a linear
-  chord within 0.002, i.e. pure white-reference shape); the threshold is
-  instrument knowledge that normally sits *below* the datatype ceiling
-  because response compresses first (unflagged neighbours at 64824 and
-  64450); masking is whole-pixel via the collapsed screen; and it
-  happens on the raw pixel grid, after calibration and before
-  co-registration. §10 accordingly **loses** both entries added in
-  1.10.0: reflectance keeps no saturation semantics (the threshold
-  cannot be inferred and the primitive already exists separately), and
-  the
-  [`hsi_smooth_savgol()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_smooth_savgol.md)
-  any-NA question dissolves rather than resolving, since whole-pixel
-  masking makes the existing rule correct.
-- **1.10.0 (2026-09-10)** — The saturation/NoData collision closed on
-  the template side (design and orchestration Fable + Maury;
-  implementation, runs and validation by Opus subagents. Problem
-  statement in
-  `hsi_development/hsitools/2026-09-09_handoff-saturation-nodata-open.md`;
-  records in
-  `hsi_development/zarowka/2026-09-09_window-reflectance-gkut-validation-opus.md`
-  and `2026-09-09_memmax-window-probes-opus.md`).
-  **[`terra::window()`](https://rspatial.github.io/terra/reference/window.html)
-  replaces
-  [`terra::crop()`](https://rspatial.github.io/terra/reference/crop.html)
-  for cutting a raw capture** — new §2 anti-pattern row and a rewritten
-  crop gotcha. A materialised crop writes the copy in the source integer
-  datatype and reserves the datatype maximum as NoData, so genuine
-  saturated readings return as `NA`; on a GKUT VNIR transect that
-  silently destroyed 24,816 readings, and whether it happened at all
-  depended on terra’s memory budget. The windowed product is
-  bit-identical to the in-memory-crop baseline with zero `NA`, and the
-  24,816 cells it preserves match the raw window exactly.
-  [`hsi_calc_reflectance()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_calc_reflectance.md)
-  gained an `@details` paragraph documenting the trap, the
-  [`terra::window()`](https://rspatial.github.io/terra/reference/window.html)
-  recommendation, and the float-datatype fallback for physical subsets.
-  Nine measured runs of the VNIR reflectance step separated the effects:
-  `memmax` alone accounts for the whole window-versus-crop timing gap,
-  thread count does not order the results at 16/32/64, the setting is
-  flat from 64 GB up, and the documented float crop is correct but ~25×
-  slower than windowing (serial read-back of terra’s default block
-  layout, not the write). §10’s `memmax` entry rewritten accordingly —
-  it is no longer a correctness knob — and gains the two questions the
-  2026-09-09 handoff parked there: reflectance saturation semantics, and
-  the
-  [`hsi_smooth_savgol()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_smooth_savgol.md)
-  any-NA policy.
-- **1.9.0 (2026-08-19)** — Parallelism conventions, from the
-  2026-08-18/19 arc (design/orchestration Fable + Maury, implementation
-  and validation by Opus subagents; full record in
-  `hsi_development/hsitools/2026-08-19_handoff-parallelism-closeout-fable.md`).
-  §3.10 rewritten: `terra::app(cores = )` is the backend for per-pixel
-  spectral operations, with the **mandatory unconditional
-  minimal-environment rebind** — an inline lambda carries its call
-  frame, so the SpatRaster (~40 MB serialized, re-shipped per write
-  block) rides to every worker and the naive pass-through measured
-  **5.5× slower than serial**; `data = list()` is valid and
-  load-bearing; explicit `pkg::` namespacing in the body becomes
-  load-bearing under `parent = baseenv()`. `cores` landed on
-  `hsi_smooth_savgol`, `hsi_remove_continuum`, `hsi_calc_raba`,
-  `hsi_calc_remp`; chain 64 → 4.8 min (GKUT SWIR), outputs bit-identical
-  to serial and to the 2026-05
-  [`hsi_tiled()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_tiled.md)
-  products. `mirai` demoted from “the parallel backend” to custom
-  orchestration only;
-  [`hsi_tiled()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_tiled.md)
-  measured 2–5× slower than direct on both raster shapes (~99 % of cost
-  in the serial VRT mosaic read-back, **not** `makeTiles()`) — fate
-  moved to §10. §2 gains the `cores`-vs-`threads` distinction (built-in
-  character funs ignore `cores`; a dead `cores` was removed from
-  [`hsi_smooth_median()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_smooth_median.md))
-  and the
-  [`terra::crop()`](https://rspatial.github.io/terra/reference/crop.html)
-  NoData trap. New §5.3a: tests for functions that subset before
-  computing must target bands **inside** the window (a hardcoded index
-  gives a vacuous always-green test), plus the standard three-test set
-  for `cores`. terra performance floor recorded: ≥ 1.9-46 TBB-threads
-  the built-in focal statistics (median 3.9× faster, bit-identical),
-  templates set `terraOptions(threads = )` to the core count. §10 gains
-  four entries (`hsi_tiled` fate incl. terra’s own `tile_apply`, terra
-  native GCP support, `memmax` tuning, `spatSample` re-verification).
-- **1.8.2 (2026-07-18)** — Dev-notes centralized into the **private
-  `hsi_development` repo** (decision Maury + Fable, 2026-07-18), one
-  folder per package (`hsitools/`, `zarowka/`, `hsical/`), after the
-  day’s accidental push of `dev-notes/` to the public HSItools repo
-  (commit `847ae9a`, reverted in `87fb297`). §9 file/roadmap decoupling
-  rule updated accordingly: dated documents never live inside the
-  package repos; their `dev-notes/` `.gitignore` entries remain as a
-  safety net; pre-move changelog citations of `dev-notes/...` paths
-  resolve under `hsi_development/hsitools/`. Companion corrections
-  applied to zarowka’s and hsical’s CLAUDE.md (scratchpad wording,
-  interface-contract location — no absolute filesystem paths anywhere by
-  policy). No convention content changed otherwise; §10 untouched.
-- **1.8.1 (2026-07-18)** — §7 gains the masking-before-MNF safety note,
-  closing D2 of the hsi_mask close-out (source + ground-truth probes by
-  Opus, design Fable+Maury; evidence in
-  `dev-notes/2026-07-18_handoff-mask-closeout-opus.md` and
-  `..._handoff-d2-mnf-mask-probe-opus.md`). Seam-crossing pairs (the
-  existing PCA-over-MNF bullet) remain toxic; mask holes are benign —
-  the two cases are mechanically different (valid-valid poisoned pairs
-  vs. dropped NA pairs). No other sections touched.
-- **1.8.0 (2026-07-14)** — The `...` sink fix (design Fable+Maury,
-  probes Opus/Fable, sweep Sonnet+Fable, all 2026-07-14; record in
-  `dev-notes/2026-07-14_*dots*` in both repos). New `check_dots_write()`
-  helper in `utils-checks.R` and its call blessed as canonical:
-  guarded-write Shape A functions end the validation block with
-  `wopt_user <- rlang::list2(...)` +
-  `check_dots_write(wopt_user, filename)`, aborting when `...` is
-  non-empty and `filename == ""` — previously such arguments (typos,
-  removed args like `hsi_calc_abundance(method =)`) were silently
-  discarded, which defeated zarowka’s test suite for three weeks.
-  §3.2/§3.4/§3.5 updated; §3.4 snippet now shows `wopt_user` captured in
-  the validation block. **Exemption recorded in §3.2:** functions
-  passing `filename`/`wopt` directly into
-  [`terra::app()`](https://rspatial.github.io/terra/reference/app.html)/`focal()`/[`predict()`](https://rdrr.io/r/stats/predict.html)
-  are excluded — terra validates `wopt` unconditionally and honours
-  valid options in-memory (probed, terra 1.9.34), so their `...` is live
-  and the check would break working calls. Swept: 7 HSItools + 2 zarowka
-  functions; 8 HSItools functions exempt. Anti-pattern row added; helper
-  inventory updated. `test-hsi_rcv.R` renamed `test-hsi_calc_rcv.R`
-  (§3.8 mirror rule). §10 untouched.
-- **1.7.0 (2026-07-13)** — Migrated from claude.ai skill to repo-root
-  `CLAUDE.md` as the canonical source (decision Maury + Fable,
-  2026-07-13); version header and changelog now live here, and the skill
-  becomes a mirror refreshed at milestone boundaries. New unnumbered
-  **Repo map and mechanics** section merged from the Claude Code
-  auto-generated CLAUDE.md, with two corrections: package description
-  rewritten material/sensor/manufacturer-agnostic (the generated text
-  had baked in core-scanning framing, violating §1) and the formatter
-  guidance corrected to air (the generated text inferred hand-formatting
-  from a missing config). Genuinely new captures retained from the
-  generated file: `@family`-as-navigation,
-  [`wavelength_position()`](https://mzarowka.github.io/HSItools/dev/reference/wavelength_position.md)
-  as the shared wavelength primitive,
-  [`hsi_coregister()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_coregister.md)
-  file-source requirement, mirai worker self-containment,
-  `spectral_indices` column→argument mapping, fixture layout, Windows CI
-  vignette skip, schema-version bump-together rule, and the as-built
-  articulation of the two temp-file lifetimes (normative rule unchanged
-  in §3.6). §0 rule 7 rewritten conditionally (executing sessions run
-  tests and show output per change; non-executing sessions hand off
-  patches); new rule 8 (git modifications belong to Maury; read-only
-  inspection permitted) and rule 9 (no milestone state or session notes
-  in this file; never edit unprompted). §9 decoupling rule renamed
-  file/roadmap and now names this file. §10 untouched — all open
-  questions remain open.
-- **1.6.0 (2026-07-11)** — Post-0.5.3-release consolidation. §8
-  rewritten for contract v3.0: the flat HSItools sidecar (32 keys,
-  schema 1.1.0) is the scan record; hsical is schema-less and wraps the
-  trio; deliberate field rejections recorded. §0 gains rule 7
-  (execution-environment): model sessions edit source and hand off
-  patches, Maury runs all R verification locally. §10 unchanged.
-- **1.5.0 (2026-07-10)** — Guardrails Phase 2 closure (decisions
-  2026-07-09 by Fable+Maury, sweep 2026-07-10 by Sonnet): §3.3
-  `hsitools_warning` umbrella promoted from proposed to settled
-  convention (every `cli_warn()` site, hardwired, no taxonomy);
-  corresponding §10 question dropped. §5.6 gains the class-assertion
-  discipline: class assertions ride on existing message/behaviour
-  assertions, never as a test’s sole content, never bolted onto bare
-  `expect_error()`. `check_spatraster_list()` joined `utils-checks.R` —
-  no skill edit needed; §3.3’s generic `check_*` rules already cover it.
-  All other §10 questions (incl. `cli_alert_info`, `wavelength_position`
-  threading) remain open.
-- **1.4.0 (2026-07-08)** — Durable conventions from the metadata-trio
-  sessions (design 2026-07-07/08, execution by Sonnet 2026-07-08): §3.3
-  rlang type-check carve-out
-  ([`rlang::check_string()`](https://rlang.r-lib.org/reference/check_type_scalar.html)
-  et al. sanctioned for scalar validation, errors stay rlang-classed,
-  never wrapped or duplicated); new §3.11 S3 serialization pattern
-  (readers assemble via
-  [`structure()`](https://rdrr.io/r/base/structure.html) + shared
-  validator, never the constructor, preserving on-disk provenance such
-  as `schema_version`); §2.0 anti-pattern row for `$` partial matching
-  on deserialized data (spell full names); §5.6 gains the rlang-classed
-  assertion consequence and the volatile-path snapshot rule (`transform`
-  with `fixed = TRUE` redacting runtime paths to stable placeholders).
-  §10 untouched — `hsitools_warning`, hsical YAML reader, and all other
-  open questions remain open.
-- **1.3.0 (2026-07-06)** — Guardrails conventions from the 2026-07-06
-  audit/planning session: new §3.3 umbrella condition class
-  (`hsitools_error`, hardwired in helpers, no category taxonomy) and
-  call-attribution rule (internal helpers thread `arg`/`call`; exported
-  functions never do); `check_one_of()` replaces
-  [`match.arg()`](https://rdrr.io/r/base/match.arg.html) in §3.2 and the
-  anti-pattern table; new anti-pattern row banning aborts inside purrr
-  lambdas (collect-all-offenders pattern). §7: unmixR is never a
-  dependency, `hsi_endmembers` is a pure container,
-  masking-precedes-unmixing constraint added. §9:
-  CI-green-per-iteration, `schema_version` requirement, and an explicit
-  **skill/roadmap decoupling rule** — milestones and sequencing live
-  only in dated roadmap/handoff documents, never in this skill. §10
-  gains five open questions (warning umbrella, `wavelength_position`
-  threading, `cli_alert_info`, wavelength units on ingest, in-core
-  search naming). Written by Fable ahead of planned unavailability; the
-  paired execution handoff is `2026-07-06_handoff-guardrails-opus.md`.
-- **1.2.0 (2026-07-02)** — §5 rewritten after audit against r-pkgs (2e)
-  and testthat 3e: one-behaviour-per-test consolidation (target 8–12,
-  not 12–16);
-  [`withr::local_tempfile()`](https://withr.r-lib.org/reference/with_tempfile.html)
-  replaces manual [`unlink()`](https://rdrr.io/r/base/unlink.html)
-  (removes contradiction with §3.6); two-layer error testing with
-  `expect_snapshot(error = TRUE)` for cli messages; S3 class testing
-  section added ahead of the endmember class; helper-\*.R and
-  hermeticity rules added.
-- **1.1.0 (2026-07-02)** — Added §0 working principles, §2.0
-  anti-pattern table, §10 open design questions; made
-  sensor/manufacturer/material agnosticism explicit and imperative;
-  marked param and family catalogues open-ended.
-- **1.0.0 (2026-07-02)** — Initial consolidation of
-  CODING/TESTING/ROXYGEN guidelines, interface contract, sensor-fusion
-  notes, and accumulated restraints.
