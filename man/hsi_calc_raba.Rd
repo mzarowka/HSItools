@@ -31,30 +31,25 @@ hsi_calc_raba(
 \item{...}{Additional arguments passed to \code{\link[terra]{writeRaster}}}
 }
 \value{
-A terra SpatRaster with RABA values
+A terra SpatRaster with signed RABA values in reflectance-nm.
 }
 \description{
 Calculate Relative Absorption Band Area (RABA), which quantifies the total
-absorption across a spectral feature by summing band-by-band RABD calculations.
-Implementation follows Butz et al. (2015) formula in HSI scanning manual.
+absorption across a spectral feature as the area between the reflectance
+spectrum and its linear continuum.
 }
 \details{
-RABA extends the RABD concept from a single point to the entire absorption
-feature. The method calculates RABD at each wavelength between the continuum
-edges and sums them. The continuum is calculated using linear interpolation.
+The continuum is linearly interpolated between the two continuum edges. The
+signed area between the continuum and reflectance spectrum is then calculated
+with the trapezoidal rule using the actual wavelength spacing.
 
 This approach:
 \itemize{
 \item Uses the same continuum concept as \code{\link{hsi_calc_rabd}}
 \item Integrates across the entire absorption feature
-\item Is bandwidth-independent (works with any spectral resolution)
+\item Accounts for unequal spacing between spectral bands
 \item Provides a measure of total absorption strength
 }
-
-Setting \code{cores} above \code{1} hands the per-pixel calculation to
-\code{\link[terra:app]{terra::app()}}'s own cluster of worker processes, which splits the raster
-by write block. Returns flatten well before the core count is exhausted, as
-the output write stays serial.
 }
 \examples{
 \dontrun{

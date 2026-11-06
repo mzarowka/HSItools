@@ -13,26 +13,21 @@
 #'
 #' @description
 #' Calculate Relative Absorption Band Area (RABA), which quantifies the total
-#' absorption across a spectral feature by summing band-by-band RABD calculations.
-#' Implementation follows Butz et al. (2015) formula in HSI scanning manual.
+#' absorption across a spectral feature as the area between the reflectance
+#' spectrum and its linear continuum.
 #'
 #' @details
-#' RABA extends the RABD concept from a single point to the entire absorption
-#' feature. The method calculates RABD at each wavelength between the continuum
-#' edges and sums them. The continuum is calculated using linear interpolation.
+#' The continuum is linearly interpolated between the two continuum edges. The
+#' signed area between the continuum and reflectance spectrum is then calculated
+#' with the trapezoidal rule using the actual wavelength spacing.
 #'
 #' This approach:
 #' - Uses the same continuum concept as \code{\link{hsi_calc_rabd}}
 #' - Integrates across the entire absorption feature
-#' - Is bandwidth-independent (works with any spectral resolution)
+#' - Accounts for unequal spacing between spectral bands
 #' - Provides a measure of total absorption strength
 #'
-#' Setting `cores` above `1` hands the per-pixel calculation to
-#' [`terra::app()`]'s own cluster of worker processes, which splits the raster
-#' by write block. Returns flatten well before the core count is exhausted, as
-#' the output write stays serial.
-#'
-#' @return A terra SpatRaster with RABA values
+#' @return A terra SpatRaster with signed RABA values in reflectance-nm.
 #'
 #' @seealso
 #' \code{\link{hsi_calc_rabd}} for single-point absorption depth
@@ -105,56 +100,41 @@ hsi_calc_raba <- function(
   # Subset to bands in range
   x_range <- terra::subset(x, band_range)
 
-  # Define the per-pixel calculation function
-  calc_raba_pixel <- \(pixel_values) {
-    # Handle NA values
+  # Get the wavelengths in the range
+  range_wavelengths <- as.numeric(terra::names(x_range))
+  wavelength_fraction <- (range_wavelengths - range_wavelengths[1]) /
+    (range_wavelengths[length(range_wavelengths)] - range_wavelengths[1])
+  band_widths <- diff(range_wavelengths)
+
+  .calc_raba_pixel <- function(
+    pixel_values,
+    wavelength_fraction,
+    band_widths
+  ) {
     if (anyNA(pixel_values)) {
       return(NA_real_)
     }
 
-    # Extract edge reflectances
-    r_start <- pixel_values[1]
-    r_end <- pixel_values[length(pixel_values)]
+    continuum <- pixel_values[1] +
+      (pixel_values[length(pixel_values)] - pixel_values[1]) *
+        wavelength_fraction
 
-    # Number of bands (excluding end point, following Butz formula)
-    n_bands <- length(pixel_values) - 1
+    absorption <- continuum - pixel_values
+    last_band <- length(absorption)
 
-    # Calculate sum of RABDs using Butz formula
-    rabd_sum <- purrr::map_dbl(
-      0:(n_bands - 1),
-      \(i) {
-        # Linear interpolation for continuum at position i
-        continuum_i <- ((r_end - r_start) / n_bands) * i + r_start
-
-        # RABD at position i: continuum / actual reflectance
-        # Handle division by zero
-        if (pixel_values[i + 1] == 0) {
-          return(0)
-        }
-
-        continuum_i / pixel_values[i + 1]
-      }
-    ) |>
-      sum()
-
-    return(rabd_sum)
+    sum(
+      band_widths *
+        (absorption[-last_band] + absorption[-1]) /
+        2
+    )
   }
-
-  # Rebind the closure to a minimal environment; the body needs nothing from
-  # this call frame. Defined inline the closure would carry that frame, and
-  # `terra::app(cores = )` serializes `fun` to its workers once per write block:
-  # the frame drags `x` along, and a SpatRaster serializes to ~40 MB regardless
-  # of raster size, which measured 5.5x *slower* than single-threaded. The body
-  # needs nothing beyond `purrr::map_dbl()`, and `::` lives in base.
-  environment(calc_raba_pixel) <- rlang::new_environment(
-    data = list(),
-    parent = baseenv()
-  )
 
   # Apply function to each pixel
   result <- terra::app(
     x_range,
-    fun = calc_raba_pixel,
+    fun = .calc_raba_pixel,
+    wavelength_fraction = wavelength_fraction,
+    band_widths = band_widths,
     cores = cores,
     filename = filename,
     overwrite = overwrite,

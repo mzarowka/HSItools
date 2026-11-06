@@ -2,13 +2,12 @@
 #'
 #' @family HSI Co-registration
 #'
-#' @param x A [`SpatRaster`][terra::SpatRaster-class] to warp. Must be a
-#'   whole file on disk, not a window, layer subset or combination of files.
+#' @param x A [`SpatRaster`][terra::SpatRaster-class] to warp.
 #' @param y A [`SpatRaster`][terra::SpatRaster-class] defining the output grid.
 #'   Output extent, resolution, and dimensions are taken from this raster.
-#' @param gcp A [data.frame] or [tibble][tibble::tibble] of matched GCPs from
-#'   [`hsi_match_gcp()`]. Must contain columns `source_x`, `source_y`,
-#'   `target_x`, `target_y`.
+#' @param gcp A [data.frame] or [tibble][tibble::tibble] of matched control
+#'   points from [`hsi_match_gcp()`]. Each row identifies the same point in
+#'   both images through `source_x`, `source_y`, `target_x`, and `target_y`.
 #' @param method Character. Resampling method. One of `"near"`, `"bilinear"`,
 #'   `"cubic"`, `"cubicspline"`, `"lanczos"`. Default `"bilinear"`.
 #' @param filename Character. Output filename. Default `""` keeps result in
@@ -18,19 +17,19 @@
 #' @returns A [`SpatRaster`][terra::SpatRaster-class] aligned to the `y` grid.
 #'
 #' @description
-#' Warp a source raster onto the target grid using matched ground control
-#' points via GDAL. Areas without source coverage are `NA`.
+#' Warp a source raster onto the target grid using matched control points.
+#' Areas without source coverage are `NA`.
 #'
 #' @details
-#' Uses [`sf::gdal_utils()`] internally. The source GCPs are embedded in a
-#' lightweight VRT (no data duplication), then GDAL warps onto the target grid
-#' with a first-order polynomial (affine) transformation. Band names from `x`
-#' are preserved in the output file.
+#' A control point (GCP) is the same recognizable feature marked in both
+#' images.
 #'
-#' Requires the \pkg{sf} package.
+#' The function fits a first-order affine transformation from the points, then
+#' uses [`terra::project()`] to warp directly onto the grid defined by `y`.
+#' Band names from `x` are preserved.
 #'
 #' @seealso
-#' [`hsi_match_gcp()`] for matching GCPs,
+#' [`hsi_match_gcp()`] for matching control points,
 #' [`hsi_check_gcp()`] for checking residuals first.
 #'
 #' @examples
@@ -61,8 +60,17 @@ hsi_coregister <- function(
 
   check_data_frame(gcp)
 
-  # Validate columns
-  check_has_cols(gcp, cols = c("source_x", "source_y", "target_x", "target_y"))
+  # Validate coordinate columns
+  coord_cols <- c("source_x", "source_y", "target_x", "target_y")
+  check_has_cols(gcp, cols = coord_cols)
+
+  if (!all(vapply(gcp[coord_cols], is.numeric, logical(1)))) {
+    cli::cli_abort("GCP coordinate columns must be numeric.")
+  }
+
+  if (any(!is.finite(as.matrix(gcp[coord_cols])))) {
+    cli::cli_abort("GCP coordinate columns must contain only finite values.")
+  }
 
   # Check minimum of 3 GCPs
   if (nrow(gcp) < 3) {
@@ -72,8 +80,10 @@ hsi_coregister <- function(
     )
   }
 
+  design <- cbind(1, gcp$source_x, gcp$source_y)
+
   # Check for collinear GCPs
-  if (qr(cbind(1, gcp$source_x, gcp$source_y))$rank < 3) {
+  if (qr(design)$rank < 3) {
     cli::cli_abort(
       "GCPs are collinear and affine transform cannot be fit.",
       class = "hsitools_error"
@@ -86,23 +96,11 @@ hsi_coregister <- function(
     choices = c("near", "bilinear", "cubic", "cubicspline", "lanczos")
   )
 
-  # Check dependency on sf package
-  if (!requireNamespace("sf", quietly = TRUE)) {
-    cli::cli_abort(
-      c(
-        "Package {.pkg sf} is required for co-registration.",
-        "i" = "Install with: {.code install.packages('sf')}"
-      ),
-      class = "hsitools_error"
-    )
-  }
-
   rlang::check_string(filename)
 
   rlang::check_bool(overwrite)
 
-  # Check for existing output file
-  if (file.exists(filename) && !overwrite) {
+  if (filename != "" && file.exists(filename) && !overwrite) {
     cli::cli_abort(
       c(
         "File {.file {filename}} already exists.",
@@ -116,113 +114,32 @@ hsi_coregister <- function(
   x <- hsi_drop_crs(x)
   y <- hsi_drop_crs(y)
 
-  # Source must be on disk for GDAL to work
-  source_path <- terra::sources(x)[1]
+  # Fit target coordinates as affine functions of source coordinates.
+  coeffs_x <- stats::lm.fit(design, gcp$target_x)$coefficients
+  coeffs_y <- stats::lm.fit(design, gcp$target_y)$coefficients
 
-  if (is.na(source_path) || source_path == "") {
-    cli::cli_abort(
-      c(
-        "{.arg x} has no file source.",
-        "i" = "Write it to disk first with {.code terra::writeRaster()}."
-      ),
-      class = "hsitools_error"
-    )
-  }
-
-  # Source must be the whole file: GDAL warps the file, not a view of it
-  x_sources <- terra::sources(x, bands = TRUE)
-
-  x_file <- terra::rast(source_path)
-
-  is_whole_file <- length(unique(x_sources$source)) == 1 &&
-    identical(as.integer(x_sources$bands), seq_len(terra::nlyr(x_file))) &&
-    identical(as.vector(terra::ext(x)), as.vector(terra::ext(x_file)))
-
-  if (!is_whole_file) {
-    cli::cli_abort(
-      c(
-        "{.arg x} is not a whole file on disk.",
-        "i" = "Windows, layer subsets and combined rasters cannot be warped.",
-        "i" = "Write it to disk first with {.code terra::writeRaster()}."
-      ),
-      class = "hsitools_error"
-    )
-  }
-
-  # Temp VRT for GCP embedding
-  vrt_path <- withr::local_tempfile(fileext = ".vrt")
-
-  # Output path, plain tempfile() as it backs the returned raster
-  if (filename == "") {
-    filename <- tempfile(fileext = ".tif")
-  }
-
-  # Translate source raster coordinates to GDAL pixel/line
-  src_xmin <- terra::xmin(x)
-  src_ymax <- terra::ymax(x)
-  src_xres <- terra::xres(x)
-  src_yres <- terra::yres(x)
-
-  # Build -gcp flags: pixel, line, target_x, target_y
-  gcp_flags <- purrr::pmap(
-    list(
-      gcp$source_x,
-      gcp$source_y,
-      gcp$target_x,
-      gcp$target_y
+  affine_pipeline <- sprintf(
+    paste(
+      "+proj=pipeline +step +proj=affine",
+      "+xoff=%.17g +yoff=%.17g",
+      "+s11=%.17g +s12=%.17g +s21=%.17g +s22=%.17g"
     ),
-    \(sx, sy, tx, ty) {
-      pixel <- (sx - src_xmin) / src_xres
-      line <- (src_ymax - sy) / src_yres
-      c(
-        "-gcp",
-        format(pixel, scientific = FALSE),
-        format(line, scientific = FALSE),
-        format(tx, scientific = FALSE),
-        format(ty, scientific = FALSE)
-      )
-    }
-  ) |>
-    purrr::list_c()
-
-  # Embed GCPs in VRT file
-  sf::gdal_utils(
-    util = "translate",
-    source = source_path,
-    destination = vrt_path,
-    options = c("-of", "VRT", gcp_flags)
+    coeffs_x[[1]],
+    coeffs_y[[1]],
+    coeffs_x[[2]],
+    coeffs_x[[3]],
+    coeffs_y[[2]],
+    coeffs_y[[3]]
   )
 
-  # Warp raster to target grid, straight to output file
-  sf::gdal_utils(
-    util = "warp",
-    source = vrt_path,
-    destination = filename,
-    options = c(
-      "-r",
-      method,
-      "-te",
-      format(terra::xmin(y), scientific = FALSE),
-      format(terra::ymin(y), scientific = FALSE),
-      format(terra::xmax(y), scientific = FALSE),
-      format(terra::ymax(y), scientific = FALSE),
-      "-ts",
-      as.character(terra::ncol(y)),
-      as.character(terra::nrow(y)),
-      "-order",
-      "1",
-      "-multi",
-      "-overwrite"
-    )
+  terra::crs(x) <- "local"
+
+  terra::project(
+    x,
+    y,
+    method = method,
+    pipeline = affine_pipeline,
+    filename = filename,
+    overwrite = overwrite
   )
-
-  # Write band names into output file
-  result <- terra::rast(filename)
-
-  names(result) <- names(x)
-
-  terra::update(result, names = TRUE)
-
-  # Return result
-  result
 }

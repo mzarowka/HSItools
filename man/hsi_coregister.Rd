@@ -14,15 +14,14 @@ hsi_coregister(
 )
 }
 \arguments{
-\item{x}{A \code{\link[terra:SpatRaster-class]{SpatRaster}} to warp. Must be a
-whole file on disk, not a window, layer subset or combination of files.}
+\item{x}{A \code{\link[terra:SpatRaster-class]{SpatRaster}} to warp.}
 
 \item{y}{A \code{\link[terra:SpatRaster-class]{SpatRaster}} defining the output grid.
 Output extent, resolution, and dimensions are taken from this raster.}
 
-\item{gcp}{A \link{data.frame} or \link[tibble:tibble]{tibble} of matched GCPs from
-\code{\link[=hsi_match_gcp]{hsi_match_gcp()}}. Must contain columns \code{source_x}, \code{source_y},
-\code{target_x}, \code{target_y}.}
+\item{gcp}{A \link{data.frame} or \link[tibble:tibble]{tibble} of matched control
+points from \code{\link[=hsi_match_gcp]{hsi_match_gcp()}}. Each row identifies the same point in
+both images through \code{source_x}, \code{source_y}, \code{target_x}, and \code{target_y}.}
 
 \item{method}{Character. Resampling method. One of \code{"near"}, \code{"bilinear"},
 \code{"cubic"}, \code{"cubicspline"}, \code{"lanczos"}. Default \code{"bilinear"}.}
@@ -36,16 +35,16 @@ memory.}
 A \code{\link[terra:SpatRaster-class]{SpatRaster}} aligned to the \code{y} grid.
 }
 \description{
-Warp a source raster onto the target grid using matched ground control
-points via GDAL. Areas without source coverage are \code{NA}.
+Warp a source raster onto the target grid using matched control points.
+Areas without source coverage are \code{NA}.
 }
 \details{
-Uses \code{\link[sf:gdal_utils]{sf::gdal_utils()}} internally. The source GCPs are embedded in a
-lightweight VRT (no data duplication), then GDAL warps onto the target grid
-with a first-order polynomial (affine) transformation. Band names from \code{x}
-are preserved in the output file.
+A control point (GCP) is the same recognizable feature marked in both
+images.
 
-Requires the \pkg{sf} package.
+The function fits a first-order affine transformation from the points, then
+uses \code{\link[terra:project]{terra::project()}} to warp directly onto the grid defined by \code{y}.
+Band names from \code{x} are preserved.
 }
 \examples{
 \dontrun{
@@ -61,7 +60,7 @@ x_coregistered <- hsi_coregister(
 
 }
 \seealso{
-\code{\link[=hsi_match_gcp]{hsi_match_gcp()}} for matching GCPs,
+\code{\link[=hsi_match_gcp]{hsi_match_gcp()}} for matching control points,
 \code{\link[=hsi_check_gcp]{hsi_check_gcp()}} for checking residuals first.
 
 Other HSI Co-registration:

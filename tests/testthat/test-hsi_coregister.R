@@ -1,7 +1,7 @@
 # Test hsi_coregister ----
 # Warps a source raster onto a target grid using matched GCPs via GDAL.
 # Key contracts: output always matches target grid dimensions; band names are
-# preserved both in-memory and on disk; x must have a file source.
+# preserved both in-memory and on disk.
 
 # ── Output type ───────────────────────────────────────────────────────────────
 
@@ -82,7 +82,7 @@ test_that("hsi_coregister returns a raster whose values are readable", {
   in_memory <- hsi_coregister(test_reflectance, test_target, test_gcp)
 
   expect_true(file.exists(terra::sources(written)))
-  expect_true(file.exists(terra::sources(in_memory)))
+  expect_true(terra::inMemory(in_memory))
   expect_no_error(terra::values(written))
   expect_no_error(terra::values(in_memory))
 })
@@ -212,45 +212,6 @@ test_that("hsi_coregister errors when GCPs are collinear", {
   expect_error(
     hsi_coregister(test_reflectance, test_target, collinear_gcp),
     "collinear",
-    class = "hsitools_error"
-  )
-})
-
-test_that("hsi_coregister errors when x has no file source", {
-  # In-memory raster has no path — GDAL cannot operate on it
-  in_memory <- terra::rast(
-    nrows = 9,
-    ncols = 9,
-    nlyr = 3,
-    vals = runif(9 * 9 * 3)
-  )
-
-  expect_error(
-    hsi_coregister(in_memory, test_target, test_gcp),
-    "no file source",
-    class = "hsitools_error"
-  )
-})
-
-test_that("hsi_coregister errors when x is a window or layer subset of its file", {
-  # Views of the file on disk, derived from copies so the fixture is untouched
-  windowed <- terra::subset(
-    test_reflectance,
-    seq_len(terra::nlyr(test_reflectance))
-  )
-  terra::window(windowed) <- terra::ext(test_reflectance) -
-    terra::res(test_reflectance)
-
-  layer_subset <- terra::subset(test_reflectance, 1:3)
-
-  expect_error(
-    hsi_coregister(windowed, test_target, test_gcp),
-    "not a whole file",
-    class = "hsitools_error"
-  )
-  expect_error(
-    hsi_coregister(layer_subset, test_target, test_gcp),
-    "not a whole file",
     class = "hsitools_error"
   )
 })

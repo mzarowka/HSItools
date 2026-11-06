@@ -2,41 +2,46 @@
 % Please edit documentation in R/hsi_check_gcp.R
 \name{hsi_check_gcp}
 \alias{hsi_check_gcp}
-\title{Assess affine transformation quality from matched GCPs}
+\title{Assess affine transformation quality from matched control points}
 \usage{
 hsi_check_gcp(x, verbose = FALSE)
 }
 \arguments{
-\item{x}{A \link{data.frame} or \link[tibble:tibble]{tibble} of matched GCPs from
-\code{\link[=hsi_match_gcp]{hsi_match_gcp()}}. Must contain columns \code{source_x}, \code{source_y},
-\code{target_x}, \code{target_y}.}
+\item{x}{A \link{data.frame} or \link[tibble:tibble]{tibble} of matched control
+points from \code{\link[=hsi_match_gcp]{hsi_match_gcp()}}. Each row must give the corresponding
+source and target location in \code{source_x}, \code{source_y}, \code{target_x}, and
+\code{target_y}.}
 
-\item{verbose}{Logical. Print GCP count and RMSE to console. Default \code{FALSE}.}
+\item{verbose}{Logical. Print control point count and RMSE to console.
+Default \code{FALSE}.}
 }
 \value{
 A named list containing:
 \item{residuals}{A \link[tibble:tibble]{tibble} with all input columns plus
 \code{residual_x}, \code{residual_y}, and \code{residual_total} in target pixels.}
 \item{rmse}{Numeric. Root mean square error in target pixels.}
-\item{n_gcps}{Integer. Number of GCPs used.}
+\item{n_gcps}{Integer. Number of control points used.}
 }
 \description{
-Fit a first-order affine transformation from matched GCPs using least
-squares and return per-GCP residuals. Use this to identify poorly
+Fit a first-order affine transformation from matched control points using
+least squares and return per-point residuals. Use this to identify poorly
 digitized points before the expensive warp step.
 }
 \details{
+A control point (GCP) is the same recognizable feature marked in both
+images.
+
 The affine model (6 parameters) handles translation, rotation, independent
-X/Y scaling, and shear. With N GCPs, residual assessment has N - 3 degrees
-of freedom. Residuals are in target pixel units. An RMSE above 5 pixels
-triggers a warning.
+X/Y scaling, and shear. With N control points, residual assessment has N - 3
+degrees of freedom. Residuals are in target pixel units. An RMSE above 5
+pixels triggers a warning.
 }
 \examples{
 \dontrun{
 matched <- hsi_match_gcp(swir_gcps, vnir_gcps)
 x_check <- hsi_check_gcp(matched)
 
-# Inspect worst GCPs
+# Inspect the least consistent control points
 x_check$residuals |>
   dplyr::arrange(dplyr::desc(residual_total))
 

@@ -2,42 +2,48 @@
 % Please edit documentation in R/hsi_match_gcp.R
 \name{hsi_match_gcp}
 \alias{hsi_match_gcp}
-\title{Match ground control points between two SpatVectors}
+\title{Match control points between two SpatVectors}
 \usage{
 hsi_match_gcp(source, target, id_col = "gcp_id")
 }
 \arguments{
-\item{source}{A \code{\link[terra:SpatVector-class]{SpatVector}} of points with
-source GCPs. Must contain an identifier column.}
+\item{source}{A \code{\link[terra:SpatVector-class]{SpatVector}} containing control
+point locations in the source image. Must contain an identifier column.}
 
-\item{target}{A \code{\link[terra:SpatVector-class]{SpatVector}} of points with
-target GCPs. Must contain an identifier column.}
+\item{target}{A \code{\link[terra:SpatVector-class]{SpatVector}} containing the
+corresponding control point locations in the target image. Must contain an
+identifier column.}
 
-\item{id_col}{Character. Column name containing GCP identifiers.
-Default \code{"gcp_id"}.}
+\item{id_col}{Character. Column identifying the same landmark in \code{source}
+and \code{target}. Default \code{"gcp_id"}.}
 }
 \value{
 A \link[tibble:tibble]{tibble} with columns:
-\item{gcp_id}{GCP identifier, or column named by \code{id_col}.}
+\item{gcp_id}{Control point identifier, or column named by \code{id_col}.}
 \item{source_x}{X pixel coordinate in source raster.}
 \item{source_y}{Y pixel coordinate in source raster.}
 \item{target_x}{X pixel coordinate in target raster.}
 \item{target_y}{Y pixel coordinate in target raster.}
 }
 \description{
-Match ground control points from source and target vectors by a shared
-identifier. CRS is stripped from both inputs to work in pixel coordinate
-space. Points present in only one input are dropped with a warning.
+Match control points from source and target vectors by a shared identifier.
+Each matched pair represents the same recognizable landmark in both images.
+CRS is stripped from both inputs to work in pixel-coordinate space. Points
+present in only one input are dropped with a warning.
+}
+\details{
+A control point (GCP) is the same recognizable feature marked in both
+images.
 }
 \examples{
 \dontrun{
-# Get SWIR GCPs
+# Get SWIR control points
 swir_gcps <- terra::vect("swir_preview.gpkg", layer = "gcp")
 
-# Get VNIR GCPs
+# Get VNIR control points
 vnir_gcps <- terra::vect("vnir_preview.gpkg", layer = "gcp")
 
-# See if there is a match between the GCPs
+# Match corresponding control points
 matched <- hsi_match_gcp(swir_gcps, vnir_gcps)
 }
 

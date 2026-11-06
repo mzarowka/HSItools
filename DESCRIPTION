@@ -32,8 +32,7 @@ Suggests:
     quarto,
     mirai,
     carrier (>= 0.3.0),
-    spacetime,
-    sf
+    spacetime
 Config/testthat/edition: 3
 URL: https://github.com/mzarowka/HSItools
 BugReports: https://github.com/mzarowka/HSItools/issues

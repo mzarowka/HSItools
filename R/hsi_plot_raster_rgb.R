@@ -93,10 +93,11 @@ hsi_plot_raster_rgb <- function(
 
   plot <- ggplot2::ggplot(rgb_data, ggplot2::aes(x, y, fill = fill)) +
     ggplot2::geom_raster() +
-    ggplot2::scale_fill_identity() +
+    ggplot2::scale_fill_manual(values = x_rgb_hex) +
     ggplot2::coord_fixed(expand = FALSE) +
     ggplot2::scale_y_reverse(labels = label_fun) +
-    ggplot2::labs(x = "", y = "")
+    ggplot2::labs(x = "", y = "") +
+    ggplot2::guides(fill = "none")
 
   plot
 }
