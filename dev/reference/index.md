@@ -44,7 +44,7 @@
 - [`hsi_calibration_from_scale()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_calibration_from_scale.md)
   : Create spatial calibration from a digitized scale reference
 - [`hsi_check_gcp()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_check_gcp.md)
-  : Assess affine transformation quality from matched GCPs
+  : Assess affine transformation quality from matched control points
 - [`hsi_check_saturation()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_check_saturation.md)
   : Check a raster for saturated pixels
 - [`hsi_coregister()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_coregister.md)
@@ -64,7 +64,7 @@
 - [`hsi_mask()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_mask.md)
   : Mask hyperspectral raster
 - [`hsi_match_gcp()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_match_gcp.md)
-  : Match ground control points between two SpatVectors
+  : Match control points between two SpatVectors
 - [`hsi_pixels_to_units()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_pixels_to_units.md)
   : Convert pixel coordinates to physical units
 - [`hsi_plot_composite()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_plot_composite.md)

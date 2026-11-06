@@ -1,8 +1,10 @@
-# Match ground control points between two SpatVectors
+# Match control points between two SpatVectors
 
-Match ground control points from source and target vectors by a shared
-identifier. CRS is stripped from both inputs to work in pixel coordinate
-space. Points present in only one input are dropped with a warning.
+Match control points from source and target vectors by a shared
+identifier. Each matched pair represents the same recognizable landmark
+in both images. CRS is stripped from both inputs to work in
+pixel-coordinate space. Points present in only one input are dropped
+with a warning.
 
 ## Usage
 
@@ -16,17 +18,20 @@ hsi_match_gcp(source, target, id_col = "gcp_id")
 
   A
   [`SpatVector`](https://rspatial.github.io/terra/reference/SpatVector-class.html)
-  of points with source GCPs. Must contain an identifier column.
+  containing control point locations in the source image. Must contain
+  an identifier column.
 
 - target:
 
   A
   [`SpatVector`](https://rspatial.github.io/terra/reference/SpatVector-class.html)
-  of points with target GCPs. Must contain an identifier column.
+  containing the corresponding control point locations in the target
+  image. Must contain an identifier column.
 
 - id_col:
 
-  Character. Column name containing GCP identifiers. Default `"gcp_id"`.
+  Character. Column identifying the same landmark in `source` and
+  `target`. Default `"gcp_id"`.
 
 ## Value
 
@@ -35,7 +40,7 @@ columns:
 
 - gcp_id:
 
-  GCP identifier, or column named by `id_col`.
+  Control point identifier, or column named by `id_col`.
 
 - source_x:
 
@@ -53,6 +58,11 @@ columns:
 
   Y pixel coordinate in target raster.
 
+## Details
+
+A control point (GCP) is the same recognizable feature marked in both
+images.
+
 ## See also
 
 [`hsi_check_gcp()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_check_gcp.md)
@@ -68,13 +78,13 @@ Other HSI Co-registration:
 
 ``` r
 if (FALSE) { # \dontrun{
-# Get SWIR GCPs
+# Get SWIR control points
 swir_gcps <- terra::vect("swir_preview.gpkg", layer = "gcp")
 
-# Get VNIR GCPs
+# Get VNIR control points
 vnir_gcps <- terra::vect("vnir_preview.gpkg", layer = "gcp")
 
-# See if there is a match between the GCPs
+# Match corresponding control points
 matched <- hsi_match_gcp(swir_gcps, vnir_gcps)
 } # }
 ```

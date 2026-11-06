@@ -1,8 +1,8 @@
-# Assess affine transformation quality from matched GCPs
+# Assess affine transformation quality from matched control points
 
-Fit a first-order affine transformation from matched GCPs using least
-squares and return per-GCP residuals. Use this to identify poorly
-digitized points before the expensive warp step.
+Fit a first-order affine transformation from matched control points
+using least squares and return per-point residuals. Use this to identify
+poorly digitized points before the expensive warp step.
 
 ## Usage
 
@@ -16,13 +16,15 @@ hsi_check_gcp(x, verbose = FALSE)
 
   A [data.frame](https://rdrr.io/r/base/data.frame.html) or
   [tibble](https://tibble.tidyverse.org/reference/tibble.html) of
-  matched GCPs from
+  matched control points from
   [`hsi_match_gcp()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_match_gcp.md).
-  Must contain columns `source_x`, `source_y`, `target_x`, `target_y`.
+  Each row must give the corresponding source and target location in
+  `source_x`, `source_y`, `target_x`, and `target_y`.
 
 - verbose:
 
-  Logical. Print GCP count and RMSE to console. Default `FALSE`.
+  Logical. Print control point count and RMSE to console. Default
+  `FALSE`.
 
 ## Value
 
@@ -40,14 +42,17 @@ A named list containing:
 
 - n_gcps:
 
-  Integer. Number of GCPs used.
+  Integer. Number of control points used.
 
 ## Details
 
+A control point (GCP) is the same recognizable feature marked in both
+images.
+
 The affine model (6 parameters) handles translation, rotation,
-independent X/Y scaling, and shear. With N GCPs, residual assessment has
-N - 3 degrees of freedom. Residuals are in target pixel units. An RMSE
-above 5 pixels triggers a warning.
+independent X/Y scaling, and shear. With N control points, residual
+assessment has N - 3 degrees of freedom. Residuals are in target pixel
+units. An RMSE above 5 pixels triggers a warning.
 
 ## See also
 
@@ -67,7 +72,7 @@ if (FALSE) { # \dontrun{
 matched <- hsi_match_gcp(swir_gcps, vnir_gcps)
 x_check <- hsi_check_gcp(matched)
 
-# Inspect worst GCPs
+# Inspect the least consistent control points
 x_check$residuals |>
   dplyr::arrange(dplyr::desc(residual_total))
 

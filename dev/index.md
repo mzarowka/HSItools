@@ -43,6 +43,6 @@ sediments: proxy development and calibration” (2023/51/D/ST10/00801),
 and previously by the Polish National Agency for Academic Exchange
 (BPN/BEK/2021/1/00133).
 
-![](man/figures%5Clogo-poziom-en.png)
+![](man/figures\logo-poziom-en.png)
 
 ![](reference/figures/nawa_logo.png)

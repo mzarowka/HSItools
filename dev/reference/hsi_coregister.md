@@ -1,7 +1,7 @@
 # Co-register source raster to target raster grid
 
-Warp a source raster onto the target grid using matched ground control
-points via GDAL. Areas without source coverage are `NA`.
+Warp a source raster onto the target grid using matched control points.
+Areas without source coverage are `NA`.
 
 ## Usage
 
@@ -22,8 +22,7 @@ hsi_coregister(
 
   A
   [`SpatRaster`](https://rspatial.github.io/terra/reference/SpatRaster-class.html)
-  to warp. Must be a whole file on disk, not a window, layer subset or
-  combination of files.
+  to warp.
 
 - y:
 
@@ -36,9 +35,10 @@ hsi_coregister(
 
   A [data.frame](https://rdrr.io/r/base/data.frame.html) or
   [tibble](https://tibble.tidyverse.org/reference/tibble.html) of
-  matched GCPs from
+  matched control points from
   [`hsi_match_gcp()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_match_gcp.md).
-  Must contain columns `source_x`, `source_y`, `target_x`, `target_y`.
+  Each row identifies the same point in both images through `source_x`,
+  `source_y`, `target_x`, and `target_y`.
 
 - method:
 
@@ -61,19 +61,19 @@ aligned to the `y` grid.
 
 ## Details
 
-Uses
-[`sf::gdal_utils()`](https://r-spatial.github.io/sf/reference/gdal_utils.html)
-internally. The source GCPs are embedded in a lightweight VRT (no data
-duplication), then GDAL warps onto the target grid with a first-order
-polynomial (affine) transformation. Band names from `x` are preserved in
-the output file.
+A control point (GCP) is the same recognizable feature marked in both
+images.
 
-Requires the sf package.
+The function fits a first-order affine transformation from the points,
+then uses
+[`terra::project()`](https://rspatial.github.io/terra/reference/project.html)
+to warp directly onto the grid defined by `y`. Band names from `x` are
+preserved.
 
 ## See also
 
 [`hsi_match_gcp()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_match_gcp.md)
-for matching GCPs,
+for matching control points,
 [`hsi_check_gcp()`](https://mzarowka.github.io/HSItools/dev/reference/hsi_check_gcp.md)
 for checking residuals first.
 
